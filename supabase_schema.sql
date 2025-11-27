@@ -132,6 +132,72 @@ begin
 end;
 $$ language plpgsql security definer;
 
+
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- DRIVER APPLICATIONS TABLE
+create table public.driver_applications (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) not null,
+  full_name text not null,
+  phone text,
+  vehicle_type text,
+  license_number text,
+  status text default 'pending', -- 'pending', 'approved', 'rejected'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.driver_applications enable row level security;
+
+create policy "Users can view their own driver applications."
+  on public.driver_applications for select
+  using ( auth.uid() = user_id );
+
+create policy "Users can insert their own driver applications."
+  on public.driver_applications for insert
+  with check ( auth.uid() = user_id );
+
+-- PROMOTER APPLICATIONS TABLE
+create table public.promoter_applications (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) not null,
+  organization_name text,
+  event_types text[],
+  experience_years text,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.promoter_applications enable row level security;
+
+create policy "Users can view their own promoter applications."
+  on public.promoter_applications for select
+  using ( auth.uid() = user_id );
+
+create policy "Users can insert their own promoter applications."
+  on public.promoter_applications for insert
+  with check ( auth.uid() = user_id );
+
+-- SIGNED AGREEMENTS TABLE
+create table public.signed_agreements (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) not null,
+  document_type text not null, -- 'contractor_agreement', 'liability_waiver', etc.
+  document_version text,
+  signature_data text, -- Base64 or text signature
+  ip_address text,
+  signed_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.signed_agreements enable row level security;
+
+create policy "Users can view their own signed agreements."
+  on public.signed_agreements for select
+  using ( auth.uid() = user_id );
+
+create policy "Users can sign agreements."
+  on public.signed_agreements for insert
+  with check ( auth.uid() = user_id );
+

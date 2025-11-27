@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Car, UploadCloud, CheckCircle, ChevronRight, ArrowLeft, FileSignature, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { legalService } from '../services/legalService';
+import { supabase } from '../services/supabaseClient';
 
 export const DriverOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export const DriverOnboarding: React.FC = () => {
   });
   const [isSigning, setIsSigning] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -25,37 +27,52 @@ export const DriverOnboarding: React.FC = () => {
   const handleSign = async () => {
     setIsSigning(true);
     try {
-      // Simulate signing both documents
-      await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via DocuSign');
-      await legalService.signDocument('current-user', 'liability_waiver', 'Signed via DocuSign');
+      // Sign documents in Supabase
+      await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via App');
+      await legalService.signDocument('current-user', 'liability_waiver', 'Signed via App');
       setHasSigned(true);
     } catch (error) {
       console.error("Signing failed", error);
+      alert("Failed to sign documents. Please try again.");
     } finally {
       setIsSigning(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 4) {
       setStep(step + 1);
     } else {
-      // Submit Logic Here
-      setTimeout(() => {
-        // Save Application
-        const application = {
-          id: `driver-app-${Date.now()}`,
-          ...formData,
-          status: 'pending',
-          submittedAt: new Date().toISOString(),
-          legalSigned: true
-        };
-        localStorage.setItem('driver_application', JSON.stringify(application));
+      setIsSubmitting(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        // Upload license file (Mocking upload for now as storage bucket might not exist)
+        // const licenseUrl = await uploadFile(formData.licenseFile); 
+
+        const { error } = await supabase
+          .from('driver_applications')
+          .insert({
+            user_id: user.id,
+            full_name: user.user_metadata?.full_name || 'Unknown Driver',
+            phone: user.phone || '', // Try to get phone from auth
+            vehicle_type: `${formData.vehicleType} - ${formData.make} ${formData.model}`,
+            license_number: formData.plate,
+            status: 'pending'
+          });
+
+        if (error) throw error;
 
         alert("Application Submitted! We will review your documents.");
         navigate('/dashboard');
-      }, 1500);
+      } catch (error) {
+        console.error("Submission failed", error);
+        alert("Failed to submit application. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 

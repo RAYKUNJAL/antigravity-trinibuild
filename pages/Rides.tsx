@@ -3,14 +3,44 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Car, Truck, Bike, Clock, CreditCard, Navigation, CheckCircle, Loader2, Star, Shield, Banknote, Crosshair, AlertCircle } from 'lucide-react';
 import { ChatWidget } from '../components/ChatWidget';
 import { AdSpot } from '../components/AdSpot';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+// Fix Leaflet icon issue
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-const GOOGLE_MAPS_KEY = 'AIzaSyAbjOn5lpjfYw6Ig3M-KWU1y0JP5z0LbPM';
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Custom Icons
+const carIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', // Placeholder car icon
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+
+const userIcon = new L.Icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png', // Placeholder user icon
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+// Component to update map center
+const MapUpdater = ({ center }: { center: [number, number] }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
+};
 
 export const Rides: React.FC = () => {
   const [bookingState, setBookingState] = useState<'idle' | 'searching' | 'found' | 'arriving' | 'in_progress'>('idle');
@@ -20,12 +50,9 @@ export const Rides: React.FC = () => {
   const [paymentType, setPaymentType] = useState<'cash' | 'card'>('cash');
 
   // Map State
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const directionsServiceRef = useRef<any>(null);
-  const directionsRendererRef = useRef<any>(null);
-  const driverMarkerRef = useRef<any>(null);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const [center, setCenter] = useState<[number, number]>([10.652, -61.514]); // Port of Spain
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [driverLocation, setDriverLocation] = useState<[number, number] | null>(null);
   const [rideStats, setRideStats] = useState<{ distance: string, duration: string } | null>(null);
 
   const rideTypes = [
@@ -35,91 +62,19 @@ export const Rides: React.FC = () => {
     { id: 'truck', name: 'Moving', icon: Truck, price: 150, time: '25 min', desc: 'Pickup trucks & vans' },
   ];
 
-  // Load Google Maps
   useEffect(() => {
-    const loadMap = async () => {
-      const apiKey = localStorage.getItem('google_maps_api_key') || GOOGLE_MAPS_KEY || process.env.API_KEY;
-
-      if (!window.google || !window.google.maps) {
-        if (document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')) return;
-
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
-        script.async = true;
-        script.defer = true;
-        script.onload = initMap;
-        script.onerror = () => setMapError("Failed to load Google Maps.");
-        document.head.appendChild(script);
-      } else {
-        initMap();
-      }
-    };
-
-    loadMap();
+    // Try to get user location on load
+    getUserLocation();
   }, []);
 
-  const initMap = () => {
-    if (!mapRef.current) return;
-
-    try {
-      // Default Center: Port of Spain
-      const defaultCenter = { lat: 10.652, lng: -61.514 };
-
-      mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
-        center: defaultCenter,
-        zoom: 13,
-        disableDefaultUI: true,
-        zoomControl: true,
-        styles: [
-          { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
-        ]
-      });
-
-      directionsServiceRef.current = new window.google.maps.DirectionsService();
-      directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
-        map: mapInstanceRef.current,
-        suppressMarkers: false,
-        polylineOptions: {
-          strokeColor: "#CE1126", // Trini Red
-          strokeWeight: 5
-        }
-      });
-
-      // Try to get user location
-      getUserLocation();
-
-    } catch (e) {
-      console.error("Map Init Error", e);
-      setMapError("Could not initialize map.");
-    }
-  };
-
   const getUserLocation = () => {
-    if (navigator.geolocation && mapInstanceRef.current) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          mapInstanceRef.current.setCenter(pos);
-          mapInstanceRef.current.setZoom(15);
+          const pos: [number, number] = [position.coords.latitude, position.coords.longitude];
+          setCenter(pos);
+          setUserLocation(pos);
           setPickup("Current Location");
-
-          // Add a pulse marker for user
-          new window.google.maps.Marker({
-            position: pos,
-            map: mapInstanceRef.current,
-            icon: {
-              path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: "#4285F4",
-              fillOpacity: 1,
-              strokeColor: "white",
-              strokeWeight: 2,
-            },
-            title: "You are here"
-          });
         },
         () => console.log("GPS permission denied")
       );
@@ -133,7 +88,9 @@ export const Rides: React.FC = () => {
     setBookingState('searching');
 
     // Simulate Route Calculation
-    calculateRoute();
+    setTimeout(() => {
+      setRideStats({ distance: "4.2 km", duration: "12 mins" });
+    }, 1000);
 
     setTimeout(() => {
       setBookingState('found');
@@ -146,82 +103,39 @@ export const Rides: React.FC = () => {
         type: rideTypes.find(r => r.id === selectedType)?.name,
         price: rideTypes.find(r => r.id === selectedType)?.price,
         date: new Date().toISOString(),
-        status: 'completed' // For demo purposes, we assume it completes
+        status: 'completed'
       };
 
       const history = JSON.parse(localStorage.getItem('ride_history') || '[]');
-      localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5))); // Keep last 5
+      localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5)));
 
       startDriverSimulation();
     }, 2500);
   };
 
-  const calculateRoute = () => {
-    if (!directionsServiceRef.current || !directionsRendererRef.current) return;
-
-    const request = {
-      origin: pickup === "Current Location" ? mapInstanceRef.current.getCenter() : "Independence Square, Port of Spain",
-      destination: "Queen's Park Savannah, Port of Spain",
-      travelMode: window.google.maps.TravelMode.DRIVING,
-    };
-
-    directionsServiceRef.current.route(request, (result: any, status: any) => {
-      if (status === window.google.maps.DirectionsStatus.OK) {
-        directionsRendererRef.current.setDirections(result);
-        const leg = result.routes[0].legs[0];
-        setRideStats({
-          distance: leg.distance.text,
-          duration: leg.duration.text
-        });
-      } else {
-        console.warn("Directions request failed due to " + status);
-        setRideStats({ distance: "4.2 km", duration: "12 mins" });
-      }
-    });
-  };
-
   const startDriverSimulation = () => {
-    if (!window.google || !mapInstanceRef.current) return;
-
-    // Create Driver Marker
-    const center = mapInstanceRef.current.getCenter();
-    // Start slightly offset
-    const startPos = { lat: center.lat() - 0.005, lng: center.lng() - 0.005 };
-
-    driverMarkerRef.current = new window.google.maps.Marker({
-      position: startPos,
-      map: mapInstanceRef.current,
-      icon: {
-        path: "M17.402,0H5.643C2.526,0,0,3.467,0,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644 V6.584C23.044,3.467,20.518,0,17.402,0z M22.057,14.188v11.665l-2.729,0.351v-4.806L22.057,14.188z M20.625,10.773 c-1.016,3.9-2.219,8.51-2.219,8.51H4.638l-2.222-8.51C2.417,10.773,11.3,7.755,20.625,10.773z M19.148,1.443 c-2.063,4.889-4.807,8.729-4.807,8.729g6.276-1.909l0.281-0.085H4.662l0.28,0.085c0,0,4.347,3.839,4.808-8.729H19.148z M5.781,1.443 c-0.387,4.238-1.04,7.567-1.04,7.567H3.08c-0.555-4.213-1.053-7.567-1.053-7.567H5.781z",
-        fillColor: "black",
-        fillOpacity: 1,
-        scale: 0.8,
-        strokeWeight: 1,
-        rotation: 0,
-        anchor: new window.google.maps.Point(10, 25),
-      },
-      title: "Driver"
-    });
+    // Start driver slightly offset from center
+    const startLat = center[0] - 0.005;
+    const startLng = center[1] - 0.005;
+    setDriverLocation([startLat, startLng]);
 
     let step = 0;
     const maxSteps = 100;
-    const deltaLat = (center.lat() - startPos.lat) / maxSteps;
-    const deltaLng = (center.lng() - startPos.lng) / maxSteps;
+    const deltaLat = (center[0] - startLat) / maxSteps;
+    const deltaLng = (center[1] - startLng) / maxSteps;
 
-    const animate = () => {
-      if (step < maxSteps) {
-        const newPos = {
-          lat: startPos.lat + (deltaLat * step),
-          lng: startPos.lng + (deltaLng * step)
-        };
-        driverMarkerRef.current.setPosition(newPos);
-        step++;
-        requestAnimationFrame(animate);
+    const interval = setInterval(() => {
+      step++;
+      if (step <= maxSteps) {
+        setDriverLocation(prev => {
+          if (!prev) return [startLat, startLng];
+          return [startLat + (deltaLat * step), startLng + (deltaLng * step)];
+        });
       } else {
+        clearInterval(interval);
         setBookingState('arriving');
       }
-    };
-    animate();
+    }, 50); // Update every 50ms
   };
 
   return (
@@ -290,8 +204,7 @@ export const Rides: React.FC = () => {
               <button
                 onClick={() => {
                   setBookingState('idle');
-                  if (driverMarkerRef.current) driverMarkerRef.current.setMap(null);
-                  if (directionsRendererRef.current) directionsRendererRef.current.setDirections({ routes: [] });
+                  setDriverLocation(null);
                 }}
                 className="w-full bg-gray-100 text-gray-700 py-4 rounded-lg font-bold hover:bg-gray-200"
               >
@@ -423,25 +336,29 @@ export const Rides: React.FC = () => {
       </div>
 
       {/* Right Panel - Functional Map */}
-      <div className="flex-grow bg-gray-200 relative min-h-[300px] lg:min-h-0">
-        {mapError ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-center p-6">
-            <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
-            <h3 className="text-lg font-bold text-gray-700">Map Unavailable</h3>
-            <p className="text-gray-500 text-sm">{mapError}</p>
-          </div>
-        ) : (
-          <div ref={mapRef} className="w-full h-full"></div>
-        )}
+      <div className="flex-grow bg-gray-200 relative min-h-[300px] lg:min-h-0 z-0">
+        <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <MapUpdater center={center} />
 
-        {!window.google && !mapError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 backdrop-blur-sm z-10">
-            <Loader2 className="h-8 w-8 text-trini-red animate-spin" />
-          </div>
-        )}
+          {userLocation && (
+            <Marker position={userLocation} icon={userIcon}>
+              <Popup>You are here</Popup>
+            </Marker>
+          )}
+
+          {driverLocation && (
+            <Marker position={driverLocation} icon={carIcon}>
+              <Popup>Driver</Popup>
+            </Marker>
+          )}
+        </MapContainer>
 
         {bookingState === 'found' && (
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg z-10 animate-in slide-in-from-top-2">
+          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg z-[1000] animate-in slide-in-from-top-2">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>

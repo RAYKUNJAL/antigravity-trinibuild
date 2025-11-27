@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { generatePromoterContract } from '../services/geminiService';
 import { legalService } from '../services/legalService';
 
+import { supabase } from '../services/supabaseClient';
+
 export const PromoterOnboarding: React.FC = () => {
    const navigate = useNavigate();
    const [step, setStep] = useState(1);
@@ -39,22 +41,34 @@ export const PromoterOnboarding: React.FC = () => {
       setStep(step + 1);
    };
 
-   const handleFinish = () => {
+   const handleFinish = async () => {
       setLoading(true);
-      setTimeout(() => {
-         // Save Promoter Status
-         const promoterData = {
-            id: `promoter-${Date.now()}`,
-            ...formData,
-            status: 'active',
-            contractSigned: true,
-            joinedAt: new Date().toISOString()
-         };
-         localStorage.setItem('promoter_account', JSON.stringify(promoterData));
+      try {
+         const { data: { user } } = await supabase.auth.getUser();
+         if (!user) throw new Error("Not authenticated");
+
+         // Upload ID file (Mocking upload for now)
+         // const idFileUrl = await uploadFile(formData.idFile);
+
+         const { error } = await supabase
+            .from('promoter_applications')
+            .insert({
+               user_id: user.id,
+               organization_name: formData.businessName,
+               event_types: [], // Can add field to form later if needed
+               experience_years: '0', // Default or add field
+               status: 'pending'
+            });
+
+         if (error) throw error;
 
          setLoading(false);
          setStep(4); // Success
-      }, 2000);
+      } catch (error) {
+         console.error("Submission failed", error);
+         alert("Failed to submit application. Please try again.");
+         setLoading(false);
+      }
    };
 
    return (
