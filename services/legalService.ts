@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient';
+
 export interface LegalDocument {
     id: string;
     type: 'contractor_agreement' | 'liability_waiver' | 'affiliate_terms' | 'privacy_policy' | 'terms_of_service';
@@ -14,7 +16,8 @@ export interface SignedDocument {
 }
 
 export const legalService = {
-    // Simulate fetching a document template
+
+    // Get a document template (Still mocked for content as we don't have a CMS yet, but could be DB driven later)
     getDocument: async (type: LegalDocument['type']): Promise<LegalDocument> => {
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -22,37 +25,58 @@ export const legalService = {
                     id: `${type}_v1.0`,
                     type,
                     version: '1.0.0',
-                    content: 'This is a placeholder for the full legal text...' // In a real app, fetch from backend
+                    content: 'This is a placeholder for the full legal text. In a production environment, this would be fetched from a CMS or database.'
                 });
             }, 500);
         });
     },
 
-    // Simulate signing a document via DocuSign
+    // Sign a document and save to Supabase
     signDocument: async (userId: string, documentType: LegalDocument['type'], signatureData: string): Promise<SignedDocument> => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const signedDoc: SignedDocument = {
-                    documentId: `${documentType}_v1.0`,
-                    userId,
-                    signedAt: new Date().toISOString(),
-                    signature: signatureData,
-                    ipAddress: '192.168.1.1' // Mock IP
-                };
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
 
-                // Persist to local storage for demo purposes
-                const existingSignatures = JSON.parse(localStorage.getItem('trinibuild_signatures') || '[]');
-                existingSignatures.push(signedDoc);
-                localStorage.setItem('trinibuild_signatures', JSON.stringify(existingSignatures));
+        const { data, error } = await supabase
+            .from('signed_agreements')
+            .insert({
+                user_id: user.id,
+                document_type: documentType,
+                document_version: '1.0.0', // Should match getDocument version
+                signature_data: signatureData,
+                ip_address: '127.0.0.1' // In a real app, get this from edge function or headers
+            })
+            .select()
+            .single();
 
-                resolve(signedDoc);
-            }, 1500);
-        });
+        if (error) {
+            console.error('Error signing document:', error);
+            throw error;
+        }
+
+        return {
+            documentId: `${data.document_type}_v${data.document_version}`,
+            userId: data.user_id,
+            signedAt: data.signed_at,
+            signature: data.signature_data,
+            ipAddress: data.ip_address
+        };
     },
 
-    // Check if a user has signed a specific document
-    hasSigned: (userId: string, documentType: LegalDocument['type']): boolean => {
-        const signatures = JSON.parse(localStorage.getItem('trinibuild_signatures') || '[]');
-        return signatures.some((s: SignedDocument) => s.userId === userId && s.documentId.startsWith(documentType));
+    // Check if a user has signed a specific document in Supabase
+    hasSigned: async (userId: string, documentType: LegalDocument['type']): Promise<boolean> => {
+        const { data, error } = await supabase
+            .from('signed_agreements')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('document_type', documentType)
+            .limit(1);
+
+        if (error) {
+            console.error('Error checking signature:', error);
+            return false;
+        }
+
+        return data && data.length > 0;
     }
 };
+
