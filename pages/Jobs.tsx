@@ -150,7 +150,7 @@ export const Jobs: React.FC = () => {
                      {/* Main List */}
                      <div className="lg:col-span-2 space-y-6">
                         <div className="flex justify-between items-center">
-                           <h2 className="text-xl font-bold text-gray-900">{selectedCategory === 'All' : 'Top Rated Pros' : `${selectedCategory} Pros`}</h2>
+                           <h2 className="text-xl font-bold text-gray-900">{selectedCategory === 'All' ? 'Top Rated Pros' : `${selectedCategory} Pros`}</h2>
                            <span className="text-sm text-gray-500">{filteredPros.length} results</span>
                         </div>
 
