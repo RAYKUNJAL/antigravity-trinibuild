@@ -13,6 +13,7 @@ import { orderService, OrderResponse } from '../services/orderService';
 import { documentService, DocumentRequest } from '../services/documentService';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '../components/ChatWidget';
+import { storeService } from '../services/storeService';
 
 export const Dashboard: React.FC = () => {
   // App Context State
@@ -81,10 +82,6 @@ export const Dashboard: React.FC = () => {
   ];
 
   // Handlers
-  import { storeService } from '../services/storeService';
-  // ... existing imports
-
-  // ... inside component
   const [storeId, setStoreId] = useState<string | null>(null);
 
   // ... 
