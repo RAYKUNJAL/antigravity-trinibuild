@@ -81,118 +81,43 @@ export const Dashboard: React.FC = () => {
   ];
 
   // Handlers
+  import { storeService } from '../services/storeService';
+  // ... existing imports
+
+  // ... inside component
+  const [storeId, setStoreId] = useState<string | null>(null);
+
+  // ... 
+
+  // Handlers
   const handleOpenAdd = () => {
     setEditingProduct(null);
-    setFormData({ name: '', price: 0, stock: 0, description: '', image: '', status: 'active' });
+    setFormData({ title: '', price: 0, stock: 0, description: '', images: [], status: 'active' } as any); // Cast for now as interface mismatch might exist
     setIsProductModalOpen(true);
   };
 
   const handleOpenEdit = (product: Product) => {
     setEditingProduct(product);
-    setFormData({ ...product });
+    setFormData({
+      ...product,
+      name: product.title, // Map title to name for form
+      image: product.images[0] // Map first image
+    } as any);
     setIsProductModalOpen(true);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (window.confirm('Delete this product?')) {
-      setProducts(products.filter(p => p.id !== id));
+      const success = await storeService.deleteProduct(id);
+      if (success) {
+        setProducts(products.filter(p => p.id !== id));
+      } else {
+        alert("Failed to delete product");
+      }
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, image: reader.result as string }));
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleAnalyzeImage = async () => {
-    if (!formData.image) return;
-    setAnalyzing(true);
-    try {
-      const data = await analyzeProductPhoto(formData.image);
-      setFormData(prev => ({
-        ...prev,
-        name: data.name || prev.name,
-        price: data.price || prev.price,
-        description: data.description || prev.description
-      }));
-    } catch (error) {
-      console.error(error);
-      alert("Analysis failed");
-    } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  const handleGenerateDescription = async () => {
-    if (!formData.name) return alert("Enter name first");
-    setGeneratingDescription(true);
-    try {
-      const desc = await generateProductDescription(formData.name, formData.price || 0);
-      setFormData(prev => ({ ...prev, description: desc }));
-    } catch (e) { console.error(e); }
-    finally { setGeneratingDescription(false); }
-  };
-
-  const handleGenerateImage = async () => {
-    if (!formData.name) return alert("Enter name first");
-    setGeneratingImage(true);
-    try {
-      const img = await generateProductImage(formData.name);
-      setFormData(prev => ({ ...prev, image: img }));
-    } catch (e) { console.error(e); }
-    finally { setGeneratingImage(false); }
-  };
-
-  const handleGenerateLogo = async () => {
-    if (!logoPrompt.name) return;
-    setGeneratingLogo(true);
-    try {
-      const logo = await generateStoreLogo(logoPrompt.name, logoPrompt.type);
-      setGeneratedLogo(logo);
-    } catch (e) { console.error(e); }
-    finally { setGeneratingLogo(false); }
-  };
-
-  const handleGenerateDocument = async () => {
-    if (!isPro) return; // Double check
-    setIsGeneratingDoc(true);
-    try {
-      const request: DocumentRequest = {
-        type: docType,
-        userId: 'current-user', // Mock
-        data: {
-          businessName: logoPrompt.name,
-          income: vendorOrders.reduce((acc, o) => acc + o.total, 0),
-          address: 'Trinidad & Tobago' // Mock
-        }
-      };
-      const url = await documentService.generateDocument(request);
-      setDocSuccess(`Successfully generated ${docType.replace('_', ' ')}. Ready for download.`);
-    } catch (error) {
-      console.error("Doc gen failed", error);
-      alert("Failed to generate document");
-    } finally {
-      setIsGeneratingDoc(false);
-    }
-  };
-
-  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    try {
-      // Optimistic update
-      setVendorOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      await orderService.updateOrderStatus(orderId, newStatus);
-    } catch (e) {
-      console.error("Failed to update status", e);
-      alert("Failed to update status");
-    }
-  };
+  // ...
 
   // Load Store Data on Mount
   useEffect(() => {
@@ -202,45 +127,24 @@ export const Dashboard: React.FC = () => {
       setIsPro(true);
     }
 
-    const storedStore = localStorage.getItem('trinibuild_active_store');
-    if (storedStore) {
-      const parsedStore = JSON.parse(storedStore);
-      setLogoPrompt({ name: parsedStore.name, type: parsedStore.type || 'Store' });
-      setProducts(parsedStore.products || []);
-      setWhatsappNumber(parsedStore.whatsapp || '');
-    }
+    const loadStore = async () => {
+      const store = await storeService.getMyStore();
+      if (store) {
+        setStoreId(store.id);
+        setLogoPrompt({ name: store.businessName, type: 'Store' });
+        setProducts(store.products || []);
+        setWhatsappNumber(store.whatsapp || '');
+      }
+    };
+    loadStore();
 
     // Fetch Orders
     const fetchOrders = async () => {
       const orders = await orderService.getVendorOrders();
-      if (orders.length > 0) {
-        setVendorOrders(orders);
-      } else {
-        // Mock data for demo
-        setVendorOrders([
-          { id: '1', orderNumber: 'ORD-1234', total: 150.00, status: 'PENDING', customerName: 'John Doe', createdAt: new Date().toISOString(), deliveryOption: 'standard', paymentMethod: 'CASH_ON_DELIVERY' },
-          { id: '2', orderNumber: 'ORD-5678', total: 450.50, status: 'PROCESSING', customerName: 'Jane Smith', createdAt: new Date(Date.now() - 86400000).toISOString(), deliveryOption: 'pickup', paymentMethod: 'CASH_ON_DELIVERY' },
-          { id: '3', orderNumber: 'ORD-9012', total: 1200.00, status: 'COMPLETED', customerName: 'Mike Ross', createdAt: new Date(Date.now() - 172800000).toISOString(), deliveryOption: 'express', paymentMethod: 'CASH_ON_DELIVERY' },
-        ]);
-      }
+      setVendorOrders(orders);
     };
     fetchOrders();
   }, []);
-
-  // Save Store Data Helper
-  const saveStoreToLocal = (updatedProducts: Product[]) => {
-    const storedStore = localStorage.getItem('trinibuild_active_store');
-    if (storedStore) {
-      const parsedStore = JSON.parse(storedStore);
-      const updatedStore = { ...parsedStore, products: updatedProducts };
-      localStorage.setItem('trinibuild_active_store', JSON.stringify(updatedStore));
-
-      // Also update in the main list
-      const allStores = JSON.parse(localStorage.getItem('trinibuild_stores') || '[]');
-      const newAllStores = allStores.map((s: any) => s.id === parsedStore.id ? updatedStore : s);
-      localStorage.setItem('trinibuild_stores', JSON.stringify(newAllStores));
-    }
-  };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,25 +158,34 @@ export const Dashboard: React.FC = () => {
       } catch (e) { console.log("Auto-image failed"); }
     }
 
-    const product: Product = {
-      id: editingProduct?.id || Date.now().toString(),
-      name: formData.name,
+    const productData = {
+      title: formData.name,
       price: Number(formData.price),
-      stock: Number(formData.stock || 0),
-      description: formData.description || '',
-      image: finalImage || '',
-      status: formData.status || 'active'
+      description: formData.description,
+      images: finalImage ? [finalImage] : [],
+      category: 'General'
     };
 
-    let updatedProducts;
-    if (editingProduct) {
-      updatedProducts = products.map(p => p.id === product.id ? product : p);
-    } else {
-      updatedProducts = [...products, product];
+    try {
+      if (editingProduct) {
+        const updated = await storeService.updateProduct(editingProduct.id, productData);
+        if (updated) {
+          setProducts(products.map(p => p.id === updated.id ? updated : p));
+        }
+      } else {
+        if (storeId) {
+          const newProduct = await storeService.addProduct(storeId, productData);
+          if (newProduct) {
+            setProducts([...products, newProduct]);
+          }
+        } else {
+          alert("No store found. Please create a store first.");
+        }
+      }
+    } catch (e) {
+      console.error("Save failed", e);
+      alert("Failed to save product");
     }
-
-    setProducts(updatedProducts);
-    saveStoreToLocal(updatedProducts);
 
     setIsProductModalOpen(false);
     setIsSaving(false);
