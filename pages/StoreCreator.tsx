@@ -4,6 +4,7 @@ import { generateStoreProfile } from '../services/geminiService';
 import { Business } from '../types';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { legalService } from '../services/legalService';
+import { storeService } from '../services/storeService';
 
 // Placeholder logo URL
 const LOGO_URL = "https://trinibuild.com/wp-content/uploads/2023/05/TriniBuild-Logo.png";
@@ -93,9 +94,6 @@ export const StoreCreator: React.FC = () => {
          setLoading(false);
       }
    };
-
-   import { storeService } from '../services/storeService';
-   // ... existing imports
 
    // ... inside component
 
