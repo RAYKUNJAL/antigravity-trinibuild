@@ -120,7 +120,7 @@ export const Home: React.FC = () => {
          <section className="relative py-12 z-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                {[
-                  { title: 'Marketplace', icon: ShoppingCart, color: 'bg-blue-500', link: '/directory', desc: 'Shop local stores & products' },
+                  { title: 'Marketplace', icon: ShoppingCart, color: 'bg-blue-500', link: '/classifieds', desc: 'Shop local stores & products' },
                   { title: 'Rides', icon: Car, color: 'bg-green-500', link: '/rides', desc: 'Safe & reliable transportation' },
                   { title: 'TriniWorks', icon: Briefcase, color: 'bg-purple-500', link: '/jobs', desc: 'Hire top local professionals' },
                   { title: 'Tickets', icon: Ticket, color: 'bg-pink-500', link: '/tickets', desc: 'Events, parties & shows' },

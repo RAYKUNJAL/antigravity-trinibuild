@@ -94,36 +94,55 @@ export const StoreCreator: React.FC = () => {
       }
    };
 
-   const saveStoreData = () => {
+   import { storeService } from '../services/storeService';
+   // ... existing imports
+
+   // ... inside component
+
+   const saveStoreData = async () => {
       if (generatedStore) {
          const storeData = {
-            ...generatedStore,
-            id: `store-${Date.now()}`,
-            name: formData.name,
-            type: formData.type,
-            vibe: formData.vibe,
-            address: formData.address,
-            placeId: formData.placeId,
-            createdAt: new Date().toISOString(),
-            products: generatedStore.products || []
+            businessName: formData.name,
+            description: generatedStore.description || '',
+            location: formData.address || 'Trinidad',
+            whatsapp: '18680000000', // Default or ask user
+            // vibe: formData.vibe, // Not in Store interface yet, maybe put in description or metadata
          };
 
-         // Get existing stores or init empty array
-         const existingStores = JSON.parse(localStorage.getItem('trinibuild_stores') || '[]');
-         existingStores.push(storeData);
-         localStorage.setItem('trinibuild_stores', JSON.stringify(existingStores));
+         try {
+            const newStore = await storeService.createStore(storeData);
+            if (newStore) {
+               // We can still save to local storage for immediate access if needed, 
+               // but Dashboard now fetches from API.
+               // localStorage.setItem('trinibuild_active_store', JSON.stringify(newStore));
 
-         // Also set as "current active store" for the dashboard
-         localStorage.setItem('trinibuild_active_store', JSON.stringify(storeData));
+               // If we generated products, we should add them too
+               if (generatedStore.products) {
+                  for (const prod of generatedStore.products) {
+                     await storeService.addProduct(newStore.id, {
+                        title: prod.name,
+                        description: prod.description,
+                        price: prod.price,
+                        images: [prod.image], // Note: generatedStore has 'image', Product has 'images'
+                        category: 'General'
+                     });
+                  }
+               }
+            }
+         } catch (e) {
+            console.error("Failed to create store", e);
+            alert("Failed to create store. Please try again.");
+            throw e; // Stop progression
+         }
       }
    };
 
-   const handleComplete = () => {
+   const handleComplete = async () => {
       if (!hasSigned) {
          setShowLegalModal(true);
          return;
       }
-      saveStoreData();
+      await saveStoreData();
       // Trigger Celebration Mode
       setStep(3);
    };
@@ -134,7 +153,7 @@ export const StoreCreator: React.FC = () => {
          await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via StoreCreator');
          setHasSigned(true);
          setShowLegalModal(false);
-         saveStoreData();
+         await saveStoreData();
          setStep(3);
       } catch (error) {
          console.error("Signing failed", error);

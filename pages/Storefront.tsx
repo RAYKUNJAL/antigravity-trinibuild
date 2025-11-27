@@ -118,15 +118,18 @@ export const Storefront: React.FC = () => {
     try {
       // Prepare Order Data
       const orderData: CreateOrderData = {
+        storeId: storeData.id,
         items: cartItems.map((item: any) => ({
           productId: item.id.toString(),
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          name: item.name // Pass name for display in order history
         })),
         shippingAddress: {
           street: shippingDetails.address,
           city: shippingDetails.city,
-          phone: shippingDetails.phone
+          phone: shippingDetails.phone,
+          name: shippingDetails.name
         },
         paymentMethod: 'CASH_ON_DELIVERY', // Hardcoded for now as per requirement
         deliveryOption: deliveryOption,

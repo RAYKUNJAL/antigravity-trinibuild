@@ -13,13 +13,13 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
             <div className="bg-white/90 p-3 rounded-lg inline-block mb-4">
-              <img 
-                src={LOGO_URL} 
-                alt="TriniBuild" 
+              <img
+                src={LOGO_URL}
+                alt="TriniBuild"
                 className="h-10 w-auto"
                 onError={(e) => {
-                   e.currentTarget.style.display = 'none';
-                   e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-2xl text-trini-black">Trini<span class="text-trini-red">Build</span></span>';
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-2xl text-trini-black">Trini<span class="text-trini-red">Build</span></span>';
                 }}
               />
             </div>
@@ -30,12 +30,12 @@ export const Footer: React.FC = () => {
               <MapPin className="h-3 w-3 mr-1" /> Port of Spain, Trinidad
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Platform</h3>
             <ul className="mt-4 space-y-4">
               <li><Link to="/directory" className="text-base text-gray-400 hover:text-white">Business Directory</Link></li>
-              <li><Link to="/directory" className="text-base text-gray-400 hover:text-white">Marketplace</Link></li>
+              <li><Link to="/classifieds" className="text-base text-gray-400 hover:text-white">Marketplace</Link></li>
               <li><Link to="/rides" className="text-base text-gray-400 hover:text-white">Rideshare & Delivery</Link></li>
               <li><Link to="/jobs" className="text-base text-gray-400 hover:text-white">Jobs Board</Link></li>
             </ul>

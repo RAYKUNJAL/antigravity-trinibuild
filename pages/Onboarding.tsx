@@ -13,7 +13,7 @@ export const Onboarding: React.FC = () => {
   const [isSigning, setIsSigning] = useState(false);
   const [hasSigned, setHasSigned] = useState(false);
 
-  const totalSteps = intent === 'sell' ? 4 : 3; // Increased steps for legal
+  const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
   const handleSign = async () => {
@@ -33,9 +33,7 @@ export const Onboarding: React.FC = () => {
       // Save intent immediately
       localStorage.setItem('user_intent', intent);
 
-      if (intent === 'sell') {
-        setStep(2);
-      } else if (intent === 'work') {
+      if (intent === 'work') {
         navigate('/work/profile');
       } else {
         setStep(2);
@@ -47,18 +45,17 @@ export const Onboarding: React.FC = () => {
           localStorage.setItem('draft_business_name', businessName);
           setStep(3);
         }
-      } else {
+      } else if (intent === 'buy') {
         if (location.trim()) {
           localStorage.setItem('user_location', location);
         }
-        setStep(3);
+        // Buyers skip legal signing for now or have a simpler flow
+        navigate('/directory');
       }
     } else if (step === 3) {
-      // Final Step Logic
+      // Final Step Logic (Merchant Legal)
       if (intent === 'sell') {
         navigate(`/create-store?claim_name=${encodeURIComponent(businessName)}`);
-      } else {
-        navigate('/directory');
       }
     }
   };
