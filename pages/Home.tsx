@@ -34,7 +34,7 @@ export const Home: React.FC = () => {
             <div
                className="absolute inset-0 z-0"
                style={{
-                  backgroundImage: "url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?q=80&w=2070&auto=format&fit=crop')", // Tropical/Construction vibe
+                  backgroundImage: "url('/trini-market-hero.jpg')", // Tropical/Construction vibe
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   transform: `translateY(${offset * 0.5}px)`,
@@ -51,41 +51,25 @@ export const Home: React.FC = () => {
                   <img src="/trinibuild-logo.png" alt="TriniBuild Logo" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
                </div>
 
-               {/* NLP Headline - Pain Point: Reliability/Struggle */}
+               {/* Hero Content */}
                <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-white mb-6 leading-tight tracking-tight drop-shadow-2xl">
-                  Stop Struggling with <span className="text-trini-red">Unreliable Service.</span><br />
-                  <span className="text-trini-gold">Get It Done Right.</span>
+                  TriniBuild: <span className="text-trini-red">For We,</span> <span className="text-trini-gold">By We</span>
                </h1>
 
                <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
-                  The only app in T&T that verifies every seller, driver, and worker for your safety.
+                  Free Websites for Everyone. No Credit Card Required. Your digital home for everything from marketplaces to job boards. Start your business today with our free tier—list up to 10 items at no cost. Just we own ting, finally brought up to modern standards.
                </p>
 
-               {/* Intent Selector */}
-               <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-3xl max-w-4xl mx-auto shadow-2xl">
-                  <p className="text-white font-bold mb-4 uppercase tracking-wider text-sm">What do you need today?</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     <button onClick={() => handleIntent('/classifieds')} className="p-4 bg-white hover:bg-gray-50 rounded-xl transition-all hover:scale-105 group text-left">
-                        <ShoppingCart className="h-6 w-6 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="block font-bold text-gray-900">Buy Something</span>
-                        <span className="text-xs text-gray-500">Verified Stores</span>
-                     </button>
-                     <button onClick={() => handleIntent('/rides')} className="p-4 bg-white hover:bg-gray-50 rounded-xl transition-all hover:scale-105 group text-left">
-                        <Car className="h-6 w-6 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="block font-bold text-gray-900">Get a Ride</span>
-                        <span className="text-xs text-gray-500">Safe & Tracked</span>
-                     </button>
-                     <button onClick={() => handleIntent('/jobs')} className="p-4 bg-white hover:bg-gray-50 rounded-xl transition-all hover:scale-105 group text-left">
-                        <Briefcase className="h-6 w-6 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="block font-bold text-gray-900">Hire a Pro</span>
-                        <span className="text-xs text-gray-500">Vetted Workers</span>
-                     </button>
-                     <button onClick={() => handleIntent('/tickets')} className="p-4 bg-white hover:bg-gray-50 rounded-xl transition-all hover:scale-105 group text-left">
-                        <Ticket className="h-6 w-6 text-pink-600 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="block font-bold text-gray-900">Buy Tickets</span>
-                        <span className="text-xs text-gray-500">No Scalpers</span>
-                     </button>
-                  </div>
+               {/* CTAs */}
+               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                  <Link to="/auth?mode=signup" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center">
+                     Start for Free Today <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                  <button onClick={() => {
+                     document.getElementById('ecosystem')?.scrollIntoView({ behavior: 'smooth' });
+                  }} className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-lg shadow-lg hover:bg-white/20 transition-all hover:scale-105 flex items-center justify-center">
+                     Explore All Our Features <ChevronRight className="ml-2 h-5 w-5" />
+                  </button>
                </div>
 
                {/* Trust Badges */}
@@ -108,11 +92,18 @@ export const Home: React.FC = () => {
             <AdSpot page="home" slot="top" />
          </div>
 
-         {/* Bento Grid Services Section */}
-         <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-               <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">Everything You Need. One Platform.</h2>
-               <p className="text-gray-500 max-w-2xl mx-auto">We've connected the entire island. No more jumping between Facebook, WhatsApp, and random websites.</p>
+         {/* Ecosystem Section */}
+         <section id="ecosystem" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+               <h2 className="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Everything You Need, Right Here in T&T</h2>
+               <p className="text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
+                  With TriniBuild, we put all the pieces together. Want to sell your goods? Open a marketplace store. Need to list your property? We got a real estate hub. Looking to offer rides or find a job? It’s all here, easy as doubles on a Saturday morning. One login, one platform, and all the tools that get you moving.
+               </p>
+               <div className="mt-8">
+                  <Link to="/auth?mode=signup" className="inline-flex items-center text-trini-red font-bold text-lg hover:underline">
+                     Join the Movement <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[600px]">
@@ -126,7 +117,7 @@ export const Home: React.FC = () => {
                         <ShoppingCart className="h-6 w-6" />
                      </div>
                      <h3 className="text-3xl font-bold mb-2">Marketplace</h3>
-                     <p className="text-gray-200 mb-4">Scared of Scammers? Shop Verified Stores Only.</p>
+                     <p className="text-gray-200 mb-4">Open your free store today. List up to 10 items for free. Shop Verified.</p>
                      <span className="inline-flex items-center font-bold text-blue-300 group-hover:text-white transition-colors">Start Shopping <ArrowRight className="ml-2 h-4 w-4" /></span>
                   </div>
                </div>
@@ -209,42 +200,32 @@ export const Home: React.FC = () => {
             </div>
          </div>
 
-         {/* Value Proposition - Pain Points */}
-         <section className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                  <div className="text-center group">
-                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 text-trini-red mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-red-100">
-                        <ShieldCheck className="h-10 w-10" />
-                     </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-3">Safety First</h3>
-                     <p className="text-gray-500 leading-relaxed">We check IDs so you don't have to worry. Every driver and seller is verified.</p>
-                  </div>
-                  <div className="text-center group">
-                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 text-blue-600 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-blue-100">
-                        <Zap className="h-10 w-10" />
-                     </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-3">Lightning Fast</h3>
-                     <p className="text-gray-500 leading-relaxed">Island-wide delivery in 24 hours. Get what you need, when you need it.</p>
-                  </div>
-                  <div className="text-center group">
-                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-50 text-purple-600 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-purple-100">
-                        <FileText className="h-10 w-10" />
-                     </div>
-                     <h3 className="text-xl font-bold text-gray-900 mb-3">Less Paperwork</h3>
-                     <p className="text-gray-500 leading-relaxed">Our AI handles the boring stuff. Job letters, invoices, and contracts in seconds.</p>
+         {/* Pain Points Section */}
+         <section className="py-24 bg-white relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+               <div className="bg-gray-50 rounded-3xl p-8 md:p-16 shadow-xl border border-gray-100">
+                  <div className="max-w-4xl mx-auto text-center">
+                     <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-8">
+                        We Know the Struggle: That’s Why We Made TriniBuild
+                     </h2>
+                     <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+                        Look, we know how it goes in T&T. Banking’s a hassle. Getting a website feels like a big-company thing. And sometimes it feels like nobody building nothing for we. Well, that’s why we built this. On TriniBuild, you don’t need a credit card to get started. Get a free website and list your first 10 items on us. We set you up as your own boss and give you the tools to prove your income, handle your business, and do it all ‘for we, by we.’
+                     </p>
+                     <Link to="/auth?mode=signup" className="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg shadow-lg hover:bg-gray-800 transition-all hover:scale-105">
+                        Build My Free Page Now <ArrowRight className="ml-2 h-5 w-5" />
+                     </Link>
                   </div>
                </div>
             </div>
-         </section>
+         </section >
 
          {/* Mid Ad Spot (Preserved) */}
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+         < div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" >
             <AdSpot page="home" slot="bottom" />
-         </div>
+         </div >
 
          {/* AI Paperwork Assistant - Lead Magnet */}
-         <section className="py-20 bg-indigo-900 relative overflow-hidden">
+         < section className="py-20 bg-indigo-900 relative overflow-hidden" >
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')] opacity-10"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
                <div className="md:w-1/2 text-white">
@@ -265,7 +246,7 @@ export const Home: React.FC = () => {
                         }}
                         className="px-8 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-50 transition-all hover:scale-105 flex items-center justify-center"
                      >
-                        Chat with Visa Expert <ArrowRight className="ml-2 h-5 w-5" />
+                        Chat with your business expert <ArrowRight className="ml-2 h-5 w-5" />
                      </button>
                   </div>
                </div>
@@ -300,22 +281,24 @@ export const Home: React.FC = () => {
                   </div>
                </div>
             </div>
-         </section>
+         </section >
 
          {/* Final CTA */}
-         <section className="py-24 bg-gray-900 relative overflow-hidden">
+         < section className="py-24 bg-gray-900 relative overflow-hidden" >
             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-               <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-8">Your Life, Upgraded.</h2>
-               <p className="text-xl text-gray-400 mb-10">Join the thousands of Trinis who are saving time and making money with TriniBuild.</p>
+               <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-8">We Made This for We People</h2>
+               <p className="text-xl text-gray-400 mb-10 leading-relaxed">
+                  This isn’t some foreign platform trying to fit into we island life. This is homegrown, just like a good pelau. We know the vibes. We know the challenges. And we built TriniBuild so that every vendor, every creative, every hustler in T&T can have their own space. This is ‘For We, By We.’
+               </p>
                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/auth" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-colors">
-                     Join TriniBuild Today
+                  <Link to="/auth?mode=signup" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                     Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                </div>
             </div>
-         </section>
+         </section >
 
-      </div>
+      </div >
    );
 };
