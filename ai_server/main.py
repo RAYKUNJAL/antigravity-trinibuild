@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
@@ -13,6 +14,15 @@ app = FastAPI(
     title="TriniBuild AI Server",
     description="AI-powered backend for TriniBuild using local LLMs via Ollama",
     version="1.0.0"
+)
+
+# Add CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Configuration
@@ -41,13 +51,17 @@ class ChatbotRequest(BaseModel):
     message: str
     context: Optional[str] = None
     persona: str = "support_bot" # support_bot, sales_agent
+    system_prompt: Optional[str] = None
 
 class AIResponse(BaseModel):
     content: str
     model_used: str
     processing_time_ms: Optional[float] = None
 
-# --- Helper Functions ---
+class GenerateRequest(BaseModel):
+    prompt: str
+    system_prompt: Optional[str] = None
+    model: Optional[str] = None
 
 # --- Helper Functions ---
 
@@ -61,7 +75,6 @@ def get_local_llm():
             from ctransformers import AutoModelForCausalLM
             logger.info("Loading local Llama model (TinyLlama)...")
             # Using TinyLlama for speed and low memory usage on standard machines
-            # You can swap this for "TheBloke/Llama-2-7B-Chat-GGUF" if you have >8GB RAM
             local_llm = AutoModelForCausalLM.from_pretrained(
                 "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
                 model_type="llama",
@@ -134,106 +147,6 @@ async def generate_job_letter(request: JobLetterRequest):
         f"They have {request.experience_years} years of experience. "
         f"Key skills: {', '.join(request.skills)}."
     )
-import os
-import logging
-import requests
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, Field
-from typing import Optional, List
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-app = FastAPI(
-    title="TriniBuild AI Server",
-    description="AI-powered backend for TriniBuild using local LLMs via Ollama",
-    version="1.0.0"
-)
-
-# Configuration
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-DEFAULT_MODEL = "llama3"
-
-# --- Pydantic Models ---
-
-class JobLetterRequest(BaseModel):
-    applicant_name: str
-    position: str
-    company_name: str
-    skills: List[str] = []
-    experience_years: int
-    tone: str = "professional" # professional, enthusiastic, confident
-
-class ListingDescriptionRequest(BaseModel):
-    title: str
-    category: str
-    features: List[str]
-    condition: str
-    price: Optional[float] = None
-    tone: str = "persuasive"
-
-class ChatbotRequest(BaseModel):
-    message: str
-    context: Optional[str] = None
-    persona: str = "support_bot" # support_bot, sales_agent
-    system_prompt: Optional[str] = None
-
-class AIResponse(BaseModel):
-    content: str
-    model_used: str
-    processing_time_ms: Optional[float] = None
-
-# --- Helper Functions ---
-
-def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "") -> str:
-    """
-    Sends a prompt to the Ollama instance and returns the generated text.
-    """
-    url = f"{OLLAMA_BASE_URL}/api/generate"
-    
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False
-    }
-    
-    if system_prompt:
-        payload["system"] = system_prompt
-
-    try:
-        logger.info(f"Sending request to Ollama: {model}")
-        response = requests.post(url, json=payload, timeout=60)
-        response.raise_for_status()
-        data = response.json()
-        return data.get("response", "")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ollama connection error: {e}")
-        # Fallback for development if Ollama isn't running
-        if os.getenv("DEV_MODE", "false").lower() == "true":
-             return f"[DEV MODE] Mock response for: {prompt[:50]}..."
-        raise HTTPException(status_code=503, detail=f"AI Service Unavailable: {str(e)}")
-
-# --- Endpoints ---
-
-@app.get("/")
-async def health_check():
-    return {"status": "ok", "service": "TriniBuild AI Server"}
-
-@app.post("/generate-job-letter", response_model=AIResponse)
-async def generate_job_letter(request: JobLetterRequest):
-    system_prompt = (
-        "You are a professional career consultant. "
-        "Write a job application letter based on the provided details. "
-        "Ensure the tone is appropriate for the Trinidad & Tobago job market."
-    )
-    
-    prompt = (
-        f"Write a {request.tone} job application letter for {request.applicant_name} "
-        f"applying for the position of {request.position} at {request.company_name}. "
-        f"They have {request.experience_years} years of experience. "
-        f"Key skills: {', '.join(request.skills)}."
-    )
 
     generated_text = query_ollama(prompt, system_prompt=system_prompt)
     
@@ -267,7 +180,7 @@ async def chatbot_reply(request: ChatbotRequest):
         elif request.persona == "support_bot":
             system_prompt = "You are TriniBuild Support Bot, a helpful assistant with a slight Trinidadian accent."
         else:
-             # Default fallback
+            # Default fallback
             system_prompt = "You are a helpful assistant."
 
     # Include context in the prompt if provided
@@ -277,11 +190,6 @@ async def chatbot_reply(request: ChatbotRequest):
     generated_text = query_ollama(full_prompt, system_prompt=system_prompt)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
-
-class GenerateRequest(BaseModel):
-    prompt: str
-    system_prompt: Optional[str] = None
-    model: Optional[str] = None
 
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
