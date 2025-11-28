@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, MapPin, Search, Filter, Clock, DollarSign, Building, ArrowRight, Plus, Star, ShieldCheck, Wrench, Zap, Droplets, Paintbrush, Truck, Camera, ChevronRight, X, CheckCircle, AlertCircle, HardHat } from 'lucide-react';
+import { Briefcase, MapPin, Search, Filter, Clock, DollarSign, Building, ArrowRight, Plus, Star, ShieldCheck, Wrench, Zap, Droplets, Paintbrush, Truck, Camera, ChevronRight, X, CheckCircle, AlertCircle, HardHat, FileText } from 'lucide-react';
 import { proService, ServicePro } from '../services/proService';
 import { ChatWidget } from '../components/ChatWidget';
 import { AdSpot } from '../components/AdSpot';
+import { JobLetterGenerator } from '../components/JobLetterGenerator';
 
 export const Jobs: React.FC = () => {
    const [activeTab, setActiveTab] = useState<'services' | 'jobs'>('services');
@@ -11,6 +12,9 @@ export const Jobs: React.FC = () => {
    const [selectedPro, setSelectedPro] = useState<ServicePro | null>(null);
    const [showQuoteModal, setShowQuoteModal] = useState(false);
    const [quoteForm, setQuoteForm] = useState({ name: '', phone: '', details: '' });
+
+   // AI Generator State
+   const [showJobLetterModal, setShowJobLetterModal] = useState(false);
 
    // Job Board State (Legacy)
    const [localJobs, setLocalJobs] = useState<any[]>([]);
@@ -220,6 +224,22 @@ export const Jobs: React.FC = () => {
                </div>
             ) : (
                <div className="animate-in fade-in slide-in-from-bottom-4">
+                  {/* AI Tool Banner */}
+                  <div className="bg-gradient-to-r from-trini-teal to-teal-800 rounded-2xl p-6 mb-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+                     <div>
+                        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                           <FileText className="h-6 w-6" /> Need a Job Letter?
+                        </h2>
+                        <p className="text-teal-100">Use our AI to write a professional application letter in seconds.</p>
+                     </div>
+                     <button
+                        onClick={() => setShowJobLetterModal(true)}
+                        className="bg-white text-trini-teal px-6 py-3 rounded-full font-bold hover:bg-teal-50 transition-colors shadow-md whitespace-nowrap"
+                     >
+                        Generate Letter
+                     </button>
+                  </div>
+
                   {/* Legacy Job Board UI */}
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center mb-8">
                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Looking for Employment?</h2>
@@ -305,6 +325,8 @@ export const Jobs: React.FC = () => {
                </div>
             </div>
          )}
+
+         <JobLetterGenerator isOpen={showJobLetterModal} onClose={() => setShowJobLetterModal(false)} />
 
          <ChatWidget mode="service_expert" />
       </div>

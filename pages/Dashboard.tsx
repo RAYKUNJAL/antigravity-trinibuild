@@ -14,6 +14,7 @@ import { documentService, DocumentRequest } from '../services/documentService';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '../components/ChatWidget';
 import { storeService } from '../services/storeService';
+import { ListingDescriptionGenerator } from '../components/ListingDescriptionGenerator';
 
 export const Dashboard: React.FC = () => {
   // App Context State
@@ -59,6 +60,9 @@ export const Dashboard: React.FC = () => {
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
   const [docSuccess, setDocSuccess] = useState<string | null>(null);
 
+  // AI Generator State
+  const [showDescriptionGenerator, setShowDescriptionGenerator] = useState(false);
+
   // Agent Test State
   const [showAgentTest, setShowAgentTest] = useState(false);
 
@@ -97,10 +101,26 @@ export const Dashboard: React.FC = () => {
     setEditingProduct(product);
     setFormData({
       ...product,
-      name: product.title, // Map title to name for form
-      image: product.images[0] // Map first image
+      name: product.name,
+      image: product.image
     } as any);
     setIsProductModalOpen(true);
+  };
+
+  const handleStatusUpdate = async (orderId: string, status: string) => {
+    setVendorOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+  };
+
+  const handleGenerateDocument = async () => {
+    setIsGeneratingDoc(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setDocSuccess(`Your ${docType.replace(/_/g, ' ')} has been generated successfully.`);
+    } catch (e) {
+      alert("Failed to generate document");
+    } finally {
+      setIsGeneratingDoc(false);
+    }
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -113,8 +133,6 @@ export const Dashboard: React.FC = () => {
       }
     }
   };
-
-  // ...
 
   // Load Store Data on Mount
   useEffect(() => {
@@ -762,6 +780,23 @@ export const Dashboard: React.FC = () => {
                 <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
                 <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Price</label>
                 <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
+
+                <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Description</label>
+                <div className="relative">
+                  <textarea
+                    value={formData.description || ''}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 min-h-[100px]"
+                    placeholder="Describe your product..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDescriptionGenerator(true)}
+                    className="absolute top-2 right-2 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-md font-bold flex items-center hover:bg-purple-200 transition-colors"
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" /> AI Write
+                  </button>
+                </div>
               </div>
               <div className="flex justify-end pt-4">
                 <button type="submit" className="bg-trini-red text-white px-6 py-2 rounded font-bold">Save</button>
@@ -770,6 +805,11 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
+      <ListingDescriptionGenerator
+        isOpen={showDescriptionGenerator}
+        onClose={() => setShowDescriptionGenerator(false)}
+        onSelect={(desc) => setFormData({ ...formData, description: desc })}
+      />
     </div>
   );
 };
