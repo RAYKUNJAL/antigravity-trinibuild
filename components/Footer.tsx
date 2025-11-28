@@ -4,7 +4,7 @@ import { Facebook, Twitter, Instagram, Mail, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Placeholder logo URL - Replace with your actual logo path
-const LOGO_URL = "https://trinibuild.com/wp-content/uploads/2023/05/TriniBuild-Logo.png";
+const LOGO_URL = "/trinibuild-logo.png";
 
 export const Footer: React.FC = () => {
   return (
@@ -61,12 +61,12 @@ export const Footer: React.FC = () => {
               <li className="flex items-center text-gray-400 pt-2">
                 <Mail className="h-5 w-5 mr-2" /> support@trinibuild.tt
               </li>
-              <div className="flex space-x-6 mt-4">
-                <a href="#" className="text-gray-400 hover:text-white"><Facebook className="h-6 w-6" /></a>
-                <a href="#" className="text-gray-400 hover:text-white"><Instagram className="h-6 w-6" /></a>
-                <a href="#" className="text-gray-400 hover:text-white"><Twitter className="h-6 w-6" /></a>
-              </div>
             </ul>
+            <div className="flex space-x-6 mt-4">
+              <a href="#" className="text-gray-400 hover:text-white" aria-label="Facebook"><Facebook className="h-6 w-6" /></a>
+              <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><Instagram className="h-6 w-6" /></a>
+              <a href="#" className="text-gray-400 hover:text-white" aria-label="Twitter"><Twitter className="h-6 w-6" /></a>
+            </div>
           </div>
         </div>
         <div className="mt-8 border-t border-gray-800 pt-8 text-center flex justify-between items-center">
