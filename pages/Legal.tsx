@@ -168,6 +168,9 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="prose prose-red lg:prose-lg mx-auto">
+          <div className="flex justify-center mb-8">
+            <img src="/trinibuild-logo.png" alt="TriniBuild Logo" className="h-16 w-auto" />
+          </div>
           {renderContent()}
         </div>
 
