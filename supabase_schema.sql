@@ -39,6 +39,9 @@ create table public.stores (
   category text,
   location text,
   whatsapp text,
+  bot_name text default 'TriniBuild Support Bot',
+  bot_persona text default 'support_bot',
+  bot_system_prompt text,
   status text default 'pending', -- 'pending', 'active', 'suspended'
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

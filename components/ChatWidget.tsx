@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, Sparkles, Store, Home, HardHat, Car, FileText } from 'lucide-react';
-import { chatWithTriniBot, chatWithVendorBot, chatWithRealEstateBot, chatWithServiceBot, chatWithRidesBot, chatWithPaperworkBot } from '../services/geminiService';
+import { aiService } from '../services/ai';
 
 interface Message {
   id: string;
@@ -20,6 +20,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [botSettings, setBotSettings] = useState<any>(null);
+
+  useEffect(() => {
+    if (vendorContext?.id) {
+      aiService.getStoreBotSettings(vendorContext.id).then(settings => {
+        if (settings) setBotSettings(settings);
+      });
+    }
+  }, [vendorContext]);
 
   // Initialize messages based on mode
   useEffect(() => {
@@ -33,7 +42,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
             ? "Going somewhere? I can help you find a ride or check traffic."
             : mode === 'paperwork_assistant'
               ? "Struggling with bank forms or visa letters? I can help you get the official paperwork you need."
-              : `Welcome to ${vendorContext?.name || 'our store'}! Ask me anything about our products.`;
+              : `Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about our products.`;
 
     setMessages([{ id: '1', text: initialMessage, sender: 'ai' }]);
   }, [mode, vendorContext]);
@@ -65,31 +74,31 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
     setLoading(true);
 
     try {
-      // Format history for the API (excluding the last user message which is sent as 'message')
-      const history = messages.map(m => ({
-        role: m.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: m.text }]
-      }));
+      // Construct context from history (last 5 messages)
+      const historyContext = messages.slice(-5).map(m => `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`).join('\n');
 
-      let responseText = '';
-      if (mode === 'platform') {
-        responseText = await chatWithTriniBot(userMsg.text, history);
-      } else if (mode === 'real_estate') {
-        responseText = await chatWithRealEstateBot(userMsg.text, history);
-      } else if (mode === 'service_expert') {
-        responseText = await chatWithServiceBot(userMsg.text, history);
-      } else if (mode === 'rides') {
-        responseText = await chatWithRidesBot(userMsg.text, history);
-      } else if (mode === 'paperwork_assistant') {
-        responseText = await chatWithPaperworkBot(userMsg.text, history);
-      } else {
-        responseText = await chatWithVendorBot(userMsg.text, history, vendorContext);
+      // Determine system prompt based on mode
+      let systemPrompt = "You are TriniBuild Support Bot, a helpful assistant with a slight Trinidadian accent.";
+      if (mode === 'real_estate') systemPrompt = "You are a Real Estate Assistant for TriniBuild. Help users find properties and understand the market.";
+      else if (mode === 'service_expert') systemPrompt = "You are a Service Expert. Recommend professionals (plumbers, electricians) available on TriniBuild.";
+      else if (mode === 'rides') systemPrompt = "You are a Ride Assistant. Help users find rides and check traffic conditions.";
+      else if (mode === 'paperwork_assistant') systemPrompt = "You are a Paperwork Assistant. Help users with official documents, visa letters, and bank forms.";
+      else if (vendorContext) {
+        systemPrompt = botSettings?.bot_system_prompt || `You are a sales assistant for ${vendorContext.name}. ${vendorContext.description}. Products: ${JSON.stringify(vendorContext.products)}`;
       }
 
-      const aiMsg: Message = { id: (Date.now() + 1).toString(), text: responseText, sender: 'ai' };
+      const response = await aiService.chatWithBot({
+        message: userMsg.text,
+        context: historyContext,
+        persona: botSettings?.bot_persona || 'support_bot',
+        system_prompt: systemPrompt
+      });
+
+      const aiMsg: Message = { id: (Date.now() + 1).toString(), text: response.content, sender: 'ai' };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
       console.error("Chat error", error);
+      setMessages(prev => [...prev, { id: Date.now().toString(), text: "Sorry, I'm having trouble connecting. Please try again.", sender: 'ai' }]);
     } finally {
       setLoading(false);
     }
@@ -129,7 +138,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
                 </h3>
                 <span className="flex items-center text-[10px] opacity-80">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></span>
-                  Online • Gemini 3 Pro
+                  Online • TriniBuild AI
                 </span>
               </div>
             </div>
@@ -181,7 +190,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
               </button>
             </div>
             <div className="text-center mt-2">
-              <span className="text-[10px] text-gray-400">Powered by Google Gemini</span>
+              <span className="text-[10px] text-gray-400">Powered by TriniBuild AI</span>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Storefront } from './pages/Storefront';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Settings } from './pages/Settings';
+import { StoreBotSettings } from './pages/StoreBotSettings';
 import { ChatWidget } from './components/ChatWidget';
 import { Rides } from './pages/Rides';
 import { Jobs } from './pages/Jobs';
@@ -64,6 +65,7 @@ const App: React.FC = () => {
               <Route path="/directory" element={<Directory />} />
               <Route path="/create-store" element={<StoreCreator />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/bot-settings" element={<StoreBotSettings />} />
               <Route path="/classifieds" element={<Classifieds />} />
 
               {/* Landing Pages - The "Sales" Layer */}
