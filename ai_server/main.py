@@ -49,9 +49,33 @@ class AIResponse(BaseModel):
 
 # --- Helper Functions ---
 
+# --- Helper Functions ---
+
+# Global variable for local model
+local_llm = None
+
+def get_local_llm():
+    global local_llm
+    if local_llm is None:
+        try:
+            from ctransformers import AutoModelForCausalLM
+            logger.info("Loading local Llama model (TinyLlama)...")
+            # Using TinyLlama for speed and low memory usage on standard machines
+            # You can swap this for "TheBloke/Llama-2-7B-Chat-GGUF" if you have >8GB RAM
+            local_llm = AutoModelForCausalLM.from_pretrained(
+                "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
+                model_type="llama",
+                gpu_layers=0
+            )
+            logger.info("Local model loaded successfully.")
+        except Exception as e:
+            logger.error(f"Failed to load local model: {e}")
+            return None
+    return local_llm
+
 def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "") -> str:
     """
-    Sends a prompt to the Ollama instance and returns the generated text.
+    Sends a prompt to the Ollama instance. Falls back to local ctransformers model if Ollama is down.
     """
     url = f"{OLLAMA_BASE_URL}/api/generate"
     
@@ -64,18 +88,31 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "
     if system_prompt:
         payload["system"] = system_prompt
 
+    # 1. Try Ollama
     try:
-        logger.info(f"Sending request to Ollama: {model}")
-        response = requests.post(url, json=payload, timeout=60)
+        # logger.info(f"Sending request to Ollama: {model}")
+        response = requests.post(url, json=payload, timeout=5) # Short timeout to fail fast
         response.raise_for_status()
         data = response.json()
         return data.get("response", "")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Ollama connection error: {e}")
-        # Fallback for development if Ollama isn't running
-        if os.getenv("DEV_MODE", "false").lower() == "true":
-             return f"[DEV MODE] Mock response for: {prompt[:50]}..."
-        raise HTTPException(status_code=503, detail=f"AI Service Unavailable: {str(e)}")
+    except requests.exceptions.RequestException:
+        logger.warning("Ollama not reachable. Falling back to local model.")
+    
+    # 2. Fallback to Local Model (ctransformers)
+    llm = get_local_llm()
+    if llm:
+        try:
+            full_prompt = f"<|system|>\n{system_prompt}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>"
+            logger.info("Generating with local TinyLlama...")
+            return llm(full_prompt, max_new_tokens=256)
+        except Exception as e:
+            logger.error(f"Local inference failed: {e}")
+    
+    # 3. Fallback Mock
+    if os.getenv("DEV_MODE", "false").lower() == "true":
+         return f"[DEV MODE] Mock response for: {prompt[:50]}..."
+    
+    raise HTTPException(status_code=503, detail="AI Service Unavailable (Ollama & Local failed)")
 
 # --- Endpoints ---
 
@@ -240,6 +277,20 @@ async def chatbot_reply(request: ChatbotRequest):
     generated_text = query_ollama(full_prompt, system_prompt=system_prompt)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    system_prompt: Optional[str] = None
+    model: Optional[str] = None
+
+@app.post("/generate")
+async def generate_text(request: GenerateRequest):
+    try:
+        response = query_ollama(request.prompt, model=request.model or DEFAULT_MODEL, system_prompt=request.system_prompt or "")
+        return {"content": response, "model_used": request.model or DEFAULT_MODEL}
+    except Exception as e:
+        logger.error(f"Generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

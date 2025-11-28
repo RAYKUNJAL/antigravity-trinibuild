@@ -41,10 +41,17 @@ docker push yourusername/trinibuild-ai-server
 4.  Set the **Build Command**: `pip install -r requirements.txt`
 5.  Set the **Start Command**: `uvicorn main:app --host 0.0.0.0 --port 8000`
 
-## Important: Running Ollama
-The AI Server relies on **Ollama** to run the LLM (Llama 3). You need to run Ollama as a service.
+## Important: Running AI Models (Ollama vs Local)
+The AI Server now supports two modes:
 
-1.  **Create a separate service** on Cloud Clusters for Ollama.
-2.  Use the official Ollama Docker image: `ollama/ollama`.
-3.  Once running, get its **Internal IP/URL**.
-4.  Update the `OLLAMA_BASE_URL` in your AI Server environment variables to point to this Ollama instance.
+### Mode A: Hybrid (Recommended for Performance)
+Use **Ollama** as a separate service. This is faster and handles multiple requests better.
+1.  **Create a separate service** on Cloud Clusters for Ollama (Image: `ollama/ollama`).
+2.  Get its **Internal IP/URL**.
+3.  Set `OLLAMA_BASE_URL` in your AI Server environment variables.
+
+### Mode B: Local Fallback (Easiest Setup)
+If you do not set up Ollama, the server will automatically download and run a lightweight model (`TinyLlama`) directly within the Python process using `ctransformers`.
+- **Pros**: Single deployment, no extra service needed.
+- **Cons**: Slower, uses more RAM on the application container (ensure you have at least 2GB RAM).
+- **Setup**: Just deploy the Python app (Option 2 above). No extra config needed.

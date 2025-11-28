@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, Sparkles, Store, Home, HardHat, Car, FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { aiService } from '../services/ai';
 
 interface Message {
@@ -30,8 +32,37 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
     }
   }, [vendorContext]);
 
-  // Initialize messages based on mode
+  // Load messages from localStorage on mount or mode change
   useEffect(() => {
+    const storageKey = vendorContext?.id
+      ? `chat_history_vendor_${vendorContext.id}`
+      : `chat_history_${mode}`;
+
+    const savedMessages = localStorage.getItem(storageKey);
+
+    if (savedMessages) {
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch (e) {
+        console.error('Failed to parse chat history', e);
+        initializeDefaultMessage();
+      }
+    } else {
+      initializeDefaultMessage();
+    }
+  }, [mode, vendorContext]);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      const storageKey = vendorContext?.id
+        ? `chat_history_vendor_${vendorContext.id}`
+        : `chat_history_${mode}`;
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+    }
+  }, [messages, mode, vendorContext]);
+
+  const initializeDefaultMessage = () => {
     const initialMessage = mode === 'platform'
       ? "Hi! I'm TriniBot. How can I help you grow your business today?"
       : mode === 'real_estate'
@@ -45,7 +76,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
               : `Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about our products.`;
 
     setMessages([{ id: '1', text: initialMessage, sender: 'ai' }]);
-  }, [mode, vendorContext]);
+  };
 
   // Listen for external open events
   useEffect(() => {
@@ -56,8 +87,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
       setIsOpen(true);
     };
 
-    window.addEventListener('open-chat' as any, handleOpenChat);
-    return () => window.removeEventListener('open-chat' as any, handleOpenChat);
+    window.addEventListener('open-chat', handleOpenChat);
+    return () => window.removeEventListener('open-chat', handleOpenChat);
   }, []);
 
   // Scroll to bottom
@@ -142,7 +173,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
                 </span>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded">
+            <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded" aria-label="Close chat">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -155,7 +186,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
                   ? 'bg-trini-red text-white rounded-br-none'
                   : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'
                   }`}>
-                  {msg.text}
+                  {msg.sender === 'ai' ? (
+                    <ReactMarkdown
+                      className="prose prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-gray-800 prose-pre:text-white prose-a:text-blue-600 prose-ul:list-disc prose-ol:list-decimal"
+                      remarkPlugins={[remarkGfm]}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}
@@ -185,6 +225,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
                 className="bg-trini-red text-white p-2 rounded-full hover:bg-red-700 disabled:opacity-50 disabled:scale-90 transition-all"
+                aria-label="Send message"
               >
                 <Send className="h-5 w-5 ml-0.5" />
               </button>
