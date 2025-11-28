@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { X, FileText, Loader2, Download, Copy, Check } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { aiService, JobLetterRequest } from '../services/ai';
 
 interface JobLetterGeneratorProps {
@@ -130,7 +132,7 @@ export const JobLetterGenerator: React.FC<JobLetterGeneratorProps> = ({ isOpen, 
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Tone</label>
                                 <select
                                     value={formData.tone}
-                                    onChange={e => setFormData({ ...formData, tone: e.target.value as any })}
+                                    onChange={e => setFormData({ ...formData, tone: e.target.value as JobLetterRequest['tone'] })}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-teal outline-none"
                                 >
                                     <option value="professional">Professional</option>
@@ -195,8 +197,13 @@ export const JobLetterGenerator: React.FC<JobLetterGeneratorProps> = ({ isOpen, 
                     </form>
                 ) : (
                     <div className="space-y-4">
-                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 whitespace-pre-wrap font-serif text-gray-800 leading-relaxed max-h-[50vh] overflow-y-auto">
-                            {generatedLetter}
+                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 font-serif text-gray-800 leading-relaxed max-h-[50vh] overflow-y-auto">
+                            <ReactMarkdown
+                                className="prose prose-sm max-w-none prose-p:leading-relaxed prose-ul:list-disc prose-ol:list-decimal"
+                                remarkPlugins={[remarkGfm]}
+                            >
+                                {generatedLetter}
+                            </ReactMarkdown>
                         </div>
 
                         <div className="flex gap-3">

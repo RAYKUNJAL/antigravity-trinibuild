@@ -595,7 +595,7 @@ export const Directory: React.FC = () => {
         <div className="w-full lg:w-[450px] xl:w-[500px] bg-white flex flex-col border-r border-gray-200 z-20 shadow-xl h-[45vh] lg:h-auto relative">
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
             <span>{places.length} Results Found</span>
-            <span>{mapError ? 'via Gemini AI' : (activeLocation !== 'all' ? LOCATIONS.find(z => z.id === activeLocation)?.label : 'Trinidad & Tobago')}</span>
+            <span>{mapError ? 'via TriniBuild AI' : (activeLocation !== 'all' ? LOCATIONS.find(z => z.id === activeLocation)?.label : 'Trinidad & Tobago')}</span>
           </div>
 
           <div className="flex-grow overflow-y-auto p-4 custom-scrollbar bg-gray-50">
@@ -636,7 +636,7 @@ export const Directory: React.FC = () => {
                         )}
                         {mapError && (
                           <div className="absolute top-1 right-1">
-                            <div className="bg-blue-500 text-white p-1 rounded-full shadow-sm" title="From Gemini Grounding">
+                            <div className="bg-blue-500 text-white p-1 rounded-full shadow-sm" title="From TriniBuild AI">
                               <BadgeCheck className="h-3 w-3" />
                             </div>
                           </div>
@@ -732,7 +732,7 @@ export const Directory: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 text-trini-red animate-spin mb-2" />
                   <p className="text-sm text-gray-500">
-                    {mapError ? 'Searching database via Gemini...' : 'Searching T&T\'s database...'}
+                    {mapError ? 'Searching database via TriniBuild AI...' : 'Searching T&T\'s database...'}
                   </p>
                 </div>
               )}
@@ -754,7 +754,7 @@ export const Directory: React.FC = () => {
                 <strong>Likely Cause:</strong> Your API Key is valid for AI Studio but does not have the "Maps JavaScript API" service enabled in Google Cloud Console.
               </div>
               <p className="text-sm text-gray-600 mt-6 font-medium">
-                Don't worry! Search works via the "Built-in Backend" (Gemini).
+                Don't worry! Search works via the "Built-in Backend" (TriniBuild AI).
               </p>
               <Link to="/settings" className="mt-4 inline-block bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">
                 Update Maps API Key

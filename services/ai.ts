@@ -23,7 +23,7 @@ export interface ListingDescriptionRequest {
     features: string[];
     condition: string;
     price?: number;
-    tone: 'persuasive' | 'neutral' | 'descriptive';
+    tone: 'persuasive' | 'neutral' | 'descriptive' | 'urgent';
 }
 
 export interface ChatbotRequest {
@@ -91,5 +91,22 @@ export const aiService = {
 
         if (error) return null;
         return data;
+    },
+
+    async generateText(prompt: string, system_prompt?: string, model?: string): Promise<string> {
+        const response = await fetch(`${AI_SERVER_URL}/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt, system_prompt, model }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to generate text');
+        }
+
+        const data = await response.json();
+        return data.content;
     }
 };
