@@ -38,9 +38,13 @@ export const StoreCreator: React.FC = () => {
       const claimPlaceId = searchParams.get('claim_place_id');
 
       // Check if already signed
-      if (legalService.hasSigned('current-user', 'contractor_agreement')) {
-         setHasSigned(true);
-      }
+      const checkSigned = async () => {
+         const signed = await legalService.hasSigned('current-user', 'contractor_agreement');
+         if (signed) {
+            setHasSigned(true);
+         }
+      };
+      checkSigned();
 
       // 1. Priority: URL Params (from Onboarding or Claim flow)
       if (claimName) {

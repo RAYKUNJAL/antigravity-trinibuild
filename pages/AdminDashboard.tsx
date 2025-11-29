@@ -26,7 +26,7 @@ const REVENUE_DATA = [
 ];
 
 export const AdminDashboard: React.FC = () => {
-   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations'>('overview');
+   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments'>('overview');
    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
    // Vendor Logic
@@ -229,6 +229,7 @@ export const AdminDashboard: React.FC = () => {
                {[
                   { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
                   { id: 'monetization', icon: BarChart2, label: 'Traffic & Ads' },
+                  { id: 'payments', icon: DollarSign, label: 'Payments' },
                   { id: 'content', icon: FileEdit, label: 'Content & SEO' },
                   { id: 'stores', icon: Globe, label: 'Stores' },
                   { id: 'users', icon: Users, label: 'Users & Drivers' },
@@ -240,8 +241,8 @@ export const AdminDashboard: React.FC = () => {
                      key={item.id}
                      onClick={() => setActiveView(item.id as any)}
                      className={`w-full flex items-center px-6 py-3 transition-colors border-l-4 ${activeView === item.id
-                           ? 'bg-gray-800 border-trini-red text-white'
-                           : 'border-transparent text-gray-400 hover:bg-gray-800 hover:text-white'
+                        ? 'bg-gray-800 border-trini-red text-white'
+                        : 'border-transparent text-gray-400 hover:bg-gray-800 hover:text-white'
                         }`}
                   >
                      <item.icon className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : 'mx-auto'}`} />
@@ -682,6 +683,47 @@ export const AdminDashboard: React.FC = () => {
                            <button className="w-full bg-yellow-500 text-white py-2 rounded font-bold hover:bg-yellow-600 flex items-center justify-center">
                               <Globe className="h-4 w-4 mr-2" /> Update Sitemap
                            </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* VIEW: PAYMENTS (New) */}
+               {activeView === 'payments' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6">
+                     <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-bold text-gray-900">Payment Gateway</h2>
+                        <div className="flex gap-2">
+                           <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full flex items-center border border-blue-200">
+                              PayPal: Active (Sandbox)
+                           </span>
+                           <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full flex items-center border border-green-200">
+                              WiPay: Coming Soon
+                           </span>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <p className="text-xs font-bold text-gray-500 uppercase">Total Revenue (PayPal)</p>
+                           <h3 className="text-3xl font-bold text-gray-900 mt-2">$0.00 <span className="text-sm text-gray-400 font-normal">USD</span></h3>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <p className="text-xs font-bold text-gray-500 uppercase">Pending Payouts</p>
+                           <h3 className="text-3xl font-bold text-gray-900 mt-2">$0.00 <span className="text-sm text-gray-400 font-normal">USD</span></h3>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <p className="text-xs font-bold text-gray-500 uppercase">Transaction Count</p>
+                           <h3 className="text-3xl font-bold text-gray-900 mt-2">0</h3>
+                        </div>
+                     </div>
+
+                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="p-6 border-b border-gray-200">
+                           <h3 className="font-bold text-lg text-gray-900">Recent Transactions</h3>
+                        </div>
+                        <div className="p-12 text-center text-gray-500">
+                           <p>No transactions recorded yet.</p>
                         </div>
                      </div>
                   </div>

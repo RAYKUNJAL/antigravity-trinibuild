@@ -240,7 +240,7 @@ export const Onboarding: React.FC = () => {
             )}
             {step === 1 && (
               <p className="text-center text-xs text-gray-400 mt-4">
-                Already have an account? <span className="text-trini-red font-bold cursor-pointer">Log in</span>
+                Already have an account? <Link to="/auth" className="text-trini-red font-bold cursor-pointer hover:underline">Log in</Link>
               </p>
             )}
           </div>

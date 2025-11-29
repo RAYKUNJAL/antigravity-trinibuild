@@ -1,0 +1,7 @@
+{
+  "name": "TriniBuild",
+  "description": "The premier AI-powered business directory, marketplace, and service platform for Trinidad & Tobago. Featuring local business discovery, AI store creation, and comprehensive merchant tools.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

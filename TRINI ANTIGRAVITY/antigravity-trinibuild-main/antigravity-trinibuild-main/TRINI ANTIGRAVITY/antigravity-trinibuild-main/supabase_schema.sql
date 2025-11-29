@@ -1,0 +1,137 @@
+
+-- Enable UUID extension
+create extension if not exists "uuid-ossp";
+
+-- PROFILES TABLE (Public user data)
+create table public.profiles (
+  id uuid references auth.users not null primary key,
+  email text,
+  full_name text,
+  avatar_url text,
+  role text default 'user', -- 'user', 'vendor', 'driver', 'admin'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for profiles
+alter table public.profiles enable row level security;
+
+-- Profiles Policies
+create policy "Public profiles are viewable by everyone."
+  on public.profiles for select
+  using ( true );
+
+create policy "Users can insert their own profile."
+  on public.profiles for insert
+  with check ( auth.uid() = id );
+
+create policy "Users can update own profile."
+  on public.profiles for update
+  using ( auth.uid() = id );
+
+-- STORES TABLE
+create table public.stores (
+  id uuid default uuid_generate_v4() primary key,
+  owner_id uuid references public.profiles(id) not null,
+  name text not null,
+  description text,
+  logo_url text,
+  banner_url text,
+  category text,
+  location text,
+  whatsapp text,
+  status text default 'pending', -- 'pending', 'active', 'suspended'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for stores
+alter table public.stores enable row level security;
+
+-- Stores Policies
+create policy "Stores are viewable by everyone."
+  on public.stores for select
+  using ( true );
+
+create policy "Vendors can insert their own store."
+  on public.stores for insert
+  with check ( auth.uid() = owner_id );
+
+create policy "Vendors can update their own store."
+  on public.stores for update
+  using ( auth.uid() = owner_id );
+
+-- PRODUCTS TABLE
+create table public.products (
+  id uuid default uuid_generate_v4() primary key,
+  store_id uuid references public.stores(id) not null,
+  name text not null,
+  description text,
+  price decimal(10,2) not null,
+  stock integer default 0,
+  image_url text,
+  category text,
+  status text default 'active',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for products
+alter table public.products enable row level security;
+
+-- Products Policies
+create policy "Products are viewable by everyone."
+  on public.products for select
+  using ( true );
+
+create policy "Vendors can insert products for their store."
+  on public.products for insert
+  with check ( exists ( select 1 from public.stores where id = store_id and owner_id = auth.uid() ) );
+
+create policy "Vendors can update their own products."
+  on public.products for update
+  using ( exists ( select 1 from public.stores where id = store_id and owner_id = auth.uid() ) );
+
+create policy "Vendors can delete their own products."
+  on public.products for delete
+  using ( exists ( select 1 from public.stores where id = store_id and owner_id = auth.uid() ) );
+
+-- ORDERS TABLE
+create table public.orders (
+  id uuid default uuid_generate_v4() primary key,
+  customer_id uuid references public.profiles(id) not null,
+  store_id uuid references public.stores(id) not null,
+  total decimal(10,2) not null,
+  status text default 'pending', -- 'pending', 'processing', 'completed', 'cancelled'
+  items jsonb not null, -- Store order items as JSON for simplicity
+  delivery_address text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS for orders
+alter table public.orders enable row level security;
+
+-- Orders Policies
+create policy "Users can view their own orders."
+  on public.orders for select
+  using ( auth.uid() = customer_id );
+
+create policy "Vendors can view orders for their store."
+  on public.orders for select
+  using ( exists ( select 1 from public.stores where id = store_id and owner_id = auth.uid() ) );
+
+create policy "Users can create orders."
+  on public.orders for insert
+  with check ( auth.uid() = customer_id );
+
+-- TRIGGER: Create Profile on Signup
+-- This function automatically creates a profile entry when a new user signs up via Supabase Auth
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, full_name)
+  values (new.id, new.email, new.raw_user_meta_data->>'full_name');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();

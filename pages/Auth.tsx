@@ -1,7 +1,11 @@
-
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, ArrowRight, Globe } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export const Auth: React.FC = () => {
+  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

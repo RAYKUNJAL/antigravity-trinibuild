@@ -49,15 +49,16 @@ export const DriverOnboarding: React.FC = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        // Upload license file (Mocking upload for now as storage bucket might not exist)
-        // const licenseUrl = await uploadFile(formData.licenseFile); 
+        // TODO: Implement actual file upload to Supabase Storage
+        // For now, we'll use a placeholder to allow the flow to complete
+        const licenseUrl = `https://placeholder.com/license/${user.id}/${formData.licenseFile?.name}`;
 
         const { error } = await supabase
           .from('driver_applications')
           .insert({
             user_id: user.id,
             full_name: user.user_metadata?.full_name || 'Unknown Driver',
-            phone: user.phone || '', // Try to get phone from auth
+            phone: user.phone || user.user_metadata?.phone || '',
             vehicle_type: `${formData.vehicleType} - ${formData.make} ${formData.model}`,
             license_number: formData.plate,
             status: 'pending'
