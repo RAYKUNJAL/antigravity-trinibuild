@@ -106,11 +106,11 @@ export const PromoterOnboarding: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div>
                               <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-                              <input type="email" className="w-full border border-gray-300 rounded-lg p-3" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                              <input type="email" aria-label="Email Address" className="w-full border border-gray-300 rounded-lg p-3" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                            </div>
                            <div>
                               <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
-                              <input type="tel" className="w-full border border-gray-300 rounded-lg p-3" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (868)" />
+                              <input type="tel" aria-label="Phone Number" className="w-full border border-gray-300 rounded-lg p-3" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (868)" />
                            </div>
                         </div>
                         <button

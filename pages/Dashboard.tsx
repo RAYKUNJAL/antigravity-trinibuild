@@ -16,6 +16,8 @@ import { ChatWidget } from '../components/ChatWidget';
 import { storeService } from '../services/storeService';
 import { MarketingTools } from '../components/MarketingTools';
 import { DailyRewards } from '../components/DailyRewards';
+import { BusinessExpertBot } from '../components/BusinessExpertBot';
+import { ListingDescriptionGenerator } from '../components/ListingDescriptionGenerator';
 
 export const Dashboard: React.FC = () => {
   // App Context State
@@ -442,8 +444,8 @@ export const Dashboard: React.FC = () => {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button onClick={() => handleOpenEdit(product)} className="text-indigo-600 hover:text-indigo-900 mr-4"><Edit className="h-4 w-4" /></button>
-                              <button onClick={() => handleDeleteProduct(product.id)} className="text-red-600 hover:text-red-900"><Trash2 className="h-4 w-4" /></button>
+                              <button onClick={() => handleOpenEdit(product)} className="text-indigo-600 hover:text-indigo-900 mr-4" aria-label="Edit Product"><Edit className="h-4 w-4" /></button>
+                              <button onClick={() => handleDeleteProduct(product.id)} className="text-red-600 hover:text-red-900" aria-label="Delete Product"><Trash2 className="h-4 w-4" /></button>
                             </td>
                           </tr>
                         ))}
@@ -548,7 +550,7 @@ export const Dashboard: React.FC = () => {
                                     Complete
                                   </button>
                                 )}
-                                <button className="text-gray-400 hover:text-gray-600">
+                                <button className="text-gray-400 hover:text-gray-600" aria-label="View Order Details">
                                   <ExternalLink className="h-4 w-4" />
                                 </button>
                               </div>
@@ -780,55 +782,59 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Chat Widget for Testing */}
-      {showAgentTest && (
-        <ChatWidget mode="vendor" vendorContext={storeContext} />
-      )}
+      {
+        showAgentTest && (
+          <ChatWidget mode="vendor" vendorContext={storeContext} />
+        )
+      }
 
       {/* Edit Modal (Preserved from original) */}
-      {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {/* ... Modal Content ... */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
-              <button onClick={() => setIsProductModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="h-6 w-6" /></button>
-            </div>
-            <form onSubmit={handleSaveProduct} className="p-6 space-y-6">
-              <div className="grid grid-cols-1 gap-4">
-                <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Product Name</label>
-                <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
-                <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Price</label>
-                <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
+      {
+        isProductModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              {/* ... Modal Content ... */}
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
+                <button onClick={() => setIsProductModalOpen(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close Modal"><X className="h-6 w-6" /></button>
+              </div>
+              <form onSubmit={handleSaveProduct} className="p-6 space-y-6">
+                <div className="grid grid-cols-1 gap-4">
+                  <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Product Name</label>
+                  <input type="text" value={formData.name} aria-label="Product Name" onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
+                  <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Price</label>
+                  <input type="number" value={formData.price} aria-label="Price" onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900" required />
 
-                <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Description</label>
-                <div className="relative">
-                  <textarea
-                    value={formData.description || ''}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 min-h-[100px]"
-                    placeholder="Describe your product..."
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowDescriptionGenerator(true)}
-                    className="absolute top-2 right-2 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-md font-bold flex items-center hover:bg-purple-200 transition-colors"
-                  >
-                    <Sparkles className="h-3 w-3 mr-1" /> AI Write
-                  </button>
+                  <label className="block text-sm font-bold text-gray-700 bg-white w-fit px-1">Description</label>
+                  <div className="relative">
+                    <textarea
+                      value={formData.description || ''}
+                      onChange={e => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 min-h-[100px]"
+                      placeholder="Describe your product..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDescriptionGenerator(true)}
+                      className="absolute top-2 right-2 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-md font-bold flex items-center hover:bg-purple-200 transition-colors"
+                    >
+                      <Sparkles className="h-3 w-3 mr-1" /> AI Write
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-end pt-4">
-                <button type="submit" className="bg-trini-red text-white px-6 py-2 rounded font-bold">Save</button>
-              </div>
-            </form>
+                <div className="flex justify-end pt-4">
+                  <button type="submit" className="bg-trini-red text-white px-6 py-2 rounded font-bold">Save</button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
       <ListingDescriptionGenerator
         isOpen={showDescriptionGenerator}
         onClose={() => setShowDescriptionGenerator(false)}
         onSelect={(desc) => setFormData({ ...formData, description: desc })}
       />
-    </div>
+    </div >
   );
 };

@@ -35,6 +35,7 @@ export interface Product {
   description: string;
   status?: 'active' | 'inactive';
   stock?: number;
+  category?: string;
 }
 
 export interface RealEstateListing {
