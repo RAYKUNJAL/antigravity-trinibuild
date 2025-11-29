@@ -245,6 +245,31 @@ export const generatePromoterContract = async (promoterName: string, businessNam
   return await aiService.generateText(prompt);
 };
 
+// 10b. AI Realtor Agreement Generator
+export const generateRealtorAgreement = async (realtorName: string, agencyName: string): Promise<string> => {
+  const date = new Date().toLocaleDateString();
+
+  const prompt = `Generate a legally binding "Real Estate Referral & Commission Agreement" for the TriniBuild Living platform.
+  
+  Parties:
+  1. TriniBuild Technologies Ltd. ("Platform")
+  2. ${realtorName} representing ${agencyName} ("Agent")
+  
+  Key Terms:
+  - Commission Structure:
+    - Total Commission: 3.0% of Sale Price.
+    - Platform Fee: 1.0% (to TriniBuild).
+    - Agent/Referrer Fee: 2.0% (to Agent).
+  - Payout: Upon successful closing and receipt of funds.
+  - Exclusivity: Non-exclusive (Agent can list elsewhere).
+  - Date: ${date}
+  
+  Format: Plain text with clear sections (1. Definitions, 2. Commission, 3. Obligations, 4. Signatures).
+  Keep it professional, compliant with Trinidad & Tobago Real Estate laws, and concise.`;
+
+  return await aiService.generateText(prompt);
+};
+
 // 11. Real Estate AI Agent
 export const chatWithRealEstateBot = async (message: string, history: any[]): Promise<string> => {
   const systemPrompt = `You are the TriniBuild Real Estate Assistant, a knowledgeable property expert for Trinidad & Tobago.

@@ -263,7 +263,7 @@ export const AdminDashboard: React.FC = () => {
          <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
             {/* Top Bar */}
             <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-8 sticky top-0 z-10">
-               <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="text-gray-500 hover:text-gray-700">
+               <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="text-gray-500 hover:text-gray-700" aria-label="Toggle Sidebar">
                   <Menu className="h-6 w-6" />
                </button>
 
@@ -360,15 +360,15 @@ export const AdminDashboard: React.FC = () => {
                            <div className="space-y-4">
                               <div>
                                  <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Global Meta Title</label>
-                                 <input type="text" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="TriniBuild - Trinidad Business Directory" />
+                                 <input type="text" aria-label="Global Meta Title" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="TriniBuild - Trinidad Business Directory" />
                               </div>
                               <div>
                                  <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Target Keywords (Comma Sep)</label>
-                                 <textarea rows={3} className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="trinidad business, trinidad shopping, trini food, rideshare trinidad" />
+                                 <textarea rows={3} aria-label="Target Keywords" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="trinidad business, trinidad shopping, trini food, rideshare trinidad" />
                               </div>
                               <div>
                                  <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Robots.txt</label>
-                                 <textarea rows={3} className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm font-mono" defaultValue="User-agent: * \nAllow: /" />
+                                 <textarea rows={3} aria-label="Robots.txt Content" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm font-mono" defaultValue="User-agent: * \nAllow: /" />
                               </div>
                               <button className="w-full bg-gray-900 text-white py-2 rounded font-bold text-sm hover:bg-gray-800">Update SEO Rules</button>
                            </div>
@@ -385,6 +385,7 @@ export const AdminDashboard: React.FC = () => {
                         <div className="relative w-64">
                            <input
                               type="text" placeholder="Search vendors..."
+                              aria-label="Search Vendors"
                               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
                               onChange={(e) => setSearchTerm(e.target.value)}
                            />
@@ -423,7 +424,7 @@ export const AdminDashboard: React.FC = () => {
                                        <span className={`text-xs font-bold ${vendor.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>{vendor.status}</span>
                                     </td>
                                     <td className="px-6 py-4 text-right relative">
-                                       <button onClick={() => setSelectedId(selectedId === vendor.id ? null : vendor.id)} className="text-gray-400 hover:text-gray-600">
+                                       <button onClick={() => setSelectedId(selectedId === vendor.id ? null : vendor.id)} className="text-gray-400 hover:text-gray-600" aria-label="Vendor Actions">
                                           <MoreVertical className="h-5 w-5" />
                                        </button>
 
@@ -480,7 +481,7 @@ export const AdminDashboard: React.FC = () => {
                                        <span className={`text-xs font-bold ${user.status === 'active' ? 'text-green-600' : 'text-red-600'}`}>{user.status}</span>
                                     </td>
                                     <td className="px-6 py-4 text-right relative">
-                                       <button onClick={() => setSelectedId(selectedId === user.id ? null : user.id)} className="text-gray-400 hover:text-gray-600">
+                                       <button onClick={() => setSelectedId(selectedId === user.id ? null : user.id)} className="text-gray-400 hover:text-gray-600" aria-label="User Actions">
                                           <MoreVertical className="h-5 w-5" />
                                        </button>
                                        {selectedId === user.id && (
@@ -597,12 +598,14 @@ export const AdminDashboard: React.FC = () => {
                                              setIsCampaignModalOpen(true);
                                           }}
                                           className="text-blue-600 hover:text-blue-800 mr-3"
+                                          aria-label="Edit Campaign"
                                        >
                                           <SettingsIcon className="h-4 w-4" />
                                        </button>
                                        <button
                                           onClick={() => handleDeleteCampaign(campaign.id)}
                                           className="text-red-400 hover:text-red-600"
+                                          aria-label="Delete Campaign"
                                        >
                                           <X className="h-4 w-4" />
                                        </button>
@@ -745,6 +748,7 @@ export const AdminDashboard: React.FC = () => {
                         <input
                            type="text"
                            value={blogPrompt.topic}
+                           aria-label="Blog Topic"
                            onChange={(e) => setBlogPrompt({ ...blogPrompt, topic: e.target.value })}
                            className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                            placeholder="e.g. Benefits of Ridesharing in Port of Spain"
@@ -755,6 +759,7 @@ export const AdminDashboard: React.FC = () => {
                         <input
                            type="text"
                            value={blogPrompt.keywords}
+                           aria-label="Blog Keywords"
                            onChange={(e) => setBlogPrompt({ ...blogPrompt, keywords: e.target.value })}
                            className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                            placeholder="e.g. taxi trinidad, safe rides, transport"
@@ -782,7 +787,7 @@ export const AdminDashboard: React.FC = () => {
                <div className="bg-white rounded-xl w-full max-w-2xl overflow-hidden">
                   <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
                      <h3 className="font-bold flex items-center"><ShieldAlert className="mr-2" /> Override Verification</h3>
-                     <button onClick={() => setIsVerifyModalOpen(false)}><X /></button>
+                     <button onClick={() => setIsVerifyModalOpen(false)} aria-label="Close Modal"><X /></button>
                   </div>
                   <div className="p-6">
                      <p className="mb-4 text-sm text-gray-600">Force verifying <strong>{vendorToVerify?.name}</strong> will bypass AI checks.</p>
@@ -796,7 +801,7 @@ export const AdminDashboard: React.FC = () => {
                      </div>
 
                      {/* Hidden file input for standard flow support if needed */}
-                     <input type="file" className="hidden" onChange={handleDocUpload} id="admin-doc-upload" />
+                     <input type="file" className="hidden" onChange={handleDocUpload} id="admin-doc-upload" aria-label="Upload Document" />
                   </div>
                </div>
             </div>
@@ -818,6 +823,7 @@ export const AdminDashboard: React.FC = () => {
                            <input
                               type="text"
                               value={editingCampaign.clientName}
+                              aria-label="Client Name"
                               onChange={(e) => setEditingCampaign({ ...editingCampaign, clientName: e.target.value })}
                               className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                               placeholder="e.g. Massy Motors"
@@ -828,6 +834,7 @@ export const AdminDashboard: React.FC = () => {
                            <input
                               type="text"
                               value={editingCampaign.targetUrl}
+                              aria-label="Target URL"
                               onChange={(e) => setEditingCampaign({ ...editingCampaign, targetUrl: e.target.value })}
                               className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                               placeholder="https://..."
@@ -840,6 +847,7 @@ export const AdminDashboard: React.FC = () => {
                         <input
                            type="text"
                            value={editingCampaign.videoUrl}
+                           aria-label="Video Asset URL"
                            onChange={(e) => setEditingCampaign({ ...editingCampaign, videoUrl: e.target.value })}
                            className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                            placeholder="https://storage.googleapis.com/..."
@@ -855,6 +863,7 @@ export const AdminDashboard: React.FC = () => {
                                  <input
                                     type="checkbox"
                                     checked={editingCampaign.placements?.includes(p as any)}
+                                    aria-label={"Placement " + p}
                                     onChange={() => togglePlacement(p)}
                                     className="mr-2"
                                  />
@@ -873,6 +882,7 @@ export const AdminDashboard: React.FC = () => {
                            <input
                               type="checkbox"
                               checked={editingCampaign.isPaidClient}
+                              aria-label="Paid Customer Boost"
                               onChange={(e) => setEditingCampaign({ ...editingCampaign, isPaidClient: e.target.checked })}
                               className="sr-only peer"
                            />

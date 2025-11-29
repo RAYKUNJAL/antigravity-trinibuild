@@ -250,6 +250,7 @@ export const Storefront: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search products..."
+                  aria-label="Search products"
                   className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red bg-gray-50"
                 />
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -265,6 +266,7 @@ export const Storefront: React.FC = () => {
               <button
                 className="relative p-2 text-gray-600 hover:text-trini-red transition-colors"
                 onClick={() => setIsCartOpen(true)}
+                aria-label="Shopping Cart"
               >
                 <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (
@@ -274,7 +276,7 @@ export const Storefront: React.FC = () => {
                 )}
               </button>
 
-              <button className="md:hidden p-2 text-gray-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <button className="md:hidden p-2 text-gray-600" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle Menu">
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             </div>
@@ -287,6 +289,7 @@ export const Storefront: React.FC = () => {
             <input
               type="text"
               placeholder="Search..."
+              aria-label="Search"
               className="w-full p-2 mb-3 rounded border border-gray-300 text-sm"
             />
             <button onClick={() => handleWhatsAppClick()} className="w-full flex items-center justify-center py-2 bg-green-500 text-white rounded-md font-bold mb-2">
@@ -312,7 +315,7 @@ export const Storefront: React.FC = () => {
                 <h2 className="text-lg font-medium text-gray-900">
                   {checkoutStep === 1 ? 'Shopping Cart' : checkoutStep === 2 ? 'Delivery Options' : checkoutStep === 3 ? 'Payment' : 'Order Confirmed'}
                 </h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-500">
+                <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-500" aria-label="Close Cart">
                   <X className="h-6 w-6" />
                 </button>
               </div>
@@ -347,9 +350,9 @@ export const Storefront: React.FC = () => {
                                 </div>
                                 <div className="flex-1 flex items-end justify-between text-sm">
                                   <div className="flex items-center border border-gray-300 rounded-md">
-                                    <button onClick={() => removeFromCart(item.id)} className="p-1 px-2 hover:bg-gray-100 text-gray-600"><Minus className="h-3 w-3" /></button>
+                                    <button onClick={() => removeFromCart(item.id)} className="p-1 px-2 hover:bg-gray-100 text-gray-600" aria-label="Decrease Quantity"><Minus className="h-3 w-3" /></button>
                                     <span className="px-2 font-medium">{item.quantity}</span>
-                                    <button onClick={() => addToCart(item)} className="p-1 px-2 hover:bg-gray-100 text-gray-600"><Plus className="h-3 w-3" /></button>
+                                    <button onClick={() => addToCart(item)} className="p-1 px-2 hover:bg-gray-100 text-gray-600" aria-label="Increase Quantity"><Plus className="h-3 w-3" /></button>
                                   </div>
                                 </div>
                               </div>
@@ -362,6 +365,7 @@ export const Storefront: React.FC = () => {
                           <h3 className="font-bold text-gray-900">Shipping Details</h3>
                           <input
                             type="text" placeholder="Full Name"
+                            aria-label="Full Name"
                             className="w-full p-2 border rounded text-sm"
                             value={shippingDetails.name}
                             onChange={e => setShippingDetails({ ...shippingDetails, name: e.target.value })}
@@ -369,6 +373,7 @@ export const Storefront: React.FC = () => {
                           <div className="flex gap-2">
                             <input
                               type="tel" placeholder="Phone Number"
+                              aria-label="Phone Number"
                               className="w-full p-2 border rounded text-sm"
                               value={shippingDetails.phone}
                               onChange={e => setShippingDetails({ ...shippingDetails, phone: e.target.value })}
@@ -383,6 +388,7 @@ export const Storefront: React.FC = () => {
                             <div className="flex gap-2 animate-in fade-in">
                               <input
                                 type="text" placeholder="Enter OTP (1234)"
+                                aria-label="OTP"
                                 className="w-full p-2 border rounded text-sm"
                                 value={phoneOtp}
                                 onChange={e => setPhoneOtp(e.target.value)}
@@ -396,12 +402,14 @@ export const Storefront: React.FC = () => {
 
                           <input
                             type="text" placeholder="Street Address"
+                            aria-label="Street Address"
                             className="w-full p-2 border rounded text-sm"
                             value={shippingDetails.address}
                             onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })}
                           />
                           <input
                             type="text" placeholder="City / Area"
+                            aria-label="City"
                             className="w-full p-2 border rounded text-sm"
                             value={shippingDetails.city}
                             onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })}
@@ -473,6 +481,7 @@ export const Storefront: React.FC = () => {
                         {scheduleOption === 'later' && (
                           <input
                             type="date"
+                            aria-label="Select Delivery Date"
                             className="w-full p-2 border rounded text-sm ml-8 w-[calc(100%-2rem)]"
                             onChange={(e) => setSelectedDate(e.target.value)}
                           />
@@ -494,6 +503,7 @@ export const Storefront: React.FC = () => {
                             <p className="text-xs text-gray-500 mb-1">Hold until:</p>
                             <input
                               type="date"
+                              aria-label="Select Hold Date"
                               className="w-full p-2 border rounded text-sm"
                               onChange={(e) => setSelectedDate(e.target.value)}
                             />
@@ -776,9 +786,9 @@ export const Storefront: React.FC = () => {
             <div>
               <h4 className="font-bold text-gray-900 mb-4">Follow Us</h4>
               <div className="flex space-x-4">
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors"><Facebook className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-pink-600 transition-colors"><Instagram className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-400 transition-colors"><Twitter className="h-5 w-5" /></button>
+                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors" aria-label="Facebook"><Facebook className="h-5 w-5" /></button>
+                <button className="bg-white p-2 rounded-full shadow-sm hover:text-pink-600 transition-colors" aria-label="Instagram"><Instagram className="h-5 w-5" /></button>
+                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-400 transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></button>
               </div>
             </div>
           </div>

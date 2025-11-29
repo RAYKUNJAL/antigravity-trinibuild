@@ -5,6 +5,7 @@ import { Business } from '../types';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { legalService } from '../services/legalService';
 import { storeService } from '../services/storeService';
+import { supabase } from '../services/supabaseClient';
 
 // Placeholder logo URL
 const LOGO_URL = "https://trinibuild.com/wp-content/uploads/2023/05/TriniBuild-Logo.png";
@@ -122,10 +123,10 @@ export const StoreCreator: React.FC = () => {
                if (generatedStore.products) {
                   for (const prod of generatedStore.products) {
                      await storeService.addProduct(newStore.id, {
-                        title: prod.name,
+                        name: prod.name,
                         description: prod.description,
                         price: prod.price,
-                        images: [prod.image], // Note: generatedStore has 'image', Product has 'images'
+                        image: prod.image,
                         category: 'General'
                      });
                   }
@@ -259,91 +260,80 @@ export const StoreCreator: React.FC = () => {
                            </div>
                         )}
 
-                        <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
-                              <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Business Name</label>
-                              <input
-                                 type="text"
-                                 className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-lg font-medium placeholder-gray-400 transition-all"
-                                 placeholder="e.g. Aunty May's Roti Shop"
-                                 value={formData.name}
-                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                 readOnly={claimMode}
-                              />
-                           </div>
-
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                 <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Category</label>
-                                 <div className="relative">
-                                    <select
-                                       className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-base font-medium appearance-none cursor-pointer hover:border-gray-400 transition-all"
-                                       value={formData.type}
-                                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                    >
-                                       <option value="" disabled className="text-gray-400">Select...</option>
-                                       <optgroup label="Food & Hospitality">
-                                          <option value="Restaurant">🍔 Restaurant</option>
-                                          <option value="Fast Food">🍟 Fast Food</option>
-                                          <option value="Cafe">☕ Café</option>
-                                          <option value="Bar">🍺 Bar</option>
-                                          <option value="Grocery">🛒 Grocery</option>
-                                       </optgroup>
-                                       <optgroup label="Retail">
-                                          <option value="Fashion">👗 Fashion</option>
-                                          <option value="Electronics">📱 Tech</option>
-                                          <option value="Home Garden">🏡 Home</option>
-                                          <option value="Hardware">🔨 Hardware</option>
-                                       </optgroup>
-                                       <optgroup label="Services">
-                                          <option value="Beauty">💇‍♀️ Beauty</option>
-                                          <option value="Automotive">🔧 Auto</option>
-                                          <option value="Professional">💼 Pro Services</option>
-                                       </optgroup>
-                                    </select>
-                                 </div>
-                              </div>
-
-                              <div>
-                                 <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Store Vibe</label>
-                                 <div className="relative">
-                                    <select
-                                       className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-base font-medium appearance-none cursor-pointer hover:border-gray-400 transition-all"
-                                       value={formData.vibe}
-                                       onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
-                                    >
-                                       <option value="Modern">✨ Modern & Clean</option>
-                                       <option value="Rustic">🪵 Rustic & Cozy</option>
-                                       <option value="Vibrant">🎨 Vibrant & Bold</option>
-                                       <option value="Luxury">💎 Luxury & Elegant</option>
-                                       <option value="Corporate">🏢 Corporate</option>
-                                    </select>
-                                    <Palette className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                                 </div>
+                              <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Category</label>
+                              <div className="relative">
+                                 <select
+                                    className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-base font-medium appearance-none cursor-pointer hover:border-gray-400 transition-all"
+                                    value={formData.type}
+                                    aria-label="Category"
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                 >
+                                    <option value="" disabled className="text-gray-400">Select...</option>
+                                    <optgroup label="Food & Hospitality">
+                                       <option value="Restaurant">🍔 Restaurant</option>
+                                       <option value="Fast Food">🍟 Fast Food</option>
+                                       <option value="Cafe">☕ Café</option>
+                                       <option value="Bar">🍺 Bar</option>
+                                       <option value="Grocery">🛒 Grocery</option>
+                                    </optgroup>
+                                    <optgroup label="Retail">
+                                       <option value="Fashion">👗 Fashion</option>
+                                       <option value="Electronics">📱 Tech</option>
+                                       <option value="Home Garden">🏡 Home</option>
+                                       <option value="Hardware">🔨 Hardware</option>
+                                    </optgroup>
+                                    <optgroup label="Services">
+                                       <option value="Beauty">💇‍♀️ Beauty</option>
+                                       <option value="Automotive">🔧 Auto</option>
+                                       <option value="Professional">💼 Pro Services</option>
+                                    </optgroup>
+                                 </select>
                               </div>
                            </div>
 
-                           <button
-                              onClick={handleGenerate}
-                              disabled={loading || !formData.name || !formData.type}
-                              className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-gradient-to-r from-trini-red to-red-700 hover:from-red-700 hover:to-trini-red focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 mt-6"
-                           >
-                              {loading ? (
-                                 <>
-                                    <Loader2 className="animate-spin -ml-1 mr-2 h-6 w-6" />
-                                    Generating Website...
-                                 </>
-                              ) : (
-                                 <>
-                                    {claimMode ? 'Verify & Build' : 'Build Free Store'} <Wand2 className="ml-2 h-5 w-5" />
-                                 </>
-                              )}
-                           </button>
-                           <div className="flex items-center justify-center text-xs text-gray-500 font-bold mt-3">
-                              <CreditCard className="h-3 w-3 mr-1 text-green-500" /> No Credit Card Required
+                           <div>
+                              <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Store Vibe</label>
+                              <div className="relative">
+                                 <select
+                                    className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-base font-medium appearance-none cursor-pointer hover:border-gray-400 transition-all"
+                                    value={formData.vibe}
+                                    aria-label="Store Vibe"
+                                    onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
+                                 >
+                                    <option value="Modern">✨ Modern & Clean</option>
+                                    <option value="Rustic">🪵 Rustic & Cozy</option>
+                                    <option value="Vibrant">🎨 Vibrant & Bold</option>
+                                    <option value="Luxury">💎 Luxury & Elegant</option>
+                                    <option value="Corporate">🏢 Corporate</option>
+                                 </select>
+                                 <Palette className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                              </div>
                            </div>
                         </div>
+
+                        <button
+                           onClick={handleGenerate}
+                           disabled={loading || !formData.name || !formData.type}
+                           className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-gradient-to-r from-trini-red to-red-700 hover:from-red-700 hover:to-trini-red focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-1 mt-6"
+                        >
+                           {loading ? (
+                              <>
+                                 <Loader2 className="animate-spin -ml-1 mr-2 h-6 w-6" />
+                                 Generating Website...
+                              </>
+                           ) : (
+                              <>
+                                 {claimMode ? 'Verify & Build' : 'Build Free Store'} <Wand2 className="ml-2 h-5 w-5" />
+                              </>
+                           )}
+                        </button>
+                        <div className="flex items-center justify-center text-xs text-gray-500 font-bold mt-3">
+                           <CreditCard className="h-3 w-3 mr-1 text-green-500" /> No Credit Card Required
+                        </div>
                      </div>
+
 
                      {/* Value Prop Box */}
                      <div className="bg-gray-900 text-white p-12 hidden md:flex flex-col justify-center relative overflow-hidden">
@@ -369,6 +359,7 @@ export const StoreCreator: React.FC = () => {
                            ))}
                         </div>
                      </div>
+
                   </div>
                )}
 
@@ -391,8 +382,8 @@ export const StoreCreator: React.FC = () => {
 
                         <div className="flex items-center gap-4">
                            <div className="bg-gray-100 p-1 rounded-lg flex">
-                              <button onClick={() => setViewMode('desktop')} className={`p-2 rounded-md transition-all ${viewMode === 'desktop' ? 'bg-white shadow text-trini-red' : 'text-gray-500 hover:text-gray-700'}`} title="Desktop View"><Monitor className="h-5 w-5" /></button>
-                              <button onClick={() => setViewMode('mobile')} className={`p-2 rounded-md transition-all ${viewMode === 'mobile' ? 'bg-white shadow text-trini-red' : 'text-gray-500 hover:text-gray-700'}`} title="Mobile View"><Smartphone className="h-5 w-5" /></button>
+                              <button onClick={() => setViewMode('desktop')} className={`p-2 rounded-md transition-all ${viewMode === 'desktop' ? 'bg-white shadow text-trini-red' : 'text-gray-500 hover:text-gray-700'}`} title="Desktop View" aria-label="Desktop View"><Monitor className="h-5 w-5" /></button>
+                              <button onClick={() => setViewMode('mobile')} className={`p-2 rounded-md transition-all ${viewMode === 'mobile' ? 'bg-white shadow text-trini-red' : 'text-gray-500 hover:text-gray-700'}`} title="Mobile View" aria-label="Mobile View"><Smartphone className="h-5 w-5" /></button>
                            </div>
                            <button onClick={() => setImageSeed(prev => prev + 1)} className="text-xs flex items-center font-bold text-gray-500 hover:text-trini-red transition-colors" title="Regenerate Images"><RefreshCw className="h-4 w-4 mr-1" /> New Images</button>
                         </div>
@@ -530,7 +521,7 @@ export const StoreCreator: React.FC = () => {
                   <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
                      <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 className="text-xl font-bold text-gray-900">One Last Step</h3>
-                        <button onClick={() => setShowLegalModal(false)} className="text-gray-400 hover:text-gray-600">
+                        <button onClick={() => setShowLegalModal(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close Modal">
                            <X className="h-6 w-6" />
                         </button>
                      </div>
@@ -565,6 +556,6 @@ export const StoreCreator: React.FC = () => {
                <p className="text-sm text-gray-500">Need help? <Link to="/contact" className="text-trini-red font-bold hover:underline">Chat with Support</Link></p>
             </div>
          </div>
-      </div>
+      </div >
    );
 };

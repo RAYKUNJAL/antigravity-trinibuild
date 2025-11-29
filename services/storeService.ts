@@ -1,16 +1,5 @@
 import { supabase } from './supabaseClient';
-
-export interface Product {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-    images: string[];
-    category: string;
-    rating: number;
-    totalReviews: number;
-    storeId?: string;
-}
+import { Product } from '../types';
 
 export interface Store {
     id: string;
@@ -132,12 +121,12 @@ export const storeService = {
             .from('products')
             .insert({
                 store_id: storeId,
-                name: productData.title,
+                name: productData.name,
                 description: productData.description,
                 price: productData.price,
                 stock: 100, // Default
-                image_url: productData.images?.[0] || '',
-                category: productData.category || 'General',
+                image_url: productData.image || '',
+                category: 'General',
                 status: 'active'
             })
             .select()
@@ -156,11 +145,10 @@ export const storeService = {
         const { data, error } = await supabase
             .from('products')
             .update({
-                name: productData.title,
+                name: productData.name,
                 description: productData.description,
                 price: productData.price,
-                image_url: productData.images?.[0],
-                category: productData.category,
+                image_url: productData.image,
                 status: 'active' // or pass in status
             })
             .eq('id', productId)
@@ -208,12 +196,10 @@ const mapStoreFromDb = (dbStore: any): Store => ({
 
 const mapProductFromDb = (dbProduct: any): Product => ({
     id: dbProduct.id,
-    title: dbProduct.name,
+    name: dbProduct.name,
     description: dbProduct.description || '',
     price: dbProduct.price,
-    images: dbProduct.image_url ? [dbProduct.image_url] : [],
-    category: dbProduct.category || 'General',
-    rating: 0,
-    totalReviews: 0,
-    storeId: dbProduct.store_id
+    image: dbProduct.image_url || '',
+    status: dbProduct.status || 'active',
+    stock: dbProduct.stock || 0
 });

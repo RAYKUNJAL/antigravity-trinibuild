@@ -43,6 +43,7 @@ export const DailyRewards: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden relative">
                 <button
                     onClick={() => setIsOpen(false)}
+                    aria-label="Close Reward Popup"
                     className="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 z-10"
                 >
                     <X className="h-6 w-6" />

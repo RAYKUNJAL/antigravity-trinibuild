@@ -268,6 +268,10 @@ export const RealEstate: React.FC = () => {
                                           <Star className="h-3 w-3 mr-1 fill-current" /> Featured
                                        </span>
                                     )}
+                                    {/* Sample Listing Label */}
+                                    <span className="bg-gray-800/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm border border-white/20">
+                                       Sample Listing
+                                    </span>
                                  </div>
                               </div>
 
@@ -505,6 +509,13 @@ export const RealEstate: React.FC = () => {
                            Contact Sales
                         </button>
                      </div>
+                  </div>
+
+                  <div className="bg-blue-50 p-6 border-t border-blue-100 text-center">
+                     <p className="text-sm text-blue-800 font-medium">
+                        <span className="font-bold">Partner Program:</span> Earn 2% commission on every property sale you refer!
+                        <a href="/affiliate" className="underline ml-1 hover:text-blue-900">Join the Network</a>
+                     </p>
                   </div>
                </div>
             </div>
