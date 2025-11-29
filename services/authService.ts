@@ -64,7 +64,13 @@ export const authService = {
                 password: credentials.password,
             });
 
-            if (error) throw error;
+            if (error) {
+                // Handle email confirmation error specifically
+                if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+                    throw new Error('Please verify your email address before signing in. Check your inbox for the confirmation link.');
+                }
+                throw error;
+            }
 
             if (data.user) {
                 // Fetch additional profile data if needed
@@ -135,6 +141,22 @@ export const authService = {
             return user;
         }
         return null;
+    },
+
+    // Resend confirmation email
+    resendConfirmation: async (email: string): Promise<{ error?: string; success?: boolean }> => {
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: email,
+            });
+
+            if (error) throw error;
+            return { success: true };
+        } catch (error: any) {
+            console.error("Resend Confirmation Error:", error);
+            return { error: error.message, success: false };
+        }
     },
 
     // Check if user is authenticated
