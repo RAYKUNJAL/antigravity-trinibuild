@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight, Globe } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Globe, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export const Auth: React.FC = () => {
@@ -13,14 +13,43 @@ export const Auth: React.FC = () => {
     password: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [emailResent, setEmailResent] = useState(false);
+
+  const handleResendConfirmation = async () => {
+    setResendingEmail(true);
+    setEmailResent(false);
+    try {
+      const result = await authService.resendConfirmation(formData.email);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setEmailResent(true);
+        setError(null);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setResendingEmail(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNeedsEmailConfirmation(false);
+    setEmailResent(false);
     try {
       if (isLogin) {
         const { error } = await authService.login({ email: formData.email, password: formData.password });
-        if (error) throw new Error(error);
+        if (error) {
+          // Check if it's an email confirmation error
+          if (error.includes('verify your email') || error.includes('Email not confirmed')) {
+            setNeedsEmailConfirmation(true);
+          }
+          throw new Error(error);
+        }
         navigate('/dashboard');
       } else {
         const { error } = await authService.register(formData);
@@ -56,6 +85,31 @@ export const Auth: React.FC = () => {
                   <div className="flex">
                     <div className="ml-3">
                       <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {needsEmailConfirmation && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm text-blue-700 font-medium">Email not verified</p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Please check your inbox for the verification email we sent to <strong>{formData.email}</strong>
+                      </p>
+                      {emailResent && (
+                        <p className="text-xs text-green-600 mt-2 font-medium">✓ Verification email resent successfully!</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleResendConfirmation}
+                        disabled={resendingEmail || emailResent}
+                        className="mt-2 text-xs font-medium text-blue-500 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed underline"
+                      >
+                        {resendingEmail ? 'Sending...' : emailResent ? 'Email sent' : 'Resend verification email'}
+                      </button>
                     </div>
                   </div>
                 </div>
