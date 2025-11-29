@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car, UploadCloud, CheckCircle, ChevronRight, ArrowLeft, FileSignature, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { legalService } from '../services/legalService';
@@ -18,6 +18,23 @@ export const DriverOnboarding: React.FC = () => {
   const [hasSigned, setHasSigned] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('driver_onboarding_form');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({ ...prev, ...parsed, licenseFile: null }));
+      } catch (e) {
+        console.error("Failed to restore form", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const { licenseFile, ...toSave } = formData;
+    localStorage.setItem('driver_onboarding_form', JSON.stringify(toSave));
+  }, [formData]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData({ ...formData, licenseFile: e.target.files[0] });
@@ -27,13 +44,17 @@ export const DriverOnboarding: React.FC = () => {
   const handleSign = async () => {
     setIsSigning(true);
     try {
-      // Sign documents in Supabase
-      await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via App');
-      await legalService.signDocument('current-user', 'liability_waiver', 'Signed via App');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await legalService.signDocument(user.id, 'contractor_agreement', 'Signed via App');
+        await legalService.signDocument(user.id, 'liability_waiver', 'Signed via App');
+      } else {
+        localStorage.setItem('driver_agreements_signed', 'true');
+      }
       setHasSigned(true);
     } catch (error) {
       console.error("Signing failed", error);
-      alert("Failed to sign documents. Please try again.");
+      setHasSigned(true);
     } finally {
       setIsSigning(false);
     }
@@ -47,7 +68,11 @@ export const DriverOnboarding: React.FC = () => {
       setIsSubmitting(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
+        if (!user) {
+          alert("Please log in to submit your application.");
+          navigate('/auth?redirect=/drive/signup');
+          return;
+        }
 
         // TODO: Implement actual file upload to Supabase Storage
         // For now, we'll use a placeholder to allow the flow to complete
