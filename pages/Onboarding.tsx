@@ -19,10 +19,21 @@ export const Onboarding: React.FC = () => {
   const handleSign = async () => {
     setIsSigning(true);
     try {
-      await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via DocuSign');
+      // Check if user is logged in
+      const { data: { user } } = await import('../services/supabaseClient').then(m => m.supabase.auth.getUser());
+
+      if (user) {
+        await legalService.signDocument(user.id, 'contractor_agreement', 'Signed via DocuSign');
+      } else {
+        // If not logged in, store consent locally to be synced later
+        localStorage.setItem('pending_legal_agreement', 'contractor_agreement');
+        localStorage.setItem('pending_legal_timestamp', new Date().toISOString());
+      }
       setHasSigned(true);
     } catch (error) {
       console.error("Signing failed", error);
+      // Fallback: Allow proceeding even if API fails (client-side consent)
+      setHasSigned(true);
     } finally {
       setIsSigning(false);
     }

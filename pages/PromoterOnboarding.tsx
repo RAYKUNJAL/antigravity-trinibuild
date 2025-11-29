@@ -209,11 +209,22 @@ export const PromoterOnboarding: React.FC = () => {
                                  onClick={async () => {
                                     setLoading(true);
                                     try {
-                                       await legalService.signDocument('current-user', 'contractor_agreement', signature);
-                                       handleFinish();
+                                       const { data: { user } } = await supabase.auth.getUser();
+                                       if (!user) {
+                                          alert("Please log in to complete your registration.");
+                                          // Save state to local storage so they don't lose it?
+                                          // PromoterOnboarding doesn't seem to have auto-save like StoreCreator.
+                                          // But for now, redirecting is the safest bet to avoid errors.
+                                          navigate('/auth?redirect=/tickets/onboarding');
+                                          return;
+                                       }
+
+                                       await legalService.signDocument(user.id, 'contractor_agreement', signature);
+                                       await handleFinish();
                                     } catch (e) {
                                        console.error(e);
                                        setLoading(false);
+                                       alert("Something went wrong. Please try again.");
                                     }
                                  }}
                                  className="w-2/3 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center shadow-lg"

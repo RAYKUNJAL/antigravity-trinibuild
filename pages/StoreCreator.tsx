@@ -152,13 +152,23 @@ export const StoreCreator: React.FC = () => {
    const handleSign = async () => {
       setIsSigning(true);
       try {
-         await legalService.signDocument('current-user', 'contractor_agreement', 'Signed via StoreCreator');
+         const { data: { user } } = await supabase.auth.getUser();
+
+         if (!user) {
+            // Save state is already handled by useEffect
+            alert("Please log in or sign up to launch your store.");
+            navigate('/auth?redirect=/create-store');
+            return;
+         }
+
+         await legalService.signDocument(user.id, 'contractor_agreement', 'Signed via StoreCreator');
          setHasSigned(true);
          setShowLegalModal(false);
          await saveStoreData();
          setStep(3);
       } catch (error) {
          console.error("Signing failed", error);
+         alert("Something went wrong. Please try again.");
       } finally {
          setIsSigning(false);
       }
