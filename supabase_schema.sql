@@ -204,3 +204,71 @@ create policy "Users can sign agreements."
   on public.signed_agreements for insert
   with check ( auth.uid() = user_id );
 
+-- RIDES TABLE (for rideshare functionality)
+create table public.rides (
+  id uuid default uuid_generate_v4() primary key,
+  passenger_id uuid references public.profiles(id) not null,
+  driver_id uuid references public.profiles(id),
+  
+  -- Locations
+  pickup_location text not null,
+  dropoff_location text not null,
+  pickup_lat decimal(10, 8),
+  pickup_lng decimal(11, 8),
+  dropoff_lat decimal(10, 8),
+  dropoff_lng decimal(11, 8),
+  
+  -- Real-time driver location (updated by driver's app)
+  driver_lat decimal(10, 8),
+  driver_lng decimal(11, 8),
+  
+  -- Ride details
+  status text default 'searching', -- 'searching', 'accepted', 'arrived', 'in_progress', 'completed', 'cancelled'
+  price decimal(10, 2) not null,
+  payment_method text default 'cash', -- 'cash', 'card'
+  
+  -- Driver info (denormalized for faster access)
+  driver_name text,
+  driver_car text,
+  driver_plate text,
+  driver_rating decimal(3, 2),
+  
+  -- Timestamps
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  accepted_at timestamp with time zone,
+  started_at timestamp with time zone,
+  completed_at timestamp with time zone
+);
+
+-- Enable Realtime for rides table (critical for live tracking)
+alter publication supabase_realtime add table public.rides;
+
+alter table public.rides enable row level security;
+
+-- Rides Policies
+create policy "Passengers can view their own rides."
+  on public.rides for select
+  using ( auth.uid() = passenger_id );
+
+create policy "Drivers can view their assigned rides."
+  on public.rides for select
+  using ( auth.uid() = driver_id );
+
+create policy "Passengers can create rides."
+  on public.rides for insert
+  with check ( auth.uid() = passenger_id );
+
+create policy "Drivers can update their assigned rides location."
+  on public.rides for update
+  using ( auth.uid() = driver_id );
+
+create policy "System can update any ride." -- For driver matching
+  on public.rides for update
+  using ( true );
+
+-- Index for faster location queries
+create index rides_passenger_idx on public.rides(passenger_id);
+create index rides_driver_idx on public.rides(driver_id);
+create index rides_status_idx on public.rides(status);
+create index rides_created_at_idx on public.rides(created_at desc);
+create index rides_driver_location_idx on public.rides(driver_lat, driver_lng) where status in ('accepted', 'arrived', 'in_progress');

@@ -55,6 +55,8 @@ export const Rides: React.FC = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [driverLocation, setDriverLocation] = useState<[number, number] | null>(null);
   const [rideStats, setRideStats] = useState<{ distance: string, duration: string } | null>(null);
+  const [currentRideId, setCurrentRideId] = useState<string | null>(null);
+  const rideSubscriptionRef = useRef<any>(null);
 
   const rideTypes = [
     { id: 'standard', name: 'TriniRide', icon: Car, price: 25, time: '5 min', desc: 'Affordable daily rides' },
@@ -66,6 +68,13 @@ export const Rides: React.FC = () => {
   useEffect(() => {
     // Try to get user location on load
     getUserLocation();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (rideSubscriptionRef.current) {
+        ridesService.unsubscribeFromRide(rideSubscriptionRef.current);
+      }
+    };
   }, []);
 
   const getUserLocation = () => {
@@ -88,11 +97,6 @@ export const Rides: React.FC = () => {
 
     setBookingState('searching');
 
-    // Simulate Route Calculation
-    setTimeout(() => {
-      setRideStats({ distance: "4.2 km", duration: "12 mins" });
-    }, 1000);
-
     try {
       const price = rideTypes.find(r => r.id === selectedType)?.price || 25;
 
@@ -102,12 +106,48 @@ export const Rides: React.FC = () => {
         // dropoff coords would come from geocoding in a real app
       });
 
-      // 2. Simulate Driver Matching (Backend Logic)
+      setCurrentRideId(ride.id);
+
+      // 2. Subscribe to real-time updates for this ride
+      const subscription = ridesService.subscribeToRide(ride.id, (updatedRide) => {
+        console.log('Ride updated:', updatedRide);
+
+        // Update driver location if available
+        if (updatedRide.driver_lat && updatedRide.driver_lng) {
+          setDriverLocation([updatedRide.driver_lat, updatedRide.driver_lng]);
+
+          // Calculate distance and ETA
+          if (userLocation) {
+            const distance = ridesService.calculateDistance(
+              userLocation[0],
+              userLocation[1],
+              updatedRide.driver_lat,
+              updatedRide.driver_lng
+            );
+            const eta = ridesService.estimateArrival(distance);
+            setRideStats({
+              distance: `${distance.toFixed(1)} km`,
+              duration: `${eta} mins`
+            });
+          }
+        }
+
+        // Update booking state based on ride status
+        if (updatedRide.status === 'accepted' && bookingState === 'searching') {
+          setBookingState('found');
+        } else if (updatedRide.status === 'arrived') {
+          setBookingState('arriving');
+        } else if (updatedRide.status === 'in_progress') {
+          setBookingState('in_progress');
+        }
+      });
+
+      rideSubscriptionRef.current = subscription;
+
+      // 3. Simulate Driver Matching (Backend Logic)
       const matchResult = await ridesService.simulateDriverMatch(ride.id);
 
       if (matchResult.status === 'accepted') {
-        setBookingState('found');
-
         // Save Ride to History
         const newRide = {
           id: ride.id,
@@ -122,39 +162,55 @@ export const Rides: React.FC = () => {
         const history = JSON.parse(localStorage.getItem('ride_history') || '[]');
         localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5)));
 
-        startDriverSimulation();
+        // Start real-time driver tracking simulation
+        startDriverSimulation(ride.id);
       }
     } catch (error) {
       console.error("Booking failed:", error);
       alert("Please sign in to book a ride.");
-      // Reset state or redirect to login
       setBookingState('idle');
     }
   };
 
-  const startDriverSimulation = () => {
+  const startDriverSimulation = (rideId: string) => {
     // Start driver slightly offset from center
-    const startLat = center[0] - 0.005;
-    const startLng = center[1] - 0.005;
+    const pickupPoint = userLocation || center;
+    const startLat = pickupPoint[0] - 0.01; // ~1 km away
+    const startLng = pickupPoint[1] - 0.01;
+
+    // Set initial driver location
     setDriverLocation([startLat, startLng]);
+    ridesService.updateDriverLocation(rideId, {
+      latitude: startLat,
+      longitude: startLng
+    });
 
     let step = 0;
-    const maxSteps = 100;
-    const deltaLat = (center[0] - startLat) / maxSteps;
-    const deltaLng = (center[1] - startLng) / maxSteps;
+    const maxSteps = 150;
+    const deltaLat = (pickupPoint[0] - startLat) / maxSteps;
+    const deltaLng = (pickupPoint[1] - startLng) / maxSteps;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       step++;
       if (step <= maxSteps) {
-        setDriverLocation(prev => {
-          if (!prev) return [startLat, startLng];
-          return [startLat + (deltaLat * step), startLng + (deltaLng * step)];
-        });
+        const newLat = startLat + (deltaLat * step);
+        const newLng = startLng + (deltaLng * step);
+
+        // Update driver location in real-time
+        try {
+          await ridesService.updateDriverLocation(rideId, {
+            latitude: newLat,
+            longitude: newLng
+          });
+        } catch (error) {
+          console.error('Failed to update driver location:', error);
+        }
       } else {
         clearInterval(interval);
-        setBookingState('arriving');
+        // Mark driver as arrived
+        ridesService.updateRideStatus(rideId, 'arrived');
       }
-    }, 50); // Update every 50ms
+    }, 100); // Update every 100ms for smooth animation
   };
 
   return (
