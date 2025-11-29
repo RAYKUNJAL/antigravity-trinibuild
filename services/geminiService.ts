@@ -1,12 +1,19 @@
 import { aiService } from "./ai";
 import { Business, Product } from "../types";
 
-// Helper to parse JSON from AI response which might contain markdown code blocks
+// Helper to parse JSON from AI response which might contain markdown code blocks or extra text
 const parseAiJson = (text: string) => {
   try {
-    // Remove markdown code blocks if present
-    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(cleanText);
+    // Aggressive cleanup: Find the first '{' and last '}'
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+
+    if (start === -1 || end === -1) {
+      throw new Error("No JSON object found in response");
+    }
+
+    const jsonStr = text.substring(start, end + 1);
+    return JSON.parse(jsonStr);
   } catch (e) {
     console.error("Failed to parse AI JSON:", e);
     throw new Error("AI returned invalid data format");
@@ -43,8 +50,17 @@ export const generateStoreProfile = async (businessName: string, businessType: s
     const text = await aiService.generateText(prompt);
     return parseAiJson(text);
   } catch (error) {
-    console.error("Error generating store:", error);
-    throw error;
+    console.error("Error generating store, using fallback:", error);
+    // Fallback Template to ensure user is never blocked
+    return {
+      description: `Welcome to ${businessName}, your premier destination for ${businessType} in Trinidad & Tobago. We offer the best quality and service to our customers.`,
+      hours: "Mon-Fri: 8am - 5pm, Sat: 9am - 2pm",
+      products: [
+        { name: "Signature Item", price: 150, description: "Our most popular item, loved by locals." },
+        { name: "Premium Selection", price: 300, description: "High quality and durable." },
+        { name: "Value Pack", price: 75, description: "Great value for your money." }
+      ]
+    };
   }
 };
 

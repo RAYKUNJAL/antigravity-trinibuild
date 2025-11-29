@@ -48,9 +48,12 @@ const PageLayout = () => {
   );
 };
 
+import ScrollToTop from './components/ScrollToTop';
+
 const App: React.FC = () => {
   return (
     <Router>
+      <ScrollToTop />
       <div className="flex flex-col min-h-screen font-sans text-gray-900 bg-white">
         <Navbar />
         <main className="flex-grow">
