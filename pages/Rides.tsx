@@ -6,6 +6,7 @@ import { AdSpot } from '../components/AdSpot';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { ridesService } from '../services/ridesService';
 
 // Fix Leaflet icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -81,7 +82,7 @@ export const Rides: React.FC = () => {
     }
   };
 
-  const handleBook = (e: React.FormEvent) => {
+  const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pickup || !dropoff) return;
 
@@ -92,25 +93,43 @@ export const Rides: React.FC = () => {
       setRideStats({ distance: "4.2 km", duration: "12 mins" });
     }, 1000);
 
-    setTimeout(() => {
-      setBookingState('found');
+    try {
+      const price = rideTypes.find(r => r.id === selectedType)?.price || 25;
 
-      // Save Ride to History
-      const newRide = {
-        id: `ride-${Date.now()}`,
-        pickup,
-        dropoff,
-        type: rideTypes.find(r => r.id === selectedType)?.name,
-        price: rideTypes.find(r => r.id === selectedType)?.price,
-        date: new Date().toISOString(),
-        status: 'completed'
-      };
+      // 1. Create Ride Request in DB
+      const ride = await ridesService.requestRide(pickup, dropoff, price, {
+        pickup: userLocation || center,
+        // dropoff coords would come from geocoding in a real app
+      });
 
-      const history = JSON.parse(localStorage.getItem('ride_history') || '[]');
-      localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5)));
+      // 2. Simulate Driver Matching (Backend Logic)
+      const matchResult = await ridesService.simulateDriverMatch(ride.id);
 
-      startDriverSimulation();
-    }, 2500);
+      if (matchResult.status === 'accepted') {
+        setBookingState('found');
+
+        // Save Ride to History
+        const newRide = {
+          id: ride.id,
+          pickup,
+          dropoff,
+          type: rideTypes.find(r => r.id === selectedType)?.name,
+          price: price,
+          date: new Date().toISOString(),
+          status: 'completed'
+        };
+
+        const history = JSON.parse(localStorage.getItem('ride_history') || '[]');
+        localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5)));
+
+        startDriverSimulation();
+      }
+    } catch (error) {
+      console.error("Booking failed:", error);
+      alert("Please sign in to book a ride.");
+      // Reset state or redirect to login
+      setBookingState('idle');
+    }
   };
 
   const startDriverSimulation = () => {
@@ -185,7 +204,7 @@ export const Rides: React.FC = () => {
                   </div>
                 </div>
                 <div className="ml-auto">
-                  <button className="bg-green-100 text-green-700 p-2 rounded-full block hover:bg-green-200">
+                  <button className="bg-green-100 text-green-700 p-2 rounded-full block hover:bg-green-200" aria-label="Navigate to driver">
                     <Navigation className="h-5 w-5" />
                   </button>
                 </div>

@@ -41,6 +41,18 @@ export const orderService = {
     createOrder: async (orderData: CreateOrderData): Promise<OrderResponse> => {
         const { data: { user } } = await supabase.auth.getUser();
 
+        // Update user profile phone if missing
+        if (user && orderData.shippingAddress.phone) {
+            try {
+                const { data: profile } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
+                if (profile && !profile.phone) {
+                    await supabase.from('profiles').update({ phone: orderData.shippingAddress.phone }).eq('id', user.id);
+                }
+            } catch (e) {
+                console.warn("Failed to update profile phone", e);
+            }
+        }
+
         // Calculate total
         const total = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 

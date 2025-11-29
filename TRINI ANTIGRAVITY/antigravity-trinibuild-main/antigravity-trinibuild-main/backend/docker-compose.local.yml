@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-trinibuild}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-trinibuild}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-trinibuild}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-trinibuild}:${DB_PASSWORD:-password}@postgres:5432/${DB_NAME:-trinibuild}
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:

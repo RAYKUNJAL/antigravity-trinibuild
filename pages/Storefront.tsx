@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ShoppingCart, Search, Menu, X, Star, MessageCircle, Phone, Mail, MapPin, Facebook, Instagram, Twitter, Plus, Minus, Trash2, ChevronRight, Banknote, CreditCard, Clock, Gift, Calendar, Truck, AlertCircle, CheckCircle, Lock } from 'lucide-react';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useParams } from 'react-router-dom';
 import { storeService, Store } from '../services/storeService';
 import { orderService, CreateOrderData } from '../services/orderService';
@@ -34,7 +35,7 @@ export const Storefront: React.FC = () => {
 
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK' | 'CARD'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK' | 'CARD' | 'PAYPAL'>('COD');
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -506,12 +507,7 @@ export const Storefront: React.FC = () => {
                 {/* STEP 3: PAYMENT */}
                 {checkoutStep === 3 && (
                   <div className="space-y-6">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
-                      <AlertCircle className="h-5 w-5 text-yellow-600 mr-3 mt-0.5" />
-                      <p className="text-sm text-yellow-800">
-                        Online payments are currently disabled for maintenance. Please use Cash on Delivery.
-                      </p>
-                    </div>
+                    {/* PayPal Script Provider would wrap the app in a real scenario, but we can wrap the button here for isolation */}
 
                     <div className="space-y-3">
                       <button
@@ -526,6 +522,26 @@ export const Storefront: React.FC = () => {
                           </div>
                         </div>
                         {paymentMethod === 'COD' && <CheckCircle className="h-5 w-5 text-green-600" />}
+                      </button>
+
+                      <button
+                        onClick={() => setPaymentMethod('PAYPAL')}
+                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'PAYPAL' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                      >
+                        <div className="flex items-center">
+                          {/* PayPal Logo SVG */}
+                          <svg className="h-6 w-6 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20.0575 7.82624C19.9338 7.35249 19.4675 4.84874 16.8975 3.50624C15.3975 2.71874 13.065 2.62499 13.065 2.62499H7.06876C6.63376 2.62499 6.26251 2.94374 6.19126 3.37124L4.54126 13.8412L4.03876 17.0362C3.99376 17.3137 4.20751 17.5612 4.48876 17.5612H8.02126C8.39626 17.5612 8.71876 17.2837 8.77501 16.9125L9.36376 13.1737C9.42001 12.8025 9.74251 12.525 10.1175 12.525H11.9138C15.3038 12.525 17.9813 11.1562 18.7763 8.35124C18.8438 8.13374 18.8888 7.91624 18.9113 7.70999C20.0575 7.82624 20.0575 7.82624 20.0575 7.82624Z" fill="#003087" />
+                            <path d="M18.7762 8.35123C17.9812 11.1562 15.3037 12.525 11.9137 12.525H10.1175C9.7425 12.525 9.41999 12.8025 9.36374 13.1737L8.03624 21.585C7.99124 21.8625 8.20499 22.11 8.48624 22.11H12.0037C12.3787 22.11 12.7012 21.8325 12.7575 21.4612L13.1775 18.7987L13.2337 18.4612C13.29 18.09 13.6125 17.8125 13.9875 17.8125H14.73C17.67 17.8125 19.995 16.6237 20.685 14.19C20.955 13.2337 20.94 12.3562 20.7 11.5837C20.6962 11.5837 20.6925 11.5837 20.6887 11.5837C20.6887 11.5837 18.7762 8.35123 18.7762 8.35123Z" fill="#003087" />
+                            <path d="M9.36373 13.1737L8.77498 16.9125C8.71873 17.2837 8.39623 17.5612 8.02123 17.5612H4.48873C4.20748 17.5612 3.99373 17.3137 4.03873 17.0362L4.54123 13.8412L6.19123 3.37125C6.26248 2.94375 6.63373 2.625 7.06873 2.625H13.065C13.065 2.625 15.3975 2.71875 16.8975 3.50625C17.3737 3.7575 17.7862 4.08375 18.1237 4.47375C18.2737 4.64625 18.4087 4.83 18.5287 5.02125C18.6337 5.18625 18.7275 5.35875 18.8062 5.53875C18.9337 5.82375 19.0312 6.12 19.0987 6.4275C19.1062 6.4575 19.1137 6.49125 19.1212 6.52125C19.2412 7.09125 19.2412 7.69125 19.0987 8.28375C19.0837 8.3475 19.065 8.4075 19.0462 8.47125C19.0462 8.47125 19.0425 8.475 19.0425 8.47875C18.2475 11.2837 15.57 12.6525 12.18 12.6525H10.1175C9.74248 12.6525 9.41998 12.93 9.36373 13.3012V13.1737Z" fill="#009cde" />
+                            <path d="M18.1237 4.47374C17.7862 4.08374 17.3737 3.75749 16.8975 3.50624C15.3975 2.71874 13.065 2.62499 13.065 2.62499H7.06873C6.63373 2.62499 6.26248 2.94374 6.19123 3.37124L4.54123 13.8412L4.03873 17.0362C3.99373 17.3137 4.20748 17.5612 4.48873 17.5612H8.02123C8.39623 17.5612 8.71873 17.2837 8.77498 16.9125L9.36373 13.1737C9.42001 12.8025 9.74251 12.525 10.1175 12.525H11.9138C15.3038 12.525 17.9813 11.1562 18.7763 8.35124C18.8438 8.13374 18.8888 7.91624 18.9113 7.70999C19.035 7.23749 19.1025 6.75374 19.0987 6.42749C19.0312 6.12 18.9337 5.82374 18.8062 5.53874C18.7275 5.35874 18.6337 5.18624 18.5287 5.02124C18.4087 4.83 18.2737 4.64624 18.1237 4.47374Z" fill="#003087" />
+                          </svg>
+                          <div className="text-left">
+                            <p className="font-bold text-gray-900">PayPal</p>
+                            <p className="text-xs text-gray-500">Pay securely with your PayPal account</p>
+                          </div>
+                        </div>
+                        {paymentMethod === 'PAYPAL' && <CheckCircle className="h-5 w-5 text-blue-600" />}
                       </button>
 
                       <button disabled className="w-full flex items-center justify-between p-4 border rounded-xl border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed relative overflow-hidden">
@@ -623,15 +639,53 @@ export const Storefront: React.FC = () => {
                     </div>
                   )}
                   {checkoutStep === 3 && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 w-full">
                       <button onClick={() => setCheckoutStep(2)} className="px-4 py-3 border border-gray-300 rounded-md font-bold text-gray-700">Back</button>
-                      <button
-                        onClick={handlePlaceOrder}
-                        disabled={isProcessingOrder}
-                        className="flex-1 flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50"
-                      >
-                        {isProcessingOrder ? 'Processing...' : 'Place Order'}
-                      </button>
+
+                      {paymentMethod === 'PAYPAL' ? (
+                        <div className="flex-1 z-0 relative">
+                          <PayPalScriptProvider options={{ clientId: "sb", currency: "USD", intent: "capture" }}>
+                            <PayPalButtons
+                              style={{ layout: "horizontal", height: 48, tagline: false }}
+                              createOrder={(data, actions) => {
+                                // Convert TT to USD roughly for demo (divide by 6.7) or just pass value if account supports it
+                                // For now passing the raw value assuming the sandbox account is set to USD but we treat it as generic units
+                                const total = (cartTotal + (deliveryOption === 'pickup' ? 0 : deliveryOption === 'express' ? 50 : 30)).toFixed(2);
+                                return actions.order.create({
+                                  intent: "CAPTURE",
+                                  purchase_units: [
+                                    {
+                                      amount: {
+                                        currency_code: "USD",
+                                        value: total,
+                                      },
+                                      description: `Order from ${storeData?.name}`
+                                    },
+                                  ],
+                                });
+                              }}
+                              onApprove={async (data, actions) => {
+                                if (actions.order) {
+                                  await actions.order.capture();
+                                  handlePlaceOrder();
+                                }
+                              }}
+                              onError={(err) => {
+                                console.error("PayPal Error:", err);
+                                alert("PayPal payment failed. Please try again or use Cash on Delivery.");
+                              }}
+                            />
+                          </PayPalScriptProvider>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handlePlaceOrder}
+                          disabled={isProcessingOrder}
+                          className="flex-1 flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                          {isProcessingOrder ? 'Processing...' : 'Place Order'}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

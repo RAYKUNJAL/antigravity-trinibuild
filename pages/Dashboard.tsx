@@ -14,14 +14,15 @@ import { documentService, DocumentRequest } from '../services/documentService';
 import { Link } from 'react-router-dom';
 import { ChatWidget } from '../components/ChatWidget';
 import { storeService } from '../services/storeService';
-import { ListingDescriptionGenerator } from '../components/ListingDescriptionGenerator';
+import { MarketingTools } from '../components/MarketingTools';
+import { DailyRewards } from '../components/DailyRewards';
 
 export const Dashboard: React.FC = () => {
   // App Context State
   const [activeApp, setActiveApp] = useState<'store' | 'driver' | 'pro' | 'promoter' | 'agent'>('store');
 
   // Store State
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'documents' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'documents' | 'marketing' | 'settings'>('overview');
 
   // User Subscription State (Simulated)
   const [isPro, setIsPro] = useState(false);
@@ -257,6 +258,7 @@ export const Dashboard: React.FC = () => {
                 { id: 'products', icon: ShoppingBag, label: 'Products' },
                 { id: 'orders', icon: Package, label: 'Orders' },
                 { id: 'documents', icon: FileText, label: 'Documents' },
+                { id: 'marketing', icon: MessageCircle, label: 'Marketing' },
                 { id: 'settings', icon: SettingsIcon, label: 'Settings' },
               ].map((item) => (
                 <button
@@ -295,6 +297,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-grow md:ml-64 p-8">
+        <DailyRewards />
 
         {/* --- STORE DASHBOARD --- */}
         {activeApp === 'store' && (
@@ -448,6 +451,22 @@ export const Dashboard: React.FC = () => {
                     </table>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'consultant' && (
+              <div className="animate-in fade-in">
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold text-gray-900">Business Expert</h1>
+                  <p className="text-gray-500">Your personal AI consultant for T&T banking, legal, and visa matters.</p>
+                </div>
+                <BusinessExpertBot />
+              </div>
+            )}
+
+            {activeTab === 'marketing' && (
+              <div className="animate-in fade-in">
+                <MarketingTools />
               </div>
             )}
 

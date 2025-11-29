@@ -50,7 +50,7 @@ class ListingDescriptionRequest(BaseModel):
 class ChatbotRequest(BaseModel):
     message: str
     context: Optional[str] = None
-    persona: str = "support_bot" # support_bot, sales_agent
+    persona: str = "support_bot" # support_bot, sales_agent, business_expert
     system_prompt: Optional[str] = None
 
 class AIResponse(BaseModel):
@@ -117,7 +117,7 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "
         try:
             full_prompt = f"<|system|>\n{system_prompt}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>"
             logger.info("Generating with local TinyLlama...")
-            return llm(full_prompt, max_new_tokens=256)
+            return llm(full_prompt, max_new_tokens=512)
         except Exception as e:
             logger.error(f"Local inference failed: {e}")
     
@@ -125,7 +125,8 @@ def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "
     if os.getenv("DEV_MODE", "false").lower() == "true":
          return f"[DEV MODE] Mock response for: {prompt[:50]}..."
     
-    raise HTTPException(status_code=503, detail="AI Service Unavailable (Ollama & Local failed)")
+    # If everything fails, return a safe fallback instead of 503 to keep the UI alive
+    return "I apologize, but I'm currently having trouble connecting to my brain. Please try again in a moment."
 
 # --- Endpoints ---
 
@@ -179,6 +180,19 @@ async def chatbot_reply(request: ChatbotRequest):
             system_prompt = "You are a persuasive sales agent helping a customer find the best deals on TriniBuild."
         elif request.persona == "support_bot":
             system_prompt = "You are TriniBuild Support Bot, a helpful assistant with a slight Trinidadian accent."
+        elif request.persona == "business_expert":
+            system_prompt = (
+                "You are the TriniBuild Business Expert, a highly knowledgeable consultant specializing in Trinidad & Tobago business law, banking regulations, and visa procedures. "
+                "Your goal is to provide accurate, actionable advice to business owners and individuals. "
+                "You have deep knowledge of: "
+                "- Opening bank accounts in T&T (Republic Bank, FCB, Scotiabank, RBC). "
+                "- Business Registration with the Ministry of Legal Affairs. "
+                "- BIR Number and TAMIS registration. "
+                "- Visa application processes for the US, UK, and Canada Embassies in Port of Spain. "
+                "- Necessary supporting documents for loans and mortgages. "
+                "Always be professional, precise, and helpful. "
+                "If asked to generate a document, guide the user to the 'Documents' tab or offer to draft the content for them here."
+            )
         else:
             # Default fallback
             system_prompt = "You are a helpful assistant."
