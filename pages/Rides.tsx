@@ -82,9 +82,21 @@ export const Rides: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const pos: [number, number] = [position.coords.latitude, position.coords.longitude];
-          setCenter(pos);
-          setUserLocation(pos);
-          setPickup("Current Location");
+
+          // Check if user is in Trinidad and Tobago
+          const isInTrinidad =
+            pos[0] >= 10.0 && pos[0] <= 11.5 && // Latitude range for Trinidad & Tobago
+            pos[1] >= -62.0 && pos[1] <= -60.5;  // Longitude range for Trinidad & Tobago
+
+          if (isInTrinidad) {
+            setCenter(pos);
+            setUserLocation(pos);
+            setPickup("Current Location");
+          } else {
+            // User not in Trinidad - show info message but still allow manual address entry
+            console.log("GPS location outside Trinidad. Defaulting to Port of Spain.");
+            // Still centered on Trinidad, user can type Trinidad addresses
+          }
         },
         () => console.log("GPS permission denied")
       );
@@ -412,7 +424,12 @@ export const Rides: React.FC = () => {
 
       {/* Right Panel - Functional Map */}
       <div className="flex-grow bg-gray-200 relative min-h-[300px] lg:min-h-0 z-0">
-        <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+        <MapContainer
+          center={center}
+          zoom={userLocation ? 14 : 11}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={true}
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
