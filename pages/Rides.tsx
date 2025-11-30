@@ -1,12 +1,10 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Car, Truck, Bike, Clock, CreditCard, Navigation, CheckCircle, Loader2, Star, Shield, Banknote, Crosshair, AlertCircle } from 'lucide-react';
-import { ChatWidget } from '../components/ChatWidget';
-import { AdSpot } from '../components/AdSpot';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { supabase } from '../services/supabaseClient';
+import { ridesService, Ride } from '../services/ridesService';
+import { MapPin, Navigation, Car, CreditCard, Clock, Star, Phone, Shield, User, Briefcase } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { ridesService } from '../services/ridesService';
 
 // Fix Leaflet icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -22,452 +20,500 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 // Custom Icons
-const carIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3097/3097180.png', // Placeholder car icon
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
+const DriverIcon = L.divIcon({
+  html: `<div class="bg-trini-black text-white p-2 rounded-full shadow-lg border-2 border-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4 0.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></div>`,
+  className: 'custom-driver-icon',
+  iconSize: [40, 40],
+  iconAnchor: [20, 20]
 });
 
-const userIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png', // Placeholder user icon
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
+const PassengerIcon = L.divIcon({
+  html: `<div class="bg-trini-teal text-white p-2 rounded-full shadow-lg border-2 border-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
+  className: 'custom-passenger-icon',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40]
 });
 
-// Component to update map center
-const MapUpdater = ({ center }: { center: [number, number] }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
-};
+// Trinidad Coordinates
+const TRINIDAD_CENTER = [10.6918, -61.2225];
 
 export const Rides: React.FC = () => {
-  const [bookingState, setBookingState] = useState<'idle' | 'searching' | 'found' | 'arriving' | 'in_progress'>('idle');
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
-  const [selectedType, setSelectedType] = useState('standard');
-  const [paymentType, setPaymentType] = useState<'cash' | 'card'>('cash');
+  const [price, setPrice] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [activeRide, setActiveRide] = useState<Ride | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  // Map State
-  const [center, setCenter] = useState<[number, number]>([10.652, -61.514]); // Port of Spain
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [driverLocation, setDriverLocation] = useState<[number, number] | null>(null);
-  const [rideStats, setRideStats] = useState<{ distance: string, duration: string } | null>(null);
-  const [currentRideId, setCurrentRideId] = useState<string | null>(null);
-  const rideSubscriptionRef = useRef<any>(null);
-
-  const rideTypes = [
-    { id: 'standard', name: 'TriniRide', icon: Car, price: 25, time: '5 min', desc: 'Affordable daily rides' },
-    { id: 'taxi', name: 'H-Taxi', icon: Shield, price: 35, time: '8 min', desc: 'Registered H-Cars' },
-    { id: 'courier', name: 'Courier', icon: Bike, price: 20, time: '10 min', desc: 'Package delivery' },
-    { id: 'truck', name: 'Moving', icon: Truck, price: 150, time: '25 min', desc: 'Pickup trucks & vans' },
-  ];
+  // Driver Mode State
+  const [isDriverMode, setIsDriverMode] = useState(false);
+  const [availableRides, setAvailableRides] = useState<Ride[]>([]);
+  const [driverActiveJob, setDriverActiveJob] = useState<Ride | null>(null);
 
   useEffect(() => {
-    // Try to get user location on load
-    getUserLocation();
-
-    // Cleanup subscription on unmount
-    return () => {
-      if (rideSubscriptionRef.current) {
-        ridesService.unsubscribeFromRide(rideSubscriptionRef.current);
-      }
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     };
+    getUser();
   }, []);
 
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos: [number, number] = [position.coords.latitude, position.coords.longitude];
+  // Realtime subscription for Passenger
+  useEffect(() => {
+    if (activeRide && !isDriverMode) {
+      const subscription = ridesService.subscribeToRide(activeRide.id, (updatedRide) => {
+        setActiveRide(updatedRide);
+      });
+      return () => {
+        supabase.removeChannel(subscription);
+      };
+    }
+  }, [activeRide?.id, isDriverMode]);
 
-          // 🚀 DEV MODE: Allow testing from anywhere!
-          const DEV_MODE = import.meta.env.DEV || window.location.hostname === 'localhost';
+  // Driver Mode Logic
+  useEffect(() => {
+    if (isDriverMode) {
+      loadAvailableRides();
 
-          // Check if user is in Trinidad and Tobago (covers both islands)
-          const isInTrinidadAndTobago =
-            pos[0] >= 10.0 && pos[0] <= 11.5 && // Latitude: Trinidad (10.0-11.0) + Tobago (11.1-11.4)
-            pos[1] >= -62.0 && pos[1] <= -60.5;  // Longitude: Both islands
+      // Subscribe to new rides
+      const newRideSub = ridesService.subscribeToNewRides((newRide) => {
+        setAvailableRides(prev => [newRide, ...prev]);
+      });
 
-          if (isInTrinidadAndTobago || DEV_MODE) {
-            setCenter(pos);
-            setUserLocation(pos);
-            setPickup("Current Location");
-            if (DEV_MODE && !isInTrinidadAndTobago) {
-              console.log("🧪 DEV MODE: Geofencing bypassed for testing");
-            }
-          } else {
-            // User not in Trinidad and Tobago - show info but still allow manual address entry
-            console.log("GPS location outside Trinidad and Tobago. Defaulting to Port of Spain.");
-            // Map still shows Trinidad, user can type addresses from either island
-          }
-        },
-        () => console.log("GPS permission denied")
-      );
+      return () => {
+        supabase.removeChannel(newRideSub);
+      };
+    }
+  }, [isDriverMode]);
+
+  // Realtime subscription for Driver Active Job
+  useEffect(() => {
+    if (driverActiveJob && isDriverMode) {
+      const subscription = ridesService.subscribeToRide(driverActiveJob.id, (updatedRide) => {
+        setDriverActiveJob(updatedRide);
+      });
+      return () => {
+        supabase.removeChannel(subscription);
+      };
+    }
+  }, [driverActiveJob?.id, isDriverMode]);
+
+  const loadAvailableRides = async () => {
+    try {
+      const rides = await ridesService.getAvailableRides();
+      setAvailableRides(rides);
+    } catch (error) {
+      console.error('Error loading rides:', error);
     }
   };
 
-  const handleBook = async (e: React.FormEvent) => {
+  const handleRequestRide = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pickup || !dropoff) return;
+    if (!user) {
+      alert('Please login to request a ride');
+      return;
+    }
+    setLoading(true);
 
-    setBookingState('searching');
+    const estimatedPrice = Math.floor(Math.random() * (100 - 30 + 1) + 30);
+    setPrice(estimatedPrice);
 
     try {
-      const price = rideTypes.find(r => r.id === selectedType)?.price || 25;
+      const rideData = {
+        passenger_id: user.id,
+        pickup_location: pickup,
+        dropoff_location: dropoff,
+        pickup_lat: 10.65 + (Math.random() * 0.05),
+        pickup_lng: -61.50 + (Math.random() * 0.05),
+        dropoff_lat: 10.60 + (Math.random() * 0.05),
+        dropoff_lng: -61.40 + (Math.random() * 0.05),
+        price: estimatedPrice,
+        status: 'searching' as const
+      };
 
-      // 1. Create Ride Request in DB
-      const ride = await ridesService.requestRide(pickup, dropoff, price, {
-        pickup: userLocation || center,
-        // dropoff coords would come from geocoding in a real app
-      });
-
-      setCurrentRideId(ride.id);
-
-      // 2. Subscribe to real-time updates for this ride
-      const subscription = ridesService.subscribeToRide(ride.id, (updatedRide) => {
-        console.log('Ride updated:', updatedRide);
-
-        // Update driver location if available
-        if (updatedRide.driver_lat && updatedRide.driver_lng) {
-          setDriverLocation([updatedRide.driver_lat, updatedRide.driver_lng]);
-
-          // Calculate distance and ETA
-          if (userLocation) {
-            const distance = ridesService.calculateDistance(
-              userLocation[0],
-              userLocation[1],
-              updatedRide.driver_lat,
-              updatedRide.driver_lng
-            );
-            const eta = ridesService.estimateArrival(distance);
-            setRideStats({
-              distance: `${distance.toFixed(1)} km`,
-              duration: `${eta} mins`
-            });
-          }
-        }
-
-        // Update booking state based on ride status
-        if (updatedRide.status === 'accepted' && bookingState === 'searching') {
-          setBookingState('found');
-        } else if (updatedRide.status === 'arrived') {
-          setBookingState('arriving');
-        } else if (updatedRide.status === 'in_progress') {
-          setBookingState('in_progress');
-        }
-      });
-
-      rideSubscriptionRef.current = subscription;
-
-      // 3. Simulate Driver Matching (Backend Logic)
-      const matchResult = await ridesService.simulateDriverMatch(ride.id);
-
-      if (matchResult.status === 'accepted') {
-        // Save Ride to History
-        const newRide = {
-          id: ride.id,
-          pickup,
-          dropoff,
-          type: rideTypes.find(r => r.id === selectedType)?.name,
-          price: price,
-          date: new Date().toISOString(),
-          status: 'completed'
-        };
-
-        const history = JSON.parse(localStorage.getItem('ride_history') || '[]');
-        localStorage.setItem('ride_history', JSON.stringify([newRide, ...history].slice(0, 5)));
-
-        // Start real-time driver tracking simulation
-        startDriverSimulation(ride.id);
-      }
+      const newRide = await ridesService.requestRide(rideData);
+      setActiveRide(newRide);
     } catch (error) {
-      console.error("Booking failed:", error);
-      alert("Please sign in to book a ride.");
-      setBookingState('idle');
+      console.error('Error requesting ride:', error);
+      alert('Failed to request ride. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const startDriverSimulation = (rideId: string) => {
-    // Start driver slightly offset from center
-    const pickupPoint = userLocation || center;
-    const startLat = pickupPoint[0] - 0.01; // ~1 km away
-    const startLng = pickupPoint[1] - 0.01;
-
-    // Set initial driver location
-    setDriverLocation([startLat, startLng]);
-    ridesService.updateDriverLocation(rideId, {
-      latitude: startLat,
-      longitude: startLng
-    });
-
-    let step = 0;
-    const maxSteps = 150;
-    const deltaLat = (pickupPoint[0] - startLat) / maxSteps;
-    const deltaLng = (pickupPoint[1] - startLng) / maxSteps;
-
-    const interval = setInterval(async () => {
-      step++;
-      if (step <= maxSteps) {
-        const newLat = startLat + (deltaLat * step);
-        const newLng = startLng + (deltaLng * step);
-
-        // Update driver location in real-time
-        try {
-          await ridesService.updateDriverLocation(rideId, {
-            latitude: newLat,
-            longitude: newLng
-          });
-        } catch (error) {
-          console.error('Failed to update driver location:', error);
-        }
-      } else {
-        clearInterval(interval);
-        // Mark driver as arrived
-        ridesService.updateRideStatus(rideId, 'arrived');
+  const handleCancelRide = async () => {
+    if (!activeRide) return;
+    if (confirm('Are you sure you want to cancel?')) {
+      try {
+        await ridesService.cancelRide(activeRide.id);
+        setActiveRide(null);
+        setPrice(null);
+      } catch (error) {
+        console.error('Error cancelling ride:', error);
       }
-    }, 100); // Update every 100ms for smooth animation
+    }
+  };
+
+  // Driver Actions
+  const handleAcceptRide = async (ride: Ride) => {
+    if (!user) return alert('Please login as a driver');
+    try {
+      // Mock Driver Details
+      const acceptedRide = await ridesService.acceptRide(
+        ride.id,
+        user.id,
+        user.user_metadata.full_name || 'Trini Driver',
+        'Toyota Corolla',
+        'PDB 1234'
+      );
+      setDriverActiveJob(acceptedRide);
+      // Remove from available list
+      setAvailableRides(prev => prev.filter(r => r.id !== ride.id));
+    } catch (error) {
+      console.error('Error accepting ride:', error);
+      alert('Failed to accept ride');
+    }
+  };
+
+  const handleUpdateStatus = async (status: 'arrived' | 'in_progress' | 'completed') => {
+    if (!driverActiveJob) return;
+    try {
+      const updatedRide = await ridesService.updateRideStatus(driverActiveJob.id, status);
+      setDriverActiveJob(updatedRide);
+      if (status === 'completed') {
+        alert(`Ride Completed! You earned $${driverActiveJob.price}`);
+        setDriverActiveJob(null);
+        loadAvailableRides();
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left Panel - Booking Form */}
-      <div className="w-full lg:w-[450px] bg-white p-6 lg:p-8 shadow-xl z-10 flex flex-col h-auto lg:h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-extrabold text-gray-900">TriniBuild <span className="text-yellow-500">Go</span></h1>
-          <p className="text-gray-500 mt-2">Safe rides & fast logistics across T&T.</p>
-        </div>
-
-        <AdSpot page="rides" slot="top" className="mb-6" />
-
-        {bookingState === 'found' || bookingState === 'arriving' ? (
-          <div className="flex-grow flex flex-col animate-in fade-in slide-in-from-bottom-4">
-            <div className={`border rounded-xl p-6 mb-6 text-center transition-colors ${bookingState === 'arriving' ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${bookingState === 'arriving' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                <CheckCircle className={`h-8 w-8 ${bookingState === 'arriving' ? 'text-green-600' : 'text-blue-600'}`} />
-              </div>
-              <h2 className={`text-xl font-bold ${bookingState === 'arriving' ? 'text-green-800' : 'text-blue-800'}`}>
-                {bookingState === 'arriving' ? 'Driver has Arrived!' : 'Driver Found!'}
-              </h2>
-              <p className="text-gray-600">
-                {bookingState === 'arriving' ? 'Please meet David at the pickup point.' : 'Your driver is en route.'}
-              </p>
-              {rideStats && (
-                <div className="mt-3 flex justify-center gap-4 text-sm font-bold text-gray-700">
-                  <span>{rideStats.distance}</span>
-                  <span>•</span>
-                  <span>{rideStats.duration}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
-              <div className="flex items-center">
-                <div className="h-14 w-14 bg-gray-200 rounded-full overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?q=80&w=200&auto=format&fit=crop" alt="Driver" className="h-full w-full object-cover" />
-                </div>
-                <div className="ml-4">
-                  <h3 className="font-bold text-gray-900">David R.</h3>
-                  <div className="flex items-center text-xs text-gray-500">
-                    <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" /> 4.9 • White Nissan Tiida
-                  </div>
-                  <div className="mt-1 bg-gray-100 text-gray-800 text-xs font-mono px-2 py-0.5 rounded w-fit">
-                    PDE 4521
-                  </div>
-                </div>
-                <div className="ml-auto">
-                  <button className="bg-green-100 text-green-700 p-2 rounded-full block hover:bg-green-200" aria-label="Navigate to driver">
-                    <Navigation className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg mb-6 flex justify-between items-center">
-              <span className="text-sm text-gray-600 font-medium">Payment Method</span>
-              <span className="text-sm font-bold text-gray-900 flex items-center">
-                {paymentType === 'cash' ? <Banknote className="h-4 w-4 mr-1 text-green-600" /> : <CreditCard className="h-4 w-4 mr-1 text-blue-600" />}
-                {paymentType === 'cash' ? 'Cash' : 'Card'}
-              </span>
-            </div>
-
-            <div className="mt-auto">
-              <button
-                onClick={() => {
-                  setBookingState('idle');
-                  setDriverLocation(null);
-                }}
-                className="w-full bg-gray-100 text-gray-700 py-4 rounded-lg font-bold hover:bg-gray-200"
-              >
-                Cancel Ride
-              </button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleBook} className="flex-grow flex flex-col">
-            <div className="space-y-4 mb-8">
-              <div className="relative">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1 bg-white px-1">Pickup</label>
-                <div className="flex items-center border border-gray-300 rounded-lg px-3 py-3 bg-white focus-within:ring-2 focus-within:ring-yellow-400 focus-within:border-transparent transition-all">
-                  <MapPin className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Current Location"
-                    className="bg-transparent w-full outline-none text-gray-900 placeholder-gray-400"
-                    value={pickup}
-                    onChange={(e) => setPickup(e.target.value)}
-                  />
-                  <button type="button" onClick={getUserLocation} className="text-xs text-gray-400 font-bold hover:text-yellow-500 flex items-center">
-                    <Crosshair className="h-3 w-3 mr-1" /> GPS
-                  </button>
-                </div>
-              </div>
-
-              <div className="relative">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1 bg-white px-1">Dropoff</label>
-                <div className="flex items-center border border-gray-300 rounded-lg px-3 py-3 bg-white focus-within:ring-2 focus-within:ring-yellow-400 focus-within:border-transparent transition-all">
-                  <MapPin className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Where to?"
-                    className="bg-transparent w-full outline-none text-gray-900 placeholder-gray-400"
-                    value={dropoff}
-                    onChange={(e) => setDropoff(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <label className="text-xs font-bold text-gray-500 uppercase ml-1 mb-2 block">Choose Ride</label>
-              <div className="space-y-3">
-                {rideTypes.map((type) => (
-                  <div
-                    key={type.id}
-                    onClick={() => setSelectedType(type.id)}
-                    className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all ${selectedType === type.id
-                      ? 'border-yellow-400 bg-yellow-50 shadow-sm'
-                      : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                  >
-                    <div className={`p-2 rounded-full mr-4 ${selectedType === type.id ? 'bg-white text-yellow-600' : 'bg-gray-100 text-gray-500'}`}>
-                      <type.icon className="h-6 w-6" />
-                    </div>
-                    <div className="flex-grow">
-                      <h3 className="font-bold text-gray-900">{type.name}</h3>
-                      <p className="text-xs text-gray-500">{type.desc}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-gray-900">TT${type.price}</div>
-                      <div className="text-xs text-gray-500">{type.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-auto">
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <div className="flex bg-gray-100 p-1 rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('cash')}
-                    className={`px-3 py-1 rounded-md text-xs font-bold flex items-center transition-all ${paymentType === 'cash' ? 'bg-white shadow-sm text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    <Banknote className="h-3 w-3 mr-1" /> Cash
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('card')}
-                    className={`px-3 py-1 rounded-md text-xs font-bold flex items-center transition-all ${paymentType === 'card' ? 'bg-white shadow-sm text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    <CreditCard className="h-3 w-3 mr-1" /> Card
-                  </button>
-                </div>
-                <span className="flex items-center"><Clock className="h-4 w-4 mr-1" /> Now</span>
-              </div>
-              <button
-                type="submit"
-                disabled={!pickup || !dropoff || bookingState === 'searching'}
-                className="w-full bg-trini-black text-white py-4 rounded-lg font-bold text-lg hover:bg-gray-800 disabled:opacity-50 shadow-lg flex items-center justify-center transition-all"
-              >
-                {bookingState === 'searching' ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" /> Finding Driver...
-                  </>
-                ) : (
-                  'Confirm Ride'
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* Recent Rides (Only show when idle) */}
-        {bookingState === 'idle' && (
-          <div className="mt-8 border-t border-gray-100 pt-6">
-            <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              {JSON.parse(localStorage.getItem('ride_history') || '[]').length > 0 ? (
-                JSON.parse(localStorage.getItem('ride_history') || '[]').map((ride: any) => (
-                  <div key={ride.id} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center text-gray-700">
-                      <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                      <span className="truncate max-w-[150px]">{ride.dropoff}</span>
-                    </div>
-                    <span className="font-bold text-gray-900">TT${ride.price}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400 italic">No recent rides.</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Right Panel - Functional Map */}
-      <div className="flex-grow bg-gray-200 relative min-h-[300px] lg:min-h-0 z-0">
-        <MapContainer
-          center={center}
-          zoom={userLocation ? 14 : 11}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-        >
+    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
+      {/* Map Section */}
+      <div className="w-full md:w-2/3 h-[50vh] md:h-screen relative z-0">
+        <MapContainer center={TRINIDAD_CENTER as L.LatLngExpression} zoom={11} style={{ height: '100%', width: '100%' }}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <MapUpdater center={center} />
 
-          {userLocation && (
-            <Marker position={userLocation} icon={userIcon}>
-              <Popup>You are here</Popup>
-            </Marker>
+          {/* Passenger View Markers */}
+          {!isDriverMode && activeRide && (
+            <>
+              <Marker position={[activeRide.pickup_lat, activeRide.pickup_lng]} icon={PassengerIcon}>
+                <Popup>Pickup: {activeRide.pickup_location}</Popup>
+              </Marker>
+              <Marker position={[activeRide.dropoff_lat, activeRide.dropoff_lng]}>
+                <Popup>Dropoff: {activeRide.dropoff_location}</Popup>
+              </Marker>
+              {activeRide.driver_lat && activeRide.driver_lng && (
+                <Marker position={[activeRide.driver_lat, activeRide.driver_lng]} icon={DriverIcon}>
+                  <Popup>Driver: {activeRide.driver_name}</Popup>
+                </Marker>
+              )}
+            </>
           )}
 
-          {driverLocation && (
-            <Marker position={driverLocation} icon={carIcon}>
-              <Popup>Driver</Popup>
-            </Marker>
+          {/* Driver View Markers */}
+          {isDriverMode && (
+            <>
+              {/* Show all available pickups */}
+              {!driverActiveJob && availableRides.map(ride => (
+                <Marker key={ride.id} position={[ride.pickup_lat, ride.pickup_lng]} icon={PassengerIcon} eventHandlers={{ click: () => handleAcceptRide(ride) }}>
+                  <Popup>
+                    <div className="text-center">
+                      <p className="font-bold">{ride.pickup_location}</p>
+                      <p className="text-green-600 font-bold">${ride.price}</p>
+                      <button onClick={() => handleAcceptRide(ride)} className="mt-2 bg-trini-black text-white px-3 py-1 rounded text-xs">Accept</button>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+
+              {/* Show Active Job Route */}
+              {driverActiveJob && (
+                <>
+                  <Marker position={[driverActiveJob.pickup_lat, driverActiveJob.pickup_lng]} icon={PassengerIcon}>
+                    <Popup>Pickup: {driverActiveJob.pickup_location}</Popup>
+                  </Marker>
+                  <Marker position={[driverActiveJob.dropoff_lat, driverActiveJob.dropoff_lng]}>
+                    <Popup>Dropoff: {driverActiveJob.dropoff_location}</Popup>
+                  </Marker>
+                </>
+              )}
+            </>
           )}
         </MapContainer>
 
-        {bookingState === 'found' && (
-          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg z-[1000] animate-in slide-in-from-top-2">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-              </span>
-              <span className="font-bold text-sm text-gray-800">Live Tracking Active</span>
+        {/* Mode Toggle */}
+        <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-2 flex items-center gap-2">
+          <span className={`text-sm font-bold ${!isDriverMode ? 'text-trini-teal' : 'text-gray-400'}`}>Passenger</span>
+          <button
+            onClick={() => setIsDriverMode(!isDriverMode)}
+            className={`w-12 h-6 rounded-full p-1 transition-colors ${isDriverMode ? 'bg-trini-black' : 'bg-gray-300'}`}
+          >
+            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${isDriverMode ? 'translate-x-6' : ''}`}></div>
+          </button>
+          <span className={`text-sm font-bold ${isDriverMode ? 'text-trini-black' : 'text-gray-400'}`}>Driver</span>
+        </div>
+      </div>
+
+      {/* Sidebar / Controls */}
+      <div className="w-full md:w-1/3 bg-white p-6 shadow-xl z-10 flex flex-col h-[50vh] md:h-screen overflow-y-auto">
+        <h1 className="text-3xl font-extrabold text-trini-black mb-2">Trini<span className="text-trini-teal">Rides</span></h1>
+
+        {isDriverMode ? (
+          // DRIVER MODE UI
+          <div className="flex-grow flex flex-col">
+            <div className="bg-trini-black text-white p-4 rounded-xl mb-6 flex justify-between items-center">
+              <div>
+                <p className="text-gray-400 text-xs uppercase font-bold">Status</p>
+                <p className="font-bold text-lg flex items-center gap-2">
+                  <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span> Online
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-gray-400 text-xs uppercase font-bold">Today's Earnings</p>
+                <p className="font-bold text-xl text-trini-teal">$145.00</p>
+              </div>
             </div>
+
+            {driverActiveJob ? (
+              <div className="bg-white border-2 border-trini-teal rounded-2xl p-6 shadow-lg animate-in fade-in slide-in-from-bottom-4">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Navigation className="h-6 w-6 text-trini-teal" /> Current Job
+                </h3>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-green-600 mt-1" />
+                    <div>
+                      <p className="text-xs text-gray-500 font-bold">PICKUP</p>
+                      <p className="font-medium">{driverActiveJob.pickup_location}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-red-600 mt-1" />
+                    <div>
+                      <p className="text-xs text-gray-500 font-bold">DROPOFF</p>
+                      <p className="font-medium">{driverActiveJob.dropoff_location}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <p className="text-xs text-gray-500">Price</p>
+                    <p className="font-bold text-lg">${driverActiveJob.price}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <p className="text-xs text-gray-500">Distance</p>
+                    <p className="font-bold text-lg">5.2 km</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {driverActiveJob.status === 'accepted' && (
+                    <button onClick={() => handleUpdateStatus('arrived')} className="w-full bg-trini-teal text-white py-3 rounded-xl font-bold hover:bg-teal-600">
+                      Arrived at Pickup
+                    </button>
+                  )}
+                  {driverActiveJob.status === 'arrived' && (
+                    <button onClick={() => handleUpdateStatus('in_progress')} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
+                      Start Trip
+                    </button>
+                  )}
+                  {driverActiveJob.status === 'in_progress' && (
+                    <button onClick={() => handleUpdateStatus('completed')} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">
+                      Complete Trip
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-bold text-gray-900 mb-4">Available Requests ({availableRides.length})</h3>
+                {availableRides.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-50 rounded-xl">
+                    <Car className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No rides available right now.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {availableRides.map(ride => (
+                      <div key={ride.id} className="bg-white border border-gray-200 p-4 rounded-xl hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="font-bold text-lg">${ride.price}</p>
+                            <p className="text-xs text-gray-500">Cash Payment</p>
+                          </div>
+                          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">4.5 km</span>
+                        </div>
+                        <div className="space-y-2 mb-4">
+                          <p className="text-sm truncate"><span className="text-green-600 font-bold">FROM:</span> {ride.pickup_location}</p>
+                          <p className="text-sm truncate"><span className="text-red-600 font-bold">TO:</span> {ride.dropoff_location}</p>
+                        </div>
+                        <button
+                          onClick={() => handleAcceptRide(ride)}
+                          className="w-full bg-trini-black text-white py-2 rounded-lg font-bold hover:bg-gray-800"
+                        >
+                          Accept Ride
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+        ) : (
+          // PASSENGER MODE UI (Existing)
+          <>
+            <p className="text-gray-500 mb-8">Fast, safe, and reliable rides across T&T.</p>
+
+            {!activeRide ? (
+              <form onSubmit={handleRequestRide} className="space-y-6 flex-grow">
+                <div className="space-y-4">
+                  <div className="relative">
+                    <MapPin className="absolute top-3.5 left-3 h-5 w-5 text-green-600" />
+                    <input
+                      type="text"
+                      placeholder="Pickup Location"
+                      required
+                      className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-trini-teal outline-none transition-all"
+                      value={pickup}
+                      onChange={e => setPickup(e.target.value)}
+                    />
+                  </div>
+                  <div className="relative">
+                    <MapPin className="absolute top-3.5 left-3 h-5 w-5 text-red-600" />
+                    <input
+                      type="text"
+                      placeholder="Dropoff Destination"
+                      required
+                      className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-trini-teal outline-none transition-all"
+                      value={dropoff}
+                      onChange={e => setDropoff(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Vehicle Types */}
+                <div className="grid grid-cols-3 gap-3">
+                  <button type="button" className="p-3 border-2 border-trini-teal bg-teal-50 rounded-xl flex flex-col items-center gap-2">
+                    <Car className="h-6 w-6 text-trini-teal" />
+                    <span className="text-xs font-bold">Standard</span>
+                  </button>
+                  <button type="button" className="p-3 border border-gray-200 rounded-xl flex flex-col items-center gap-2 opacity-50">
+                    <Car className="h-6 w-6 text-gray-600" />
+                    <span className="text-xs font-bold">Premium</span>
+                  </button>
+                  <button type="button" className="p-3 border border-gray-200 rounded-xl flex flex-col items-center gap-2 opacity-50">
+                    <Car className="h-6 w-6 text-gray-600" />
+                    <span className="text-xs font-bold">XL</span>
+                  </button>
+                </div>
+
+                {/* Payment Method */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="h-5 w-5 text-gray-600" />
+                    <span className="font-medium text-gray-700">Cash</span>
+                  </div>
+                  <button type="button" className="text-trini-teal font-bold text-sm">Change</button>
+                </div>
+
+                <div className="mt-auto pt-6">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-trini-black text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-gray-800 transition-transform transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? 'Calculating...' : 'Request Ride'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex-grow flex flex-col">
+                {/* Ride Active State */}
+                <div className="bg-teal-50 border border-trini-teal rounded-2xl p-6 mb-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Ride Requested</h3>
+                      <p className="text-gray-600 text-sm">Est. arrival: 5 mins</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-trini-teal">${activeRide.price}</p>
+                      <p className="text-xs text-gray-500">Cash Payment</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 relative">
+                    {/* Connecting Line */}
+                    <div className="absolute left-[11px] top-8 bottom-8 w-0.5 bg-gray-300 border-l border-dashed"></div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 z-10">
+                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Pickup</p>
+                        <p className="font-medium text-gray-900">{activeRide.pickup_location}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 z-10">
+                        <div className="w-2 h-2 bg-red-600 rounded-full"></div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase font-bold">Dropoff</p>
+                        <p className="font-medium text-gray-900">{activeRide.dropoff_location}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {activeRide.status !== 'searching' && activeRide.driver_name ? (
+                  <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                      <Car className="h-6 w-6 text-gray-500" />
+                    </div>
+                    <div className="flex-grow">
+                      <h4 className="font-bold text-gray-900">{activeRide.driver_name}</h4>
+                      <p className="text-sm text-gray-500">{activeRide.driver_car} • {activeRide.driver_plate}</p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="font-bold text-sm">{activeRide.driver_rating || '5.0'}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 text-center animate-pulse">
+                    <p className="text-yellow-800 font-bold">Finding a driver nearby...</p>
+                  </div>
+                )}
+
+                <div className="mt-auto space-y-3">
+                  {activeRide.status !== 'searching' && (
+                    <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 flex items-center justify-center gap-2">
+                      <Phone className="h-5 w-5" /> Call Driver
+                    </button>
+                  )}
+                  <button
+                    onClick={handleCancelRide}
+                    className="w-full bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-100 border border-red-100"
+                  >
+                    Cancel Ride
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
-      <ChatWidget mode="rides" />
-    </div >
+    </div>
   );
 };

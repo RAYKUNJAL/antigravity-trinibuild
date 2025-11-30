@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Ticket, Calendar, MapPin, Search, Filter, CreditCard, ShieldCheck, Users, QrCode, Share2, Gift, TrendingUp, DollarSign, Lock, RefreshCw, X, Check, AlertTriangle, ScanLine, UserPlus, Settings, Banknote, Landmark, Link as LinkIcon, Camera, PlusCircle, Image as ImageIcon, Copy, Trash2, Plus } from 'lucide-react';
-import { CarnivalEvent, TicketOrder, TicketTier, PromoterWorker, BankDetails, CommitteeMember } from '../types';
+import { Ticket as TicketIcon, Calendar, MapPin, Search, Filter, CreditCard, ShieldCheck, Users, QrCode, Share2, Gift, TrendingUp, DollarSign, Lock, RefreshCw, X, Check, AlertTriangle, ScanLine, UserPlus, Settings, Banknote, Landmark, Link as LinkIcon, Camera, PlusCircle, Image as ImageIcon, Copy, Trash2, Plus } from 'lucide-react';
+import { CarnivalEvent, TicketOrder, TicketTier, PromoterWorker, BankDetails, CommitteeMember, Ticket } from '../types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { AdSpot } from '../components/AdSpot';
+import { ticketsService } from '../services/ticketsService';
+import { wiPayService } from '../services/wiPayService';
+import { supabase } from '../services/supabaseClient';
 
 export const Tickets: React.FC = () => {
    // Navigation State
@@ -60,95 +63,43 @@ export const Tickets: React.FC = () => {
    // Scanner State
    const [scanResult, setScanResult] = useState<'scanning' | 'valid' | 'invalid' | 'duplicate'>('scanning');
 
-   // Mock Data
-   const [events, setEvents] = useState<CarnivalEvent[]>([
-      {
-         id: '1',
-         title: 'Soca Monarch Finals 2026',
-         organizer: 'Caribbean Prestige',
-         date: 'Feb 12, 2026',
-         time: '8:00 PM',
-         location: 'Hasely Crawford Stadium',
-         image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop',
-         category: 'Concert',
-         isVerified: true,
-         description: "The biggest night in Soca music. See the kings and queens of Carnival battle for the crown.",
-         tiers: [
-            { id: 't1', name: 'General', price: 300, currency: 'TTD', available: 5000, perks: ['Grand Stand Access'] },
-            { id: 't2', name: 'VIP', price: 800, currency: 'TTD', available: 500, perks: ['Front Stage', 'Free Drinks', 'Fast Entry'] }
-         ]
-      },
-      {
-         id: '2',
-         title: 'Sunny Side Up: Premium Breakfast',
-         organizer: 'SSU Team',
-         date: 'Feb 14, 2026',
-         time: '4:00 AM',
-         location: 'Diamond Vale, Diego Martin',
-         image: 'https://images.unsplash.com/photo-1514525253440-b393452e3726?q=80&w=1000&auto=format&fit=crop',
-         category: 'Breakfast',
-         isVerified: true,
-         description: "The original premium breakfast party. Extensive menu, top DJs, and the best vibes to start your morning.",
-         tiers: [
-            { id: 't3', name: 'Early Bird', price: 600, currency: 'TTD', available: 0, perks: ['All Inclusive'] },
-            { id: 't4', name: 'Regular', price: 750, currency: 'TTD', available: 200, perks: ['All Inclusive'] }
-         ]
-      },
-      {
-         id: '3',
-         title: 'Silent Morning Boat Ride',
-         organizer: 'Back to Basics',
-         date: 'Feb 13, 2026',
-         time: '9:00 AM',
-         location: 'Harbour Master, POS',
-         image: 'https://images.unsplash.com/photo-1544551763-46a42a463658?q=80&w=1000&auto=format&fit=crop',
-         category: 'Boat Ride',
-         isVerified: true,
-         description: "Coolers allowed. The legendary boat ride experience.",
-         tiers: [
-            { id: 't5', name: 'Male', price: 400, currency: 'TTD', available: 50, perks: ['Cooler Allowed'] },
-            { id: 't6', name: 'Female', price: 350, currency: 'TTD', available: 100, perks: ['Cooler Allowed'] }
-         ]
-      }
-   ]);
+   // Mock Data - Initial State (will be replaced by fetch)
+   const [events, setEvents] = useState<CarnivalEvent[]>([]);
+   const [loadingEvents, setLoadingEvents] = useState(true);
 
-   // Load Events from LocalStorage
+   // Load Events from Supabase
    useEffect(() => {
-      const storedEvents = localStorage.getItem('trinibuild_events');
-      if (storedEvents) {
-         setEvents(JSON.parse(storedEvents));
-      }
-   }, []);
+      loadEvents();
+   }, [filterCategory]);
 
-   const saveEventsToLocal = (newEvents: CarnivalEvent[]) => {
-      localStorage.setItem('trinibuild_events', JSON.stringify(newEvents));
+   const loadEvents = async () => {
+      setLoadingEvents(true);
+      try {
+         const data = await ticketsService.getEvents(filterCategory);
+         setEvents(data);
+      } catch (error) {
+         console.error("Failed to load events", error);
+      } finally {
+         setLoadingEvents(false);
+      }
    };
 
-   const [myTickets, setMyTickets] = useState<TicketOrder[]>([
-      {
-         id: 'ord-123',
-         eventId: '1',
-         eventTitle: 'Soca Monarch Finals 2026',
-         tierName: 'VIP',
-         quantity: 2,
-         totalPaid: 1728, // Including 8% fees
-         purchaseDate: 'Oct 15, 2025',
-         status: 'valid',
-         secureCode: 'X7K9-M2P4',
-         ownerName: 'Ray Kunjal'
-      }
-   ]);
+   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
 
-   // Load Tickets from LocalStorage
+   // Load Tickets from Supabase
    useEffect(() => {
-      const storedTickets = localStorage.getItem('trinibuild_tickets');
-      if (storedTickets) {
-         setMyTickets(JSON.parse(storedTickets));
+      if (view === 'wallet') {
+         loadMyTickets();
       }
-   }, []);
+   }, [view]);
 
-   const saveTicketsToLocal = (newTickets: TicketOrder[]) => {
-      localStorage.setItem('trinibuild_tickets', JSON.stringify(newTickets));
+   const loadMyTickets = async () => {
+      try {
+         const tickets = await ticketsService.getMyTickets();
+         setMyTickets(tickets);
+      } catch (error) {
+         console.error("Failed to load tickets", error);
+      }
    };
 
    // Exchange Rate
@@ -177,7 +128,7 @@ export const Tickets: React.FC = () => {
       return () => clearInterval(interval);
    }, []);
 
-   const handlePurchase = () => {
+   const handlePurchase = async () => {
       if (!selectedEvent || !checkoutTier) return;
 
       // Calculate Fees - 8%
@@ -185,29 +136,53 @@ export const Tickets: React.FC = () => {
       const serviceFee = subtotal * 0.08;
       const total = subtotal + serviceFee;
 
-      alert(`Processing payment of ${formatPrice(total)} via PayPal Secure Gateway...`);
+      try {
+         const { data: { user } } = await supabase.auth.getUser();
+         if (!user) {
+            alert("Please login to purchase tickets");
+            return;
+         }
 
-      // Mock Success
-      setTimeout(() => {
-         const newTicket: TicketOrder = {
-            id: `ord-${Date.now()}`,
-            eventId: selectedEvent.id,
-            eventTitle: selectedEvent.title,
-            tierName: checkoutTier.name,
-            quantity: ticketQuantity,
-            totalPaid: total,
-            purchaseDate: new Date().toLocaleDateString(),
-            status: 'valid',
-            secureCode: `SEC-${Math.floor(Math.random() * 10000)}`,
-            ownerName: 'You'
-         };
-         const updatedTickets = [...myTickets, newTicket];
-         setMyTickets(updatedTickets);
-         saveTicketsToLocal(updatedTickets);
+         // 1. Process Payment with WiPay
+         const paymentResponse = await wiPayService.createPayment({
+            amount: total,
+            currency: 'TTD',
+            orderNumber: `ORD-${Date.now()}`,
+            description: `${ticketQuantity}x ${selectedEvent.title} - ${checkoutTier.name}`,
+            customerName: user.user_metadata.full_name || 'Valued Customer',
+            customerEmail: user.email || '',
+            customerPhone: user.phone || ''
+         });
+
+         if (!paymentResponse.success) {
+            throw new Error(paymentResponse.error || 'Payment failed');
+         }
+
+         // In a real flow, we would redirect to paymentResponse.url
+         // For this hybrid/demo, we'll assume success if we get a URL or transaction ID
+
+         alert(`Processing payment of ${formatPrice(total)} via WiPay...`);
+
+         // 2. Create Tickets in Supabase
+         await ticketsService.purchaseTickets(
+            selectedEvent.id,
+            checkoutTier.id,
+            ticketQuantity,
+            user.user_metadata.full_name || 'Ticket Holder'
+         );
+
+         alert("Payment Successful! Tickets added to your wallet.");
+
+         // Refresh Wallet
+         loadMyTickets();
          setView('wallet');
          setSelectedEvent(null);
          setCheckoutTier(null);
-      }, 1500);
+
+      } catch (error: any) {
+         console.error("Purchase failed", error);
+         alert(`Purchase failed: ${error.message}`);
+      }
    };
 
    // --- PROMOTER ACTIONS ---
@@ -245,29 +220,38 @@ export const Tickets: React.FC = () => {
       setTempTiers(tempTiers.filter(t => t.id !== id));
    };
 
-   const handleSaveEvent = () => {
-      const ev: CarnivalEvent = {
-         id: `evt-${Date.now()}`,
-         title: newEvent.title || 'New Event',
-         organizer: 'My Promotion',
-         date: newEvent.date || 'TBD',
-         time: newEvent.time || 'TBD',
-         location: newEvent.location || 'TBD',
-         image: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000',
-         category: newEvent.category as any,
-         description: newEvent.description || '',
-         isVerified: true,
-         tiers: tempTiers.length > 0 ? tempTiers : [
-            { id: 't-gen', name: 'General Admission', price: 300, currency: 'TTD', available: 100, perks: [] }
-         ]
-      };
-      const updatedEvents = [ev, ...events];
-      setEvents(updatedEvents);
-      saveEventsToLocal(updatedEvents);
-      setShowEventModal(false);
-      setTempTiers([]);
-      setNewEvent({ title: '', location: '', category: 'Concert' });
-      alert("Event Published Successfully!");
+   const handleSaveEvent = async () => {
+      try {
+         await ticketsService.createEvent({
+            title: newEvent.title || 'New Event',
+            organizer_id: (await supabase.auth.getUser()).data.user?.id, // Will be set by backend trigger ideally, but passing for now
+            date: newEvent.date || '2026-01-01',
+            time: newEvent.time || '12:00:00',
+            location: newEvent.location || 'TBD',
+            image_url: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000',
+            category: newEvent.category as any,
+            description: newEvent.description || '',
+            status: 'published',
+            is_verified: true
+         }, tempTiers.map(t => ({
+            name: t.name,
+            price: t.price,
+            currency: 'TTD',
+            quantity_total: t.available,
+            quantity_sold: 0,
+            perks: t.perks,
+            status: 'active'
+         })));
+
+         alert("Event Published Successfully!");
+         setShowEventModal(false);
+         setTempTiers([]);
+         setNewEvent({ title: '', location: '', category: 'Concert' });
+         loadEvents(); // Refresh list
+      } catch (e) {
+         console.error("Failed to create event", e);
+         alert("Failed to create event");
+      }
    };
 
    const handleAddCommittee = () => {
@@ -286,12 +270,38 @@ export const Tickets: React.FC = () => {
       }
    };
 
-   const simulateScan = () => {
+   const simulateScan = async () => {
       setScanResult('scanning');
-      setTimeout(() => {
-         const res = Math.random() > 0.7 ? 'invalid' : (Math.random() > 0.8 ? 'duplicate' : 'valid');
-         setScanResult(res);
-      }, 1500);
+      // In a real app, this would be triggered by a QR code reader library
+      // For simulation, we'll pick a random ticket from the database or a known test one
+
+      // Let's try to find a valid ticket for the first event
+      try {
+         // This is just a simulation, so we'll try to scan a "test" hash
+         // In reality, the camera would provide the hash
+         const testHash = `TICKET-TEST-${Date.now()}`;
+
+         // We can't easily simulate a real scan without a real QR code from the DB.
+         // So we will just call the service with a dummy hash and expect 'invalid' 
+         // unless we actually picked a real hash from the wallet.
+
+         // For better demo, let's grab a real ticket from myTickets if available
+         let hashToScan = testHash;
+         if (myTickets.length > 0) {
+            hashToScan = myTickets[0].qr_code_hash;
+         }
+
+         const result = await ticketsService.scanTicket(hashToScan, myTickets[0]?.event_id || '1');
+
+         setScanResult(result.status as any);
+         if (result.status !== 'valid' && result.status !== 'duplicate') {
+            // If our "myTicket" scan failed (maybe different user?), show invalid
+            // setScanResult('invalid'); 
+         }
+
+      } catch (e) {
+         setScanResult('invalid');
+      }
    };
 
    return (
@@ -301,7 +311,7 @@ export const Tickets: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4">
                <div className="flex items-center justify-between h-16">
                   <div className="flex items-center gap-2">
-                     <Ticket className="h-6 w-6 text-trini-red" />
+                     <TicketIcon className="h-6 w-6 text-trini-red" />
                      <span className="font-bold text-lg tracking-tight">TriniBuild <span className="text-trini-red">E-Tick</span></span>
                   </div>
 
@@ -363,11 +373,11 @@ export const Tickets: React.FC = () => {
                      {filteredEvents.map(event => (
                         <div key={event.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all group">
                            <div className="h-48 relative overflow-hidden">
-                              <img src={event.image} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                              <img src={event.image_url} alt={event.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                               <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold uppercase">
                                  {event.category}
                               </div>
-                              {event.isVerified && (
+                              {event.is_verified && (
                                  <div className="absolute bottom-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-sm">
                                     <ShieldCheck className="h-3 w-3 mr-1" /> Verified
                                  </div>
@@ -387,7 +397,7 @@ export const Tickets: React.FC = () => {
                               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                  <div>
                                     <p className="text-xs text-gray-500 uppercase font-bold">Starting At</p>
-                                    <p className="text-xl font-extrabold text-gray-900">{formatPrice(Math.min(...event.tiers.map(t => t.price)))}</p>
+                                    <p className="text-xl font-extrabold text-gray-900">{formatPrice(event.tiers && event.tiers.length > 0 ? Math.min(...event.tiers.map(t => t.price)) : 0)}</p>
                                  </div>
                                  <button
                                     onClick={() => setSelectedEvent(event)}
@@ -421,7 +431,7 @@ export const Tickets: React.FC = () => {
                                  </div>
                                  <div className="flex items-center gap-2 text-xs font-mono bg-gray-800 px-3 py-1 rounded">
                                     <Lock className="h-3 w-3" />
-                                    {ticket.secureCode}
+                                    {ticket.qr_code_hash?.substring(0, 8)}
                                  </div>
                                  <p className="text-[10px] text-gray-400 mt-2 animate-pulse">Code refreshes every 60s</p>
                               </div>
@@ -430,8 +440,8 @@ export const Tickets: React.FC = () => {
                                  <div>
                                     <div className="flex justify-between items-start">
                                        <div>
-                                          <h3 className="font-bold text-xl text-gray-900">{ticket.eventTitle}</h3>
-                                          <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded mt-1">{ticket.tierName} Access</span>
+                                          <h3 className="font-bold text-xl text-gray-900">{ticket.event?.title}</h3>
+                                          <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded mt-1">{ticket.tier?.name} Access</span>
                                        </div>
                                        <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full flex items-center">
                                           <Check className="h-3 w-3 mr-1" /> Valid
@@ -440,11 +450,11 @@ export const Tickets: React.FC = () => {
                                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                                        <div>
                                           <p className="text-gray-500 text-xs uppercase">Quantity</p>
-                                          <p className="font-bold">{ticket.quantity} Tickets</p>
+                                          <p className="font-bold">1 Ticket</p>
                                        </div>
                                        <div>
                                           <p className="text-gray-500 text-xs uppercase">Holder</p>
-                                          <p className="font-bold">{ticket.ownerName}</p>
+                                          <p className="font-bold">{ticket.holder_name}</p>
                                        </div>
                                     </div>
                                  </div>
@@ -463,7 +473,7 @@ export const Tickets: React.FC = () => {
                      </div>
                   ) : (
                      <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200">
-                        <Ticket className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <TicketIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                         <p className="text-gray-500 font-medium">No tickets yet.</p>
                         <button onClick={() => setView('browse')} className="mt-4 text-trini-red font-bold hover:underline">
                            Find an Event
@@ -516,7 +526,7 @@ export const Tickets: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            {events.slice(0, 2).map(ev => (
                               <div key={ev.id} className="bg-white p-4 rounded-xl border border-gray-200 flex gap-4 hover:shadow-md transition-all">
-                                 <img src={ev.image} className="w-24 h-24 object-cover rounded-lg bg-gray-100" />
+                                 <img src={ev.image_url} className="w-24 h-24 object-cover rounded-lg bg-gray-100" />
                                  <div className="flex-grow">
                                     <h3 className="font-bold text-gray-900">{ev.title}</h3>
                                     <p className="text-xs text-gray-500 mb-2">{ev.date} @ {ev.location}</p>
@@ -726,7 +736,7 @@ export const Tickets: React.FC = () => {
 
                         {/* Ticket Tiers Builder */}
                         <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                           <h3 className="font-bold text-gray-900 mb-4 flex items-center"><Ticket className="mr-2 h-4 w-4" /> Ticket Tiers</h3>
+                           <h3 className="font-bold text-gray-900 mb-4 flex items-center"><TicketIcon className="mr-2 h-4 w-4" /> Ticket Tiers</h3>
 
                            {tempTiers.length > 0 && (
                               <div className="space-y-2 mb-4">

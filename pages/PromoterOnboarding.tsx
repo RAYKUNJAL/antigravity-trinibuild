@@ -33,9 +33,64 @@ export const PromoterOnboarding: React.FC = () => {
             .then(text => {
                setContractText(text);
                setLoading(false);
+            })
+            .catch(error => {
+               console.error('Contract generation failed, using fallback:', error);
+               // Fallback contract if AI fails
+               const fallbackContract = `PROMOTER PARTNERSHIP AGREEMENT
+
+This Agreement is entered into on ${new Date().toLocaleDateString()} between:
+
+PARTY A: TriniBuild Technologies Ltd. ("Platform")
+PARTY B: ${formData.fullName} representing ${formData.businessName} ("Promoter")
+
+1. TERM & EXCLUSIVITY
+   - Effective Period: 2 Years from date of signing
+   - Renewable upon mutual written consent
+
+2. FEES & COMMISSION
+   - Promotional Rate: 6.0% per ticket sold
+   - Standard Rate: 8.0% (Discounted for this agreement)
+   - Processing Fee: Included in promotional rate
+   
+3. PAYOUT SCHEDULE
+   - Weekly payments every Tuesday
+   - Direct deposit to registered bank account
+   - Payment threshold: TT$100 minimum
+
+4. OBLIGATIONS
+   Platform agrees to:
+   - Provide ticketing infrastructure
+   - Process payments securely
+   - Market events on platform
+   
+   Promoter agrees to:
+   - Maintain event quality standards
+   - Respond to customer inquiries
+   - Comply with local regulations
+
+5. TERMINATION
+   Either party may terminate with 30 days written notice.
+
+6. INDEPENDENT CONTRACTOR
+   Promoter is an independent contractor, not an employee.
+   Promoter is responsible for own taxes and compliance.
+
+By signing below, both parties agree to these terms.
+
+____________________________________________
+Platform Representative
+
+____________________________________________
+${formData.fullName} (Digital Signature)
+${new Date().toLocaleDateString()}`;
+
+               setContractText(fallbackContract);
+               setLoading(false);
             });
       }
-   }, [step, formData.fullName, formData.businessName]);
+   }, [step, formData.fullName, formData.businessName, contractText]);
+
 
    const handleNext = () => {
       setStep(step + 1);

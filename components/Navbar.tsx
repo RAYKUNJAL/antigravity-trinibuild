@@ -41,15 +41,15 @@ export const Navbar: React.FC = () => {
   const isTransparent = isHome && !scrolled;
 
   const navClasses = `fixed top-0 w-full z-50 transition-all duration-300 ${isTransparent
-      ? 'bg-transparent text-white pt-4'
-      : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md py-2'
+    ? 'bg-transparent text-white pt-4'
+    : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md py-2'
     }`;
 
   const linkClasses = (path: string) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isTransparent
-      ? 'text-white/90 hover:text-white hover:bg-white/10'
-      : isActive(path)
-        ? 'text-trini-red bg-red-50'
-        : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
+    ? 'text-white/90 hover:text-white hover:bg-white/10'
+    : isActive(path)
+      ? 'text-trini-red bg-red-50'
+      : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
     }`;
 
   return (
@@ -84,6 +84,14 @@ export const Navbar: React.FC = () => {
               </Link>
             ))}
             <Link to="/earn" className={linkClasses('/earn')}>Earn</Link>
+
+            {/* Real Estate Specific Link */}
+            {location.pathname.startsWith('/real-estate') && (
+              <Link to="/real-estate/agent" className={`ml-2 px-3 py-2 rounded-md text-sm font-bold transition-colors ${isTransparent ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>
+                Agent Hub
+              </Link>
+            )}
+
             <div className={`h-6 w-px mx-2 opacity-50 ${isTransparent ? 'bg-white' : 'bg-gray-300'}`}></div>
 
             {/* Profile Link */}
@@ -92,8 +100,8 @@ export const Navbar: React.FC = () => {
             </Link>
 
             <Link to="/create-store" className={`ml-2 px-4 py-2 rounded-md text-sm font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 ${isTransparent
-                ? 'bg-white text-trini-black hover:bg-gray-100'
-                : 'bg-trini-black text-white hover:bg-gray-800'
+              ? 'bg-white text-trini-black hover:bg-gray-100'
+              : 'bg-trini-black text-white hover:bg-gray-800'
               }`}>
               Start Selling
             </Link>
@@ -122,8 +130,8 @@ export const Navbar: React.FC = () => {
                 to={link.path}
                 onClick={() => setIsOpen(false)}
                 className={`block px-3 py-2 rounded-md text-base font-medium ${isActive(link.path)
-                    ? 'text-trini-red bg-red-50'
-                    : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
+                  ? 'text-trini-red bg-red-50'
+                  : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
                   }`}
               >
                 {link.name}
@@ -135,6 +143,11 @@ export const Navbar: React.FC = () => {
             <Link to="/earn" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-purple-700 bg-purple-50">
               Start Earning
             </Link>
+            {location.pathname.startsWith('/real-estate') && (
+              <Link to="/real-estate/agent" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-blue-700 bg-blue-50 mt-1">
+                Agent Hub
+              </Link>
+            )}
             <div className="border-t border-gray-100 my-2"></div>
             <Link to="/create-store" onClick={() => setIsOpen(false)} className="block w-full mt-4 bg-trini-black text-white px-4 py-3 rounded-md text-base font-medium text-center">
               Create Store

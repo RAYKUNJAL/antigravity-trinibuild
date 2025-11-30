@@ -14,6 +14,8 @@
     "@google/genai": "^1.30.0",
     "@paypal/react-paypal-js": "^8.9.2",
     "@supabase/supabase-js": "^2.86.0",
+    "@types/react-leaflet": "^2.8.3",
+    "@types/uuid": "^10.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.554.0",
     "puppeteer": "^24.31.0",
@@ -23,7 +25,8 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
     "recharts": "^3.4.1",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
