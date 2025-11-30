@@ -83,15 +83,21 @@ export const Rides: React.FC = () => {
         (position) => {
           const pos: [number, number] = [position.coords.latitude, position.coords.longitude];
 
+          // 🚀 DEV MODE: Allow testing from anywhere!
+          const DEV_MODE = import.meta.env.DEV || window.location.hostname === 'localhost';
+
           // Check if user is in Trinidad and Tobago (covers both islands)
           const isInTrinidadAndTobago =
             pos[0] >= 10.0 && pos[0] <= 11.5 && // Latitude: Trinidad (10.0-11.0) + Tobago (11.1-11.4)
             pos[1] >= -62.0 && pos[1] <= -60.5;  // Longitude: Both islands
 
-          if (isInTrinidadAndTobago) {
+          if (isInTrinidadAndTobago || DEV_MODE) {
             setCenter(pos);
             setUserLocation(pos);
             setPickup("Current Location");
+            if (DEV_MODE && !isInTrinidadAndTobago) {
+              console.log("🧪 DEV MODE: Geofencing bypassed for testing");
+            }
           } else {
             // User not in Trinidad and Tobago - show info but still allow manual address entry
             console.log("GPS location outside Trinidad and Tobago. Defaulting to Port of Spain.");
