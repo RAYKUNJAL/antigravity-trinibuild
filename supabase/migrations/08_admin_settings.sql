@@ -22,19 +22,51 @@ VALUES ('site-assets', 'site-assets', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policy to allow public read of site assets
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT
-USING ( bucket_id = 'site-assets' );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Public Access' AND tablename = 'objects' AND schemaname = 'storage'
+    ) THEN
+        CREATE POLICY "Public Access" ON storage.objects FOR SELECT
+        USING ( bucket_id = 'site-assets' );
+    END IF;
+END
+$$;
 
 -- Policy to allow authenticated users (admins) to upload
-CREATE POLICY "Admin Upload" ON storage.objects FOR INSERT
-WITH CHECK ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Admin Upload' AND tablename = 'objects' AND schemaname = 'storage'
+    ) THEN
+        CREATE POLICY "Admin Upload" ON storage.objects FOR INSERT
+        WITH CHECK ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+    END IF;
+END
+$$;
 
 -- Policy to allow admins to update/delete
-CREATE POLICY "Admin Update" ON storage.objects FOR UPDATE
-USING ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Admin Update' AND tablename = 'objects' AND schemaname = 'storage'
+    ) THEN
+        CREATE POLICY "Admin Update" ON storage.objects FOR UPDATE
+        USING ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+    END IF;
+END
+$$;
 
-CREATE POLICY "Admin Delete" ON storage.objects FOR DELETE
-USING ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE policyname = 'Admin Delete' AND tablename = 'objects' AND schemaname = 'storage'
+    ) THEN
+        CREATE POLICY "Admin Delete" ON storage.objects FOR DELETE
+        USING ( bucket_id = 'site-assets' AND auth.role() = 'authenticated' );
+    END IF;
+END
+$$;
 
 -- Seed default settings
 INSERT INTO site_settings (key, value, type) VALUES
