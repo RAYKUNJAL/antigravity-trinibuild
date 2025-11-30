@@ -19,6 +19,7 @@ import { Deals } from './pages/Deals';
 import { Onboarding } from './pages/Onboarding';
 import { Earn } from './pages/Earn';
 import { DriverOnboarding } from './pages/DriverOnboarding';
+import { DriverHub } from './pages/DriverHub';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
@@ -85,6 +86,7 @@ const App: React.FC = () => {
               {/* Functional App Pages - The "Utility" Layer */}
               <Route path="/earn" element={<Earn />} />
               <Route path="/drive/signup" element={<DriverOnboarding />} />
+              <Route path="/driver/hub" element={<DriverHub />} />
               <Route path="/work/profile" element={<JobProfile />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/rides" element={<Rides />} />
