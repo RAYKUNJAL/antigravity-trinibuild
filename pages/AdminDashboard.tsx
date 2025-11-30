@@ -4,30 +4,34 @@ import {
    Users, DollarSign, Ban, CheckCircle, Search, Gift, MessageCircle, Mail,
    ShieldAlert, MoreVertical, LayoutDashboard, Settings as SettingsIcon,
    UploadCloud, Loader2, FileText, X, Briefcase, Ticket, TrendingUp,
-   Activity, Globe, Bell, LogOut, Menu, ChevronRight, BarChart2, PieChart as PieChartIcon, PlayCircle, Sliders, FileEdit, Key, Eye, AlertTriangle, Power, Database, Layers, Server, Cpu
+   Activity, Globe, Bell, LogOut, Menu, ChevronRight, BarChart2, PieChart as PieChartIcon, PlayCircle, Sliders, FileEdit, Key, Eye, AlertTriangle, Power, Database, Layers, Server, Cpu, Map as MapIcon, Video, Save, Upload, Image as ImageIcon
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import { SubscriptionTier, BlogPost } from '../types';
 import { Link } from 'react-router-dom';
 import { verifyBusinessDocument, generateBlogPost } from '../services/geminiService';
 import { getCampaigns, saveCampaign, deleteCampaign, AdCampaign, getTrafficStats } from '../services/adService';
+import { adminService, SiteSetting } from '../services/adminService';
 
 const REVENUE_DATA = [
-   { name: 'Jan', revenue: 0 },
-   { name: 'Feb', revenue: 0 },
-   { name: 'Mar', revenue: 0 },
-   { name: 'Apr', revenue: 0 },
-   { name: 'May', revenue: 0 },
-   { name: 'Jun', revenue: 0 },
-   { name: 'Jul', revenue: 0 },
-   { name: 'Aug', revenue: 0 },
-   { name: 'Sep', revenue: 0 },
-   { name: 'Oct', revenue: 0 },
+   { name: 'Jan', revenue: 1200 },
+   { name: 'Feb', revenue: 1900 },
+   { name: 'Mar', revenue: 3000 },
+   { name: 'Apr', revenue: 2500 },
+   { name: 'May', revenue: 4200 },
+   { name: 'Jun', revenue: 5500 },
 ];
 
 export const AdminDashboard: React.FC = () => {
-   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments'>('overview');
+   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings'>('overview');
    const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+   // Site Settings Logic
+   const [settings, setSettings] = useState<Record<string, string>>({});
+   const [loadingSettings, setLoadingSettings] = useState(false);
+   const [uploading, setUploading] = useState(false);
 
    // Vendor Logic
    const [vendors, setVendors] = useState<any[]>([
@@ -81,7 +85,47 @@ export const AdminDashboard: React.FC = () => {
    useEffect(() => {
       setCampaigns(getCampaigns());
       setTrafficStats(getTrafficStats());
+      loadSettings();
    }, []);
+
+   const loadSettings = async () => {
+      setLoadingSettings(true);
+      try {
+         const data = await adminService.getSettings();
+         const settingsMap: Record<string, string> = {};
+         data.forEach(s => settingsMap[s.key] = s.value);
+         setSettings(settingsMap);
+      } catch (error) {
+         console.error("Failed to load settings", error);
+      } finally {
+         setLoadingSettings(false);
+      }
+   };
+
+   const handleUpdateSetting = async (key: string, value: string) => {
+      try {
+         await adminService.updateSetting(key, value);
+         setSettings(prev => ({ ...prev, [key]: value }));
+         alert('Setting updated successfully');
+      } catch (error) {
+         alert('Failed to update setting');
+      }
+   };
+
+   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, settingKey: string) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setUploading(true);
+      try {
+         const url = await adminService.uploadAsset(file, 'hero');
+         await handleUpdateSetting(settingKey, url);
+      } catch (error) {
+         alert('Upload failed');
+      } finally {
+         setUploading(false);
+      }
+   };
 
    const handleSaveCampaign = () => {
       if (!editingCampaign.clientName || !editingCampaign.videoUrl) return;
@@ -225,9 +269,10 @@ export const AdminDashboard: React.FC = () => {
                </div>
             </div>
 
-            <nav className="flex-grow py-6 space-y-1">
+            <nav className="flex-grow py-6 space-y-1 overflow-y-auto">
                {[
                   { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
+                  { id: 'analytics', icon: MapIcon, label: 'Heatmaps & Data' },
                   { id: 'monetization', icon: BarChart2, label: 'Traffic & Ads' },
                   { id: 'payments', icon: DollarSign, label: 'Payments' },
                   { id: 'content', icon: FileEdit, label: 'Content & SEO' },
@@ -235,6 +280,7 @@ export const AdminDashboard: React.FC = () => {
                   { id: 'users', icon: Users, label: 'Users & Drivers' },
                   { id: 'jobs', icon: Briefcase, label: 'Jobs' },
                   { id: 'integrations', icon: Layers, label: 'Integrations' },
+                  { id: 'settings', icon: Sliders, label: 'Site Control' },
                   { id: 'system', icon: SettingsIcon, label: 'System Control' },
                ].map((item) => (
                   <button
@@ -289,16 +335,17 @@ export const AdminDashboard: React.FC = () => {
                   <div className="space-y-8 animate-in fade-in duration-500">
                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {[
-                           { label: 'Total Revenue', value: 'TT$ 0.00', sub: 'System Start', icon: DollarSign, color: 'bg-green-100 text-green-600' },
-                           { label: 'Total Users', value: '4', sub: '2 Vendors / 2 Users', icon: Users, color: 'bg-blue-100 text-blue-600' },
-                           { label: 'Active Stores', value: '2', sub: 'Growth Phase', icon: Globe, color: 'bg-purple-100 text-purple-600' },
-                           { label: 'Pending Tickets', value: '0', sub: 'All Clear', icon: Ticket, color: 'bg-orange-100 text-orange-600' },
+                           { label: 'Total Revenue', value: 'TT$ 12,450', sub: '+15% this month', icon: DollarSign, color: 'bg-green-100 text-green-600' },
+                           { label: 'Total Users', value: '1,240', sub: '85 New today', icon: Users, color: 'bg-blue-100 text-blue-600' },
+                           { label: 'Active Stores', value: '45', sub: '3 Pending Approval', icon: Globe, color: 'bg-purple-100 text-purple-600' },
+                           { label: 'Pending Tickets', value: '12', sub: 'Action Required', icon: Ticket, color: 'bg-orange-100 text-orange-600' },
                         ].map((stat, i) => (
                            <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                               <div className="flex justify-between items-start">
                                  <div>
                                     <p className="text-sm font-medium text-gray-500">{stat.label}</p>
                                     <h3 className="text-3xl font-bold text-gray-900 mt-1">{stat.value}</h3>
+                                    <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
                                  </div>
                                  <div className={`p-3 rounded-lg ${stat.color}`}>
                                     <stat.icon className="h-6 w-6" />
@@ -308,11 +355,189 @@ export const AdminDashboard: React.FC = () => {
                         ))}
                      </div>
 
-                     <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Welcome to the Command Center</h3>
-                        <p className="text-gray-500 max-w-2xl mx-auto">
-                           You have full control over the TriniBuild ecosystem. Use the sidebar to manage content, inject traffic, override user accounts, or configure system-wide settings.
-                        </p>
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <h3 className="font-bold text-lg mb-4">Revenue Trend</h3>
+                           <div className="h-64">
+                              <ResponsiveContainer width="100%" height="100%">
+                                 <AreaChart data={REVENUE_DATA}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Area type="monotone" dataKey="revenue" stroke="#ef4444" fill="#fee2e2" />
+                                 </AreaChart>
+                              </ResponsiveContainer>
+                           </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <h3 className="font-bold text-lg mb-4">User Distribution</h3>
+                           <div className="h-64 flex items-center justify-center">
+                              <ResponsiveContainer width="100%" height="100%">
+                                 <PieChart>
+                                    <Pie
+                                       data={[
+                                          { name: 'Customers', value: 800 },
+                                          { name: 'Drivers', value: 200 },
+                                          { name: 'Vendors', value: 45 },
+                                       ]}
+                                       cx="50%"
+                                       cy="50%"
+                                       innerRadius={60}
+                                       outerRadius={80}
+                                       fill="#8884d8"
+                                       paddingAngle={5}
+                                       dataKey="value"
+                                    >
+                                       <Cell fill="#0088FE" />
+                                       <Cell fill="#00C49F" />
+                                       <Cell fill="#FFBB28" />
+                                    </Pie>
+                                    <Tooltip />
+                                 </PieChart>
+                              </ResponsiveContainer>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* VIEW: ANALYTICS (Heatmaps) */}
+               {activeView === 'analytics' && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                     <div className="flex justify-between items-center">
+                        <h2 className="text-2xl font-bold text-gray-900">Geospatial Intelligence</h2>
+                        <div className="flex gap-2">
+                           <button className="bg-white border border-gray-300 px-3 py-1 rounded text-sm font-bold">Last 24h</button>
+                           <button className="bg-gray-900 text-white px-3 py-1 rounded text-sm font-bold">Live</button>
+                        </div>
+                     </div>
+
+                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-[600px] relative">
+                        <MapContainer center={[10.6918, -61.2225]} zoom={10} style={{ height: '100%', width: '100%' }}>
+                           <TileLayer
+                              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                           />
+                           {/* Mock Heatmap Data Points */}
+                           {[
+                              { lat: 10.65, lng: -61.50, intensity: 0.8, label: 'Port of Spain (High Activity)' },
+                              { lat: 10.28, lng: -61.46, intensity: 0.6, label: 'San Fernando (Medium)' },
+                              { lat: 10.63, lng: -61.40, intensity: 0.4, label: 'San Juan' },
+                              { lat: 11.18, lng: -60.74, intensity: 0.3, label: 'Tobago' },
+                           ].map((point, i) => (
+                              <CircleMarker
+                                 key={i}
+                                 center={[point.lat, point.lng]}
+                                 radius={20 * point.intensity}
+                                 fillColor={point.intensity > 0.7 ? '#ef4444' : point.intensity > 0.5 ? '#f59e0b' : '#3b82f6'}
+                                 color="transparent"
+                                 fillOpacity={0.6}
+                              >
+                                 <Popup>
+                                    <strong>{point.label}</strong><br />
+                                    Activity Level: {Math.round(point.intensity * 100)}%
+                                 </Popup>
+                              </CircleMarker>
+                           ))}
+                        </MapContainer>
+                        <div className="absolute bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg z-[1000]">
+                           <h4 className="font-bold text-sm mb-2">Activity Legend</h4>
+                           <div className="flex items-center gap-2 text-xs"><div className="w-3 h-3 rounded-full bg-red-500"></div> High Traffic</div>
+                           <div className="flex items-center gap-2 text-xs"><div className="w-3 h-3 rounded-full bg-orange-500"></div> Medium Traffic</div>
+                           <div className="flex items-center gap-2 text-xs"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Low Traffic</div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* VIEW: SITE CONTROL (Settings) */}
+               {activeView === 'settings' && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                     <h2 className="text-2xl font-bold text-gray-900">Site Configuration</h2>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Branding Section */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <h3 className="font-bold text-lg mb-4 flex items-center"><ImageIcon className="mr-2 h-5 w-5" /> Branding & Assets</h3>
+
+                           <div className="space-y-4">
+                              <div>
+                                 <label className="block text-sm font-bold text-gray-700 mb-1">Hero Title</label>
+                                 <input
+                                    type="text"
+                                    className="w-full border border-gray-300 rounded p-2"
+                                    value={settings['hero_title'] || ''}
+                                    onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
+                                 />
+                                 <button onClick={() => handleUpdateSetting('hero_title', settings['hero_title'])} className="text-xs text-blue-600 font-bold mt-1 hover:underline">Save</button>
+                              </div>
+
+                              <div>
+                                 <label className="block text-sm font-bold text-gray-700 mb-1">Hero Subtitle</label>
+                                 <textarea
+                                    className="w-full border border-gray-300 rounded p-2"
+                                    value={settings['hero_subtitle'] || ''}
+                                    onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
+                                 />
+                                 <button onClick={() => handleUpdateSetting('hero_subtitle', settings['hero_subtitle'])} className="text-xs text-blue-600 font-bold mt-1 hover:underline">Save</button>
+                              </div>
+
+                              <div>
+                                 <label className="block text-sm font-bold text-gray-700 mb-1">Hero Image</label>
+                                 {settings['hero_image_url'] && (
+                                    <img src={settings['hero_image_url']} alt="Hero" className="w-full h-32 object-cover rounded mb-2" />
+                                 )}
+                                 <div className="flex gap-2">
+                                    <input
+                                       type="text"
+                                       className="flex-1 border border-gray-300 rounded p-2 text-sm"
+                                       placeholder="Image URL"
+                                       value={settings['hero_image_url'] || ''}
+                                       onChange={(e) => setSettings({ ...settings, hero_image_url: e.target.value })}
+                                    />
+                                    <label className="bg-gray-900 text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 flex items-center">
+                                       {uploading ? <Loader2 className="animate-spin h-4 w-4" /> : <Upload className="h-4 w-4" />}
+                                       <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'hero_image_url')} accept="image/*" />
+                                    </label>
+                                 </div>
+                                 <button onClick={() => handleUpdateSetting('hero_image_url', settings['hero_image_url'])} className="text-xs text-blue-600 font-bold mt-1 hover:underline">Save URL</button>
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Media Section */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                           <h3 className="font-bold text-lg mb-4 flex items-center"><Video className="mr-2 h-5 w-5" /> Media & Promo</h3>
+
+                           <div className="space-y-4">
+                              <div>
+                                 <label className="block text-sm font-bold text-gray-700 mb-1">Promo Video URL (YouTube/MP4)</label>
+                                 <div className="flex gap-2">
+                                    <input
+                                       type="text"
+                                       className="flex-1 border border-gray-300 rounded p-2"
+                                       value={settings['promo_video_url'] || ''}
+                                       onChange={(e) => setSettings({ ...settings, promo_video_url: e.target.value })}
+                                    />
+                                    <label className="bg-gray-900 text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 flex items-center">
+                                       {uploading ? <Loader2 className="animate-spin h-4 w-4" /> : <Upload className="h-4 w-4" />}
+                                       <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'promo_video_url')} accept="video/*" />
+                                    </label>
+                                 </div>
+                                 <button onClick={() => handleUpdateSetting('promo_video_url', settings['promo_video_url'])} className="text-xs text-blue-600 font-bold mt-1 hover:underline">Save</button>
+                              </div>
+
+                              <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                                 <h4 className="font-bold text-sm mb-2">Video Preview</h4>
+                                 {settings['promo_video_url'] ? (
+                                    <video src={settings['promo_video_url']} controls className="w-full rounded" />
+                                 ) : (
+                                    <div className="text-center text-gray-400 py-8">No video selected</div>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
                      </div>
                   </div>
                )}
@@ -799,116 +1024,10 @@ export const AdminDashboard: React.FC = () => {
                            Run Standard AI Scan
                         </button>
                      </div>
-
-                     {/* Hidden file input for standard flow support if needed */}
-                     <input type="file" className="hidden" onChange={handleDocUpload} id="admin-doc-upload" aria-label="Upload Document" />
                   </div>
                </div>
             </div>
          )}
-
-         {/* Campaign Modal */}
-         {isCampaignModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-               <div className="bg-white rounded-xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <h2 className="text-xl font-bold mb-6 flex items-center">
-                     <PlayCircle className="h-5 w-5 mr-2 text-trini-red" />
-                     {editingCampaign.id ? 'Edit Campaign' : 'Create New Campaign'}
-                  </h2>
-
-                  <div className="space-y-6">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                           <label className="block text-sm font-bold text-gray-900 mb-1">Client Name</label>
-                           <input
-                              type="text"
-                              value={editingCampaign.clientName}
-                              aria-label="Client Name"
-                              onChange={(e) => setEditingCampaign({ ...editingCampaign, clientName: e.target.value })}
-                              className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
-                              placeholder="e.g. Massy Motors"
-                           />
-                        </div>
-                        <div>
-                           <label className="block text-sm font-bold text-gray-900 mb-1">Target URL</label>
-                           <input
-                              type="text"
-                              value={editingCampaign.targetUrl}
-                              aria-label="Target URL"
-                              onChange={(e) => setEditingCampaign({ ...editingCampaign, targetUrl: e.target.value })}
-                              className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
-                              placeholder="https://..."
-                           />
-                        </div>
-                     </div>
-
-                     <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-1">Video Asset URL</label>
-                        <input
-                           type="text"
-                           value={editingCampaign.videoUrl}
-                           aria-label="Video Asset URL"
-                           onChange={(e) => setEditingCampaign({ ...editingCampaign, videoUrl: e.target.value })}
-                           className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
-                           placeholder="https://storage.googleapis.com/..."
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Direct link to MP4 file required.</p>
-                     </div>
-
-                     <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-2">Placements (Where to show)</label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                           {['home', 'marketplace', 'rides', 'jobs', 'tickets', 'real_estate'].map(p => (
-                              <label key={p} className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${editingCampaign.placements?.includes(p as any) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-                                 <input
-                                    type="checkbox"
-                                    checked={editingCampaign.placements?.includes(p as any)}
-                                    aria-label={"Placement " + p}
-                                    onChange={() => togglePlacement(p)}
-                                    className="mr-2"
-                                 />
-                                 <span className="capitalize font-medium text-sm">{p.replace('_', ' ')}</span>
-                              </label>
-                           ))}
-                        </div>
-                     </div>
-
-                     <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 flex items-center justify-between">
-                        <div>
-                           <h4 className="font-bold text-purple-900">Paid Customer Boost</h4>
-                           <p className="text-xs text-purple-700">Prioritize this campaign over free tier ads.</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                           <input
-                              type="checkbox"
-                              checked={editingCampaign.isPaidClient}
-                              aria-label="Paid Customer Boost"
-                              onChange={(e) => setEditingCampaign({ ...editingCampaign, isPaidClient: e.target.checked })}
-                              className="sr-only peer"
-                           />
-                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-                     </div>
-
-                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button
-                           onClick={() => setIsCampaignModalOpen(false)}
-                           className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium"
-                        >
-                           Cancel
-                        </button>
-                        <button
-                           onClick={handleSaveCampaign}
-                           className="px-6 py-2 bg-trini-black text-white rounded font-bold hover:bg-gray-800"
-                        >
-                           Save Campaign
-                        </button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
-
       </div>
    );
 };
