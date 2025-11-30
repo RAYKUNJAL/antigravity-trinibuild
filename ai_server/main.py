@@ -5,6 +5,11 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from dotenv import load_dotenv
+from groq import Groq
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="TriniBuild AI Server",
-    description="AI-powered backend for TriniBuild using local LLMs via Ollama",
+    description="AI-powered backend for TriniBuild using Groq API",
     version="1.0.0"
 )
 
@@ -26,8 +31,14 @@ app.add_middleware(
 )
 
 # Configuration
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-DEFAULT_MODEL = "llama3"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+DEFAULT_MODEL = "llama-3.3-70b-versatile"
+
+if not GROQ_API_KEY:
+    logger.warning("GROQ_API_KEY not found in environment variables. AI features will fail.")
+
+# Initialize Groq Client
+client = Groq(api_key=GROQ_API_KEY)
 
 # --- Pydantic Models ---
 
@@ -65,74 +76,34 @@ class GenerateRequest(BaseModel):
 
 # --- Helper Functions ---
 
-# Global variable for local model
-local_llm = None
-
-def get_local_llm():
-    global local_llm
-    if local_llm is None:
-        try:
-            from ctransformers import AutoModelForCausalLM
-            logger.info("Loading local Llama model (TinyLlama)...")
-            # Using TinyLlama for speed and low memory usage on standard machines
-            local_llm = AutoModelForCausalLM.from_pretrained(
-                "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF",
-                model_type="llama",
-                gpu_layers=0
-            )
-            logger.info("Local model loaded successfully.")
-        except Exception as e:
-            logger.error(f"Failed to load local model: {e}")
-            return None
-    return local_llm
-
-def query_ollama(prompt: str, model: str = DEFAULT_MODEL, system_prompt: str = "") -> str:
+def query_groq(prompt: str, system_prompt: str = "", model: str = DEFAULT_MODEL) -> str:
     """
-    Sends a prompt to the Ollama instance. Falls back to local ctransformers model if Ollama is down.
+    Sends a prompt to the Groq API.
     """
-    url = f"{OLLAMA_BASE_URL}/api/generate"
-    
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False
-    }
-    
-    if system_prompt:
-        payload["system"] = system_prompt
-
-    # 1. Try Ollama
     try:
-        # logger.info(f"Sending request to Ollama: {model}")
-        response = requests.post(url, json=payload, timeout=5) # Short timeout to fail fast
-        response.raise_for_status()
-        data = response.json()
-        return data.get("response", "")
-    except requests.exceptions.RequestException:
-        logger.warning("Ollama not reachable. Falling back to local model.")
-    
-    # 2. Fallback to Local Model (ctransformers)
-    llm = get_local_llm()
-    if llm:
-        try:
-            full_prompt = f"<|system|>\n{system_prompt}</s>\n<|user|>\n{prompt}</s>\n<|assistant|>"
-            logger.info("Generating with local TinyLlama...")
-            return llm(full_prompt, max_new_tokens=512)
-        except Exception as e:
-            logger.error(f"Local inference failed: {e}")
-    
-    # 3. Fallback Mock
-    if os.getenv("DEV_MODE", "false").lower() == "true":
-         return f"[DEV MODE] Mock response for: {prompt[:50]}..."
-    
-    # If everything fails, return a safe fallback instead of 503 to keep the UI alive
-    return "I apologize, but I'm currently having trouble connecting to my brain. Please try again in a moment."
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        
+        messages.append({"role": "user", "content": prompt})
+
+        chat_completion = client.chat.completions.create(
+            messages=messages,
+            model=model,
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        logger.error(f"Groq API error: {e}")
+        return "I apologize, but I'm currently having trouble connecting to my brain. Please try again in a moment."
 
 # --- Endpoints ---
 
 @app.get("/")
 async def health_check():
-    return {"status": "ok", "service": "TriniBuild AI Server"}
+    return {"status": "ok", "service": "TriniBuild AI Server (Groq Powered)"}
 
 @app.post("/generate-job-letter", response_model=AIResponse)
 async def generate_job_letter(request: JobLetterRequest):
@@ -149,7 +120,7 @@ async def generate_job_letter(request: JobLetterRequest):
         f"Key skills: {', '.join(request.skills)}."
     )
 
-    generated_text = query_ollama(prompt, system_prompt=system_prompt)
+    generated_text = query_groq(prompt, system_prompt=system_prompt)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
@@ -167,7 +138,7 @@ async def generate_listing_description(request: ListingDescriptionRequest):
         f"{f'Price: TT${request.price}' if request.price else ''}"
     )
 
-    generated_text = query_ollama(prompt, system_prompt=system_prompt)
+    generated_text = query_groq(prompt, system_prompt=system_prompt)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
@@ -198,17 +169,20 @@ async def chatbot_reply(request: ChatbotRequest):
             system_prompt = "You are a helpful assistant."
 
     # Include context in the prompt if provided
-    full_prompt = f"Context: {request.context}\n\n" if request.context else ""
-    full_prompt += f"User: {request.message}\nBot:"
+    # Note: For chat interfaces, it's often better to pass history as messages, 
+    # but for this simple endpoint, we'll append context to the prompt.
+    full_prompt = request.message
+    if request.context:
+        full_prompt = f"Context: {request.context}\n\nUser Message: {request.message}"
 
-    generated_text = query_ollama(full_prompt, system_prompt=system_prompt)
+    generated_text = query_groq(full_prompt, system_prompt=system_prompt)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
     try:
-        response = query_ollama(request.prompt, model=request.model or DEFAULT_MODEL, system_prompt=request.system_prompt or "")
+        response = query_groq(request.prompt, model=request.model or DEFAULT_MODEL, system_prompt=request.system_prompt or "")
         return {"content": response, "model_used": request.model or DEFAULT_MODEL}
     except Exception as e:
         logger.error(f"Generation error: {e}")
