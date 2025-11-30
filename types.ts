@@ -96,15 +96,35 @@ export interface TicketTier {
 export interface CarnivalEvent {
   id: string;
   title: string;
-  organizer: string;
+  organizer: string; // Note: Database uses organizer_id, this might need mapping or be a joined field
+  organizer_id?: string;
   date: string;
   time: string;
   location: string;
-  image: string;
-  category: 'All Inclusive' | 'Cooler' | 'J\'Ouvert' | 'Concert' | 'Boat Ride' | 'Breakfast';
+  venue_name?: string;
+  image_url: string;
+  category: 'All Inclusive' | 'Cooler' | 'J\'Ouvert' | 'Concert' | 'Boat Ride' | 'Breakfast' | 'Mas' | 'Party';
   tiers: TicketTier[];
   description: string;
-  isVerified: boolean;
+  is_verified: boolean;
+  status?: 'draft' | 'published' | 'cancelled' | 'completed';
+  created_at?: string;
+}
+
+export interface Ticket {
+  id: string;
+  event_id: string;
+  tier_id: string;
+  user_id: string;
+  purchase_date: string;
+  status: 'valid' | 'used' | 'refunded' | 'cancelled';
+  qr_code_hash: string;
+  scanned_at?: string;
+  scanned_by?: string;
+  holder_name: string;
+  holder_email?: string;
+  event?: CarnivalEvent;
+  tier?: TicketTier;
 }
 
 export interface TicketOrder {

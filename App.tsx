@@ -28,6 +28,7 @@ import { Blog } from './pages/Blog';
 import { BlogPost } from './pages/BlogPost';
 import { Legal } from './pages/Legal';
 import { RealEstate } from './pages/RealEstate';
+import { RealEstateAgentDashboard } from './pages/RealEstateAgentDashboard';
 import { Tickets } from './pages/Tickets';
 import { UserProfile } from './pages/UserProfile';
 import { Classifieds } from './pages/Classifieds';
@@ -51,12 +52,20 @@ const PageLayout = () => {
 };
 
 import ScrollToTop from './components/ScrollToTop';
+import { useLocation } from 'react-router-dom';
+
+const LocationLogger = () => {
+  const location = useLocation();
+  console.log('📍 Current Location:', location.pathname, location.hash, location.search);
+  return null;
+};
 
 const App: React.FC = () => {
   return (
     <Router>
       <ScrollToTop />
       <div className="flex flex-col min-h-screen font-sans text-gray-900 bg-white">
+        <LocationLogger />
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -86,21 +95,6 @@ const App: React.FC = () => {
 
               {/* Functional App Pages - The "Utility" Layer */}
               <Route path="/earn" element={<Earn />} />
-              <Route path="/drive" element={<DriveWithUs />} />
-              <Route path="/drive/signup" element={<DriverOnboarding />} />
-              <Route path="/driver/hub" element={<DriverHub />} />
-              <Route path="/work/profile" element={<JobProfile />} />
-              <Route path="/deals" element={<Deals />} />
-              <Route path="/rides" element={<Rides />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/real-estate" element={<RealEstate />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/affiliate" element={<AffiliateProgram />} />
-
-              {/* Super Admin */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/settings" element={<Settings />} />
 
               {/* Support & Content */}
               <Route path="/contact" element={<Contact />} />

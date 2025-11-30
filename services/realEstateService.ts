@@ -1,136 +1,237 @@
-import { get } from './apiClient';
+import { supabase } from './supabaseClient';
 
 export interface RealEstateListing {
-    id: number;
+    id: string;
     title: string;
-    price: number;
-    type: 'rent' | 'buy';
-    beds: number;
-    baths: number;
-    sqft: number;
-    location: string;
     description: string;
-    images: string[];
-    amenities: string[];
-    agent: {
-        name: string;
-        photo: string;
-        phone: string;
-        isPremium: boolean;
-    };
-    isFeatured?: boolean;
-    postedDate: string;
-    coordinates?: { lat: number; lng: number };
+    price: number;
+    currency: string;
+    listing_type: 'sale' | 'rent';
+    property_type: 'house' | 'apartment' | 'condo' | 'land' | 'commercial' | 'townhouse';
+    status: 'active' | 'pending' | 'sold' | 'rented' | 'off_market';
+    bedrooms: number;
+    bathrooms: number;
+    sqft: number;
+    lot_size_sqft?: number;
+    year_built?: number;
+    address: string;
+    city: string;
+    region: string;
+    latitude?: number;
+    longitude?: number;
+    agent_id?: string;
+    agent_info?: any;
+    created_at: string;
+    images?: { url: string }[];
+    features?: { feature_name: string }[];
+    is_featured?: boolean;
+}
+
+export interface PropertyFilter {
+    type?: 'rent' | 'buy';
+    minPrice?: number;
+    maxPrice?: number;
+    beds?: number;
+    baths?: number;
+    propertyType?: string[];
+    city?: string;
 }
 
 export const realEstateService = {
-    getListings: async (): Promise<RealEstateListing[]> => {
-        // Mock data for now, would be GET /real-estate/listings
-        return [
-            {
-                id: 1,
-                title: "Modern Apartment in Woodbrook",
-                price: 4500,
-                type: "rent",
-                beds: 2,
-                baths: 1,
-                sqft: 850,
-                location: "Woodbrook, Port of Spain",
-                description: "Newly renovated 2-bedroom apartment in the heart of Woodbrook. Close to Ariapita Avenue nightlife and restaurants. Features a modern kitchen, secure parking, and air conditioning in all bedrooms.",
-                images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=800", "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=800"],
-                amenities: ["Air Conditioning", "Parking", "Water Tank", "Security Cameras"],
-                agent: { name: "Sarah Realty", photo: "https://images.unsplash.com/photo-1589386417686-0d34b5903d23?q=80&w=200&auto=format&fit=crop", phone: "868-555-0101", isPremium: true },
-                isFeatured: true,
-                postedDate: "2 days ago",
-                coordinates: { lat: 10.666, lng: -61.525 }
-            },
-            {
-                id: 2,
-                title: "Family Home in Lange Park",
-                price: 2500000,
-                type: "buy",
-                beds: 4,
-                baths: 3,
-                sqft: 2200,
-                location: "Lange Park, Chaguanas",
-                description: "Spacious family home in a quiet, gated community. Large backyard perfect for entertaining. Master suite includes a walk-in closet and jacuzzi tub.",
-                images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=800"],
-                amenities: ["Gated Community", "Garden", "Pet Friendly", "Garage"],
-                agent: { name: "Massy Properties", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop", phone: "868-555-0202", isPremium: false },
-                postedDate: "1 week ago",
-                coordinates: { lat: 10.516, lng: -61.412 }
-            },
-            {
-                id: 3,
-                title: "Cozy Studio Near UWI",
-                price: 2500,
-                type: "rent",
-                beds: 1,
-                baths: 1,
-                sqft: 400,
-                location: "St. Augustine",
-                description: "Perfect for students. Fully furnished studio apartment walking distance to UWI. Utilities included (Water, Lights, WiFi).",
-                images: ["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=800"],
-                amenities: ["Furnished", "WiFi Included", "Shared Laundry"],
-                agent: { name: "Student Living TT", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=200&auto=format&fit=crop", phone: "868-555-0303", isPremium: true },
-                isFeatured: true,
-                postedDate: "5 hours ago",
-                coordinates: { lat: 10.640, lng: -61.399 }
-            },
-            {
-                id: 4,
-                title: "Luxury Condo with Sea View",
-                price: 3500000,
-                type: "buy",
-                beds: 3,
-                baths: 2.5,
-                sqft: 1800,
-                location: "Westmoorings",
-                description: "Executive living at its finest. Panoramic views of the Gulf of Paria. 24/7 Concierge, Gym, and Pool access.",
-                images: ["https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800"],
-                amenities: ["Ocean View", "Pool", "Gym", "24/7 Security", "Elevator"],
-                agent: { name: "Terra Caribbean", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop", phone: "868-555-0404", isPremium: true },
-                isFeatured: true,
-                postedDate: "3 days ago",
-                coordinates: { lat: 10.675, lng: -61.550 }
-            },
-            {
-                id: 5,
-                title: "Commercial Space on High St",
-                price: 12000,
-                type: "rent",
-                beds: 0,
-                baths: 1,
-                sqft: 1200,
-                location: "San Fernando",
-                description: "High visibility commercial unit on High Street. Ideal for retail or office. Glass frontage and ample storage.",
-                images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800"],
-                amenities: ["High Traffic", "Glass Front", "Air Conditioning"],
-                agent: { name: "Business Spaces", photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop", phone: "868-555-0505", isPremium: false },
-                postedDate: "2 weeks ago",
-                coordinates: { lat: 10.279, lng: -61.462 }
-            },
-            {
-                id: 6,
-                title: "Unfinished Fixer Upper",
-                price: 850000,
-                type: "buy",
-                beds: 3,
-                baths: 1,
-                sqft: 1500,
-                location: "Arima",
-                description: "Great investment opportunity. Structure is solid, just needs finishing touches. Cash buyers preferred.",
-                images: ["https://images.unsplash.com/photo-1513584685908-95c9e2d01361?q=80&w=800"],
-                amenities: ["Large Lot", "Fixer Upper", "Freehold Land"],
-                agent: { name: "Quick Sale", photo: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop", phone: "868-555-0606", isPremium: false },
-                postedDate: "1 month ago",
-                coordinates: { lat: 10.638, lng: -61.282 }
-            }
-        ];
+    // Fetch listings with filters
+    getListings: async (filters: PropertyFilter = {}): Promise<RealEstateListing[]> => {
+        let query = supabase
+            .from('real_estate_listings')
+            .select(`
+                *,
+                images:property_images(url),
+                features:property_features(feature_name)
+            `)
+            .eq('status', 'active');
+
+        if (filters.type) {
+            query = query.eq('listing_type', filters.type === 'buy' ? 'sale' : 'rent');
+        }
+        if (filters.minPrice) {
+            query = query.gte('price', filters.minPrice);
+        }
+        if (filters.maxPrice) {
+            query = query.lte('price', filters.maxPrice);
+        }
+        if (filters.beds) {
+            query = query.gte('bedrooms', filters.beds);
+        }
+        if (filters.city) {
+            query = query.ilike('city', `%${filters.city}%`);
+        }
+        if (filters.propertyType && filters.propertyType.length > 0) {
+            query = query.in('property_type', filters.propertyType);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Error fetching listings:', error);
+            return [];
+        }
+
+        return data as RealEstateListing[];
     },
 
-    getListingById: async (id: number): Promise<RealEstateListing | undefined> => {
-        const listings = await realEstateService.getListings();
-        return listings.find(l => l.id === id);
+    // Get single listing details
+    getListingById: async (id: string): Promise<RealEstateListing | null> => {
+        const { data, error } = await supabase
+            .from('real_estate_listings')
+            .select(`
+                *,
+                images:property_images(url, caption, display_order),
+                features:property_features(feature_name)
+            `)
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching listing:', error);
+            return null;
+        }
+
+        return data as RealEstateListing;
+    },
+
+    // Create a new inquiry
+    submitInquiry: async (inquiry: { listing_id: string; name: string; phone: string; message: string; email?: string }) => {
+        const { error } = await supabase
+            .from('property_inquiries')
+            .insert([inquiry]);
+
+        if (error) throw error;
+        return true;
+    },
+
+    // Save property (Favorites)
+    toggleFavorite: async (listingId: string, userId: string) => {
+        // Check if already saved
+        const { data: existing } = await supabase
+            .from('saved_homes')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('listing_id', listingId)
+            .single();
+
+        if (existing) {
+            // Remove
+            await supabase.from('saved_homes').delete().eq('id', existing.id);
+            return false; // Not saved anymore
+        } else {
+            // Add
+            await supabase.from('saved_homes').insert([{ user_id: userId, listing_id: listingId }]);
+            return true; // Saved
+        }
+    },
+
+    // --- Agent / Owner Methods ---
+
+    // Get listings for a specific user (Agent Dashboard)
+    getMyListings: async (userId: string): Promise<RealEstateListing[]> => {
+        const { data, error } = await supabase
+            .from('real_estate_listings')
+            .select(`
+                *,
+                images:property_images(url),
+                inquiries:property_inquiries(count)
+            `)
+            .eq('agent_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching agent listings:', error);
+            return [];
+        }
+        return data as RealEstateListing[];
+    },
+
+    // Create a new listing
+    createListing: async (listingData: Partial<RealEstateListing>, images: string[], features: string[]) => {
+        // 1. Insert Listing
+        const { data: listing, error: listingError } = await supabase
+            .from('real_estate_listings')
+            .insert([listingData])
+            .select()
+            .single();
+
+        if (listingError) throw listingError;
+
+        // 2. Insert Images
+        if (images.length > 0) {
+            const imageInserts = images.map((url, index) => ({
+                listing_id: listing.id,
+                url: url,
+                display_order: index
+            }));
+            await supabase.from('property_images').insert(imageInserts);
+        }
+
+        // 3. Insert Features
+        if (features.length > 0) {
+            const featureInserts = features.map(name => ({
+                listing_id: listing.id,
+                feature_name: name
+            }));
+            await supabase.from('property_features').insert(featureInserts);
+        }
+
+        return listing;
+    },
+
+    // Update a listing
+    updateListing: async (id: string, updates: Partial<RealEstateListing>) => {
+        const { error } = await supabase
+            .from('real_estate_listings')
+            .update(updates)
+            .eq('id', id);
+
+        if (error) throw error;
+        return true;
+    },
+
+    // Delete a listing
+    deleteListing: async (id: string) => {
+        const { error } = await supabase
+            .from('real_estate_listings')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+        return true;
+    },
+
+    // Get leads for an agent
+    getAgentLeads: async (userId: string) => {
+        // Get all listings for this agent first
+        const { data: listings } = await supabase
+            .from('real_estate_listings')
+            .select('id, title')
+            .eq('agent_id', userId);
+
+        if (!listings || listings.length === 0) return [];
+
+        const listingIds = listings.map(l => l.id);
+
+        // Get inquiries for these listings
+        const { data: inquiries, error } = await supabase
+            .from('property_inquiries')
+            .select(`
+                *,
+                listing:real_estate_listings(title)
+            `)
+            .in('listing_id', listingIds)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching leads:', error);
+            return [];
+        }
+
+        return inquiries;
     }
 };

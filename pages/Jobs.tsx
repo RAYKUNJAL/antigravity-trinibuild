@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, MapPin, Search, Filter, Clock, DollarSign, Building, ArrowRight, Plus, Star, ShieldCheck, Wrench, Zap, Droplets, Paintbrush, Truck, Camera, ChevronRight, X, CheckCircle, AlertCircle, HardHat, FileText } from 'lucide-react';
 import { proService, ServicePro } from '../services/proService';
+import { jobsService } from '../services/jobsService';
+import { supabase } from '../services/supabaseClient';
 import { ChatWidget } from '../components/ChatWidget';
 import { AdSpot } from '../components/AdSpot';
 import { JobLetterGenerator } from '../components/JobLetterGenerator';
@@ -16,23 +18,39 @@ export const Jobs: React.FC = () => {
    // AI Generator State
    const [showJobLetterModal, setShowJobLetterModal] = useState(false);
 
-   // Job Board State (Legacy)
-   const [localJobs, setLocalJobs] = useState<any[]>([]);
-   const initialJobs = [
-      { id: 1, title: "Store Manager", company: "Pennywise Cosmetics", type: "Full-time", location: "Chaguanas", salary: "$5,000 - $7,000/mth", posted: "2d ago" },
-      { id: 2, title: "Delivery Driver", company: "TriniRides", type: "Contract", location: "Port of Spain", salary: "$200/trip", posted: "5h ago" },
-      { id: 3, title: "Web Developer", company: "TriniBuild", type: "Remote", location: "Anywhere", salary: "$15,000/mth", posted: "1w ago" },
-   ];
+   // Real Jobs State
+   const [jobs, setJobs] = useState<any[]>([]);
+   const [loadingJobs, setLoadingJobs] = useState(false);
+   const [showPostJobModal, setShowPostJobModal] = useState(false);
+   const [postJobForm, setPostJobForm] = useState({
+      title: '', company: '', location: '', salary_range: '', job_type: 'full-time', description: '', application_link: ''
+   });
 
    useEffect(() => {
       const loadData = async () => {
          const proData = await proService.getPros();
          setPros(proData);
-         const storedJobs = JSON.parse(localStorage.getItem('posted_jobs') || '[]');
-         setLocalJobs(storedJobs);
       };
       loadData();
    }, []);
+
+   useEffect(() => {
+      if (activeTab === 'jobs') {
+         fetchJobs();
+      }
+   }, [activeTab]);
+
+   const fetchJobs = async () => {
+      setLoadingJobs(true);
+      try {
+         const data = await jobsService.getJobs();
+         setJobs(data);
+      } catch (error) {
+         console.error('Error fetching jobs:', error);
+      } finally {
+         setLoadingJobs(false);
+      }
+   };
 
    const handleQuoteSubmit = (e: React.FormEvent) => {
       e.preventDefault();
@@ -41,17 +59,42 @@ export const Jobs: React.FC = () => {
       setQuoteForm({ name: '', phone: '', details: '' });
    };
 
+   const handlePostJobSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+         const { data: { user } } = await supabase.auth.getUser();
+         if (!user) {
+            alert('Please login to post a job');
+            return;
+         }
+
+         await jobsService.postJob({
+            ...postJobForm,
+            employer_id: user.id,
+            job_type: postJobForm.job_type as any,
+            is_active: true
+         });
+
+         alert('Job Posted Successfully!');
+         setShowPostJobModal(false);
+         setPostJobForm({ title: '', company: '', location: '', salary_range: '', job_type: 'full-time', description: '', application_link: '' });
+         fetchJobs();
+      } catch (error) {
+         console.error('Error posting job:', error);
+         alert('Error posting job');
+      }
+   };
+
    const categories = [
       { id: 'Plumbing', icon: Droplets, color: 'bg-blue-100 text-blue-600' },
       { id: 'Electrical', icon: Zap, color: 'bg-yellow-100 text-yellow-600' },
-      { id: 'Cleaning', icon: SparklesIcon, color: 'bg-purple-100 text-purple-600' }, // Defined below
+      { id: 'Cleaning', icon: SparklesIcon, color: 'bg-purple-100 text-purple-600' },
       { id: 'Construction', icon: HardHat, color: 'bg-orange-100 text-orange-600' },
       { id: 'Events', icon: Camera, color: 'bg-pink-100 text-pink-600' },
       { id: 'Tech Support', icon: Wrench, color: 'bg-gray-100 text-gray-600' },
    ];
 
    const filteredPros = selectedCategory === 'All' ? pros : pros.filter(p => p.category === selectedCategory || p.services.some(s => s.includes(selectedCategory)));
-   const allJobs = [...localJobs, ...initialJobs];
 
    return (
       <div className="min-h-screen bg-gray-50 font-sans">
@@ -240,27 +283,47 @@ export const Jobs: React.FC = () => {
                      </button>
                   </div>
 
-                  {/* Legacy Job Board UI */}
+                  {/* Job Board UI */}
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center mb-8">
-                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Looking for Employment?</h2>
-                     <p className="text-gray-600 mb-6">Browse hundreds of full-time and part-time job listings.</p>
+                     <div className="flex justify-between items-center mb-6">
+                        <div className="text-left">
+                           <h2 className="text-2xl font-bold text-gray-900">Looking for Employment?</h2>
+                           <p className="text-gray-600">Browse hundreds of full-time and part-time job listings.</p>
+                        </div>
+                        <button
+                           onClick={() => setShowPostJobModal(true)}
+                           className="bg-trini-black text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
+                        >
+                           <Plus className="h-4 w-4" /> Post a Job
+                        </button>
+                     </div>
 
-                     <div className="space-y-4 text-left max-w-3xl mx-auto">
-                        {allJobs.map(job => (
-                           <div key={job.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:border-trini-teal transition-colors cursor-pointer">
-                              <div className="flex justify-between items-start">
-                                 <div>
-                                    <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                                    <p className="text-gray-600">{job.company} • {job.location}</p>
-                                 </div>
-                                 <span className="bg-white border border-gray-200 px-3 py-1 rounded-full text-xs font-bold text-gray-600">{job.type}</span>
-                              </div>
-                              <div className="mt-4 flex justify-between items-center">
-                                 <span className="text-sm font-medium text-green-600">{job.salary}</span>
-                                 <span className="text-xs text-gray-400">{job.posted}</span>
-                              </div>
+                     <div className="space-y-4 text-left max-w-4xl mx-auto">
+                        {loadingJobs ? (
+                           <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-trini-teal" /></div>
+                        ) : jobs.length === 0 ? (
+                           <div className="text-center py-12 bg-gray-50 rounded-xl">
+                              <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                              <h3 className="text-lg font-medium text-gray-900">No jobs posted yet</h3>
+                              <p className="text-gray-500">Be the first to post a job opportunity!</p>
                            </div>
-                        ))}
+                        ) : (
+                           jobs.map(job => (
+                              <div key={job.id} className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:border-trini-teal transition-colors cursor-pointer group">
+                                 <div className="flex justify-between items-start">
+                                    <div>
+                                       <h3 className="font-bold text-lg text-gray-900 group-hover:text-trini-teal transition-colors">{job.title}</h3>
+                                       <p className="text-gray-600 font-medium">{job.company} • {job.location}</p>
+                                    </div>
+                                    <span className="bg-white border border-gray-200 px-3 py-1 rounded-full text-xs font-bold text-gray-600 uppercase">{job.job_type}</span>
+                                 </div>
+                                 <div className="mt-4 flex justify-between items-center">
+                                    <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">{job.salary_range || 'Salary not specified'}</span>
+                                    <span className="text-xs text-gray-400">{new Date(job.posted_at).toLocaleDateString()}</span>
+                                 </div>
+                              </div>
+                           ))
+                        )}
                      </div>
                   </div>
                </div>
@@ -325,11 +388,70 @@ export const Jobs: React.FC = () => {
                </div>
             </div>
          )}
+         {/* Post Job Modal */}
+         {showPostJobModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+               <div className="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+                  <button onClick={() => setShowPostJobModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600" aria-label="Close modal">
+                     <X className="h-6 w-6" />
+                  </button>
+
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                     <Briefcase className="h-6 w-6 text-trini-teal" /> Post a New Job
+                  </h2>
+
+                  <form onSubmit={handlePostJobSubmit} className="space-y-6">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                           <label htmlFor="job-title" className="block text-sm font-bold text-gray-700 mb-1">Job Title</label>
+                           <input id="job-title" required type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g. Senior Accountant" value={postJobForm.title} onChange={e => setPostJobForm({ ...postJobForm, title: e.target.value })} />
+                        </div>
+                        <div>
+                           <label htmlFor="company-name" className="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
+                           <input id="company-name" required type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g. Acme Corp" value={postJobForm.company} onChange={e => setPostJobForm({ ...postJobForm, company: e.target.value })} />
+                        </div>
+                        <div>
+                           <label htmlFor="job-location" className="block text-sm font-bold text-gray-700 mb-1">Location</label>
+                           <input id="job-location" required type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g. Port of Spain (Remote)" value={postJobForm.location} onChange={e => setPostJobForm({ ...postJobForm, location: e.target.value })} />
+                        </div>
+                        <div>
+                           <label htmlFor="salary-range" className="block text-sm font-bold text-gray-700 mb-1">Salary Range</label>
+                           <input id="salary-range" type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="e.g. $10,000 - $15,000/mth" value={postJobForm.salary_range} onChange={e => setPostJobForm({ ...postJobForm, salary_range: e.target.value })} />
+                        </div>
+                        <div>
+                           <label htmlFor="job-type" className="block text-sm font-bold text-gray-700 mb-1">Job Type</label>
+                           <select id="job-type" className="w-full p-3 border border-gray-300 rounded-lg" value={postJobForm.job_type} onChange={e => setPostJobForm({ ...postJobForm, job_type: e.target.value })} aria-label="Job Type">
+                              <option value="full-time">Full-time</option>
+                              <option value="part-time">Part-time</option>
+                              <option value="contract">Contract</option>
+                              <option value="temporary">Temporary</option>
+                              <option value="internship">Internship</option>
+                           </select>
+                        </div>
+                        <div>
+                           <label htmlFor="application-link" className="block text-sm font-bold text-gray-700 mb-1">Application Link/Email</label>
+                           <input id="application-link" type="text" className="w-full p-3 border border-gray-300 rounded-lg" placeholder="mailto:hr@example.com" value={postJobForm.application_link} onChange={e => setPostJobForm({ ...postJobForm, application_link: e.target.value })} />
+                        </div>
+                     </div>
+
+                     <div>
+                        <label htmlFor="job-description" className="block text-sm font-bold text-gray-700 mb-1">Job Description</label>
+                        <textarea id="job-description" required rows={5} className="w-full p-3 border border-gray-300 rounded-lg" placeholder="Describe the role, responsibilities, and requirements..." value={postJobForm.description} onChange={e => setPostJobForm({ ...postJobForm, description: e.target.value })}></textarea>
+                     </div>
+
+                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onClick={() => setShowPostJobModal(false)} className="px-6 py-3 rounded-lg font-bold text-gray-600 hover:bg-gray-100">Cancel</button>
+                        <button type="submit" className="px-8 py-3 rounded-lg font-bold bg-trini-black text-white hover:bg-gray-800 shadow-lg">Post Job</button>
+                     </div>
+                  </form>
+               </div>
+            </div>
+         )}
 
          <JobLetterGenerator isOpen={showJobLetterModal} onClose={() => setShowJobLetterModal(false)} />
 
          <ChatWidget mode="service_expert" />
-      </div>
+      </div >
    );
 };
 
