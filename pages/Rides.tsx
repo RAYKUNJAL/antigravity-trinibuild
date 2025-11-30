@@ -83,19 +83,19 @@ export const Rides: React.FC = () => {
         (position) => {
           const pos: [number, number] = [position.coords.latitude, position.coords.longitude];
 
-          // Check if user is in Trinidad and Tobago
-          const isInTrinidad =
-            pos[0] >= 10.0 && pos[0] <= 11.5 && // Latitude range for Trinidad & Tobago
-            pos[1] >= -62.0 && pos[1] <= -60.5;  // Longitude range for Trinidad & Tobago
+          // Check if user is in Trinidad and Tobago (covers both islands)
+          const isInTrinidadAndTobago =
+            pos[0] >= 10.0 && pos[0] <= 11.5 && // Latitude: Trinidad (10.0-11.0) + Tobago (11.1-11.4)
+            pos[1] >= -62.0 && pos[1] <= -60.5;  // Longitude: Both islands
 
-          if (isInTrinidad) {
+          if (isInTrinidadAndTobago) {
             setCenter(pos);
             setUserLocation(pos);
             setPickup("Current Location");
           } else {
-            // User not in Trinidad - show info message but still allow manual address entry
-            console.log("GPS location outside Trinidad. Defaulting to Port of Spain.");
-            // Still centered on Trinidad, user can type Trinidad addresses
+            // User not in Trinidad and Tobago - show info but still allow manual address entry
+            console.log("GPS location outside Trinidad and Tobago. Defaulting to Port of Spain.");
+            // Map still shows Trinidad, user can type addresses from either island
           }
         },
         () => console.log("GPS permission denied")
