@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { driverService, Driver, GigJob } from '../services/driverService';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 export const DriverHub: React.FC = () => {
     const navigate = useNavigate();
@@ -124,8 +125,8 @@ export const DriverHub: React.FC = () => {
                             <button
                                 onClick={() => toggleService('rideshare')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${driver.rideshare_enabled
-                                        ? 'bg-blue-500 text-white shadow-lg'
-                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    ? 'bg-blue-500 text-white shadow-lg'
+                                    : 'bg-white/10 text-white/60 hover:bg-white/20'
                                     }`}
                             >
                                 <Car className="h-4 w-4" />
@@ -136,8 +137,8 @@ export const DriverHub: React.FC = () => {
                             <button
                                 onClick={() => toggleService('delivery')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${driver.delivery_enabled
-                                        ? 'bg-orange-500 text-white shadow-lg'
-                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    ? 'bg-orange-500 text-white shadow-lg'
+                                    : 'bg-white/10 text-white/60 hover:bg-white/20'
                                     }`}
                             >
                                 <Package className="h-4 w-4" />
@@ -148,8 +149,8 @@ export const DriverHub: React.FC = () => {
                             <button
                                 onClick={() => toggleService('courier')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${driver.courier_enabled
-                                        ? 'bg-purple-500 text-white shadow-lg'
-                                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                                    ? 'bg-purple-500 text-white shadow-lg'
+                                    : 'bg-white/10 text-white/60 hover:bg-white/20'
                                     }`}
                             >
                                 <FileText className="h-4 w-4" />
@@ -197,7 +198,12 @@ export const DriverHub: React.FC = () => {
                                     <Settings className="h-5 w-5 text-gray-600" />
                                     <span className="font-medium text-gray-700">Settings</span>
                                 </button>
-                                <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-left text-red-600">
+                                <button
+                                    onClick={async () => {
+                                        await authService.logout();
+                                    }}
+                                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-left text-red-600"
+                                >
                                     <LogOut className="h-5 w-5" />
                                     <span className="font-medium">Logout</span>
                                 </button>
@@ -348,7 +354,7 @@ export const DriverHub: React.FC = () => {
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className={`h-12 w-12 rounded-full flex items-center justify-center ${job.job_type === 'rideshare' ? 'bg-blue-100' :
-                                                    job.job_type === 'delivery' ? 'bg-orange-100' : 'bg-purple-100'
+                                                job.job_type === 'delivery' ? 'bg-orange-100' : 'bg-purple-100'
                                                 }`}>
                                                 {job.job_type === 'rideshare' && <Car className="h-6 w-6 text-blue-600" />}
                                                 {job.job_type === 'delivery' && <Package className="h-6 w-6 text-orange-600" />}
