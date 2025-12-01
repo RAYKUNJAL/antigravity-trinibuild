@@ -112,7 +112,7 @@ export const authService = {
         await supabase.auth.signOut();
         localStorage.removeItem('user');
         localStorage.removeItem('token'); // Clear legacy token if any
-        window.location.href = '/auth';
+        window.location.href = '/#/auth';
     },
 
     // Get current user from local storage (or Supabase session)
