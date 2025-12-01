@@ -4,6 +4,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useParams } from 'react-router-dom';
 import { storeService, Store } from '../services/storeService';
 import { orderService, CreateOrderData } from '../services/orderService';
+import { SocialContactWidget } from '../components/SocialContactWidget';
 
 export const Storefront: React.FC = () => {
   const { id } = useParams();
@@ -252,28 +253,11 @@ export const Storefront: React.FC = () => {
                   placeholder="Search products..."
                   aria-label="Search products"
                   className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red bg-gray-50"
-                />
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center space-x-4">
-              <button onClick={() => handleWhatsAppClick()} className="hidden sm:flex items-center text-green-600 hover:text-green-700 font-medium text-sm bg-green-50 px-3 py-1.5 rounded-full transition-colors">
-                <MessageCircle className="h-4 w-4 mr-1" /> Chat
-              </button>
-
-              <button
-                className="relative p-2 text-gray-600 hover:text-trini-red transition-colors"
-                onClick={() => setIsCartOpen(true)}
-                aria-label="Shopping Cart"
-              >
-                <ShoppingCart className="h-6 w-6" />
-                {cartCount > 0 && (
-                  <span className="absolute top-0 right-0 h-4 w-4 bg-trini-red text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-bounce">
-                    {cartCount}
-                  </span>
-                )}
+                  {cartCount > 0 && (
+                    <span className="absolute top-0 right-0 h-4 w-4 bg-trini-red text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-bounce">
+                      {cartCount}
+                    </span>
+                  )}
               </button>
 
               <button className="md:hidden p-2 text-gray-600" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle Menu">
@@ -750,7 +734,7 @@ export const Storefront: React.FC = () => {
                   </div>
                   <span className="text-xs text-gray-400 ml-1">(12)</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-lg font-extrabold text-trini-teal">TT${product.price}</span>
                   <button
                     onClick={() => addToCart(product)}
@@ -760,6 +744,12 @@ export const Storefront: React.FC = () => {
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
+                <button
+                  onClick={() => handleWhatsAppClick(product.name)}
+                  className="w-full bg-green-50 text-green-700 py-2 rounded-lg font-bold text-xs hover:bg-green-100 transition-colors flex items-center justify-center"
+                >
+                  <MessageCircle className="h-3 w-3 mr-1" /> Ask about this
+                </button>
               </div>
             </div>
           ))}
