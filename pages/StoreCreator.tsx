@@ -293,23 +293,100 @@ export const StoreCreator: React.FC = () => {
                                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                  >
                                     <option value="" disabled className="text-gray-400">Select...</option>
-                                    <optgroup label="Food & Hospitality">
+                                    <optgroup label="🌾 Agriculture & Farm">
+                                       <option value="Farm Fresh Produce">🥬 Farm Fresh Produce</option>
+                                       <option value="Organic Farm">🌱 Organic Farm</option>
+                                       <option value="Plant Nursery">🪴 Plant Nursery</option>
+                                       <option value="Livestock">🐓 Livestock & Poultry</option>
+                                       <option value="Eggs & Dairy">🥚 Eggs & Dairy</option>
+                                       <option value="Honey & Bee Products">🍯 Honey & Bee Products</option>
+                                    </optgroup>
+                                    <optgroup label="🍲 Food & Hospitality">
                                        <option value="Restaurant">🍔 Restaurant</option>
                                        <option value="Fast Food">🍟 Fast Food</option>
                                        <option value="Cafe">☕ Café</option>
                                        <option value="Bar">🍺 Bar</option>
+                                       <option value="Bakery">🥖 Bakery</option>
+                                       <option value="Doubles Vendor">🫓 Doubles & Street Food</option>
+                                       <option value="Roti Shop">🌯 Roti Shop</option>
+                                       <option value="BBQ & Grills">🍗 BBQ & Grills</option>
+                                       <option value="Catering">🍽️ Catering Service</option>
+                                       <option value="Home Cooking">🏠 Home Cooking</option>
+                                       <option value="Cake & Desserts">🎂 Cakes & Desserts</option>
+                                       <option value="Juice Bar">🧃 Juice & Smoothies</option>
+                                    </optgroup>
+                                    <optgroup label="🛒 Grocery & Market">
                                        <option value="Grocery">🛒 Grocery</option>
+                                       <option value="Mini Mart">🏪 Mini Mart</option>
+                                       <option value="Fruit & Veg">🍎 Fruits & Vegetables</option>
+                                       <option value="Meat & Seafood">🐟 Meat & Seafood</option>
+                                       <option value="Dry Goods">🌾 Provisions & Dry Goods</option>
+                                       <option value="Spices & Seasonings">🌶️ Spices & Seasonings</option>
                                     </optgroup>
-                                    <optgroup label="Retail">
-                                       <option value="Fashion">👗 Fashion</option>
-                                       <option value="Electronics">📱 Tech</option>
-                                       <option value="Home Garden">🏡 Home</option>
+                                    <optgroup label="🎨 Arts & Crafts">
+                                       <option value="Handmade Crafts">✋ Handmade Crafts</option>
+                                       <option value="Jewelry">💍 Jewelry & Accessories</option>
+                                       <option value="Art Gallery">🖼️ Art & Gallery</option>
+                                       <option value="Woodwork">🪵 Woodwork & Carpentry</option>
+                                       <option value="Pottery & Ceramics">🏺 Pottery & Ceramics</option>
+                                       <option value="Sewing & Textiles">🧵 Sewing & Textiles</option>
+                                       <option value="Carnival Costumes">🎭 Carnival Costumes</option>
+                                    </optgroup>
+                                    <optgroup label="👗 Retail & Fashion">
+                                       <option value="Fashion">👗 Fashion & Clothing</option>
+                                       <option value="Shoes & Bags">👟 Shoes & Bags</option>
+                                       <option value="Children's Clothing">👶 Children's Wear</option>
+                                       <option value="Sportswear">⚽ Sportswear</option>
+                                       <option value="Accessories">💎 Accessories</option>
+                                    </optgroup>
+                                    <optgroup label="🏠 Home & Garden">
+                                       <option value="Home Decor">🏡 Home Decor</option>
+                                       <option value="Furniture">🛋️ Furniture</option>
                                        <option value="Hardware">🔨 Hardware</option>
+                                       <option value="Garden Supplies">🌻 Garden Supplies</option>
+                                       <option value="Cleaning Supplies">🧹 Cleaning Supplies</option>
                                     </optgroup>
-                                    <optgroup label="Services">
-                                       <option value="Beauty">💇‍♀️ Beauty</option>
-                                       <option value="Automotive">🔧 Auto</option>
-                                       <option value="Professional">💼 Pro Services</option>
+                                    <optgroup label="💇 Beauty & Wellness">
+                                       <option value="Hair Salon">💇‍♀️ Hair Salon</option>
+                                       <option value="Barbershop">✂️ Barbershop</option>
+                                       <option value="Nail Salon">💅 Nail Salon</option>
+                                       <option value="Spa">🧖 Spa & Massage</option>
+                                       <option value="Makeup Artist">💄 Makeup Artist</option>
+                                       <option value="Natural Products">🌿 Natural Beauty Products</option>
+                                    </optgroup>
+                                    <optgroup label="🔧 Services">
+                                       <option value="Auto Repair">🔧 Auto Repair</option>
+                                       <option value="Electrician">⚡ Electrician</option>
+                                       <option value="Plumbing">🚰 Plumbing</option>
+                                       <option value="AC Repair">❄️ AC Repair</option>
+                                       <option value="Cleaning Service">🧽 Cleaning Service</option>
+                                       <option value="Landscaping">🌳 Landscaping</option>
+                                       <option value="Photography">📸 Photography</option>
+                                       <option value="Event Planning">🎉 Event Planning</option>
+                                       <option value="DJ & Music">🎵 DJ & Music</option>
+                                       <option value="Professional">💼 Professional Services</option>
+                                    </optgroup>
+                                    <optgroup label="📱 Electronics & Tech">
+                                       <option value="Electronics">📱 Electronics</option>
+                                       <option value="Phone Repair">📞 Phone Repair</option>
+                                       <option value="Computer Services">💻 Computer Services</option>
+                                       <option value="Appliances">🔌 Appliances</option>
+                                    </optgroup>
+                                    <optgroup label="🐕 Pets & Animals">
+                                       <option value="Pet Supplies">🐕 Pet Supplies</option>
+                                       <option value="Pet Grooming">🐾 Pet Grooming</option>
+                                       <option value="Veterinary">🏥 Veterinary</option>
+                                    </optgroup>
+                                    <optgroup label="📚 Education & Kids">
+                                       <option value="Tutoring">📖 Tutoring</option>
+                                       <option value="Daycare">👶 Daycare</option>
+                                       <option value="Toys">🧸 Toys & Games</option>
+                                       <option value="Books">📚 Books & Stationery</option>
+                                    </optgroup>
+                                    <optgroup label="🏥 Health">
+                                       <option value="Pharmacy">💊 Pharmacy</option>
+                                       <option value="Health Food">🥗 Health Food</option>
+                                       <option value="Fitness">💪 Fitness & Gym</option>
                                     </optgroup>
                                  </select>
                               </div>
