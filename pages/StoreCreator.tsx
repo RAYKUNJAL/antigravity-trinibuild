@@ -282,6 +282,24 @@ export const StoreCreator: React.FC = () => {
                            </div>
                         )}
 
+                        {/* Business Name Input */}
+                        <div className="mb-6">
+                           <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">
+                              Business Name *
+                           </label>
+                           <input
+                              type="text"
+                              value={formData.name}
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                              placeholder="e.g. Aunty May's Roti Shop"
+                              className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red bg-white text-gray-900 text-lg font-medium placeholder-gray-400 transition-all"
+                              disabled={claimMode && !!formData.name}
+                           />
+                           {claimMode && formData.name && (
+                              <p className="text-xs text-gray-500 mt-2">Name is pre-filled from your claim</p>
+                           )}
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
                               <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide bg-white w-fit px-1">Category</label>
