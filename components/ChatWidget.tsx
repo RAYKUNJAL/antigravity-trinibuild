@@ -127,9 +127,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
 
       const aiMsg: Message = { id: (Date.now() + 1).toString(), text: response.content, sender: 'ai' };
       setMessages(prev => [...prev, aiMsg]);
-    } catch (error) {
-      console.error("Chat error", error);
-      setMessages(prev => [...prev, { id: Date.now().toString(), text: "Sorry, I'm having trouble connecting. Please try again.", sender: 'ai' }]);
+    } catch (error: any) {
+      console.error("Chat error details:", error);
+      const errorMessage = error.message || "Unknown error";
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        text: `Sorry, I'm having trouble connecting. (Error: ${errorMessage}) Please ensure the AI server is running.`,
+        sender: 'ai'
+      }]);
     } finally {
       setLoading(false);
     }

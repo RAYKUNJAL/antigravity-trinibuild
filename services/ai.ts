@@ -1,6 +1,8 @@
 import { supabase } from './supabaseClient';
 
-const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://127.0.0.1:8000';
+
+console.log('AI Service initialized with URL:', AI_SERVER_URL);
 
 export interface AIResponse {
     content: string;

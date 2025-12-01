@@ -5,6 +5,7 @@ import {
     Star, Award, Zap, CheckCircle, ArrowRight, Phone, Mail,
     MapPin, Package, FileText, Calendar
 } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const DriveWithUs: React.FC = () => {
     const navigate = useNavigate();
@@ -72,6 +73,11 @@ export const DriveWithUs: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white">
+            <SEO
+                title="Drive with TriniBuild Go - Earn $500+ Weekly"
+                description="Join the #1 driver platform in Trinidad & Tobago. Lowest commissions, daily payouts, and flexible hours. Sign up in 5 minutes."
+                keywords="drive for trinibuild, taxi driver jobs trinidad, delivery driver jobs trinidad, earn money driving trinidad"
+            />
             {/* Hero Section */}
             <div className="relative bg-gradient-to-br from-trini-black via-gray-900 to-trini-black text-white overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80')] bg-cover bg-center opacity-10"></div>

@@ -7,6 +7,45 @@ import { legalService } from '../services/legalService';
 
 import { supabase } from '../services/supabaseClient';
 
+// Real Upload Function
+const uploadFile = async (file: File | null): Promise<string> => {
+   if (!file) return '';
+
+   try {
+      // 1. Generate unique file path
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `promoter-ids/${fileName}`;
+
+      // 2. Upload to Supabase 'documents' bucket
+      const { data, error } = await supabase.storage
+         .from('documents')
+         .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+         });
+
+      if (error) {
+         console.error('Supabase upload error:', error);
+         throw error;
+      }
+
+      // 3. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+         .from('documents')
+         .getPublicUrl(filePath);
+
+      console.log('File uploaded successfully:', publicUrl);
+      return publicUrl;
+
+   } catch (error) {
+      console.error('File upload failed:', error);
+      // Fallback for development if bucket doesn't exist
+      // return `https://fake-storage.com/${file.name}`; 
+      throw new Error('Failed to upload ID document. Please try again.');
+   }
+};
+
 export const PromoterOnboarding: React.FC = () => {
    const navigate = useNavigate();
    const [step, setStep] = useState(1);
@@ -103,7 +142,7 @@ ${new Date().toLocaleDateString()}`;
          if (!user) throw new Error("Not authenticated");
 
          // Upload ID file (Mocking upload for now)
-         // const idFileUrl = await uploadFile(formData.idFile);
+         const idFileUrl = await uploadFile(formData.idFile);
 
          const { error } = await supabase
             .from('promoter_applications')
