@@ -10,6 +10,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { SubscriptionTier, BlogPost } from '../types';
+import { authService } from '../services/authService';
 import { Link } from 'react-router-dom';
 import { verifyBusinessDocument, generateBlogPost } from '../services/geminiService';
 import { getCampaigns, saveCampaign, deleteCampaign, AdCampaign, getTrafficStats } from '../services/adService';
@@ -298,10 +299,15 @@ export const AdminDashboard: React.FC = () => {
             </nav>
 
             <div className="p-4 border-t border-gray-800">
-               <Link to="/" className="flex items-center text-red-400 hover:text-red-300 transition-colors px-2 py-2 mt-2">
+               <button
+                  onClick={async () => {
+                     await authService.logout();
+                  }}
+                  className="flex items-center text-red-400 hover:text-red-300 transition-colors px-2 py-2 mt-2 w-full"
+               >
                   <LogOut className={`h-5 w-5 ${isSidebarOpen ? 'mr-3' : 'mx-auto'}`} />
                   {isSidebarOpen && <span>Logout</span>}
-               </Link>
+               </button>
             </div>
          </aside>
 
