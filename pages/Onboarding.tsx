@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Store, CheckCircle, ArrowRight, MapPin, TrendingUp, Briefcase, DollarSign, Star, Car, FileSignature, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { legalService } from '../services/legalService';
+import { SignatureFlow } from '../components/SignatureFlow';
+import { supabase } from '../services/supabaseClient';
 
 export const Onboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -9,34 +11,27 @@ export const Onboarding: React.FC = () => {
   const [intent, setIntent] = useState<'sell' | 'buy' | 'work' | null>(null);
   const [businessName, setBusinessName] = useState('');
   const [location, setLocation] = useState('');
-
-  const [isSigning, setIsSigning] = useState(false);
-  const [hasSigned, setHasSigned] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showLegalFlow, setShowLegalFlow] = useState(false);
 
   const totalSteps = 3;
   const progress = (step / totalSteps) * 100;
 
-  const handleSign = async () => {
-    setIsSigning(true);
-    try {
-      // Check if user is logged in
-      const { data: { user } } = await import('../services/supabaseClient').then(m => m.supabase.auth.getUser());
+  useEffect(() => {
+    checkUser();
+  }, []);
 
-      if (user) {
-        await legalService.signDocument(user.id, 'contractor_agreement', 'Signed via DocuSign');
-        console.log('Document signed successfully');
-      } else {
-        // If not logged in, store consent locally to be synced later
-        localStorage.setItem('pending_legal_agreement', 'contractor_agreement');
-        localStorage.setItem('pending_legal_timestamp', new Date().toISOString());
-      }
-      setHasSigned(true);
-    } catch (error) {
-      console.error("Signing failed", error);
-      // Fallback: Allow proceeding even if API fails (client-side consent)
-      setHasSigned(true);
-    } finally {
-      setIsSigning(false);
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id);
+    }
+  };
+
+  const handleLegalComplete = () => {
+    // Legal docs signed, proceed to store creator
+    if (intent === 'sell') {
+      navigate(`/create-store?claim_name=${encodeURIComponent(businessName)}`);
     }
   };
 
@@ -65,9 +60,9 @@ export const Onboarding: React.FC = () => {
         navigate('/directory');
       }
     } else if (step === 3) {
-      // Final Step Logic (Merchant Legal)
+      // Show legal flow for merchants
       if (intent === 'sell') {
-        navigate(`/create-store?claim_name=${encodeURIComponent(businessName)}`);
+        setShowLegalFlow(true);
       }
     }
   };
@@ -150,64 +145,6 @@ export const Onboarding: React.FC = () => {
                   <Car className="h-6 w-6" />
                 </div>
                 <div className="flex-grow">
-                  <h3 className="font-bold text-gray-900">Driver / Worker</h3>
-                  <p className="text-xs text-gray-500">Drive for Go or Find Jobs.</p>
-                  <span className="text-[10px] font-bold text-yellow-600 bg-white px-1 rounded mt-1 inline-block">TriniBuild Go</span>
-                </div>
-                {intent === 'work' && <CheckCircle className="h-5 w-5 text-yellow-500" />}
-              </button>
-            </div>
-          )}
-
-          {step === 2 && intent === 'sell' && (
-            <div className="space-y-6 animate-in fade-in">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 flex items-start">
-                <Star className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 fill-current" />
-                <p>Great choice! <strong>TriniBuild Pay</strong> is included automatically with your store.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Business Name</label>
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="e.g. Aunty May's Roti Shop"
-                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-trini-red focus:border-trini-red text-lg"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                />
-                <p className="text-xs text-gray-500 mt-2">We'll use this to generate your free website instantly.</p>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && intent === 'buy' && (
-            <div className="space-y-6 animate-in fade-in">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Where are you located?</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    autoFocus
-                    placeholder="City or Town (e.g. Chaguanas)"
-                    className="w-full pl-10 p-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-6 animate-in fade-in">
-              <p className="text-gray-500 text-sm">
-                To join the TriniBuild ecosystem as a {intent === 'sell' ? 'Merchant' : 'Member'}, you must agree to our terms.
-              </p>
-
-              <div className="border p-4 rounded-lg flex items-center justify-between">
-                <div className="flex items-center">
                   <FileSignature className="h-5 w-5 text-gray-400 mr-3" />
                   <div>
                     <p className="font-bold text-sm">Independent Contractor Agreement</p>
@@ -222,42 +159,42 @@ export const Onboarding: React.FC = () => {
               </div>
 
               {hasSigned ? (
-                <button
-                  onClick={handleContinue}
-                  className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02]"
-                >
-                  Complete Setup <ArrowRight className="ml-2 h-5 w-5" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSign}
-                  disabled={isSigning}
-                  className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 disabled:opacity-70 transition-all"
-                >
-                  {isSigning ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Sign & Continue'}
-                </button>
-              )}
-            </div>
+            <button
+              onClick={handleContinue}
+              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02]"
+            >
+              Complete Setup <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSign}
+              disabled={isSigning}
+              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 disabled:opacity-70 transition-all"
+            >
+              {isSigning ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Sign & Continue'}
+            </button>
+          )}
+        </div>
           )}
 
-          <div className="mt-8">
-            {step < 3 && (
-              <button
-                onClick={handleContinue}
-                disabled={(step === 1 && !intent) || (step === 2 && intent === 'sell' && !businessName) || (step === 2 && intent === 'buy' && !location)}
-                className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
-              >
-                {step === 1 ? 'Continue' : 'Next Step'} <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-            )}
-            {step === 1 && (
-              <p className="text-center text-xs text-gray-400 mt-4">
-                Already have an account? <Link to="/auth" className="text-trini-red font-bold cursor-pointer hover:underline">Log in</Link>
-              </p>
-            )}
-          </div>
+        <div className="mt-8">
+          {step < 3 && (
+            <button
+              onClick={handleContinue}
+              disabled={(step === 1 && !intent) || (step === 2 && intent === 'sell' && !businessName) || (step === 2 && intent === 'buy' && !location)}
+              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+            >
+              {step === 1 ? 'Continue' : 'Next Step'} <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          )}
+          {step === 1 && (
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Already have an account? <Link to="/auth" className="text-trini-red font-bold cursor-pointer hover:underline">Log in</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
+    </div >
   );
 };
