@@ -8,6 +8,7 @@ export interface User {
     lastName: string;
     role: string;
     avatar_url?: string;
+    subscription_tier?: string;
 }
 
 export interface AuthResponse {
@@ -41,6 +42,7 @@ export const authService = {
                     firstName: userData.firstName,
                     lastName: userData.lastName,
                     role: 'user',
+                    subscription_tier: 'Community Plan'
                 };
 
                 // Supabase handles session persistence automatically, 
@@ -90,7 +92,8 @@ export const authService = {
                     firstName: firstName || '',
                     lastName: lastNameParts.join(' ') || '',
                     role: profile?.role || 'user',
-                    avatar_url: profile?.avatar_url
+                    avatar_url: profile?.avatar_url,
+                    subscription_tier: profile?.subscription_tier || 'Community Plan'
                 };
 
                 localStorage.setItem('user', JSON.stringify(user));
@@ -136,7 +139,8 @@ export const authService = {
                 firstName: firstName || '',
                 lastName: lastNameParts.join(' ') || '',
                 role: profile?.role || 'user',
-                avatar_url: profile?.avatar_url
+                avatar_url: profile?.avatar_url,
+                subscription_tier: profile?.subscription_tier || 'Community Plan'
             };
             localStorage.setItem('user', JSON.stringify(user));
             return user;
@@ -158,6 +162,36 @@ export const authService = {
             console.error("Resend Confirmation Error:", error);
             return { error: error.message, success: false };
         }
+    },
+
+    // Update Subscription Tier
+    updateSubscription: async (tier: string): Promise<boolean> => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+
+        // Upsert profile to ensure it exists
+        const { error } = await supabase
+            .from('profiles')
+            .upsert({
+                id: user.id,
+                subscription_tier: tier,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+
+        if (error) {
+            console.error("Failed to update subscription:", error);
+            return false;
+        }
+
+        // Update local storage user
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+            const parsed = JSON.parse(localUser);
+            parsed.subscription_tier = tier;
+            localStorage.setItem('user', JSON.stringify(parsed));
+        }
+
+        return true;
     },
 
     // Check if user is authenticated
