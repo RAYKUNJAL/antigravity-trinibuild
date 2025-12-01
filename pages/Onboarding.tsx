@@ -24,6 +24,7 @@ export const Onboarding: React.FC = () => {
 
       if (user) {
         await legalService.signDocument(user.id, 'contractor_agreement', 'Signed via DocuSign');
+        console.log('Document signed successfully');
       } else {
         // If not logged in, store consent locally to be synced later
         localStorage.setItem('pending_legal_agreement', 'contractor_agreement');
