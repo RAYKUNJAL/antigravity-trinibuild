@@ -50,8 +50,8 @@ export const ListProperty: React.FC = () => {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, listingType: 'sale' })}
                                     className={`flex-1 py-3 px-4 rounded-lg font-medium border-2 transition-all ${formData.listingType === 'sale'
-                                            ? 'border-blue-600 bg-blue-50 text-blue-700'
-                                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
                                         }`}
                                 >
                                     For Sale
@@ -60,8 +60,8 @@ export const ListProperty: React.FC = () => {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, listingType: 'rent' })}
                                     className={`flex-1 py-3 px-4 rounded-lg font-medium border-2 transition-all ${formData.listingType === 'rent'
-                                            ? 'border-green-600 bg-green-50 text-green-700'
-                                            : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                                        ? 'border-green-600 bg-green-50 text-green-700'
+                                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
                                         }`}
                                 >
                                     For Rent
@@ -210,17 +210,24 @@ export const ListProperty: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Photos Placeholder */}
+                        {/* Photos */}
                         <div>
                             <label className="block text-sm font-bold text-gray-700 mb-2">
                                 <ImageIcon className="inline h-4 w-4 mr-1" />
                                 Property Photos
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                <p className="text-gray-600">Photo upload feature coming soon</p>
-                                <p className="text-sm text-gray-500 mt-1">For now, photos can be added after submission</p>
-                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => {
+                                    // Handle file upload - for now just show file names
+                                    const files = Array.from(e.target.files || []);
+                                    console.log('Files selected:', files.map(f => f.name));
+                                }}
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <p className="text-sm text-gray-500 mt-2">Upload up to 10 property photos (JPEG, PNG)</p>
                         </div>
 
                         {/* Submit Button */}
