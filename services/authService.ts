@@ -24,6 +24,7 @@ export const authService = {
                 email: userData.email,
                 password: userData.password,
                 options: {
+                    emailRedirectTo: window.location.origin,
                     data: {
                         full_name: `${userData.firstName} ${userData.lastName}`,
                         role: 'user', // Default role
