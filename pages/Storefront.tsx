@@ -36,7 +36,7 @@ export const Storefront: React.FC = () => {
 
   const [cart, setCart] = useState<any[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK' | 'CARD' | 'PAYPAL'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bank_transfer' | 'card' | 'paypal'>('cod');
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -125,7 +125,7 @@ export const Storefront: React.FC = () => {
           productId: item.id.toString(),
           quantity: item.quantity,
           price: item.price,
-          name: item.name // Pass name for display in order history
+          name: item.name
         })),
         shippingAddress: {
           street: shippingDetails.address,
@@ -133,7 +133,7 @@ export const Storefront: React.FC = () => {
           phone: shippingDetails.phone,
           name: shippingDetails.name
         },
-        paymentMethod: 'CASH_ON_DELIVERY', // Hardcoded for now as per requirement
+        paymentMethod: 'cod', // Updated to match CreateOrderData type
         deliveryOption: deliveryOption,
         deliverySlot: scheduleOption === 'later' ? selectedDate : undefined,
         holdUntil: scheduleOption === 'hold' ? selectedDate : undefined,
@@ -503,8 +503,8 @@ export const Storefront: React.FC = () => {
 
                     <div className="space-y-3">
                       <button
-                        onClick={() => setPaymentMethod('COD')}
-                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'COD' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
+                        onClick={() => setPaymentMethod('cod')}
+                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
                       >
                         <div className="flex items-center">
                           <Banknote className="h-6 w-6 text-green-600 mr-3" />
@@ -513,12 +513,12 @@ export const Storefront: React.FC = () => {
                             <p className="text-xs text-gray-500">Pay with Cash or Linx upon delivery</p>
                           </div>
                         </div>
-                        {paymentMethod === 'COD' && <CheckCircle className="h-5 w-5 text-green-600" />}
+                        {paymentMethod === 'cod' && <CheckCircle className="h-5 w-5 text-green-600" />}
                       </button>
 
                       <button
-                        onClick={() => setPaymentMethod('PAYPAL')}
-                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'PAYPAL' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                        onClick={() => setPaymentMethod('paypal')}
+                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
                       >
                         <div className="flex items-center">
                           {/* PayPal Logo SVG */}
@@ -533,7 +533,7 @@ export const Storefront: React.FC = () => {
                             <p className="text-xs text-gray-500">Pay securely with your PayPal account</p>
                           </div>
                         </div>
-                        {paymentMethod === 'PAYPAL' && <CheckCircle className="h-5 w-5 text-blue-600" />}
+                        {paymentMethod === 'paypal' && <CheckCircle className="h-5 w-5 text-blue-600" />}
                       </button>
 
                       <button disabled className="w-full flex items-center justify-between p-4 border rounded-xl border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed relative overflow-hidden">
@@ -634,7 +634,7 @@ export const Storefront: React.FC = () => {
                     <div className="flex gap-3 w-full">
                       <button onClick={() => setCheckoutStep(2)} className="px-4 py-3 border border-gray-300 rounded-md font-bold text-gray-700">Back</button>
 
-                      {paymentMethod === 'PAYPAL' ? (
+                      {paymentMethod === 'paypal' ? (
                         <div className="flex-1 z-0 relative">
                           <PayPalScriptProvider options={{ clientId: "sb", currency: "USD", intent: "capture" }}>
                             <PayPalButtons

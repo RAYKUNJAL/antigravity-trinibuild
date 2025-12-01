@@ -6,37 +6,157 @@ export enum SubscriptionTier {
   ENTERPRISE = 'Enterprise'
 }
 
-export interface Business {
+// --- Ecommerce Core Types ---
+
+export interface Store {
   id: string;
+  owner_id: string;
   name: string;
+  slug: string;
   description: string;
-  category: string;
-  location: string;
-  rating: number;
-  reviewCount: number;
-  isVerified: boolean;
-  isPromoted?: boolean; // Ad Tech: Paid boost
-  image: string;
-  lat?: number;
-  lng?: number;
-  hours?: string;
-  phone?: string;
+  logo_url?: string;
+  banner_url?: string;
+  whatsapp?: string;
+  location?: string;
+  category?: string;
+  status: 'draft' | 'active' | 'suspended';
+  theme_config?: any; // JSONB
+  created_at?: string;
+  updated_at?: string;
+  // Relations
   products?: Product[];
-  trafficBoostExpiry?: number; // Timestamp for ad expiry
-  isLocked?: boolean; // For feature gating
-  upgradeRequired?: boolean; // For feature gating
+  logo?: Logo;
+  theme?: Theme;
+}
+
+export interface Logo {
+  id: string;
+  store_id: string;
+  image_png_url: string;
+  image_svg_url: string;
+  favicon_url?: string;
+  color_palette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    surface: string;
+    text_primary: string;
+    text_secondary: string;
+  };
+  font_suggestions: {
+    heading: string;
+    body: string;
+  };
+}
+
+export interface Theme {
+  id: string;
+  store_id: string;
+  name: string;
+  tokens: {
+    colors: any;
+    typography: any;
+    layout: any;
+    components: any;
+  };
+  is_default: boolean;
 }
 
 export interface Product {
   id: string;
+  store_id: string;
   name: string;
-  price: number;
-  image: string;
+  slug: string;
   description: string;
-  status?: 'active' | 'inactive';
-  stock?: number;
+  status: 'draft' | 'active' | 'archived';
+  base_price: number;
+  compare_at_price?: number;
+  cost?: number;
+  image_url?: string;
+  images?: string[];
+  tags?: string[];
   category?: string;
+  stock?: number;
+  created_at?: string;
+  updated_at?: string;
+  // Relations
+  variants?: ProductVariant[];
 }
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  sku?: string;
+  title: string;
+  options: any; // { Size: "M", Color: "Red" }
+  price: number;
+  compare_at_price?: number;
+  inventory_quantity: number;
+  image_url?: string;
+}
+
+export interface Collection {
+  id: string;
+  store_id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  hero_image_url?: string;
+}
+
+export interface Order {
+  id: string;
+  store_id: string;
+  customer_user_id?: string;
+  order_number: string;
+  email: string;
+  phone: string;
+  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+  payment_method: 'cod' | 'card' | 'paypal' | 'bank_transfer';
+  subtotal: number;
+  shipping_fee: number;
+  tax: number;
+  total: number;
+  currency: string;
+  shipping_address: {
+    name: string;
+    street: string;
+    city: string;
+    country: string;
+    zip?: string;
+  };
+  notes?: string;
+  created_at: string;
+  // Relations
+  items?: OrderItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  variant_id?: string;
+  title: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
+export interface StorefrontPage {
+  id: string;
+  store_id: string;
+  type: 'home' | 'about' | 'contact' | 'faq' | 'custom';
+  slug: string;
+  title: string;
+  content_json: any;
+  seo_meta: any;
+}
+
+// --- Legacy / Other Vertical Types ---
+
+// Keep Business for backward compatibility if needed, or map it to Store
+export type Business = Store;
 
 export interface RealEstateListing {
   id: string | number;

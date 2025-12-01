@@ -74,7 +74,7 @@ export const Onboarding: React.FC = () => {
       <div className="fixed top-16 left-0 right-0 h-1 bg-gray-200">
         <div
           className="h-full bg-trini-red transition-all duration-500 ease-out"
-          style={{ width: `${progress}%` }}
+          style={{ width: `${progress}%` } as React.CSSProperties}
         ></div>
       </div>
 

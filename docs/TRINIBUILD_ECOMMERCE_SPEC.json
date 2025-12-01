@@ -1,0 +1,588 @@
+{
+    "module_name": "TriniBuild_Ecommerce_Store_Builder",
+    "version": "1.0.0",
+    "description": "Full multi-vendor ecommerce store builder for TriniBuild with AI logo builder, AI page and theme generator, SEO, CRO, and inventory management. Built for Trinidad & Tobago realities (COD, low bandwidth, mobile-first).",
+    "goals": {
+        "primary": [
+            "Allow any vendor to create a modern online store in minutes without coding.",
+            "Provide Shopify-level features tuned for Trinidad & Tobago users.",
+            "Bake in SEO and CRO best practices by default so even non-technical users convert traffic.",
+            "Integrate AI for branding, theme generation, product copy, and layouts.",
+            "Support multi-vendor architecture with independent stores under one platform."
+        ],
+        "constraints": [
+            "Extremely fast load times, especially on mobile.",
+            "Simple UX for low-tech users.",
+            "All core flows must work well on slow or unstable connections.",
+            "COD (Cash on Delivery) must be a first-class checkout option."
+        ]
+    },
+    "core_features": {
+        "ai_logo_builder": {
+            "enabled": true,
+            "description": "Generate logos and brand kits for vendors using AI.",
+            "inputs": [
+                "Business name",
+                "Tagline (optional)",
+                "Preferred colors (optional)",
+                "Industry or niche",
+                "Style keywords (modern, elegant, playful, minimal, etc.)"
+            ],
+            "outputs": [
+                "Logo PNG (transparent background)",
+                "Logo SVG",
+                "Favicon",
+                "Brand color palette (primary, secondary, accent, neutrals)",
+                "Suggested fonts and typography scale",
+                "Mini brand style guide text"
+            ]
+        },
+        "ai_theme_builder": {
+            "enabled": true,
+            "description": "Generate store themes (colors, layout, components) based on logo and vendor preferences.",
+            "theme_tokens": {
+                "colors": [
+                    "primary",
+                    "secondary",
+                    "accent",
+                    "background",
+                    "surface",
+                    "text_primary",
+                    "text_secondary",
+                    "border",
+                    "success",
+                    "warning",
+                    "error"
+                ],
+                "typography": [
+                    "font_family",
+                    "base_font_size",
+                    "heading_scale",
+                    "line_height",
+                    "button_text_style"
+                ],
+                "layout": [
+                    "section_spacing",
+                    "container_width",
+                    "grid_columns_desktop",
+                    "grid_columns_mobile",
+                    "card_radius",
+                    "shadow_depth"
+                ],
+                "components": [
+                    "hero_layout",
+                    "product_card_layout",
+                    "collection_banner_style",
+                    "footer_layout",
+                    "navigation_style",
+                    "announcement_bar_style"
+                ]
+            },
+            "theme_presets": [
+                "Minimal Clean",
+                "Bold & Colorful",
+                "Luxury & Elegant",
+                "Streetwear & Urban",
+                "Food & Restaurant",
+                "Health & Wellness"
+            ]
+        },
+        "ai_page_generator": {
+            "enabled": true,
+            "description": "Generate fully written, SEO-ready, CRO-optimized pages based on vendor inputs.",
+            "page_types": [
+                "home",
+                "product",
+                "collection",
+                "about",
+                "contact",
+                "faq",
+                "policies_return",
+                "policies_shipping",
+                "policies_privacy",
+                "policies_terms"
+            ],
+            "inputs": [
+                "Brand description",
+                "Target audience",
+                "Tone of voice (friendly, professional, luxury, playful)",
+                "Main product categories",
+                "Location (Trinidad & Tobago by default)",
+                "Primary goal of the page (sell, collect leads, showcase brand, etc.)"
+            ],
+            "outputs": [
+                "Headline",
+                "Subheadline",
+                "Body copy sections",
+                "Call-to-action text",
+                "Feature lists",
+                "FAQ content",
+                "SEO meta title and description",
+                "H1–H3 structure",
+                "Internal links suggestions"
+            ]
+        },
+        "product_management": {
+            "description": "Full CRUD for products, variants, inventory and collections.",
+            "features": [
+                "Create, update, delete products",
+                "Product variants (size, color, style, etc.)",
+                "SKU management",
+                "Inventory counts per variant",
+                "Price, compare-at price, cost",
+                "Product status (draft, active, archived)",
+                "Image gallery per product",
+                "AI-generated product descriptions",
+                "AI-generated SEO meta tags",
+                "Assign to collections",
+                "Visibility scheduling (launch dates)"
+            ]
+        },
+        "inventory_management": {
+            "description": "Track stock, low-stock alerts, and out-of-stock handling.",
+            "features": [
+                "Per-variant stock levels",
+                "Low stock threshold alerts",
+                "Out-of-stock display rules (hide, show as sold out, pre-order)",
+                "Basic stock movement log (manual adjustments, order reservations, cancellations)"
+            ]
+        },
+        "storefront_features": {
+            "description": "Customer-facing store features.",
+            "features": [
+                "Dynamic homepage with configurable sections",
+                "Collections grid and filters",
+                "Search (by product name, tags, category)",
+                "Product detail pages with gallery, variants, reviews, recommendations",
+                "Related products widget",
+                "Recently viewed products widget",
+                "Sticky add-to-cart on mobile",
+                "Cross-sell and upsell sections",
+                "Reviews and ratings system (with moderation controls)",
+                "Announcement bar (sales, shipping info, etc.)",
+                "Trust badges (secure checkout, COD, local seller)"
+            ]
+        },
+        "cart_and_checkout": {
+            "description": "Conversion-focused cart and checkout flows tailored for T&T.",
+            "cart_features": [
+                "Slide-out cart drawer",
+                "Persistent cart by device and logged-in user",
+                "Mini cart preview in navbar",
+                "Promo code entry",
+                "Cart-level messages (free shipping threshold, COD info)"
+            ],
+            "checkout_features": [
+                "Guest checkout",
+                "Optional account creation",
+                "COD (Cash on Delivery) option",
+                "Card/online payment (pluggable gateways)",
+                "Order summary sidebar",
+                "Address auto-fill suggestions (optional)",
+                "Phone number required (important for local delivery)",
+                "Email capture before payment",
+                "Mobile-first layout"
+            ]
+        },
+        "seo_system": {
+            "description": "Automatic SEO wiring for every store and product.",
+            "auto_seo": [
+                "Meta title and description templates per page type",
+                "Open Graph tags (title, description, image)",
+                "Twitter Card metadata",
+                "Structured data (JSON-LD) for products, breadcrumbs, store, and events (if tickets)",
+                "Automatic sitemap.xml generation per store",
+                "Automatic robots.txt rules",
+                "Canonical URLs for each page",
+                "Clean, human-readable URL slugs"
+            ],
+            "performance_seo": [
+                "Image optimization and lazy loading",
+                "Critical CSS extraction",
+                "Preload fonts and key CSS",
+                "Minified JS and CSS bundles",
+                "Core Web Vitals targets: LCP < 2.5s, CLS < 0.1, FID/INP within good range"
+            ]
+        },
+        "cro_system": {
+            "description": "Built-in conversion rate optimization patterns for cold traffic.",
+            "patterns": [
+                "Hero sections with clear value proposition and primary CTA",
+                "Social proof blocks (reviews, testimonials, ratings)",
+                "Trust badges near add-to-cart and checkout buttons",
+                "Scarcity indicators (only X left, limited stock)",
+                "Anchored pricing (compare-at price vs sale price)",
+                "FAQ sections near key decision points",
+                "Sticky mobile add-to-cart buttons",
+                "Checkout progress indicators (Step 1, Step 2, Step 3)",
+                "Email capture before full checkout (for remarketing)",
+                "Exit-intent or cart-abandonment prompts (where technically possible)"
+            ]
+        },
+        "analytics": {
+            "description": "Store-level analytics dashboard.",
+            "metrics": [
+                "Total visitors",
+                "Unique visitors",
+                "Pageviews per page",
+                "Top landing pages",
+                "Conversion rate",
+                "Revenue",
+                "Average order value",
+                "Cart abandonment rate",
+                "Top products by views",
+                "Top products by sales",
+                "Traffic sources (direct, social, referral, search – basic)",
+                "New vs returning customers",
+                "COD vs online payment split"
+            ],
+            "export": [
+                "Daily/weekly summary CSV export",
+                "Customer list export (email + order count)",
+                "Product performance export"
+            ]
+        },
+        "multi_vendor_support": {
+            "description": "Each vendor operates a separate store inside TriniBuild.",
+            "features": [
+                "Unique store slug or subdomain per vendor (e.g. vendor.trinibuild.com or trinibuild.com/vendor-slug)",
+                "Separate branding, theme, and logo per store",
+                "Isolated inventory and product catalog per vendor",
+                "Vendor-level analytics",
+                "Vendor-level SEO settings",
+                "Central TriniBuild marketplace page that can surface products from all vendors"
+            ]
+        }
+    },
+    "data_models": {
+        "tables": [
+            {
+                "name": "users",
+                "description": "Platform users (vendors, customers, admins).",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "email (string, unique)",
+                    "password_hash (string)",
+                    "role (enum: 'admin', 'vendor', 'customer')",
+                    "phone (string, optional)",
+                    "country (string, default 'Trinidad & Tobago')",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "stores",
+                "description": "Vendor stores and brand settings.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "owner_user_id (uuid, fk -> users.id)",
+                    "store_name (string)",
+                    "slug (string, unique)",
+                    "description (text)",
+                    "logo_id (uuid, fk -> logos.id, nullable)",
+                    "theme_id (uuid, fk -> themes.id, nullable)",
+                    "status (enum: 'draft', 'active', 'suspended')",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "logos",
+                "description": "AI-generated or uploaded logos.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "image_png_url (string)",
+                    "image_svg_url (string)",
+                    "favicon_url (string, nullable)",
+                    "color_palette (jsonb)",
+                    "font_suggestions (jsonb)",
+                    "created_at (timestamp)"
+                ]
+            },
+            {
+                "name": "themes",
+                "description": "Theme settings for each store.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "name (string)",
+                    "tokens (jsonb)",
+                    "is_default (boolean, default false)",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "products",
+                "description": "Products sold by stores.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "title (string)",
+                    "slug (string)",
+                    "description (text)",
+                    "status (enum: 'draft', 'active', 'archived')",
+                    "base_price (numeric)",
+                    "compare_at_price (numeric, nullable)",
+                    "cost (numeric, nullable)",
+                    "primary_image_url (string, nullable)",
+                    "tags (text[])",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "product_variants",
+                "description": "Variations of products (size, color, etc.).",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "product_id (uuid, fk -> products.id)",
+                    "sku (string, unique)",
+                    "title (string)",
+                    "options (jsonb)",
+                    "price (numeric)",
+                    "compare_at_price (numeric, nullable)",
+                    "inventory_quantity (integer)",
+                    "inventory_threshold_low (integer, default 5)",
+                    "image_url (string, nullable)",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "collections",
+                "description": "Product collections/categories.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "title (string)",
+                    "slug (string)",
+                    "description (text, nullable)",
+                    "hero_image_url (string, nullable)",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "collection_products",
+                "description": "Many-to-many relation between collections and products.",
+                "fields": [
+                    "collection_id (uuid, fk -> collections.id)",
+                    "product_id (uuid, fk -> products.id)",
+                    "primary key (collection_id, product_id)"
+                ]
+            },
+            {
+                "name": "orders",
+                "description": "Customer orders.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "customer_user_id (uuid, fk -> users.id, nullable for guest)",
+                    "email (string)",
+                    "phone (string)",
+                    "status (enum: 'pending', 'paid', 'shipped', 'delivered', 'cancelled')",
+                    "payment_method (enum: 'cod', 'card', 'bank_transfer', 'other')",
+                    "subtotal (numeric)",
+                    "shipping_fee (numeric)",
+                    "tax (numeric)",
+                    "total (numeric)",
+                    "currency (string, default 'TTD')",
+                    "shipping_address (jsonb)",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "order_items",
+                "description": "Line items for each order.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "order_id (uuid, fk -> orders.id)",
+                    "product_id (uuid, fk -> products.id)",
+                    "variant_id (uuid, fk -> product_variants.id, nullable)",
+                    "title (string)",
+                    "quantity (integer)",
+                    "unit_price (numeric)",
+                    "total_price (numeric)"
+                ]
+            },
+            {
+                "name": "storefront_pages",
+                "description": "Content pages (home, about, contact, etc.).",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "type (enum: 'home', 'about', 'contact', 'faq', 'custom')",
+                    "slug (string)",
+                    "title (string)",
+                    "content_json (jsonb)",
+                    "seo_meta (jsonb)",
+                    "created_at (timestamp)",
+                    "updated_at (timestamp)"
+                ]
+            },
+            {
+                "name": "seo_metadata",
+                "description": "SEO data for products, collections, and pages.",
+                "fields": [
+                    "id (uuid, primary key)",
+                    "entity_type (enum: 'product', 'collection', 'page')",
+                    "entity_id (uuid)",
+                    "meta_title (string)",
+                    "meta_description (string)",
+                    "og_image_url (string, nullable)",
+                    "slug (string)",
+                    "canonical_url (string, nullable)"
+                ]
+            },
+            {
+                "name": "analytics_events",
+                "description": "Basic event tracking for storefront analytics.",
+                "fields": [
+                    "id (bigserial, primary key)",
+                    "store_id (uuid, fk -> stores.id)",
+                    "session_id (string)",
+                    "event_type (string)",
+                    "event_payload (jsonb)",
+                    "occurred_at (timestamp)"
+                ]
+            ]
+        },
+        "api_endpoints": {
+            "auth": [
+                "POST /api/auth/signup",
+                "POST /api/auth/login",
+                "POST /api/auth/logout",
+                "GET /api/auth/me"
+            ],
+            "store_setup": [
+                "POST /api/stores",
+                "GET /api/stores/:id",
+                "PATCH /api/stores/:id",
+                "POST /api/stores/:id/logo/generate",
+                "POST /api/stores/:id/theme/generate"
+            ],
+            "products": [
+                "GET /api/stores/:storeId/products",
+                "POST /api/stores/:storeId/products",
+                "GET /api/products/:id",
+                "PATCH /api/products/:id",
+                "DELETE /api/products/:id"
+            ],
+            "variants": [
+                "POST /api/products/:productId/variants",
+                "PATCH /api/variants/:id",
+                "DELETE /api/variants/:id"
+            ],
+            "collections": [
+                "GET /api/stores/:storeId/collections",
+                "POST /api/stores/:storeId/collections",
+                "PATCH /api/collections/:id",
+                "DELETE /api/collections/:id"
+            ],
+            "orders": [
+                "POST /api/stores/:storeId/checkout",
+                "GET /api/stores/:storeId/orders",
+                "GET /api/orders/:id",
+                "PATCH /api/orders/:id/status"
+            ],
+            "pages": [
+                "GET /api/stores/:storeId/pages",
+                "POST /api/stores/:storeId/pages/generate",
+                "PATCH /api/pages/:id",
+                "GET /:storeSlug/:pageSlug (public storefront)"
+            ],
+            "analytics": [
+                "POST /api/analytics/event",
+                "GET /api/stores/:storeId/analytics/summary"
+            ]
+        },
+        "ui_components": {
+            "dashboard_components": [
+                "StoreDashboardLayout",
+                "OnboardingWizard",
+                "StoreSetupCard",
+                "LogoBuilderModal",
+                "ThemeEditor",
+                "PageGeneratorWizard",
+                "ProductListTable",
+                "ProductEditorForm",
+                "VariantEditorForm",
+                "InventoryTable",
+                "OrdersTable",
+                "OrderDetailDrawer",
+                "AnalyticsOverview",
+                "TrafficChart",
+                "TopProductsWidget",
+                "AbandonedCartWidget"
+            ],
+            "storefront_components": [
+                "StorefrontLayout",
+                "HeaderNav",
+                "AnnouncementBar",
+                "HeroSection",
+                "ProductGrid",
+                "ProductCard",
+                "CollectionBanner",
+                "FiltersSidebar",
+                "SearchBar",
+                "ProductDetail",
+                "VariantSelector",
+                "AddToCartButton",
+                "StickyAddToCartBarMobile",
+                "ReviewsSection",
+                "RelatedProductsSection",
+                "CartDrawer",
+                "CartIconWithCount",
+                "CheckoutForm",
+                "AddressForm",
+                "PaymentMethodSelector",
+                "OrderSummaryCard",
+                "TrustBadgesRow",
+                "Footer"
+            ]
+        },
+        "ux_flows": {
+            "new_vendor_onboarding": [
+                "1. Vendor signs up or logs in.",
+                "2. Prompt: 'Create your first store' → enter store_name, niche, target audience.",
+                "3. AI Logo step (optional but recommended): vendor enters brand info → generate logo.",
+                "4. AI Theme step: generate theme based on logo and preferences.",
+                "5. AI Home Page Generation: generate a first version of homepage.",
+                "6. Prompt vendor to add first product (with AI description helper).",
+                "7. Show preview of live store and 'Publish Store' button.",
+                "8. After publish, vendor sees Store Dashboard with guided checklist."
+            ],
+            "customer_checkout_flow": [
+                "1. Customer arrives on product page (cold traffic from social or search).",
+                "2. Sees hero product image, price, reviews, trust badges, sticky ATC on mobile.",
+                "3. Adds product to cart → cart drawer slides in.",
+                "4. Customer clicks 'Checkout' → leads to checkout page.",
+                "5. Customer enters email and phone first (for recovery).",
+                "6. Customer enters shipping address and selects COD or online payment.",
+                "7. Customer reviews order summary and confirms.",
+                "8. Order confirmation page with order ID, WhatsApp/phone support info, and upsell suggestions."
+            ]
+        },
+        "performance_requirements": {
+            "targets": {
+                "lighthouse_mobile_score": 95,
+                "max_initial_payload_kb": 200,
+                "image_formats": [
+                    "webp",
+                    "avif",
+                    "progressive_jpeg_fallback"
+                ]
+            },
+            "practices": [
+                "Use lazy loading for below-the-fold images.",
+                "Use code splitting for dashboard vs storefront.",
+                "Preload primary font and hero section CSS.",
+                "Use a CDN for static assets.",
+                "Minimize blocking JS on storefront pages.",
+                "Prioritize mobile performance over desktop."
+            ]
+        }
+    }
