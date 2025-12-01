@@ -181,7 +181,7 @@ export const Pricing: React.FC = () => {
 
         <div className="mt-20">
           <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Common Questions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <dl className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {[
               { q: "Do I really need no credit card?", a: "Yes. You can sign up, build your store, and list 10 items without entering any payment information." },
               { q: "What happens if I sell more than 10 items?", a: "You can upgrade to the Growth plan instantly from your dashboard to unlock more space." },
@@ -196,7 +196,7 @@ export const Pricing: React.FC = () => {
                 <dd className="text-gray-600 ml-7">{faq.a}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </div>
     </div>
