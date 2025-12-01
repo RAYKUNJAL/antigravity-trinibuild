@@ -28,6 +28,7 @@ import { Blog } from './pages/Blog';
 import { BlogPost } from './pages/BlogPost';
 import { Legal } from './pages/Legal';
 import { RealEstate } from './pages/RealEstate';
+import { ListProperty } from './pages/ListProperty';
 import { RealEstateAgentDashboard } from './pages/RealEstateAgentDashboard';
 import { Tickets } from './pages/Tickets';
 import { UserProfile } from './pages/UserProfile';
@@ -127,6 +128,7 @@ const App: React.FC = () => {
               <Route path="/work/profile" element={<JobProfile />} />
 
               <Route path="/real-estate" element={<RealEstate />} />
+              <Route path="/real-estate/sell" element={<ListProperty />} />
               <Route path="/real-estate/dashboard" element={<RealEstateAgentDashboard />} />
             </Route>
 
