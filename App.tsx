@@ -106,6 +106,26 @@ const App: React.FC = () => {
               <Route path="/liability-waiver" element={<Legal type="liability-waiver" />} />
               <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />
               <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
+
+              {/* Core Flows */}
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/deals" element={<Deals />} />
+              <Route path="/affiliate" element={<AffiliateProgram />} />
+
+              {/* Vertical Specific Pages */}
+              <Route path="/rides" element={<Rides />} />
+              <Route path="/drive-with-us" element={<DriveWithUs />} />
+              <Route path="/driver/onboarding" element={<DriverOnboarding />} />
+              <Route path="/driver/hub" element={<DriverHub />} />
+
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/work/profile" element={<JobProfile />} />
+
+              <Route path="/real-estate" element={<RealEstate />} />
+              <Route path="/real-estate/dashboard" element={<RealEstateAgentDashboard />} />
             </Route>
 
             {/* Storefront Route */}
