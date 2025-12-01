@@ -21,7 +21,7 @@ export const Earn: React.FC = () => {
       {/* The Three Pillars */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 -mt-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
+
           {/* Merchant Card */}
           <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-trini-red hover:transform hover:-translate-y-1 transition-all">
             <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
@@ -55,7 +55,7 @@ export const Earn: React.FC = () => {
               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> Flexible Hours</li>
               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> Keep 85% of Fares</li>
             </ul>
-            <Link to="/drive/signup" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
+            <Link to="/driver/onboarding" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
               Become a Driver
             </Link>
           </div>
@@ -88,25 +88,25 @@ export const Earn: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 mb-12">Who's earning with TriniBuild?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6">
-               <div className="flex items-center justify-center mb-4">
-                  <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Sarah J." />
-               </div>
-               <p className="text-gray-600 italic mb-4">"I started selling my homemade pepper sauce here. Now I ship cases to Tobago weekly!"</p>
-               <p className="font-bold text-gray-900">- Sarah J., Chaguanas</p>
+              <div className="flex items-center justify-center mb-4">
+                <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Sarah J." />
+              </div>
+              <p className="text-gray-600 italic mb-4">"I started selling my homemade pepper sauce here. Now I ship cases to Tobago weekly!"</p>
+              <p className="font-bold text-gray-900">- Sarah J., Chaguanas</p>
             </div>
             <div className="p-6">
-               <div className="flex items-center justify-center mb-4">
-                  <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="David R." />
-               </div>
-               <p className="text-gray-600 italic mb-4">"Driving part-time helped me pay off my car loan. The app is super easy to use."</p>
-               <p className="font-bold text-gray-900">- David R., Port of Spain</p>
+              <div className="flex items-center justify-center mb-4">
+                <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="David R." />
+              </div>
+              <p className="text-gray-600 italic mb-4">"Driving part-time helped me pay off my car loan. The app is super easy to use."</p>
+              <p className="font-bold text-gray-900">- David R., Port of Spain</p>
             </div>
             <div className="p-6">
-               <div className="flex items-center justify-center mb-4">
-                  <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Amanda K." />
-               </div>
-               <p className="text-gray-600 italic mb-4">"Found a graphic design gig in 2 days. The profile builder is great."</p>
-               <p className="font-bold text-gray-900">- Amanda K., Arima</p>
+              <div className="flex items-center justify-center mb-4">
+                <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Amanda K." />
+              </div>
+              <p className="text-gray-600 italic mb-4">"Found a graphic design gig in 2 days. The profile builder is great."</p>
+              <p className="font-bold text-gray-900">- Amanda K., Arima</p>
             </div>
           </div>
         </div>
@@ -114,13 +114,13 @@ export const Earn: React.FC = () => {
 
       {/* CTA */}
       <div className="bg-trini-teal py-16">
-         <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-white mb-6">Not sure where to start?</h2>
-            <p className="text-white/80 text-lg mb-8">Create a free account and explore the dashboard. You can add any service later.</p>
-            <Link to="/auth" className="inline-block bg-white text-trini-teal font-bold px-10 py-4 rounded-full shadow-lg hover:bg-gray-100 text-lg">
-               Join TriniBuild Free
-            </Link>
-         </div>
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6">Not sure where to start?</h2>
+          <p className="text-white/80 text-lg mb-8">Create a free account and explore the dashboard. You can add any service later.</p>
+          <Link to="/auth" className="inline-block bg-white text-trini-teal font-bold px-10 py-4 rounded-full shadow-lg hover:bg-gray-100 text-lg">
+            Join TriniBuild Free
+          </Link>
+        </div>
       </div>
 
     </div>
