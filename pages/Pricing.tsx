@@ -1,19 +1,33 @@
 import React from 'react';
-import { Check, HelpCircle, CreditCard, Zap, Heart, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Check, HelpCircle, CreditCard, Zap, Heart, TrendingUp } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 export const Pricing: React.FC = () => {
   const navigate = useNavigate();
+  const [processing, setProcessing] = React.useState<string | null>(null);
 
-  const handleSelectPlan = (planName: string) => {
+  const handleSelectPlan = async (planName: string) => {
     if (planName === 'Community Plan') {
+      await authService.updateSubscription('Community Plan');
       localStorage.removeItem('trinibuild_subscription');
       navigate('/create-store');
     } else {
-      localStorage.setItem('trinibuild_subscription', planName);
-      // Simulate "Upgrade Successful" toast or similar by just going to dashboard
-      alert(`Successfully upgraded to ${planName}!`);
-      navigate('/dashboard');
+      setProcessing(planName);
+
+      // Simulate Payment Processing Delay
+      setTimeout(async () => {
+        const success = await authService.updateSubscription(planName);
+        setProcessing(null);
+
+        if (success) {
+          localStorage.setItem('trinibuild_subscription', planName);
+          alert(`Successfully upgraded to ${planName}!`);
+          navigate('/dashboard');
+        } else {
+          alert("Upgrade failed. Please try again or contact support.");
+        }
+      }, 2000);
     }
   };
 
@@ -113,12 +127,13 @@ export const Pricing: React.FC = () => {
               <div className="p-6 bg-gray-50 border-t border-gray-100">
                 <button
                   onClick={() => handleSelectPlan(tier.name)}
+                  disabled={!!processing}
                   className={`block w-full text-center px-4 py-3 rounded-md font-bold transition-colors shadow-sm ${tier.popular
-                      ? 'bg-trini-red text-white hover:bg-red-700'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                    }`}
+                    ? 'bg-trini-red text-white hover:bg-red-700'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                    } ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {tier.cta}
+                  {processing === tier.name ? 'Processing Payment...' : tier.cta}
                 </button>
               </div>
             </div>

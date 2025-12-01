@@ -18,6 +18,7 @@ import { MarketingTools } from '../components/MarketingTools';
 import { DailyRewards } from '../components/DailyRewards';
 import { BusinessExpertBot } from '../components/BusinessExpertBot';
 import { ListingDescriptionGenerator } from '../components/ListingDescriptionGenerator';
+import { authService } from '../services/authService';
 
 export const Dashboard: React.FC = () => {
   // App Context State
@@ -137,13 +138,18 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+
+
   // Load Store Data on Mount
   useEffect(() => {
     // Check Subscription
-    const subscription = localStorage.getItem('trinibuild_subscription');
-    if (subscription === 'Growth' || subscription === 'Empire') {
-      setIsPro(true);
-    }
+    const checkSubscription = async () => {
+      const user = await authService.getCurrentUser();
+      if (user?.subscription_tier === 'Growth' || user?.subscription_tier === 'Empire') {
+        setIsPro(true);
+      }
+    };
+    checkSubscription();
 
     const loadStore = async () => {
       const store = await storeService.getMyStore();
