@@ -729,89 +729,66 @@ export const Storefront: React.FC = () => {
               <div className="p-4 bg-gray-50/50 border-t border-gray-100">
                 <h4 className="text-gray-900 font-bold mb-1 truncate text-sm">{product.name}</h4>
                 <div className="flex items-center mb-3">
-                  <div className="flex text-yellow-400 text-xs">
-                    {[1, 2, 3, 4, 5].map(i => <Star key={i} className="h-3 w-3 fill-current" />)}
-                  </div>
-                  <span className="text-xs text-gray-400 ml-1">(12)</span>
+          ))}
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-extrabold text-trini-teal">TT${product.price}</span>
+              </main>
+
+              {/* Footer */}
+              <footer className="bg-gray-50 border-t border-gray-200 pt-12 pb-8 mb-20 md:mb-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-4">Contact Us</h4>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                        <li className="flex items-center"><MapPin className="h-4 w-4 mr-2 text-gray-400" /> {storeData.location}</li>
+                        <li className="flex items-center"><Phone className="h-4 w-4 mr-2 text-gray-400" /> {storeData.whatsapp}</li>
+                        <li className="flex items-center"><Mail className="h-4 w-4 mr-2 text-gray-400" /> {storeData.email}</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-4">Opening Hours</h4>
+                      <p className="text-sm text-gray-600">{storeData.hours}</p>
+                      <p className="text-sm text-gray-600 mt-2">Sunday: Closed</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-4">Follow Us</h4>
+                      <div className="flex space-x-4">
+                        <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors" aria-label="Facebook"><Facebook className="h-5 w-5" /></button>
+                        <button className="bg-white p-2 rounded-full shadow-sm hover:text-pink-600 transition-colors" aria-label="Instagram"><Instagram className="h-5 w-5" /></button>
+                        <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-400 transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center text-xs text-gray-400 border-t border-gray-200 pt-8">
+                    <p>Powered by TriniBuild E-Commerce Engine</p>
+                  </div>
+                </div>
+              </footer>
+
+              {/* Sticky Bottom Bar for Cart (Mobile) */}
+              {cartItems.length > 0 && !isCartOpen && (
+                <div className="fixed bottom-4 left-4 right-4 md:hidden z-40">
                   <button
-                    onClick={() => addToCart(product)}
-                    className="bg-gray-900 text-white p-2 rounded-full hover:bg-trini-red transition-colors shadow-md"
-                    title="Add to Cart"
+                    onClick={() => setIsCartOpen(true)}
+                    className="w-full bg-trini-black text-white p-4 rounded-lg shadow-2xl flex items-center justify-between"
                   >
-                    <Plus className="h-4 w-4" />
+                    <div className="flex items-center">
+                      <div className="bg-trini-red w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-3">
+                        {cartCount}
+                      </div>
+                      <span className="font-medium">View Cart</span>
+                    </div>
+                    <div className="font-bold flex items-center">
+                      TT${cartTotal} <ChevronRight className="h-5 w-5 ml-2" />
+                    </div>
                   </button>
                 </div>
-                <button
-                  onClick={() => handleWhatsAppClick(product.name)}
-                  className="w-full bg-green-50 text-green-700 py-2 rounded-lg font-bold text-xs hover:bg-green-100 transition-colors flex items-center justify-center"
-                >
-                  <MessageCircle className="h-3 w-3 mr-1" /> Ask about this
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </main>
+              )}
 
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 pt-12 pb-8 mb-20 md:mb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Contact Us</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center"><MapPin className="h-4 w-4 mr-2 text-gray-400" /> {storeData.location}</li>
-                <li className="flex items-center"><Phone className="h-4 w-4 mr-2 text-gray-400" /> {storeData.whatsapp}</li>
-                <li className="flex items-center"><Mail className="h-4 w-4 mr-2 text-gray-400" /> {storeData.email}</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Opening Hours</h4>
-              <p className="text-sm text-gray-600">{storeData.hours}</p>
-              <p className="text-sm text-gray-600 mt-2">Sunday: Closed</p>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Follow Us</h4>
-              <div className="flex space-x-4">
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors" aria-label="Facebook"><Facebook className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-pink-600 transition-colors" aria-label="Instagram"><Instagram className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-400 transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></button>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-xs text-gray-400 border-t border-gray-200 pt-8">
-            <p>Powered by TriniBuild E-Commerce Engine</p>
-          </div>
-        </div>
-      </footer>
+              {/* Floating WhatsApp Button (Desktop/Non-Cart mode) */}
+              {/* AI Assistant Widget */}
+              <ChatWidget mode="vendor" vendorContext={{ name: storeData.name }} />
 
-      {/* Sticky Bottom Bar for Cart (Mobile) */}
-      {cartItems.length > 0 && !isCartOpen && (
-        <div className="fixed bottom-4 left-4 right-4 md:hidden z-40">
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="w-full bg-trini-black text-white p-4 rounded-lg shadow-2xl flex items-center justify-between"
-          >
-            <div className="flex items-center">
-              <div className="bg-trini-red w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-3">
-                {cartCount}
-              </div>
-              <span className="font-medium">View Cart</span>
             </div>
-            <div className="font-bold flex items-center">
-              TT${cartTotal} <ChevronRight className="h-5 w-5 ml-2" />
-            </div>
-          </button>
-        </div>
-      )}
-
-      {/* Floating WhatsApp Button (Desktop/Non-Cart mode) */}
-      {/* AI Assistant Widget */}
-      <ChatWidget mode="vendor" vendorContext={{ name: storeData.name }} />
-
-    </div>
-  );
+          );
 };
