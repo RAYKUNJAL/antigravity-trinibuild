@@ -1,28 +1,18 @@
 import { supabase } from './supabaseClient';
-import { Product } from '../types';
-
-export interface Store {
-    id: string;
-    businessName: string;
-    description: string;
-    logo: string;
-    bannerImage: string;
-    whatsapp: string;
-    location: string;
-    products: Product[];
-    rating: number;
-    totalReviews: number;
-    ownerId?: string;
-}
+import { Store, Product, ProductVariant, Collection, Order, OrderItem } from '../types';
 
 export const storeService = {
-    // Get a store by its ID
+    // --- STORE MANAGEMENT ---
+
+    // Get a store by its ID (public or private)
     getStoreById: async (id: string): Promise<Store | null> => {
-        const { data: storeData, error } = await supabase
+        const { data, error } = await supabase
             .from('stores')
             .select(`
                 *,
-                products (*)
+                products (*),
+                logo:logos(*),
+                theme:themes(*)
             `)
             .eq('id', id)
             .single();
@@ -31,61 +21,47 @@ export const storeService = {
             console.error('Error fetching store:', error);
             return null;
         }
-
-        return mapStoreFromDb(storeData);
+        return data as Store;
     },
 
-    // Get the current user's store
+    // Get a store by its slug (public storefront)
+    getStoreBySlug: async (slug: string): Promise<Store | null> => {
+        const { data, error } = await supabase
+            .from('stores')
+            .select(`
+                *,
+                products (*),
+                logo:logos(*),
+                theme:themes(*)
+            `)
+            .eq('slug', slug)
+            .single();
+
+        if (error) {
+            console.error('Error fetching store by slug:', error);
+            return null;
+        }
+        return data as Store;
+    },
+
+    // Get the current user's store (dashboard)
     getMyStore: async (): Promise<Store | null> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return null;
 
-        const { data: storeData, error } = await supabase
+        const { data, error } = await supabase
             .from('stores')
             .select(`
                 *,
-                products (*)
+                products (*),
+                logo:logos(*),
+                theme:themes(*)
             `)
             .eq('owner_id', user.id)
             .single();
 
-        if (error) {
-            // It's okay if no store found, user might be new
-            return null;
-        }
-
-        return mapStoreFromDb(storeData);
-    },
-
-    // Get all stores (for the directory)
-    getAllStores: async (): Promise<Store[]> => {
-        const { data: stores, error } = await supabase
-            .from('stores')
-            .select('*')
-            .eq('status', 'active');
-
-        if (error) {
-            console.error('Error fetching stores:', error);
-            return [];
-        }
-
-        return stores.map(mapStoreFromDb);
-    },
-
-    // Get featured products across the platform
-    getFeaturedProducts: async (): Promise<Product[]> => {
-        const { data: products, error } = await supabase
-            .from('products')
-            .select('*')
-            .eq('status', 'active')
-            .limit(10);
-
-        if (error) {
-            console.error('Error fetching featured products:', error);
-            return [];
-        }
-
-        return products.map(mapProductFromDb);
+        if (error) return null;
+        return data as Store;
     },
 
     // Create a new store
@@ -93,113 +69,171 @@ export const storeService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
+        // Auto-generate slug from name if not provided
+        const slug = storeData.slug || storeData.name?.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 1000);
+
         const { data, error } = await supabase
             .from('stores')
             .insert({
                 owner_id: user.id,
-                name: storeData.businessName,
+                name: storeData.name,
+                slug: slug,
                 description: storeData.description,
                 location: storeData.location,
                 whatsapp: storeData.whatsapp,
-                category: 'General', // Default or pass in
-                status: 'active' // Auto-activate for now
+                category: storeData.category || 'General',
+                status: 'active' // Default to active for MVP
             })
             .select()
             .single();
 
         if (error) {
             console.error('Error creating store:', error);
-            return null;
+            throw error;
         }
-
-        return mapStoreFromDb(data);
+        return data as Store;
     },
 
-    // Add a product to a store
+    // Update store settings
+    updateStore: async (storeId: string, updates: Partial<Store>): Promise<Store | null> => {
+        const { data, error } = await supabase
+            .from('stores')
+            .update(updates)
+            .eq('id', storeId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating store:', error);
+            throw error;
+        }
+        return data as Store;
+    },
+
+    // --- PRODUCT MANAGEMENT ---
+
+    getProducts: async (storeId: string): Promise<Product[]> => {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*, variants:product_variants(*)')
+            .eq('store_id', storeId);
+
+        if (error) {
+            console.error('Error fetching products:', error);
+            return [];
+        }
+        return data as Product[];
+    },
+
+    getProductById: async (productId: string): Promise<Product | null> => {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*, variants:product_variants(*)')
+            .eq('id', productId)
+            .single();
+
+        if (error) return null;
+        return data as Product;
+    },
+
     addProduct: async (storeId: string, productData: Partial<Product>): Promise<Product | null> => {
+        const slug = productData.name?.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 1000);
+
         const { data, error } = await supabase
             .from('products')
             .insert({
                 store_id: storeId,
                 name: productData.name,
+                slug: slug,
                 description: productData.description,
-                price: productData.price,
-                stock: 100, // Default
-                image_url: productData.image || '',
-                category: 'General',
-                status: 'active'
+                base_price: productData.base_price,
+                image_url: productData.image_url,
+                category: productData.category,
+                status: productData.status || 'active',
+                stock: productData.stock || 0
             })
             .select()
             .single();
 
         if (error) {
             console.error('Error adding product:', error);
-            return null;
+            throw error;
         }
-
-        return mapProductFromDb(data);
+        return data as Product;
     },
 
-    // Update a product
-    updateProduct: async (productId: string, productData: Partial<Product>): Promise<Product | null> => {
+    updateProduct: async (productId: string, updates: Partial<Product>): Promise<Product | null> => {
         const { data, error } = await supabase
             .from('products')
-            .update({
-                name: productData.name,
-                description: productData.description,
-                price: productData.price,
-                image_url: productData.image,
-                status: 'active' // or pass in status
-            })
+            .update(updates)
             .eq('id', productId)
             .select()
             .single();
 
         if (error) {
             console.error('Error updating product:', error);
-            return null;
+            throw error;
         }
-
-        return mapProductFromDb(data);
+        return data as Product;
     },
 
-    // Delete a product
     deleteProduct: async (productId: string): Promise<boolean> => {
         const { error } = await supabase
             .from('products')
             .delete()
             .eq('id', productId);
 
-        if (error) {
-            console.error('Error deleting product:', error);
-            return false;
+        if (error) return false;
+        return true;
+    },
+
+    // --- ORDER MANAGEMENT ---
+
+    createOrder: async (orderData: Partial<Order>, items: Partial<OrderItem>[]): Promise<Order | null> => {
+        // 1. Create Order Record
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .insert(orderData)
+            .select()
+            .single();
+
+        if (orderError || !order) {
+            console.error('Error creating order:', orderError);
+            throw orderError;
         }
 
-        return true;
+        // 2. Create Order Items
+        const itemsWithOrderId = items.map(item => ({
+            ...item,
+            order_id: order.id
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(itemsWithOrderId);
+
+        if (itemsError) {
+            console.error('Error creating order items:', itemsError);
+            // Ideally rollback order here, but for MVP we log it
+        }
+
+        return order as Order;
+    },
+
+    getStoreOrders: async (storeId: string): Promise<Order[]> => {
+        const { data, error } = await supabase
+            .from('orders')
+            .select(`
+                *,
+                items:order_items(*)
+            `)
+            .eq('store_id', storeId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching orders:', error);
+            return [];
+        }
+        return data as Order[];
     }
 };
-
-// Helpers to map DB snake_case to App camelCase
-const mapStoreFromDb = (dbStore: any): Store => ({
-    id: dbStore.id,
-    businessName: dbStore.name,
-    description: dbStore.description || '',
-    logo: dbStore.logo_url || 'https://via.placeholder.com/150',
-    bannerImage: dbStore.banner_url || 'https://via.placeholder.com/800x200',
-    whatsapp: dbStore.whatsapp || '',
-    location: dbStore.location || '',
-    products: dbStore.products ? dbStore.products.map(mapProductFromDb) : [],
-    rating: 4.5, // Mock for now
-    totalReviews: 0,
-    ownerId: dbStore.owner_id
-});
-
-const mapProductFromDb = (dbProduct: any): Product => ({
-    id: dbProduct.id,
-    name: dbProduct.name,
-    description: dbProduct.description || '',
-    price: dbProduct.price,
-    image: dbProduct.image_url || '',
-    status: dbProduct.status || 'active',
-    stock: dbProduct.stock || 0
-});

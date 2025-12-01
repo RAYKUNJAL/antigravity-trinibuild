@@ -1,95 +1,103 @@
 import { supabase } from './supabaseClient';
-
-export interface OrderItem {
-    productId: string;
-    quantity: number;
-    price: number;
-    name?: string; // Optional for display
-}
+import { Order, OrderItem } from '../types';
 
 export interface CreateOrderData {
-    storeId: string; // Added storeId
-    items: OrderItem[];
+    storeId: string;
+    items: {
+        productId: string;
+        quantity: number;
+        price: number;
+        name: string;
+        variantId?: string;
+    }[];
     shippingAddress: {
         street: string;
         city: string;
         phone: string;
-        name?: string;
+        name: string;
+        country?: string;
     };
-    paymentMethod: 'CASH_ON_DELIVERY' | 'BANK_TRANSFER' | 'CREDIT_CARD';
+    paymentMethod: 'cod' | 'card' | 'paypal' | 'bank_transfer';
     deliveryOption: 'standard' | 'express' | 'pickup';
     deliverySlot?: string;
     holdUntil?: string;
     notes?: string;
-}
-
-export interface OrderResponse {
-    id: string;
-    orderNumber: string;
-    total: number;
-    status: string;
-    createdAt?: string;
-    customerName?: string;
-    items?: any[];
-    shippingAddress?: any;
-    deliveryOption?: string;
-    paymentMethod?: string;
-    storeId?: string;
+    email?: string;
 }
 
 export const orderService = {
-    createOrder: async (orderData: CreateOrderData): Promise<OrderResponse> => {
+    createOrder: async (orderData: CreateOrderData): Promise<Order> => {
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Update user profile phone if missing
-        if (user && orderData.shippingAddress.phone) {
-            try {
-                const { data: profile } = await supabase.from('profiles').select('phone').eq('id', user.id).single();
-                if (profile && !profile.phone) {
-                    await supabase.from('profiles').update({ phone: orderData.shippingAddress.phone }).eq('id', user.id);
-                }
-            } catch (e) {
-                console.warn("Failed to update profile phone", e);
-            }
-        }
-
         // Calculate total
-        const total = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const shippingFee = orderData.deliveryOption === 'express' ? 50 : orderData.deliveryOption === 'standard' ? 30 : 0;
+        const tax = 0; // Calculate if needed
+        const total = subtotal + shippingFee + tax;
 
-        // Generate a random order number for now
         const orderNumber = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
 
-        const { data, error } = await supabase
+        // 1. Create Order
+        const { data: order, error: orderError } = await supabase
             .from('orders')
             .insert({
-                customer_id: user?.id, // Can be null for guest checkout if we allowed it, but RLS might block
                 store_id: orderData.storeId,
+                customer_user_id: user?.id,
+                order_number: orderNumber,
+                email: orderData.email || user?.email || 'guest@example.com',
+                phone: orderData.shippingAddress.phone,
+                status: 'pending',
+                payment_method: orderData.paymentMethod,
+                subtotal: subtotal,
+                shipping_fee: shippingFee,
+                tax: tax,
                 total: total,
-                status: 'PENDING',
-                items: orderData.items,
-                delivery_address: JSON.stringify(orderData.shippingAddress),
-                // We might want to store other fields in a metadata column or separate columns if schema allows
-                // For now, mapping what we have to the schema
+                currency: 'TTD',
+                shipping_address: orderData.shippingAddress,
+                notes: orderData.notes
             })
             .select()
             .single();
 
-        if (error) {
-            console.error('Error creating order:', error);
-            throw error;
+        if (orderError || !order) {
+            console.error('Error creating order:', orderError);
+            throw orderError;
         }
 
-        return mapOrderFromDb(data, orderNumber, orderData);
+        // 2. Create Order Items
+        const itemsToInsert = orderData.items.map(item => ({
+            order_id: order.id,
+            product_id: item.productId,
+            variant_id: item.variantId,
+            title: item.name,
+            quantity: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity
+        }));
+
+        const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(itemsToInsert);
+
+        if (itemsError) {
+            console.error('Error creating order items:', itemsError);
+            // In a real app, we might want to delete the order here
+        }
+
+        return order as Order;
     },
 
-    getMyOrders: async (): Promise<OrderResponse[]> => {
+    getMyOrders: async (): Promise<Order[]> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
         const { data, error } = await supabase
             .from('orders')
-            .select('*')
-            .eq('customer_id', user.id)
+            .select(`
+                *,
+                items:order_items(*)
+            `)
+            .eq('customer_user_id', user.id)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -97,14 +105,14 @@ export const orderService = {
             return [];
         }
 
-        return data.map(o => mapOrderFromDb(o));
+        return data as Order[];
     },
 
-    getVendorOrders: async (): Promise<OrderResponse[]> => {
+    getVendorOrders: async (): Promise<Order[]> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        // First get stores owned by user
+        // Get stores owned by user
         const { data: stores } = await supabase
             .from('stores')
             .select('id')
@@ -116,7 +124,10 @@ export const orderService = {
 
         const { data, error } = await supabase
             .from('orders')
-            .select('*')
+            .select(`
+                *,
+                items:order_items(*)
+            `)
             .in('store_id', storeIds)
             .order('created_at', { ascending: false });
 
@@ -125,10 +136,10 @@ export const orderService = {
             return [];
         }
 
-        return data.map(o => mapOrderFromDb(o));
+        return data as Order[];
     },
 
-    updateOrderStatus: async (orderId: string, status: string): Promise<OrderResponse> => {
+    updateOrderStatus: async (orderId: string, status: string): Promise<Order | null> => {
         const { data, error } = await supabase
             .from('orders')
             .update({ status: status })
@@ -138,45 +149,27 @@ export const orderService = {
 
         if (error) {
             console.error('Error updating order status:', error);
-            throw error;
+            return null;
         }
 
-        return mapOrderFromDb(data);
+        return data as Order;
     },
 
-    getOrderById: async (id: string): Promise<OrderResponse> => {
+    getOrderById: async (id: string): Promise<Order | null> => {
         const { data, error } = await supabase
             .from('orders')
-            .select('*')
+            .select(`
+                *,
+                items:order_items(*)
+            `)
             .eq('id', id)
             .single();
 
         if (error) {
             console.error('Error fetching order:', error);
-            throw error;
+            return null;
         }
 
-        return mapOrderFromDb(data);
+        return data as Order;
     }
-};
-
-const mapOrderFromDb = (dbOrder: any, orderNumber?: string, originalData?: any): OrderResponse => {
-    let address = dbOrder.delivery_address;
-    if (typeof address === 'string') {
-        try {
-            address = JSON.parse(address);
-        } catch (e) { }
-    }
-
-    return {
-        id: dbOrder.id,
-        orderNumber: orderNumber || dbOrder.id.substring(0, 8).toUpperCase(), // Fallback if not stored
-        total: dbOrder.total,
-        status: dbOrder.status,
-        createdAt: dbOrder.created_at,
-        customerName: address?.name || 'Customer', // Extract from address if possible
-        items: dbOrder.items,
-        shippingAddress: address,
-        storeId: dbOrder.store_id
-    };
 };

@@ -45,6 +45,7 @@ import { LivingLanding } from './pages/landing/LivingLanding';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
+import { ContractorSignup } from './pages/ContractorSignup';
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
@@ -117,6 +118,15 @@ const App: React.FC = () => {
               <Route path="/real-estate" element={<RealEstate />} />
               <Route path="/real-estate/sell" element={<ListProperty />} />
               <Route path="/real-estate/dashboard" element={<RealEstateAgentDashboard />} />
+
+              {/* Legal Documents */}
+              <Route path="/terms" element={<Legal type="terms" />} />
+              <Route path="/privacy" element={<Legal type="privacy" />} />
+              <Route path="/contractor-agreement" element={<ContractorSignup />} />
+              <Route path="/liability-waiver" element={<Legal type="liability-waiver" />} />
+              <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />
+              <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
+              <Route path="/legal/all" element={<AllLegalDocuments />} />
             </Route>
 
             {/* Storefront Route */}

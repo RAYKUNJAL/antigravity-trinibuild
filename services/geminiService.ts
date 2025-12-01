@@ -42,7 +42,7 @@ export const generateStoreProfile = async (businessName: string, businessType: s
     "description": "string",
     "hours": "string",
     "products": [
-      { "name": "string", "price": number, "description": "string" }
+      { "name": "string", "base_price": number, "description": "string" }
     ]
   }`;
 
@@ -56,11 +56,11 @@ export const generateStoreProfile = async (businessName: string, businessType: s
       description: `Welcome to ${businessName}, your premier destination for ${businessType} in Trinidad & Tobago. We offer the best quality and service to our customers.`,
       hours: "Mon-Fri: 8am - 5pm, Sat: 9am - 2pm",
       products: [
-        { name: "Signature Item", price: 150, description: "Our most popular item, loved by locals." },
-        { name: "Premium Selection", price: 300, description: "High quality and durable." },
-        { name: "Value Pack", price: 75, description: "Great value for your money." }
+        { name: "Signature Item", base_price: 150, description: "Our most popular item, loved by locals." },
+        { name: "Premium Selection", base_price: 300, description: "High quality and durable." },
+        { name: "Value Pack", base_price: 75, description: "Great value for your money." }
       ]
-    };
+    } as any;
   }
 };
 
