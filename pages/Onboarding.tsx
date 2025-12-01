@@ -145,56 +145,34 @@ export const Onboarding: React.FC = () => {
                   <Car className="h-6 w-6" />
                 </div>
                 <div className="flex-grow">
-                  <FileSignature className="h-5 w-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="font-bold text-sm">Independent Contractor Agreement</p>
-                    <Link to="/contractor-agreement" target="_blank" className="text-xs text-blue-600 hover:underline">View Document</Link>
-                  </div>
+                  <h3 className="font-bold text-gray-900">Driver / Worker</h3>
+                  <p className="text-xs text-gray-500">Earn money by driving or completing tasks.</p>
+                  <span className="text-[10px] font-bold text-yellow-600 bg-white px-1 rounded mt-1 inline-block">Gig Economy</span>
                 </div>
-                {hasSigned && <CheckCircle className="h-5 w-5 text-green-500" />}
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg text-xs text-gray-500">
-                By clicking "Sign & Continue", you agree to be bound by these terms electronically and acknowledge your status as an independent contractor.
-              </div>
-
-              {hasSigned ? (
-            <button
-              onClick={handleContinue}
-              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-green-600 hover:bg-green-700 transition-all hover:scale-[1.02]"
-            >
-              Complete Setup <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
-          ) : (
-            <button
-              onClick={handleSign}
-              disabled={isSigning}
-              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 disabled:opacity-70 transition-all"
-            >
-              {isSigning ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Sign & Continue'}
-            </button>
-          )}
-        </div>
+                {intent === 'work' && <CheckCircle className="h-5 w-5 text-yellow-500" />}
+              </button>
+            </div>
           )}
 
-        <div className="mt-8">
-          {step < 3 && (
-            <button
-              onClick={handleContinue}
-              disabled={(step === 1 && !intent) || (step === 2 && intent === 'sell' && !businessName) || (step === 2 && intent === 'buy' && !location)}
-              className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
-            >
-              {step === 1 ? 'Continue' : 'Next Step'} <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
-          )}
-          {step === 1 && (
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Already have an account? <Link to="/auth" className="text-trini-red font-bold cursor-pointer hover:underline">Log in</Link>
-            </p>
-          )}
+
+          <div className="mt-8">
+            {step < 3 && (
+              <button
+                onClick={handleContinue}
+                disabled={(step === 1 && !intent) || (step === 2 && intent === 'sell' && !businessName) || (step === 2 && intent === 'buy' && !location)}
+                className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-trini-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+              >
+                {step === 1 ? 'Continue' : 'Next Step'} <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            )}
+            {step === 1 && (
+              <p className="text-center text-xs text-gray-400 mt-4">
+                Already have an account? <Link to="/auth" className="text-trini-red font-bold cursor-pointer hover:underline">Log in</Link>
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </div >
   );
 };
