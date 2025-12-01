@@ -41,6 +41,8 @@ import { JobsLanding } from './pages/landing/JobsLanding';
 import { TicketsLanding } from './pages/landing/TicketsLanding';
 import { PromoterOnboarding } from './pages/PromoterOnboarding';
 import { LivingLanding } from './pages/landing/LivingLanding';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { NotFound } from './pages/NotFound';
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
@@ -79,7 +81,7 @@ const App: React.FC = () => {
               <Route path="/directory" element={<Directory />} />
               <Route path="/create-store" element={<StoreCreator />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/bot-settings" element={<StoreBotSettings />} />
+              <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
 
               {/* Landing Pages - The "Sales" Layer */}
@@ -110,7 +112,7 @@ const App: React.FC = () => {
               {/* Core Flows */}
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
@@ -131,6 +133,9 @@ const App: React.FC = () => {
             {/* Storefront Route */}
             <Route path="/store/:id" element={<Storefront />} />
             <Route path="/store/preview" element={<Storefront />} />
+
+            {/* 404 Catch-all */}
+            <Route path="*" element={<NotFound />} />
 
           </Routes>
         </main>
