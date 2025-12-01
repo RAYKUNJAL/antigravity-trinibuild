@@ -74,6 +74,23 @@ export const StoreCreator: React.FC = () => {
                console.error("Failed to parse saved form", e);
             }
          }
+
+         // Check for pending store data (user returned from auth)
+         const pendingData = localStorage.getItem('pending_store_data');
+         const pendingStep = localStorage.getItem('pending_store_step');
+         if (pendingData && pendingStep) {
+            try {
+               const { formData: savedFormData, generatedStore: savedStore } = JSON.parse(pendingData);
+               setFormData(savedFormData);
+               setGeneratedStore(savedStore);
+               setStep(parseInt(pendingStep));
+               // Clean up
+               localStorage.removeItem('pending_store_data');
+               localStorage.removeItem('pending_store_step');
+            } catch (e) {
+               console.error("Failed to restore pending store", e);
+            }
+         }
       }
    }, [searchParams]);
 
@@ -156,8 +173,13 @@ export const StoreCreator: React.FC = () => {
          const { data: { user } } = await supabase.auth.getUser();
 
          if (!user) {
-            // Save state is already handled by useEffect
-            alert("Please log in or sign up to launch your store.");
+            // Save pending store data so user can resume after signup
+            localStorage.setItem('pending_store_data', JSON.stringify({
+               formData,
+               generatedStore
+            }));
+            localStorage.setItem('pending_store_step', '3'); // Resume at celebration
+            alert("Almost there! Sign up to launch your store.");
             navigate('/auth?redirect=/create-store');
             return;
          }
