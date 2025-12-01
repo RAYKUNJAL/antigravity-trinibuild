@@ -44,6 +44,7 @@ import { PromoterOnboarding } from './pages/PromoterOnboarding';
 import { LivingLanding } from './pages/landing/LivingLanding';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
+import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
@@ -95,20 +96,6 @@ const App: React.FC = () => {
               <Route path="/solutions/tickets" element={<TicketsLanding />} />
               <Route path="/tickets" element={<Tickets />} />
               <Route path="/tickets/onboarding" element={<PromoterOnboarding />} />
-
-              {/* Functional App Pages - The "Utility" Layer */}
-              <Route path="/earn" element={<Earn />} />
-
-              {/* Support & Content */}
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:id" element={<BlogPost />} />
-              <Route path="/terms" element={<Legal type="terms" />} />
-              <Route path="/privacy" element={<Legal type="privacy" />} />
-              <Route path="/contractor-agreement" element={<Legal type="contractor-agreement" />} />
-              <Route path="/liability-waiver" element={<Legal type="liability-waiver" />} />
-              <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />
-              <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
 
               {/* Core Flows */}
               <Route path="/onboarding" element={<Onboarding />} />
