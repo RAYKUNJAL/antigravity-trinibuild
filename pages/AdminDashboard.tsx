@@ -17,6 +17,8 @@ import { getCampaigns, saveCampaign, deleteCampaign, AdCampaign, getTrafficStats
 import { adminService, SiteSetting } from '../services/adminService';
 import { videoService, VideoPlacement, AVAILABLE_PAGES, PAGE_SECTIONS } from '../services/videoService';
 import { VideoPlacementModal } from '../components/VideoPlacementModal';
+import { videoAnalyticsService, VideoPerformance } from '../services/videoAnalyticsService';
+import { VideoAnalyticsDashboard } from '../components/VideoAnalyticsDashboard';
 
 const REVENUE_DATA = [
    { name: 'Jan', revenue: 1200 },
@@ -28,7 +30,7 @@ const REVENUE_DATA = [
 ];
 
 export const AdminDashboard: React.FC = () => {
-   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings' | 'videos'>('overview');
+   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings' | 'videos' | 'video-analytics'>('overview');
    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
    // Site Settings Logic
@@ -102,11 +104,17 @@ export const AdminDashboard: React.FC = () => {
       active: true
    });
 
+   // Video Analytics Logic
+   const [videoPerformance, setVideoPerformance] = useState<VideoPerformance[]>([]);
+   const [totalVideoStats, setTotalVideoStats] = useState({ views: 0, clicks: 0, completions: 0 });
+   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
    useEffect(() => {
       setCampaigns(getCampaigns());
       setTrafficStats(getTrafficStats());
       loadSettings();
       loadVideos();
+      loadVideoAnalytics();
    }, []);
 
    const loadSettings = async () => {
@@ -310,6 +318,24 @@ export const AdminDashboard: React.FC = () => {
       return PAGE_SECTIONS[page] || ['hero'];
    };
 
+   // Video Analytics Functions
+   const loadVideoAnalytics = async () => {
+      setLoadingAnalytics(true);
+      try {
+         const [performance, stats] = await Promise.all([
+            videoAnalyticsService.getPerformanceMetrics(),
+            videoAnalyticsService.getTotalStats()
+         ]);
+         setVideoPerformance(performance);
+         setTotalVideoStats(stats);
+      } catch (error) {
+         console.error("Failed to load video analytics", error);
+      } finally {
+         setLoadingAnalytics(false);
+      }
+   };
+
+
    const openVerificationModal = (vendor: any) => {
       setVendorToVerify(vendor);
       setDocFile(null);
@@ -369,6 +395,7 @@ export const AdminDashboard: React.FC = () => {
                   { id: 'payments', icon: DollarSign, label: 'Payments' },
                   { id: 'content', icon: FileEdit, label: 'Content & SEO' },
                   { id: 'videos', icon: Video, label: 'Video Manager' },
+                  { id: 'video-analytics', icon: TrendingUp, label: 'Video Analytics' },
                   { id: 'stores', icon: Globe, label: 'Stores' },
                   { id: 'users', icon: Users, label: 'Users & Drivers' },
                   { id: 'jobs', icon: Briefcase, label: 'Jobs' },
@@ -852,6 +879,11 @@ export const AdminDashboard: React.FC = () => {
                         })}
                      </div>
                   </div>
+               )}
+
+               {/* VIEW: VIDEO ANALYTICS */}
+               {activeView === 'video-analytics' && (
+                  <VideoAnalyticsDashboard />
                )}
 
                {/* VIEW: STORES (Vendors) */}
