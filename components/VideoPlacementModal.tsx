@@ -78,23 +78,69 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                     {/* Video URL */}
                     <div>
                         <label className="block text-sm font-bold text-gray-900 mb-1">
-                            Video URL * (YouTube embed or direct video file)
+                            Video URL * (YouTube embed or upload video file)
                         </label>
                         <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={editingVideo.video_url}
                                 onChange={(e) => onVideoChange({ ...editingVideo, video_url: e.target.value })}
-                                placeholder="https://www.youtube.com/embed/... or video file URL"
+                                placeholder="https://www.youtube.com/embed/... or upload a video"
                                 className="flex-1 border border-gray-300 rounded p-2 bg-white text-gray-900"
                             />
-                            <label className="bg-gray-900 text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 flex items-center">
-                                {uploading ? <Loader2 className="animate-spin h-4 w-4" /> : <Upload className="h-4 w-4" />}
-                                <input type="file" className="hidden" onChange={onVideoUpload} accept="video/*" />
+                            <label className="bg-gray-900 text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 flex items-center gap-2">
+                                {uploading ? (
+                                    <>
+                                        <Loader2 className="animate-spin h-4 w-4" />
+                                        <span className="text-xs">Compressing...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="h-4 w-4" />
+                                        <span className="text-xs hidden sm:inline">Upload & Compress</span>
+                                    </>
+                                )}
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={onVideoUpload}
+                                    accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                                />
                             </label>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">For YouTube: Use embed URL format</p>
+                        <div className="flex items-center justify-between mt-2">
+                            <p className="text-xs text-gray-500">
+                                For YouTube: Use embed URL • For uploads: Max 500MB, auto-compressed
+                            </p>
+                        </div>
                     </div>
+
+                    {/* Compression Options (shown when uploading) */}
+                    {uploading && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                                <span className="font-bold text-blue-900">Optimizing your video...</span>
+                            </div>
+                            <div className="space-y-2 text-sm text-blue-800">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                                    Compressing to optimal size
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                                    Generating thumbnail
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                                    Uploading to CDN
+                                </div>
+                            </div>
+                            <div className="mt-3 bg-white rounded-full h-2 overflow-hidden">
+                                <div className="bg-blue-600 h-full animate-pulse" style={{ width: '60%' }}></div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Title and Description */}
                     <div>
