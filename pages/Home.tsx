@@ -3,6 +3,7 @@ import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, 
 import { Link, useNavigate } from 'react-router-dom';
 import { getAdConfig, AdConfig } from '../services/adService';
 import { AdSpot } from '../components/AdSpot';
+import { VideoSection } from '../components/VideoSection';
 
 export const Home: React.FC = () => {
    const navigate = useNavigate();
@@ -84,6 +85,16 @@ export const Home: React.FC = () => {
                      <Star className="h-5 w-5 text-yellow-400" /> 4.9/5 Average Rating
                   </div>
                </div>
+            </div>
+
+            {/* Hero Video Section */}
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-4xl px-4 z-20">
+               <VideoSection
+                  page="home"
+                  section="hero"
+                  className="w-full rounded-2xl shadow-2xl overflow-hidden"
+                  containerClassName=""
+               />
             </div>
          </div>
 
