@@ -302,13 +302,20 @@ export const AdminDashboard: React.FC = () => {
       const file = e.target.files?.[0];
       if (!file) return;
 
+      // Reset input
+      e.target.value = '';
+
       setUploading(true);
       try {
+         console.log(`Starting upload: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
          const url = await videoService.uploadVideo(file, 'videos');
          setEditingVideo({ ...editingVideo, video_url: url });
-         alert('Video uploaded successfully');
-      } catch (error) {
-         alert('Upload failed');
+         alert(`✅ Video uploaded successfully!\n\nURL: ${url}\n\nYou can now save this video placement.`);
+      } catch (error: any) {
+         console.error('Video upload error:', error);
+         const errorMessage = error.message || 'Unknown error occurred';
+         alert(`❌ Upload Failed\n\n${errorMessage}\n\nPlease try:\n• Using a smaller file (max 500MB)\n• Converting to MP4 format\n• Checking your internet connection\n• Contacting support if the issue persists`);
       } finally {
          setUploading(false);
       }

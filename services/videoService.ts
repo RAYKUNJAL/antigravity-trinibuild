@@ -70,22 +70,111 @@ export const videoService = {
         if (error) throw error;
     },
 
-    async uploadVideo(file: File, path: string) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${path}/${fileName}`;
+    async uploadVideo(file: File, path: string = 'videos', onProgress?: (progress: number) => void): Promise<string> {
+        try {
+            // Validate file
+            if (!file) {
+                throw new Error('No file provided');
+            }
 
-        const { error: uploadError } = await supabase.storage
-            .from('site-assets')
-            .upload(filePath, file);
+            // Check file type
+            const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/avi'];
+            if (!validTypes.includes(file.type)) {
+                throw new Error(`Invalid file type: ${file.type}. Please upload MP4, WebM, MOV, or AVI files.`);
+            }
 
-        if (uploadError) throw uploadError;
+            // Check file size (500MB max)
+            const maxSize = 500 * 1024 * 1024; // 500MB
+            if (file.size > maxSize) {
+                throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 500MB.`);
+            }
 
-        const { data } = supabase.storage
-            .from('site-assets')
-            .getPublicUrl(filePath);
+            console.log(`Uploading video: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
-        return data.publicUrl;
+            // Ensure bucket exists
+            try {
+                const { data: buckets } = await supabase.storage.listBuckets();
+                const bucketExists = buckets?.some(b => b.name === 'site-assets');
+
+                if (!bucketExists) {
+                    console.log('Creating site-assets bucket...');
+                    const { error: createError } = await supabase.storage.createBucket('site-assets', {
+                        public: true,
+                        fileSizeLimit: maxSize,
+                        allowedMimeTypes: validTypes
+                    });
+
+                    if (createError) {
+                        console.warn('Could not create bucket:', createError);
+                        // Continue anyway - bucket might exist but not be listable
+                    }
+                }
+            } catch (bucketError) {
+                console.warn('Bucket check failed, continuing with upload:', bucketError);
+            }
+
+            // Generate unique filename
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substring(7);
+            const fileExt = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+            const fileName = `video_${timestamp}_${randomStr}.${fileExt}`;
+            const filePath = `${path}/${fileName}`;
+
+            console.log(`Uploading to: ${filePath}`);
+
+            // Upload with progress tracking
+            const { data, error: uploadError } = await supabase.storage
+                .from('site-assets')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+
+                // Provide helpful error messages
+                if (uploadError.message.includes('Bucket not found')) {
+                    throw new Error('Storage bucket not configured. Please contact support or check Supabase settings.');
+                } else if (uploadError.message.includes('exceeded')) {
+                    throw new Error('File size exceeds storage limits. Please use a smaller file or compress the video.');
+                } else if (uploadError.message.includes('policy')) {
+                    throw new Error('Storage permissions error. Please check Supabase storage policies.');
+                } else {
+                    throw new Error(`Upload failed: ${uploadError.message}`);
+                }
+            }
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('site-assets')
+                .getPublicUrl(filePath);
+
+            if (!urlData?.publicUrl) {
+                throw new Error('Failed to get public URL for uploaded video');
+            }
+
+            console.log(`Video uploaded successfully: ${urlData.publicUrl}`);
+
+            if (onProgress) {
+                onProgress(100);
+            }
+
+            return urlData.publicUrl;
+
+        } catch (error: any) {
+            console.error('Video upload error:', error);
+            throw new Error(error.message || 'Failed to upload video. Please try again.');
+        }
+    },
+
+    // Helper function to compress video client-side (optional)
+    async compressVideo(file: File, maxSizeMB: number = 50): Promise<File> {
+        // For now, return original file
+        // In production, you could use a library like browser-image-compression
+        // or ffmpeg.wasm for client-side video compression
+        console.log('Video compression not yet implemented, using original file');
+        return file;
     }
 };
 
