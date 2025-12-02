@@ -91,28 +91,6 @@ export const videoService = {
 
             console.log(`Uploading video: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
-            // Ensure bucket exists
-            try {
-                const { data: buckets } = await supabase.storage.listBuckets();
-                const bucketExists = buckets?.some(b => b.name === 'site-assets');
-
-                if (!bucketExists) {
-                    console.log('Creating site-assets bucket...');
-                    const { error: createError } = await supabase.storage.createBucket('site-assets', {
-                        public: true,
-                        fileSizeLimit: maxSize,
-                        allowedMimeTypes: validTypes
-                    });
-
-                    if (createError) {
-                        console.warn('Could not create bucket:', createError);
-                        // Continue anyway - bucket might exist but not be listable
-                    }
-                }
-            } catch (bucketError) {
-                console.warn('Bucket check failed, continuing with upload:', bucketError);
-            }
-
             // Generate unique filename
             const timestamp = Date.now();
             const randomStr = Math.random().toString(36).substring(7);
@@ -122,12 +100,13 @@ export const videoService = {
 
             console.log(`Uploading to: ${filePath}`);
 
-            // Upload with progress tracking
+            // Upload directly (skip bucket check to avoid CORS/RLS issues on listBuckets)
             const { data, error: uploadError } = await supabase.storage
                 .from('site-assets')
                 .upload(filePath, file, {
                     cacheControl: '3600',
-                    upsert: false
+                    upsert: true,
+                    contentType: file.type // Explicitly set content type
                 });
 
             if (uploadError) {
@@ -135,11 +114,11 @@ export const videoService = {
 
                 // Provide helpful error messages
                 if (uploadError.message.includes('Bucket not found')) {
-                    throw new Error('Storage bucket not configured. Please contact support or check Supabase settings.');
+                    throw new Error('Storage bucket not configured. Please contact support.');
                 } else if (uploadError.message.includes('exceeded')) {
-                    throw new Error('File size exceeds storage limits. Please use a smaller file or compress the video.');
+                    throw new Error('File size exceeds storage limits.');
                 } else if (uploadError.message.includes('policy')) {
-                    throw new Error('Storage permissions error. Please check Supabase storage policies.');
+                    throw new Error('Storage permissions error. Please check Supabase policies.');
                 } else {
                     throw new Error(`Upload failed: ${uploadError.message}`);
                 }
