@@ -15,6 +15,8 @@ import { Link } from 'react-router-dom';
 import { verifyBusinessDocument, generateBlogPost } from '../services/geminiService';
 import { getCampaigns, saveCampaign, deleteCampaign, AdCampaign, getTrafficStats } from '../services/adService';
 import { adminService, SiteSetting } from '../services/adminService';
+import { videoService, VideoPlacement, AVAILABLE_PAGES, PAGE_SECTIONS } from '../services/videoService';
+import { VideoPlacementModal } from '../components/VideoPlacementModal';
 
 const REVENUE_DATA = [
    { name: 'Jan', revenue: 1200 },
@@ -26,7 +28,7 @@ const REVENUE_DATA = [
 ];
 
 export const AdminDashboard: React.FC = () => {
-   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings'>('overview');
+   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings' | 'videos'>('overview');
    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
    // Site Settings Logic
@@ -83,10 +85,28 @@ export const AdminDashboard: React.FC = () => {
       { id: 'ads', name: 'Google Ad Manager', desc: 'Advanced AdTech Revenue', connected: false, icon: DollarSign, color: 'text-blue-600' },
    ]);
 
+   // Video Management Logic
+   const [videos, setVideos] = useState<VideoPlacement[]>([]);
+   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+   const [editingVideo, setEditingVideo] = useState<Partial<VideoPlacement>>({
+      page: 'home',
+      section: 'hero',
+      video_url: '',
+      title: '',
+      description: '',
+      autoplay: false,
+      loop: false,
+      muted: true,
+      controls: true,
+      position: 1,
+      active: true
+   });
+
    useEffect(() => {
       setCampaigns(getCampaigns());
       setTrafficStats(getTrafficStats());
       loadSettings();
+      loadVideos();
    }, []);
 
    const loadSettings = async () => {
@@ -219,6 +239,77 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   // Video Management Functions
+   const loadVideos = async () => {
+      try {
+         const data = await videoService.getVideoPlacements();
+         setVideos(data);
+      } catch (error) {
+         console.error("Failed to load videos", error);
+      }
+   };
+
+   const handleSaveVideo = async () => {
+      if (!editingVideo.video_url || !editingVideo.title) {
+         alert('Please fill in required fields');
+         return;
+      }
+
+      try {
+         await videoService.saveVideoPlacement(editingVideo);
+         await loadVideos();
+         setIsVideoModalOpen(false);
+         setEditingVideo({
+            page: 'home',
+            section: 'hero',
+            video_url: '',
+            title: '',
+            description: '',
+            autoplay: false,
+            loop: false,
+            muted: true,
+            controls: true,
+            position: 1,
+            active: true
+         });
+         alert('Video placement saved successfully');
+      } catch (error) {
+         alert('Failed to save video placement');
+      }
+   };
+
+   const handleDeleteVideo = async (id: string) => {
+      if (confirm('Are you sure you want to delete this video placement?')) {
+         try {
+            await videoService.deleteVideoPlacement(id);
+            await loadVideos();
+            alert('Video placement deleted');
+         } catch (error) {
+            alert('Failed to delete video placement');
+         }
+      }
+   };
+
+   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setUploading(true);
+      try {
+         const url = await videoService.uploadVideo(file, 'videos');
+         setEditingVideo({ ...editingVideo, video_url: url });
+         alert('Video uploaded successfully');
+      } catch (error) {
+         alert('Upload failed');
+      } finally {
+         setUploading(false);
+      }
+   };
+
+   const getAvailableSections = (page: string) => {
+      return PAGE_SECTIONS[page] || ['hero'];
+   };
+
    const openVerificationModal = (vendor: any) => {
       setVendorToVerify(vendor);
       setDocFile(null);
@@ -277,6 +368,7 @@ export const AdminDashboard: React.FC = () => {
                   { id: 'monetization', icon: BarChart2, label: 'Traffic & Ads' },
                   { id: 'payments', icon: DollarSign, label: 'Payments' },
                   { id: 'content', icon: FileEdit, label: 'Content & SEO' },
+                  { id: 'videos', icon: Video, label: 'Video Manager' },
                   { id: 'stores', icon: Globe, label: 'Stores' },
                   { id: 'users', icon: Users, label: 'Users & Drivers' },
                   { id: 'jobs', icon: Briefcase, label: 'Jobs' },
@@ -604,6 +696,160 @@ export const AdminDashboard: React.FC = () => {
                               <button className="w-full bg-gray-900 text-white py-2 rounded font-bold text-sm hover:bg-gray-800">Update SEO Rules</button>
                            </div>
                         </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* VIEW: VIDEO MANAGER */}
+               {activeView === 'videos' && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                     <div className="flex justify-between items-center">
+                        <div>
+                           <h2 className="text-2xl font-bold text-gray-900">Video Placement Manager</h2>
+                           <p className="text-gray-500 text-sm">Control video placements across all pages and sections</p>
+                        </div>
+                        <button
+                           onClick={() => {
+                              setEditingVideo({
+                                 page: 'home',
+                                 section: 'hero',
+                                 video_url: '',
+                                 title: '',
+                                 description: '',
+                                 autoplay: false,
+                                 loop: false,
+                                 muted: true,
+                                 controls: true,
+                                 position: 1,
+                                 active: true
+                              });
+                              setIsVideoModalOpen(true);
+                           }}
+                           className="bg-trini-red text-white px-4 py-2 rounded-lg font-bold flex items-center shadow-lg hover:bg-red-700"
+                        >
+                           <Video className="h-4 w-4 mr-2" /> Add Video Placement
+                        </button>
+                     </div>
+
+                     {/* Video Placements Grid */}
+                     <div className="grid grid-cols-1 gap-6">
+                        {AVAILABLE_PAGES.map(page => {
+                           const pageVideos = videos.filter(v => v.page === page.value);
+                           return (
+                              <div key={page.value} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                                    <div>
+                                       <h3 className="font-bold text-lg text-gray-900">{page.label}</h3>
+                                       <p className="text-xs text-gray-500">{pageVideos.length} video placement(s)</p>
+                                    </div>
+                                    <button
+                                       onClick={() => {
+                                          setEditingVideo({
+                                             page: page.value,
+                                             section: getAvailableSections(page.value)[0],
+                                             video_url: '',
+                                             title: '',
+                                             description: '',
+                                             autoplay: false,
+                                             loop: false,
+                                             muted: true,
+                                             controls: true,
+                                             position: pageVideos.length + 1,
+                                             active: true
+                                          });
+                                          setIsVideoModalOpen(true);
+                                       }}
+                                       className="text-sm bg-gray-900 text-white px-3 py-1 rounded hover:bg-gray-800"
+                                    >
+                                       + Add to {page.label}
+                                    </button>
+                                 </div>
+
+                                 {pageVideos.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-400">
+                                       <Video className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                                       <p className="text-sm">No videos placed on this page yet</p>
+                                    </div>
+                                 ) : (
+                                    <div className="divide-y divide-gray-200">
+                                       {pageVideos.map(video => (
+                                          <div key={video.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                             <div className="flex gap-4">
+                                                {/* Video Preview */}
+                                                <div className="flex-shrink-0 w-48 h-28 bg-gray-900 rounded overflow-hidden">
+                                                   {video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be') ? (
+                                                      <iframe
+                                                         src={video.video_url}
+                                                         className="w-full h-full"
+                                                         frameBorder="0"
+                                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                      />
+                                                   ) : (
+                                                      <video src={video.video_url} className="w-full h-full object-cover" />
+                                                   )}
+                                                </div>
+
+                                                {/* Video Info */}
+                                                <div className="flex-1">
+                                                   <div className="flex justify-between items-start mb-2">
+                                                      <div>
+                                                         <h4 className="font-bold text-gray-900">{video.title}</h4>
+                                                         <p className="text-sm text-gray-500">{video.description}</p>
+                                                      </div>
+                                                      <div className="flex gap-2">
+                                                         <button
+                                                            onClick={() => {
+                                                               setEditingVideo(video);
+                                                               setIsVideoModalOpen(true);
+                                                            }}
+                                                            className="text-blue-600 hover:text-blue-800"
+                                                         >
+                                                            <FileEdit className="h-4 w-4" />
+                                                         </button>
+                                                         <button
+                                                            onClick={() => handleDeleteVideo(video.id)}
+                                                            className="text-red-600 hover:text-red-800"
+                                                         >
+                                                            <X className="h-4 w-4" />
+                                                         </button>
+                                                      </div>
+                                                   </div>
+
+                                                   <div className="flex flex-wrap gap-2 text-xs">
+                                                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">
+                                                         Section: {video.section}
+                                                      </span>
+                                                      <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                                         Position: {video.position}
+                                                      </span>
+                                                      {video.autoplay && (
+                                                         <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                                            Autoplay
+                                                         </span>
+                                                      )}
+                                                      {video.loop && (
+                                                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+                                                            Loop
+                                                         </span>
+                                                      )}
+                                                      {video.muted && (
+                                                         <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                                                            Muted
+                                                         </span>
+                                                      )}
+                                                      <span className={`px-2 py-1 rounded font-bold ${video.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                         {video.active ? 'Active' : 'Inactive'}
+                                                      </span>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                       ))}
+                                    </div>
+                                 )}
+                              </div>
+                           );
+                        })}
                      </div>
                   </div>
                )}
