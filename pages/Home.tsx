@@ -43,17 +43,15 @@ export const Home: React.FC = () => {
          <div className="relative h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image with Parallax */}
             <div
-               className="absolute inset-0 z-0"
+               className="absolute inset-0 z-0 hero-parallax-bg"
                style={{
-                  backgroundImage: "url('/trini-market-hero.jpg')", // Tropical/Construction vibe
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  transform: `translateY(${offset * 0.5}px)`,
-               }}
+                  backgroundImage: "url('/trini-market-hero.jpg')",
+                  '--parallax-offset': `${offset * 0.5}px`
+               } as React.CSSProperties}
             ></div>
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-gray-900/90 z-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-gray-900/95 z-10"></div>
 
             <div className="relative z-20 text-center px-4 max-w-5xl mx-auto animate-fade-in">
 
@@ -89,7 +87,7 @@ export const Home: React.FC = () => {
                </div>
 
                <p className="text-xl md:text-2xl text-gray-200 mb-6 max-w-3xl mx-auto font-light leading-relaxed">
-                  Your complete digital business platform. Start selling, hiring, or offering services today—completely free. Just we own ting, finally brought up to modern standards.
+                  Your local digital business platform. Built for the Caribbean, by the Caribbean—<span className="text-trini-gold font-semibold">we own ting</span>, brought up to modern standards.
                </p>
 
                {/* Social Proof - NEW */}
