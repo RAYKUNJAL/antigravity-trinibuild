@@ -127,12 +127,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
 
       const aiMsg: Message = { id: (Date.now() + 1).toString(), text: response.content, sender: 'ai' };
       setMessages(prev => [...prev, aiMsg]);
+
+      // Log if using fallback
+      if (response.model_used?.includes('fallback')) {
+        console.log('Using fallback AI responses - AI server unavailable');
+      }
     } catch (error: any) {
-      console.error("Chat error details:", error);
-      const errorMessage = error.message || "Unknown error";
+      console.error("Unexpected chat error:", error);
+      // This should rarely happen now since aiService has fallback
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
-        text: `Sorry, I'm having trouble connecting. (Error: ${errorMessage}) Please ensure the AI server is running.`,
+        text: `I apologize, but I'm having trouble right now. Please try:\n\n• Refreshing the page\n• Checking your internet connection\n• Contacting support@trinibuild.com\n\nI'm here to help once we're back online!`,
         sender: 'ai'
       }]);
     } finally {
