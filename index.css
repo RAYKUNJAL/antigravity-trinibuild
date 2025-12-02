@@ -44,6 +44,13 @@
         background-size: cover;
     }
 
+    .hero-parallax-bg {
+        background-size: cover;
+        background-position: center;
+        transform: translateY(var(--parallax-offset, 0px));
+        transition: transform 0.1s ease-out;
+    }
+
     .glass-panel {
         @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
     }
