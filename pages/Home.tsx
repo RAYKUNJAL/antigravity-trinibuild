@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAdConfig, AdConfig } from '../services/adService';
 import { AdSpot } from '../components/AdSpot';
 import { VideoSection } from '../components/VideoSection';
+import { FreeOfferBanner } from '../components/FreeOfferBanner';
+import { SuccessStoriesCarousel } from '../components/SuccessStoriesCarousel';
+import { ExitIntentPopup } from '../components/ExitIntentPopup';
 
 export const Home: React.FC = () => {
    const navigate = useNavigate();
@@ -28,6 +31,13 @@ export const Home: React.FC = () => {
 
    return (
       <div className="min-h-screen bg-gray-50 font-sans overflow-x-hidden">
+         {/* Free Offer Banner - Sticky at top */}
+         <div className="sticky top-0 z-50">
+            <FreeOfferBanner />
+         </div>
+
+         {/* Exit Intent Popup */}
+         <ExitIntentPopup />
 
          {/* Parallax Hero Section */}
          <div className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -210,6 +220,11 @@ export const Home: React.FC = () => {
                ))}
             </div>
          </div>
+
+         {/* Success Stories Carousel */}
+         <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <SuccessStoriesCarousel />
+         </section>
 
          {/* Pain Points Section */}
          <section className="py-24 bg-white relative overflow-hidden">
