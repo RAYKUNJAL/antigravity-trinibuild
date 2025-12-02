@@ -105,6 +105,7 @@ const App: React.FC = () => {
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
+              <Route path="/earn" element={<Earn />} />
 
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
