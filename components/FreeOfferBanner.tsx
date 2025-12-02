@@ -1,8 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, Zap, CheckCircle, ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const FreeOfferBanner: React.FC = () => {
+    const [timeLeft, setTimeLeft] = useState({ hours: 48, minutes: 0, seconds: 0 });
+
+    useEffect(() => {
+        // Check if countdown end time exists in localStorage
+        let endTime = localStorage.getItem('offer_end_time');
+
+        if (!endTime) {
+            // Set countdown to 48 hours from now
+            const end = Date.now() + (48 * 60 * 60 * 1000);
+            localStorage.setItem('offer_end_time', end.toString());
+            endTime = end.toString();
+        }
+
+        const timer = setInterval(() => {
+            const now = Date.now();
+            const end = parseInt(endTime!);
+            const diff = end - now;
+
+            if (diff <= 0) {
+                // Reset to 48 hours
+                const newEnd = Date.now() + (48 * 60 * 60 * 1000);
+                localStorage.setItem('offer_end_time', newEnd.toString());
+                setTimeLeft({ hours: 48, minutes: 0, seconds: 0 });
+            } else {
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                setTimeLeft({ hours, minutes, seconds });
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
     return (
         <div className="bg-gradient-to-r from-trini-red via-red-600 to-trini-red text-white py-3 px-4 shadow-lg relative overflow-hidden">
             {/* Animated background pattern */}
@@ -17,9 +51,11 @@ export const FreeOfferBanner: React.FC = () => {
                         <Gift className="h-6 w-6 animate-bounce" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg md:text-xl flex items-center gap-2">
+                        <h3 className="font-bold text-lg md:text-xl flex items-center gap-2 flex-wrap">
                             🎁 FREE Lifetime Website + 10 Listings + 5 Marketplace Spots
-                            <span className="bg-yellow-400 text-gray-900 text-xs px-2 py-0.5 rounded-full font-black animate-pulse">LIMITED</span>
+                            <span className="bg-yellow-400 text-gray-900 text-xs px-2 py-0.5 rounded-full font-black animate-pulse">
+                                {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+                            </span>
                         </h3>
                         <p className="text-white/90 text-sm hidden md:block">
                             No credit card required • Setup in 5 minutes • Cancel anytime

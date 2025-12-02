@@ -62,25 +62,52 @@ export const Home: React.FC = () => {
                   <img src="/trinibuild-logo.png" alt="TriniBuild Logo" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
                </div>
 
+               {/* Functional Headline - NEW */}
+               <p className="text-lg md:text-xl text-trini-gold font-bold mb-4 tracking-wide uppercase">
+                  The Easiest Way to Start Selling Online in Trinidad & Tobago
+               </p>
+
                {/* Hero Content */}
                <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-white mb-6 leading-tight tracking-tight drop-shadow-2xl">
                   TriniBuild: <span className="text-trini-red">For We,</span> <span className="text-trini-gold">By We</span>
                </h1>
 
-               <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
-                  Free Websites for Everyone. No Credit Card Required. Your digital home for everything from marketplaces to job boards. Start your business today with our free tier—list up to 10 items at no cost. Just we own ting, finally brought up to modern standards.
+               {/* Value Icons - NEW */}
+               <div className="flex flex-wrap items-center justify-center gap-6 mb-8 max-w-3xl mx-auto">
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                     <ShoppingCart className="h-5 w-5 text-green-400" />
+                     <span className="text-white font-bold text-sm">10 Free Listings</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                     <Globe className="h-5 w-5 text-blue-400" />
+                     <span className="text-white font-bold text-sm">Lifetime Website</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                     <CreditCard className="h-5 w-5 text-yellow-400" />
+                     <span className="text-white font-bold text-sm">No Credit Card</span>
+                  </div>
+               </div>
+
+               <p className="text-xl md:text-2xl text-gray-200 mb-6 max-w-3xl mx-auto font-light leading-relaxed">
+                  Your complete digital business platform. Start selling, hiring, or offering services today—completely free. Just we own ting, finally brought up to modern standards.
                </p>
 
-               {/* CTAs */}
-               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                  <Link to="/auth?mode=signup" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center">
-                     Start for Free Today <ArrowRight className="ml-2 h-5 w-5" />
+               {/* Social Proof - NEW */}
+               <p className="text-lg text-green-400 font-bold mb-8 animate-pulse">
+                  ✅ Join 5,000+ Local Businesses Already Selling Online
+               </p>
+
+               {/* Dual Path Selection - NEW */}
+               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                  <Link to="/auth?mode=signup&type=business" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center group">
+                     <Briefcase className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                     I'm a Business - Start Selling
+                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
-                  <button onClick={() => {
-                     document.getElementById('ecosystem')?.scrollIntoView({ behavior: 'smooth' });
-                  }} className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-lg shadow-lg hover:bg-white/20 transition-all hover:scale-105 flex items-center justify-center">
-                     Explore All Our Features <ChevronRight className="ml-2 h-5 w-5" />
-                  </button>
+                  <Link to="/stores" className="px-8 py-4 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white rounded-full font-bold text-lg shadow-lg hover:bg-white/20 transition-all hover:scale-105 flex items-center justify-center group">
+                     <ShoppingCart className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                     I'm a Shopper - Browse Deals
+                  </Link>
                </div>
 
                {/* Trust Badges */}
