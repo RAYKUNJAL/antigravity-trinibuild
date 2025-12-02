@@ -26,21 +26,31 @@ export const adminService = {
     },
 
     async uploadAsset(file: File, path: string) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${path}/${fileName}`;
+        try {
+            const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin';
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${path}/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from('site-assets')
-            .upload(filePath, file);
+            // Upload directly with robust options
+            const { error: uploadError } = await supabase.storage
+                .from('site-assets')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: true,
+                    contentType: file.type
+                });
 
-        if (uploadError) throw uploadError;
+            if (uploadError) throw uploadError;
 
-        const { data } = supabase.storage
-            .from('site-assets')
-            .getPublicUrl(filePath);
+            const { data } = supabase.storage
+                .from('site-assets')
+                .getPublicUrl(filePath);
 
-        return data.publicUrl;
+            return data.publicUrl;
+        } catch (error: any) {
+            console.error('Asset upload error:', error);
+            throw new Error(error.message || 'Failed to upload asset');
+        }
     },
 
     async logAction(action: string, details: any) {
