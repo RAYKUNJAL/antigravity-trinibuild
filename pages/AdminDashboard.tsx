@@ -1279,6 +1279,17 @@ export const AdminDashboard: React.FC = () => {
                </div>
             </div>
          )}
+
+         {/* Video Placement Modal */}
+         {isVideoModalOpen && (
+            <VideoPlacementModal
+               isOpen={isVideoModalOpen}
+               editingVideo={editingVideo}
+               onClose={() => setIsVideoModalOpen(false)}
+               onSave={handleSaveVideo}
+               onVideoChange={setEditingVideo}
+            />
+         )}
       </div>
    );
 };

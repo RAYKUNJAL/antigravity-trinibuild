@@ -104,7 +104,7 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                                     className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Paste the full embed URL from YouTube (Share > Embed > Copy src)
+                                    Paste the full embed URL from YouTube (Share → Embed → Copy src)
                                 </p>
                             </div>
                         </div>
