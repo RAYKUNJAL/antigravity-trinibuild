@@ -84,6 +84,7 @@ const App: React.FC = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
+              <Route path="/stores" element={<Directory />} />
               <Route path="/create-store" element={<StoreCreator />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
