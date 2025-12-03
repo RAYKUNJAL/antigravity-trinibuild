@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { campaignService, advertiserService, type AdCampaign, type Advertiser } from '../services/adsManagerService';
 import { authService } from '../services/authService';
+import { CampaignWizard } from '../components/ads/CampaignWizard';
 
 export function AdsPortal() {
     const [user, setUser] = useState<any>(null);
@@ -66,6 +67,17 @@ export function AdsPortal() {
             case 'draft': return 'bg-blue-100 text-blue-700';
             case 'rejected': return 'bg-red-100 text-red-700';
             default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    const handleSaveCampaign = async (campaignData: Partial<AdCampaign>) => {
+        try {
+            const newCampaign = await campaignService.create(campaignData as AdCampaign);
+            setCampaigns([...campaigns, newCampaign]);
+            setShowWizard(false);
+        } catch (error) {
+            console.error('Failed to save campaign:', error);
+            alert('Failed to create campaign. Please try again.');
         }
     };
 
@@ -295,25 +307,13 @@ export function AdsPortal() {
                 </div>
             </div>
 
-            {/* Campaign Wizard Modal (placeholder) */}
-            {showWizard && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
-                    <div className="bg-[#101320] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        <div className="p-6 border-b border-[#1E2235]">
-                            <h2 className="text-2xl font-bold text-white">Create New Campaign</h2>
-                            <p className="text-[#A9B0C3]">Campaign wizard coming soon...</p>
-                        </div>
-                        <div className="p-6">
-                            <button
-                                onClick={() => setShowWizard(false)}
-                                className="bg-[#1E2235] hover:bg-[#2A2F47] text-white px-6 py-3 rounded-lg font-semibold transition-all"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Campaign Wizard */}
+            <CampaignWizard
+                isOpen={showWizard}
+                onClose={() => setShowWizard(false)}
+                onSave={handleSaveCampaign}
+                advertiserId={advertiser?.id || ''}
+            />
         </div>
     );
 }

@@ -309,7 +309,7 @@ export const aiRecommendationsTracker = {
         output: any,
         model_used: string
     ) {
-        const { supabase } = await import('../lib/supabase');
+        const { supabase } = await import('./supabaseClient');
 
         const { error } = await supabase
             .from('ai_recommendations')
@@ -328,7 +328,7 @@ export const aiRecommendationsTracker = {
     },
 
     async markAccepted(recommendation_id: string) {
-        const { supabase } = await import('../lib/supabase');
+        const { supabase } = await import('./supabaseClient');
 
         const { error } = await supabase
             .from('ai_recommendations')
