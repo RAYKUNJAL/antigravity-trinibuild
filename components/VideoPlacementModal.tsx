@@ -1,25 +1,22 @@
 import React from 'react';
-import { X, Video, Upload, Loader2, Save } from 'lucide-react';
+import { X, Video, Save } from 'lucide-react';
 import { VideoPlacement, AVAILABLE_PAGES, PAGE_SECTIONS } from '../services/videoService';
+import { VideoUpload } from './VideoUpload';
 
 interface VideoModalProps {
     isOpen: boolean;
     editingVideo: Partial<VideoPlacement>;
-    uploading: boolean;
     onClose: () => void;
     onSave: () => void;
     onVideoChange: (video: Partial<VideoPlacement>) => void;
-    onVideoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const VideoPlacementModal: React.FC<VideoModalProps> = ({
     isOpen,
     editingVideo,
-    uploading,
     onClose,
     onSave,
-    onVideoChange,
-    onVideoUpload
+    onVideoChange
 }) => {
     if (!isOpen) return null;
 
@@ -30,7 +27,7 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-xl w-full max-w-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
-                <div className="bg-gray-900 text-white p-4 flex justify-between items-center sticky top-0">
+                <div className="bg-gray-900 text-white p-4 flex justify-between items-center sticky top-0 z-10">
                     <h3 className="font-bold flex items-center">
                         <Video className="mr-2" /> {editingVideo.id ? 'Edit' : 'Add'} Video Placement
                     </h3>
@@ -38,7 +35,7 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                         <X />
                     </button>
                 </div>
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-6">
                     {/* Page Selection */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -75,72 +72,43 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                         </div>
                     </div>
 
-                    {/* Video URL */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-1">
-                            Video URL * (YouTube embed or upload video file)
-                        </label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={editingVideo.video_url}
-                                onChange={(e) => onVideoChange({ ...editingVideo, video_url: e.target.value })}
-                                placeholder="https://www.youtube.com/embed/... or upload a video"
-                                className="flex-1 border border-gray-300 rounded p-2 bg-white text-gray-900"
-                            />
-                            <label className="bg-gray-900 text-white px-3 py-2 rounded cursor-pointer hover:bg-gray-800 flex items-center gap-2">
-                                {uploading ? (
-                                    <>
-                                        <Loader2 className="animate-spin h-4 w-4" />
-                                        <span className="text-xs">Compressing...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Upload className="h-4 w-4" />
-                                        <span className="text-xs hidden sm:inline">Upload & Compress</span>
-                                    </>
-                                )}
-                                <input
-                                    type="file"
-                                    className="hidden"
-                                    onChange={onVideoUpload}
-                                    accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                    {/* Video Source Selection */}
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h4 className="font-bold text-gray-900 mb-4">Video Source</h4>
+
+                            {/* Option 1: Upload */}
+                            <div className="mb-6">
+                                <VideoUpload
+                                    currentUrl={editingVideo.video_url && !editingVideo.video_url.includes('youtu') ? editingVideo.video_url : undefined}
+                                    onUploadComplete={(url) => onVideoChange({ ...editingVideo, video_url: url })}
                                 />
-                            </label>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500">
-                                For YouTube: Use embed URL • For uploads: Max 500MB, auto-compressed
-                            </p>
+                            </div>
+
+                            <div className="relative flex py-2 items-center">
+                                <div className="flex-grow border-t border-gray-300"></div>
+                                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm font-bold">OR USE YOUTUBE</span>
+                                <div className="flex-grow border-t border-gray-300"></div>
+                            </div>
+
+                            {/* Option 2: YouTube URL */}
+                            <div className="mt-4">
+                                <label className="block text-sm font-bold text-gray-900 mb-1">
+                                    YouTube Embed URL
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editingVideo.video_url?.includes('youtu') ? editingVideo.video_url : ''}
+                                    onChange={(e) => onVideoChange({ ...editingVideo, video_url: e.target.value })}
+                                    placeholder="https://www.youtube.com/embed/..."
+                                    className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Paste the full embed URL from YouTube (Share > Embed > Copy src)
+                                </p>
+                            </div>
                         </div>
                     </div>
-
-                    {/* Compression Options (shown when uploading) */}
-                    {uploading && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-                                <span className="font-bold text-blue-900">Optimizing your video...</span>
-                            </div>
-                            <div className="space-y-2 text-sm text-blue-800">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                                    Compressing to optimal size
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                                    Generating thumbnail
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                                    Uploading to CDN
-                                </div>
-                            </div>
-                            <div className="mt-3 bg-white rounded-full h-2 overflow-hidden">
-                                <div className="bg-blue-600 h-full animate-pulse" style={{ width: '60%' }}></div>
-                            </div>
-                        </div>
-                    )}
 
                     {/* Title and Description */}
                     <div>
@@ -168,11 +136,11 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                     {/* Playback Options */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-1">Position</label>
+                            <label className="block text-sm font-bold text-gray-900 mb-1">Sort Order</label>
                             <input
                                 type="number"
-                                value={editingVideo.position}
-                                onChange={(e) => onVideoChange({ ...editingVideo, position: parseInt(e.target.value) })}
+                                value={editingVideo.sort_order}
+                                onChange={(e) => onVideoChange({ ...editingVideo, sort_order: parseInt(e.target.value) })}
                                 min="1"
                                 className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                             />
