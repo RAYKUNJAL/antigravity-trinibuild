@@ -281,8 +281,15 @@ export const AdminDashboard: React.FC = () => {
             active: true
          });
          alert('Video placement saved successfully');
-      } catch (error) {
-         alert('Failed to save video placement');
+      } catch (error: any) {
+         console.error('Error saving video:', error);
+         if (error.message?.includes('violates row-level security')) {
+            alert('Permission Error: You must be logged in as an admin to save videos.');
+         } else if (error.code === '23505' || error.message?.includes('unique constraint')) {
+            alert('Duplicate Error: A video with this Sort Order already exists for this Page and Section. Please choose a different Sort Order.');
+         } else {
+            alert(`Failed to save video placement: ${error.message || 'Unknown error'}`);
+         }
       }
    };
 
@@ -716,33 +723,6 @@ export const AdminDashboard: React.FC = () => {
                {/* VIEW: VIDEO MANAGER */}
                {activeView === 'videos' && (
                   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                     <div className="flex justify-between items-center">
-                        <div>
-                           <h2 className="text-2xl font-bold text-gray-900">Video Placement Manager</h2>
-                           <p className="text-gray-500 text-sm">Control video placements across all pages and sections</p>
-                        </div>
-                        <button
-                           onClick={() => {
-                              setEditingVideo({
-                                 page: 'home',
-                                 section: 'hero',
-                                 video_url: '',
-                                 title: '',
-                                 description: '',
-                                 autoplay: false,
-                                 loop: false,
-                                 muted: true,
-                                 controls: true,
-                                 sort_order: 1,
-                                 active: true
-                              });
-                              setIsVideoModalOpen(true);
-                           }}
-                           className="bg-trini-red text-white px-4 py-2 rounded-lg font-bold flex items-center shadow-lg hover:bg-red-700"
-                        >
-                           <Video className="h-4 w-4 mr-2" /> Add Video Placement
-                        </button>
-                     </div>
 
                      {/* Video Placements Grid */}
                      <div className="grid grid-cols-1 gap-6">
@@ -757,6 +737,7 @@ export const AdminDashboard: React.FC = () => {
                                     </div>
                                     <button
                                        onClick={() => {
+                                          const maxOrder = pageVideos.reduce((max, v) => Math.max(max, v.sort_order || 0), 0);
                                           setEditingVideo({
                                              page: page.value,
                                              section: getAvailableSections(page.value)[0],
@@ -767,7 +748,7 @@ export const AdminDashboard: React.FC = () => {
                                              loop: false,
                                              muted: true,
                                              controls: true,
-                                             sort_order: pageVideos.length + 1,
+                                             sort_order: maxOrder + 1,
                                              active: true
                                           });
                                           setIsVideoModalOpen(true);
