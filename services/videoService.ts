@@ -5,13 +5,14 @@ export interface VideoPlacement {
     page: string;
     section: string;
     video_url: string;
+    is_youtube?: boolean;
     title: string;
     description?: string;
     autoplay: boolean;
     loop: boolean;
     muted: boolean;
     controls: boolean;
-    position: number;
+    sort_order: number;
     active: boolean;
     created_at?: string;
     updated_at?: string;
@@ -23,7 +24,7 @@ export const videoService = {
             .from('video_placements')
             .select('*')
             .order('page', { ascending: true })
-            .order('position', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (error) throw error;
         return data as VideoPlacement[];
@@ -35,7 +36,7 @@ export const videoService = {
             .select('*')
             .eq('page', page)
             .eq('active', true)
-            .order('position', { ascending: true });
+            .order('sort_order', { ascending: true });
 
         if (error) throw error;
         return data as VideoPlacement[];
@@ -110,15 +111,15 @@ export const videoService = {
                 });
 
             if (uploadError) {
-                console.error('Upload error:', uploadError);
+                console.error('Upload error details:', uploadError);
 
                 // Provide helpful error messages
                 if (uploadError.message.includes('Bucket not found')) {
-                    throw new Error('Storage bucket not configured. Please contact support.');
+                    throw new Error('Storage bucket "site-assets" not found. Please run migration 18.');
                 } else if (uploadError.message.includes('exceeded')) {
                     throw new Error('File size exceeds storage limits.');
-                } else if (uploadError.message.includes('policy')) {
-                    throw new Error('Storage permissions error. Please check Supabase policies.');
+                } else if (uploadError.message.includes('policy') || uploadError.message.includes('permission')) {
+                    throw new Error('Storage permissions error. Please check Supabase RLS policies.');
                 } else {
                     throw new Error(`Upload failed: ${uploadError.message}`);
                 }
