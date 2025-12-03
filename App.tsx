@@ -46,6 +46,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
+import { AdsPortal } from './pages/AdsPortal';
+
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
@@ -102,6 +104,7 @@ const App: React.FC = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
