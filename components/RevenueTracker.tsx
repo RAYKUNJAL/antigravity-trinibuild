@@ -5,10 +5,12 @@ import {
     Activity, Flame, BarChart3
 } from 'lucide-react';
 import { revenueMetricsService, SaaSMetrics } from '../services/revenueMetricsService';
+import { extendedMetricsService, ExtendedSaaSMetrics } from '../services/extendedMetricsService';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export const RevenueTracker: React.FC = () => {
     const [metrics, setMetrics] = useState<SaaSMetrics | null>(null);
+    const [extendedMetrics, setExtendedMetrics] = useState<ExtendedSaaSMetrics | null>(null);
     const [historicalData, setHistoricalData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -23,12 +25,14 @@ export const RevenueTracker: React.FC = () => {
     const loadMetrics = async () => {
         setLoading(true);
         try {
-            const [metricsData, historical] = await Promise.all([
+            const [metricsData, extendedData, historical] = await Promise.all([
                 revenueMetricsService.getAllMetrics(),
+                extendedMetricsService.getAllExtendedMetrics(),
                 revenueMetricsService.getHistoricalMetrics(12)
             ]);
 
             setMetrics(metricsData);
+            setExtendedMetrics(extendedData);
             setHistoricalData(historical);
             setLastUpdated(new Date());
         } catch (error) {
@@ -94,7 +98,7 @@ export const RevenueTracker: React.FC = () => {
         }
     };
 
-    if (loading || !metrics) {
+    if (loading || !metrics || !extendedMetrics) {
         return (
             <div className="flex flex-col items-center justify-center h-96 space-y-4">
                 <RefreshCw className="h-12 w-12 animate-spin text-trini-red" />
@@ -245,6 +249,183 @@ export const RevenueTracker: React.FC = () => {
                     </div>
                     <h4 className="text-2xl font-bold text-gray-900">{metrics.newUsers}</h4>
                     <p className="text-xs text-gray-600 mt-1">Last 30 days</p>
+                </div>
+            </div>
+
+            {/* Extended Financial Metrics */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl border border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Extended Financial Metrics</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* EBITDA */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-indigo-200">
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold text-indigo-700 uppercase">EBITDA</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">{formatCurrency(extendedMetrics.ebitda)}</h4>
+                                <p className="text-xs text-gray-500 mt-1">Operating Profitability</p>
+                            </div>
+                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                <BarChart3 className="h-6 w-6 text-indigo-600" />
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t border-indigo-100">
+                            <p className="text-xs font-medium">
+                                {extendedMetrics.ebitda > 0
+                                    ? <span className="text-green-600">✅ Profitable Operations</span>
+                                    : <span className="text-red-600">⚠️ Focus on Revenue Growth</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Operating Cash Flow */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-cyan-200">
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold text-cyan-700 uppercase">Cash Flow</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">{formatCurrency(extendedMetrics.operatingCashFlow)}</h4>
+                                <p className="text-xs text-gray-500 mt-1">Operating Cash Generated</p>
+                            </div>
+                            <div className="p-2 bg-cyan-100 rounded-lg">
+                                <TrendingUp className="h-6 w-6 text-cyan-600" />
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t border-cyan-100">
+                            <p className="text-xs text-gray-600">
+                                Monthly: {formatCurrency(extendedMetrics.monthlyRevenue - extendedMetrics.monthlyBurn)}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Runway */}
+                    <div className={`bg-white p-6 rounded-xl shadow-sm border-2 ${extendedMetrics.runway >= 12 ? 'border-green-200' :
+                        extendedMetrics.runway >= 6 ? 'border-yellow-200' : 'border-red-200'
+                        }`}>
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold uppercase">Cash Runway</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">
+                                    {extendedMetrics.runway >= 999 ? '∞' : extendedMetrics.runway.toFixed(1)}
+                                    <span className="text-lg ml-1">mo</span>
+                                </h4>
+                                <p className="text-xs text-gray-500 mt-1">Months Remaining</p>
+                            </div>
+                            <div className={`p-2 rounded-lg ${extendedMetrics.runway >= 12 ? 'bg-green-100' :
+                                extendedMetrics.runway >= 6 ? 'bg-yellow-100' : 'bg-red-100'
+                                }`}>
+                                <Activity className={`h-6 w-6 ${extendedMetrics.runway >= 12 ? 'text-green-600' :
+                                    extendedMetrics.runway >= 6 ? 'text-yellow-600' : 'text-red-600'
+                                    }`} />
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t">
+                            <p className="text-xs font-medium">
+                                {extendedMetrics.runway >= 12
+                                    ? <span className="text-green-600">✅ Healthy</span>
+                                    : extendedMetrics.runway >= 6
+                                        ? <span className="text-yellow-600">⚠️ Monitor Closely</span>
+                                        : <span className="text-red-600">❌ Critical - Need Funding</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Growth & Engagement Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    {/* Retention Rate */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-emerald-200">
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold text-emerald-700 uppercase">Retention Rate</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">{formatPercent(extendedMetrics.retentionRate)}</h4>
+                                <p className="text-xs text-gray-500 mt-1">Customer Retention</p>
+                            </div>
+                            <div className="p-2 bg-emerald-100 rounded-lg">
+                                <Users className="h-6 w-6 text-emerald-600" />
+                            </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                            <div
+                                className="bg-emerald-600 h-2 rounded-full transition-all"
+                                style={{ width: `${Math.min(100, extendedMetrics.retentionRate)}%` }}
+                            />
+                        </div>
+                        <p className="text-xs mt-2 font-medium">
+                            {extendedMetrics.retentionRate >= 90
+                                ? <span className="text-green-600">Excellent</span>
+                                : extendedMetrics.retentionRate >= 80
+                                    ? <span className="text-blue-600">Good</span>
+                                    : <span className="text-red-600">Needs Work</span>
+                            }
+                        </p>
+                    </div>
+
+                    {/* Growth Rate */}
+                    <div className={`bg-white p-6 rounded-xl shadow-sm border-2 ${extendedMetrics.growthRate >= 10 ? 'border-purple-200' :
+                        extendedMetrics.growthRate >= 5 ? 'border-blue-200' : 'border-gray-300'
+                        }`}>
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold text-purple-700 uppercase">Growth Rate</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">
+                                    {extendedMetrics.growthRate >= 0 ? '+' : ''}{formatPercent(extendedMetrics.growthRate)}
+                                </h4>
+                                <p className="text-xs text-gray-500 mt-1">Month-over-Month</p>
+                            </div>
+                            <div className={`p-2 rounded-lg ${extendedMetrics.growthRate >= 10 ? 'bg-purple-100' :
+                                extendedMetrics.growthRate >= 5 ? 'bg-blue-100' : 'bg-gray-100'
+                                }`}>
+                                {extendedMetrics.growthRate >= 0 ? (
+                                    <ArrowUp className={`h-6 w-6 ${extendedMetrics.growthRate >= 10 ? 'text-purple-600' : 'text-blue-600'
+                                        }`} />
+                                ) : (
+                                    <ArrowDown className="h-6 w-6 text-red-600" />
+                                )}
+                            </div>
+                        </div>
+                        <div className="pt-2 border-t">
+                            <p className="text-xs font-medium">
+                                {extendedMetrics.growthRate >= 15
+                                    ? <span className="text-purple-600">🚀 Hyper-Growth</span>
+                                    : extendedMetrics.growthRate >= 10
+                                        ? <span className="text-blue-600">📈 High Growth</span>
+                                        : extendedMetrics.growthRate >= 5
+                                            ? <span className="text-green-600">✅ Steady</span>
+                                            : <span className="text-gray-600">→ Flat</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* AI Search Visibility */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border-2 border-fuchsia-200">
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <p className="text-sm font-bold text-fuchsia-700 uppercase">AI Visibility</p>
+                                <h4 className="text-3xl font-bold text-gray-900 mt-2">{extendedMetrics.aiSearchVisibility}<span className="text-lg">/100</span></h4>
+                                <p className="text-xs text-gray-500 mt-1">Discoverability Score</p>
+                            </div>
+                            <div className="p-2 bg-fuchsia-100 rounded-lg">
+                                <Zap className="h-6 w-6 text-fuchsia-600" />
+                            </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                            <div
+                                className="bg-gradient-to-r from-fuchsia-500 to-purple-500 h-2 rounded-full transition-all"
+                                style={{ width: `${extendedMetrics.aiSearchVisibility}%` }}
+                            />
+                        </div>
+                        <p className="text-xs mt-2 font-medium">
+                            {extendedMetrics.aiSearchVisibility >= 70
+                                ? <span className="text-green-600">Strong Presence</span>
+                                : extendedMetrics.aiSearchVisibility >= 50
+                                    ? <span className="text-blue-600">Moderate</span>
+                                    : <span className="text-gray-600">Building</span>
+                            }
+                        </p>
+                    </div>
                 </div>
             </div>
 
