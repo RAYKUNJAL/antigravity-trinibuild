@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env.local
 const envPath = path.resolve(__dirname, '../.env.local');
 if (fs.existsSync(envPath)) {
     dotenv.config({ path: envPath });
@@ -26,41 +25,32 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testUpload() {
-    console.log('🧪 Testing Video Upload...');
+    console.log('Testing Upload to site-assets...');
 
-    // Create a dummy video file (text content but .mp4 extension)
-    const dummyContent = 'fake video content';
-    const fileName = `test_video_${Date.now()}.mp4`;
-    const filePath = `videos/${fileName}`;
-
-    // Convert string to buffer/blob for upload
-    const fileBuffer = Buffer.from(dummyContent, 'utf-8');
-
-    console.log(`Attempting to upload ${fileName} to site-assets bucket...`);
+    const fileName = `test_${Date.now()}.png`;
+    // Create a minimal valid PNG buffer (1x1 pixel) to avoid mime type validation issues if strict
+    const fileContent = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082', 'hex');
 
     const { data, error } = await supabase.storage
         .from('site-assets')
-        .upload(filePath, fileBuffer, {
-            contentType: 'video/mp4',
-            upsert: false
+        .upload(fileName, fileContent, {
+            contentType: 'image/png',
+            upsert: true
         });
 
     if (error) {
-        console.error('❌ Upload Failed:', error);
-        console.error('Error Message:', error.message);
-
-        if (error.message.includes('new row violates row-level security policy')) {
-            console.log('\n💡 DIAGNOSIS: RLS Policy Error');
-            console.log('The "Authenticated users can upload site-assets" policy might be failing.');
-            console.log('Are you logged in? (This script runs as anonymous/public unless we sign in)');
+        console.error('❌ Upload FAILED:', error.message);
+        if (error.statusCode === '404') {
+            console.error('   (Bucket likely does not exist)');
         }
     } else {
-        console.log('✅ Upload Successful!');
-        console.log('Path:', data.path);
+        console.log('✅ Upload SUCCESS:', data);
+        console.log('   Path:', data.path);
 
         // Clean up
-        console.log('Cleaning up...');
-        await supabase.storage.from('site-assets').remove([filePath]);
+        const { error: rmError } = await supabase.storage.from('site-assets').remove([fileName]);
+        if (rmError) console.error('Warning: Failed to cleanup test file:', rmError.message);
+        else console.log('✅ Cleanup SUCCESS');
     }
 }
 
