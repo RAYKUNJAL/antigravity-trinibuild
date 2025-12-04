@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Video, Save } from 'lucide-react';
 import { VideoPlacement, AVAILABLE_PAGES, PAGE_SECTIONS } from '../services/videoService';
-import { VideoUpload } from './VideoUpload';
+import { VideoUploadTus } from './VideoUploadTus';
 
 interface VideoModalProps {
     isOpen: boolean;
@@ -22,6 +22,29 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
 
     const getAvailableSections = (page: string) => {
         return PAGE_SECTIONS[page] || ['hero'];
+    };
+
+    // Helper to convert YouTube watch URLs to embed URLs
+    const getEmbedUrl = (url: string) => {
+        if (!url) return '';
+        if (url.includes('/embed/')) return url;
+
+        let videoId = '';
+
+        // Handle standard watch URLs (youtube.com/watch?v=...)
+        if (url.includes('watch?v=')) {
+            videoId = url.split('watch?v=')[1].split('&')[0];
+        }
+        // Handle short URLs (youtu.be/...)
+        else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        return url;
     };
 
     return (
@@ -79,7 +102,7 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
 
                             {/* Option 1: Upload */}
                             <div className="mb-6">
-                                <VideoUpload
+                                <VideoUploadTus
                                     currentUrl={editingVideo.video_url && !editingVideo.video_url.includes('youtu') ? editingVideo.video_url : undefined}
                                     onUploadComplete={(url) => onVideoChange({ ...editingVideo, video_url: url })}
                                 />
@@ -99,7 +122,11 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                                 <input
                                     type="text"
                                     value={editingVideo.video_url?.includes('youtu') ? editingVideo.video_url : ''}
-                                    onChange={(e) => onVideoChange({ ...editingVideo, video_url: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        const embedUrl = getEmbedUrl(val);
+                                        onVideoChange({ ...editingVideo, video_url: embedUrl });
+                                    }}
                                     placeholder="https://www.youtube.com/embed/..."
                                     className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                                 />

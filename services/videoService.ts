@@ -72,6 +72,7 @@ export const videoService = {
     },
 
     async uploadVideo(file: File, path: string = 'videos', onProgress?: (progress: number) => void): Promise<string> {
+        console.log('Video upload service initialized - v2025-12-03-1622');
         try {
             // Validate file
             if (!file) {
@@ -126,18 +127,8 @@ export const videoService = {
                 console.error('Upload error code:', (uploadError as any).statusCode);
                 console.error('Upload error message:', uploadError.message);
 
-                // Provide helpful error messages
-                if (uploadError.message.includes('Bucket not found') || uploadError.message.includes('site-assets')) {
-                    throw new Error('Storage bucket error. The "site-assets" bucket may not be configured correctly. Please contact support.');
-                } else if (uploadError.message.includes('exceeded') || uploadError.message.includes('size')) {
-                    throw new Error('File size exceeds storage limits.');
-                } else if (uploadError.message.includes('policy') || uploadError.message.includes('permission') || uploadError.message.includes('unauthorized')) {
-                    throw new Error('Permission denied. Please ensure you are logged in with proper credentials.');
-                } else if (uploadError.message.includes('authenticated')) {
-                    throw new Error('Authentication required. Please log out and log back in.');
-                } else {
-                    throw new Error(`Upload failed: ${uploadError.message}. Please try again or contact support.`);
-                }
+                // RETURN THE RAW ERROR for debugging
+                throw new Error(`RAW ERROR: ${uploadError.message} (Code: ${(uploadError as any).statusCode || 'N/A'})`);
             }
 
             if (!data || !data.path) {

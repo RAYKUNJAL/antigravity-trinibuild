@@ -107,12 +107,35 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className = '' 
         }
     }, [isYouTube]);
 
+    // Helper to convert YouTube watch URLs to embed URLs
+    const getEmbedUrl = (url: string) => {
+        if (!url) return '';
+        if (url.includes('/embed/')) return url;
+
+        let videoId = '';
+
+        // Handle standard watch URLs (youtube.com/watch?v=...)
+        if (url.includes('watch?v=')) {
+            videoId = url.split('watch?v=')[1].split('&')[0];
+        }
+        // Handle short URLs (youtu.be/...)
+        else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        return url;
+    };
+
     if (isYouTube) {
         return (
             <div className={`relative ${className}`} onClick={trackClick}>
                 <iframe
                     ref={iframeRef}
-                    src={video.video_url}
+                    src={getEmbedUrl(video.video_url)}
                     className="w-full h-full"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
