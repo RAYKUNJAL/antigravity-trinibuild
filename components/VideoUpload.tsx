@@ -80,7 +80,7 @@ export const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadComplete, curr
     return (
         <div className="w-full">
             <label className="block text-sm font-bold text-gray-900 mb-2">
-                Upload Video File
+                Upload Video File <span className="text-xs font-normal text-trini-red">(DEBUG ACTIVE - v3)</span>
             </label>
 
             {!uploading && !currentUrl && (
@@ -170,12 +170,33 @@ export const VideoUpload: React.FC<VideoUploadProps> = ({ onUploadComplete, curr
                     <div>
                         <p className="font-bold text-sm text-red-900">Upload Failed</p>
                         <p className="text-xs text-red-700 mt-1">{error}</p>
-                        <button
-                            onClick={() => setError(null)}
-                            className="text-xs font-bold text-red-800 underline mt-2"
-                        >
-                            Try Again
-                        </button>
+                        <div className="flex gap-2 mt-2">
+                            <button
+                                onClick={() => setError(null)}
+                                className="text-xs font-bold text-red-800 underline"
+                            >
+                                Try Again
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setError('Running diagnostic...');
+                                        const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
+                                        // We use the same service but try to upload a text file to see if it even reaches the bucket
+                                        // Note: The bucket might reject text files if we set strict mime types, but the error will tell us that!
+                                        // If it says "mime type not allowed", then the bucket IS accessible.
+                                        // If it says "bucket not found", then it's not.
+                                        await videoService.uploadVideo(testFile, 'diagnostic');
+                                    } catch (e: any) {
+                                        alert(`Diagnostic Result:\n${e.message}`);
+                                        setError(e.message);
+                                    }
+                                }}
+                                className="text-xs font-bold text-blue-800 underline"
+                            >
+                                Run Diagnostic
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
