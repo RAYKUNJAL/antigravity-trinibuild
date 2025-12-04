@@ -1,18 +1,25 @@
 {
   "name": "trinibuild",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "login": "node scripts/manual-login.js",
-    "test-session": "node scripts/test-session.js"
+    "test-session": "node scripts/test-session.js",
+    "lint": "eslint src --ext .tsx,.ts --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Tests coming soon\"",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@google/genai": "^1.30.0",
     "@paypal/react-paypal-js": "^8.9.2",
+    "@sentry/react": "^8.0.0",
+    "@sentry/tracing": "^8.0.0",
     "@supabase/supabase-js": "^2.86.0",
     "@types/react-leaflet": "^2.8.3",
     "@types/uuid": "^10.0.0",
@@ -36,6 +43,8 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.22",
+    "cypress": "^13.12.0",
+    "cypress-file-upload": "^5.0.9",
     "dotenv": "^17.2.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
