@@ -79,15 +79,14 @@ export const videoService = {
                 throw new Error('No file provided');
             }
 
-            // Check authentication first
+            // Check authentication (optional now that we have public upload policy)
             const { data: { user }, error: authError } = await supabase.auth.getUser();
 
             if (authError || !user) {
-                console.error('Authentication check failed:', authError);
-                throw new Error('You must be logged in to upload videos. Please sign in and try again.');
+                console.warn('User not authenticated, proceeding with public upload policy');
+            } else {
+                console.log('User authenticated:', user.email);
             }
-
-            console.log('User authenticated:', user.email);
 
             // Check file type
             const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/avi'];
