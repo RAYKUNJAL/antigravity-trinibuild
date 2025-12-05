@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -8,7 +8,7 @@ import { Directory } from './pages/Directory';
 import { StoreCreator } from './pages/StoreCreator';
 import { Dashboard } from './pages/Dashboard';
 import { Storefront } from './pages/Storefront';
-import { AdminDashboard } from './pages/AdminDashboard';
+// AdminDashboard removed; external redirect will be used
 import { Settings } from './pages/Settings';
 import { StoreBotSettings } from './pages/StoreBotSettings';
 import { ChatWidget } from './components/ChatWidget';
@@ -104,7 +104,7 @@ const App: React.FC = () => {
               {/* Core Flows */}
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin" element={<Navigate to="http://localhost:3000/" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
