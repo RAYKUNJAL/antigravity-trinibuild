@@ -7,7 +7,7 @@
  * rideshare, marketplace, and more.
  */
 
-import { supabase } from '../lib/supabase';
+import { supabase } from './supabaseClient';
 import { aiService } from './ai';
 import { TRINIDAD_LOCATIONS, TrinidadLocation } from '../data/trinidadLocations';
 

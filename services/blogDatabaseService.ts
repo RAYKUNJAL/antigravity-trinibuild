@@ -9,7 +9,7 @@
  * - Sitemap generation
  */
 
-import { supabase } from '../lib/supabase';
+import { supabase } from './supabaseClient';
 import { GeneratedBlog } from './blogEngineService';
 
 // ============================================
