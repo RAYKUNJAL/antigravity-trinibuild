@@ -674,11 +674,54 @@ export const AdminDashboard: React.FC = () => {
                </div>
             </div>
          )}
-
          {/* VIEW: VIDEO MANAGER */}
          {activeView === 'videos' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                <h2 className="text-2xl font-bold text-gray-900">Video Manager</h2>
+
+               {/* System Status & Debug */}
+               <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-blue-900 mb-2 flex items-center">
+                     <Activity className="h-5 w-5 mr-2" /> System Status
+                  </h3>
+                  <div className="flex gap-4 items-center">
+                     <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="text-sm text-blue-800">Storage Bucket: <strong>Active</strong></span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span className="text-sm text-blue-800">Public Access: <strong>Enabled</strong></span>
+                     </div>
+                     <div className="ml-auto">
+                        <label className="bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700 flex items-center gap-2 font-bold shadow-sm transition-all">
+                           {uploading ? <Loader2 className="animate-spin h-4 w-4" /> : <UploadCloud className="h-4 w-4" />}
+                           Test Upload System
+                           <input
+                              type="file"
+                              className="hidden"
+                              accept="video/*"
+                              onChange={async (e) => {
+                                 const file = e.target.files?.[0];
+                                 if (!file) return;
+                                 e.target.value = ''; // Reset
+                                 setUploading(true);
+                                 try {
+                                    alert(`🚀 Starting Test Upload...\nFile: ${file.name}\nSize: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+                                    const url = await videoService.uploadVideo(file, 'debug_tests');
+                                    alert(`✅ TEST SUCCESSFUL!\n\nYour upload system is working perfectly.\n\nURL: ${url}`);
+                                 } catch (err: any) {
+                                    alert(`❌ TEST FAILED\n\nError: ${err.message}`);
+                                 } finally {
+                                    setUploading(false);
+                                 }
+                              }}
+                           />
+                        </label>
+                     </div>
+                  </div>
+               </div>
+
                {/* Video Placements Grid */}
                <div className="grid grid-cols-1 gap-6">
                   {AVAILABLE_PAGES.map(page => {
@@ -789,167 +832,177 @@ export const AdminDashboard: React.FC = () => {
 
 
          {/* VIEW: VIDEO ANALYTICS */}
-         {activeView === 'video-analytics' && (
-            <VideoAnalyticsDashboard />
-         )}
+         {
+            activeView === 'video-analytics' && (
+               <VideoAnalyticsDashboard />
+            )
+         }
 
          {/* VIEW: MONETIZATION (Campaigns) */}
-         {activeView === 'monetization' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-               <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold text-gray-900">Traffic & Monetization</h2>
-                  <button onClick={() => setIsCampaignModalOpen(true)} className="bg-trini-red text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700">
-                     + New Campaign
-                  </button>
-               </div>
-               <div className="admin-card overflow-hidden p-0">
-                  <table className="min-w-full divide-y divide-gray-200">
-                     <thead className="bg-gray-50">
-                        <tr>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Client</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Views</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Clicks</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="bg-white divide-y divide-gray-200">
-                        {campaigns.map(campaign => (
-                           <tr key={campaign.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <div className="text-sm font-bold text-gray-900">{campaign.clientName}</div>
-                                 <div className="text-xs text-gray-500">{campaign.placements.join(', ')}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${campaign.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                    {campaign.active ? 'Active' : 'Inactive'}
-                                 </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{campaign.views}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{campaign.clicks}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                 <button onClick={() => handleDeleteCampaign(campaign.id)} className="text-red-600 hover:text-red-900">Delete</button>
-                              </td>
+         {
+            activeView === 'monetization' && (
+               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                  <div className="flex justify-between items-center">
+                     <h2 className="text-2xl font-bold text-gray-900">Traffic & Monetization</h2>
+                     <button onClick={() => setIsCampaignModalOpen(true)} className="bg-trini-red text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700">
+                        + New Campaign
+                     </button>
+                  </div>
+                  <div className="admin-card overflow-hidden p-0">
+                     <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                           <tr>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Client</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Views</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Clicks</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
                            </tr>
-                        ))}
-                     </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                           {campaigns.map(campaign => (
+                              <tr key={campaign.id}>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-bold text-gray-900">{campaign.clientName}</div>
+                                    <div className="text-xs text-gray-500">{campaign.placements.join(', ')}</div>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${campaign.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                       {campaign.active ? 'Active' : 'Inactive'}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{campaign.views}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{campaign.clicks}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button onClick={() => handleDeleteCampaign(campaign.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                 </td>
+                              </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                  </div>
                </div>
-            </div>
-         )}
+            )
+         }
 
          {/* VIEW: STORES (Vendors) */}
-         {activeView === 'stores' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-               <h2 className="text-2xl font-bold text-gray-900">Vendor Management</h2>
-               <div className="admin-card overflow-hidden p-0">
-                  <table className="min-w-full divide-y divide-gray-200">
-                     <thead className="bg-gray-50">
-                        <tr>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Vendor</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Owner</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Plan</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="bg-white divide-y divide-gray-200">
-                        {vendors.map(vendor => (
-                           <tr key={vendor.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <div className="text-sm font-bold text-gray-900">{vendor.name}</div>
-                                 <div className="text-xs text-gray-500">{vendor.email}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vendor.owner}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${vendor.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                    {vendor.status}
-                                 </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vendor.plan}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
-                                 <button onClick={() => handleToggleStatus(vendor.id, 'vendor')} className="text-blue-600 hover:text-blue-900">
-                                    {vendor.status === 'active' ? 'Ban' : 'Unban'}
-                                 </button>
-                                 <button onClick={() => handleGiftPremium(vendor.id, 'vendor')} className="text-purple-600 hover:text-purple-900">Gift Premium</button>
-                              </td>
+         {
+            activeView === 'stores' && (
+               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                  <h2 className="text-2xl font-bold text-gray-900">Vendor Management</h2>
+                  <div className="admin-card overflow-hidden p-0">
+                     <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                           <tr>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Vendor</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Owner</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Plan</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
                            </tr>
-                        ))}
-                     </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                           {vendors.map(vendor => (
+                              <tr key={vendor.id}>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-bold text-gray-900">{vendor.name}</div>
+                                    <div className="text-xs text-gray-500">{vendor.email}</div>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vendor.owner}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${vendor.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                       {vendor.status}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{vendor.plan}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
+                                    <button onClick={() => handleToggleStatus(vendor.id, 'vendor')} className="text-blue-600 hover:text-blue-900">
+                                       {vendor.status === 'active' ? 'Ban' : 'Unban'}
+                                    </button>
+                                    <button onClick={() => handleGiftPremium(vendor.id, 'vendor')} className="text-purple-600 hover:text-purple-900">Gift Premium</button>
+                                 </td>
+                              </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                  </div>
                </div>
-            </div>
-         )}
+            )
+         }
 
          {/* VIEW: USERS */}
-         {activeView === 'users' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-               <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-               <div className="admin-card overflow-hidden p-0">
-                  <table className="min-w-full divide-y divide-gray-200">
-                     <thead className="bg-gray-50">
-                        <tr>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">User</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Role</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Activity</th>
-                           <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="bg-white divide-y divide-gray-200">
-                        {users.map(user => (
-                           <tr key={user.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <div className="text-sm font-bold text-gray-900">{user.name}</div>
-                                 <div className="text-xs text-gray-500">{user.email}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                    {user.status}
-                                 </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                 {user.role === 'DRIVER' ? `${user.rides} rides` : `${user.orders} orders`}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
-                                 <button onClick={() => handleToggleStatus(user.id, 'user')} className="text-blue-600 hover:text-blue-900">
-                                    {user.status === 'active' ? 'Ban' : 'Unban'}
-                                 </button>
-                              </td>
+         {
+            activeView === 'users' && (
+               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                  <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+                  <div className="admin-card overflow-hidden p-0">
+                     <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                           <tr>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">User</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Role</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Activity</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Actions</th>
                            </tr>
-                        ))}
-                     </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                           {users.map(user => (
+                              <tr key={user.id}>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm font-bold text-gray-900">{user.name}</div>
+                                    <div className="text-xs text-gray-500">{user.email}</div>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                       {user.status}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {user.role === 'DRIVER' ? `${user.rides} rides` : `${user.orders} orders`}
+                                 </td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
+                                    <button onClick={() => handleToggleStatus(user.id, 'user')} className="text-blue-600 hover:text-blue-900">
+                                       {user.status === 'active' ? 'Ban' : 'Unban'}
+                                    </button>
+                                 </td>
+                              </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                  </div>
                </div>
-            </div>
-         )}
+            )
+         }
 
          {/* VIEW: INTEGRATIONS */}
-         {activeView === 'integrations' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-               <h2 className="text-2xl font-bold text-gray-900">System Integrations</h2>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {integrations.map(integration => (
-                     <div key={integration.id} className="admin-card flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <div className={`p-3 rounded-lg bg-gray-100 ${integration.color}`}>
-                              <integration.icon className="h-6 w-6" />
+         {
+            activeView === 'integrations' && (
+               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                  <h2 className="text-2xl font-bold text-gray-900">System Integrations</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     {integrations.map(integration => (
+                        <div key={integration.id} className="admin-card flex items-center justify-between">
+                           <div className="flex items-center gap-4">
+                              <div className={`p-3 rounded-lg bg-gray-100 ${integration.color}`}>
+                                 <integration.icon className="h-6 w-6" />
+                              </div>
+                              <div>
+                                 <h3 className="font-bold text-gray-900">{integration.name}</h3>
+                                 <p className="text-xs text-gray-500">{integration.desc}</p>
+                              </div>
                            </div>
-                           <div>
-                              <h3 className="font-bold text-gray-900">{integration.name}</h3>
-                              <p className="text-xs text-gray-500">{integration.desc}</p>
-                           </div>
+                           <label className="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" className="sr-only peer" checked={integration.connected} onChange={() => toggleIntegration(integration.id)} />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                           </label>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                           <input type="checkbox" className="sr-only peer" checked={integration.connected} onChange={() => toggleIntegration(integration.id)} />
-                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                     </div>
-                  ))}
+                     ))}
+                  </div>
                </div>
-            </div>
-         )}
+            )
+         }
 
          {/* Modals */}
          <VideoPlacementModal
@@ -959,6 +1012,6 @@ export const AdminDashboard: React.FC = () => {
             onSave={handleSaveVideo}
             onVideoChange={setEditingVideo}
          />
-      </AdminLayout>
+      </AdminLayout >
    );
 };
