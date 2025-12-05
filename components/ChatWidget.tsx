@@ -64,16 +64,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
 
   const initializeDefaultMessage = () => {
     const initialMessage = mode === 'platform'
-      ? "Hi! I'm TriniBot. How can I help you grow your business today?"
+      ? "🇹🇹 Wah goin on! I'm your TriniBuild AI Concierge. I can help you:\n\n• **Find jobs or services** in T&T\n• **List your business** for free\n• **Navigate the platform**\n• **Get paperwork done** (visa letters, job offers)\n• **Find a ride** anywhere in Trinidad\n\nWhat would you like to do today?"
       : mode === 'real_estate'
-        ? "Hello! I'm your Real Estate Assistant. Looking for a home or need advice on the market?"
+        ? "🏠 Looking for your dream home in Trinidad? I'm your Real Estate Concierge! I can help find rentals, properties for sale, or connect you with verified agents."
         : mode === 'service_expert'
-          ? "Need a pro? I can help you find the best plumbers, electricians, and more in T&T."
+          ? "🔧 Need a pro? I can recommend vetted plumbers, electricians, mechanics, and more across T&T. Who you looking for?"
           : mode === 'rides'
-            ? "Going somewhere? I can help you find a ride or check traffic."
+            ? "🚗 Where yuh heading? I can help you find a safe ride anywhere in Trinidad & Tobago."
             : mode === 'paperwork_assistant'
-              ? "Struggling with bank forms or visa letters? I can help you get the official paperwork you need."
-              : `Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about our products.`;
+              ? "📄 Need official documents? I can help generate visa support letters, job offer letters, and proof of income - all professional and ready for submission."
+              : `Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about our products or services!`;
 
     setMessages([{ id: '1', text: initialMessage, sender: 'ai' }]);
   };
@@ -108,20 +108,44 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
       // Construct context from history (last 5 messages)
       const historyContext = messages.slice(-5).map(m => `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`).join('\n');
 
-      // Determine system prompt based on mode
-      let systemPrompt = "You are TriniBuild Support Bot, a helpful assistant with a slight Trinidadian accent.";
-      if (mode === 'real_estate') systemPrompt = "You are a Real Estate Assistant for TriniBuild. Help users find properties and understand the market.";
-      else if (mode === 'service_expert') systemPrompt = "You are a Service Expert. Recommend professionals (plumbers, electricians) available on TriniBuild.";
-      else if (mode === 'rides') systemPrompt = "You are a Ride Assistant. Help users find rides and check traffic conditions.";
-      else if (mode === 'paperwork_assistant') systemPrompt = "You are a Paperwork Assistant. Help users with official documents, visa letters, and bank forms.";
-      else if (vendorContext) {
+      // Enhanced AI Concierge system prompts
+      let systemPrompt = `You are TriniBuild AI Concierge - a smart, friendly assistant for Trinidad & Tobago's leading local business platform.
+
+PERSONALITY:
+- Warm, helpful, with slight Trini vibes (use "wah goin on", "lime", "fete" naturally)
+- Proactive - always suggest next steps and related services
+- Knowledgeable about Trinidad locations, culture, and business landscape
+
+PLATFORM KNOWLEDGE:
+- TriniBuild helps locals sell online with FREE stores (10 items free)
+- Services: Marketplace, Jobs, Real Estate, Rides, Events/Tickets, Classifieds
+- Routes: /classifieds (shop), /jobs (find work), /real-estate (housing), /rides (transport), /tickets (events)
+- /create-store - start selling, /earn - affiliate program, /blog - tips & guides
+
+ALWAYS:
+1. Answer the question directly first
+2. Then suggest 1-2 relevant TriniBuild features/pages
+3. Be concise but helpful
+4. Format with markdown (bold, lists) for readability
+
+Current user is browsing TriniBuild.`;
+
+      if (mode === 'real_estate') {
+        systemPrompt = `You are TriniBuild Real Estate Concierge. Help users find properties, understand the T&T market, connect with agents. Know Port of Spain, San Fernando, Chaguanas, Arima, etc. Always suggest /real-estate for listings.`;
+      } else if (mode === 'service_expert') {
+        systemPrompt = `You are TriniBuild Service Expert. Recommend vetted professionals - plumbers, electricians, mechanics, painters, cleaners. Know T&T service landscape. Suggest /jobs for hiring.`;
+      } else if (mode === 'rides') {
+        systemPrompt = `You are TriniBuild Rides Concierge. Help with transportation - PH taxis, maxi routes, airport drops. Know T&T geography. Suggest /rides for booking.`;
+      } else if (mode === 'paperwork_assistant') {
+        systemPrompt = `You are TriniBuild Paperwork Assistant. Generate professional visa support letters, job offer letters, proof of income, contractor agreements. Be formal but helpful. These documents help Trinis with bank applications and visa requirements.`;
+      } else if (vendorContext) {
         systemPrompt = botSettings?.bot_system_prompt || `You are a sales assistant for ${vendorContext.name}. ${vendorContext.description}. Products: ${JSON.stringify(vendorContext.products)}`;
       }
 
       const response = await aiService.chatWithBot({
         message: userMsg.text,
         context: historyContext,
-        persona: botSettings?.bot_persona || 'support_bot',
+        persona: botSettings?.bot_persona || 'concierge',
         system_prompt: systemPrompt
       });
 
@@ -170,7 +194,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
               </div>
               <div>
                 <h3 className="font-bold text-sm">
-                  {mode === 'platform' ? 'TriniBuild Support' :
+                  {mode === 'platform' ? 'AI Concierge' :
                     mode === 'real_estate' ? 'Property Assistant' :
                       mode === 'service_expert' ? 'Service Expert' :
                         mode === 'rides' ? 'Ride Assistant' :
