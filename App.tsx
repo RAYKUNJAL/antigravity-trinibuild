@@ -12,6 +12,7 @@ import { Storefront } from './pages/Storefront';
 import { Settings } from './pages/Settings';
 import { StoreBotSettings } from './pages/StoreBotSettings';
 import { ChatWidget } from './components/ChatWidget';
+import { AIConcierge } from './components/AIConcierge';
 import { Rides } from './pages/Rides';
 import { Jobs } from './pages/Jobs';
 import { Pricing } from './pages/Pricing';
@@ -165,6 +166,9 @@ const App: React.FC = () => {
 
         {/* Global Chatbot for Platform Support */}
         <ChatWidget mode="platform" />
+
+        {/* AI Concierge - Smart Assistant */}
+        <AIConcierge />
       </div>
     </Router>
   );

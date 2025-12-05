@@ -7,6 +7,7 @@ import { VideoSection } from '../components/VideoSection';
 import { FreeOfferBanner } from '../components/FreeOfferBanner';
 import { SuccessStoriesCarousel } from '../components/SuccessStoriesCarousel';
 import { ExitIntentPopup } from '../components/ExitIntentPopup';
+import { ForYouFeed } from '../components/ForYouFeed';
 
 export const Home: React.FC = () => {
    console.log('Home Component Rendering');
@@ -250,6 +251,17 @@ export const Home: React.FC = () => {
          {/* Success Stories Carousel */}
          <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             <SuccessStoriesCarousel />
+         </section>
+
+         {/* AI Personalized Recommendations */}
+         <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div className="text-center mb-8">
+               <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 mb-2">
+                  🎯 Recommended For You
+               </h2>
+               <p className="text-gray-500">AI-powered suggestions based on your interests</p>
+            </div>
+            <ForYouFeed />
          </section>
 
          {/* Pain Points Section */}
