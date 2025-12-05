@@ -31,6 +31,7 @@ import { LocationBlogPost } from './pages/LocationBlogPost';
 import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
+import CommandCenter from './pages/CommandCenter';
 import { Legal } from './pages/Legal';
 import { RealEstate } from './pages/RealEstate';
 import { ListProperty } from './pages/ListProperty';
@@ -138,6 +139,7 @@ const App: React.FC = () => {
               <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
               <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
               <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
+              <Route path="/admin/command-center" element={<ProtectedRoute><CommandCenter /></ProtectedRoute>} />
               <Route path="/contact" element={<Contact />} />
 
               {/* Legal Documents */}
