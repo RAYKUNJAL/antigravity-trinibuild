@@ -104,7 +104,7 @@ const App: React.FC = () => {
               {/* Core Flows */}
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<Navigate to="http://localhost:3000/" replace />} />
+              <Route path="/admin" element={<Navigate to="/" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
