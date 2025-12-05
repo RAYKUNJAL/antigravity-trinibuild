@@ -9,6 +9,7 @@ import { SuccessStoriesCarousel } from '../components/SuccessStoriesCarousel';
 import { ExitIntentPopup } from '../components/ExitIntentPopup';
 
 export const Home: React.FC = () => {
+   console.log('Home Component Rendering');
    const navigate = useNavigate();
    const [adConfig, setAdConfig] = useState<AdConfig>(getAdConfig());
    const [offset, setOffset] = useState(0);

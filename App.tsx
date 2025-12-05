@@ -68,6 +68,7 @@ const LocationLogger = () => {
 };
 
 const App: React.FC = () => {
+  console.log('App Component Rendering');
   return (
     <Router>
       <ScrollToTop />
