@@ -26,6 +26,9 @@ import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
 import { Blog } from './pages/Blog';
 import { BlogPost } from './pages/BlogPost';
+import { BlogGenerator } from './pages/BlogGenerator';
+import { LocationBlogPost } from './pages/LocationBlogPost';
+import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { Legal } from './pages/Legal';
 import { RealEstate } from './pages/RealEstate';
 import { ListProperty } from './pages/ListProperty';
@@ -124,6 +127,14 @@ const App: React.FC = () => {
               <Route path="/real-estate" element={<RealEstate />} />
               <Route path="/real-estate/sell" element={<ListProperty />} />
               <Route path="/real-estate/dashboard" element={<RealEstateAgentDashboard />} />
+
+              {/* Blog & Content */}
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogPost />} />
+              <Route path="/blog/location/:slug" element={<LocationBlogPost />} />
+              <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
+              <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
+              <Route path="/contact" element={<Contact />} />
 
               {/* Legal Documents */}
               <Route path="/terms" element={<Legal type="terms" />} />
