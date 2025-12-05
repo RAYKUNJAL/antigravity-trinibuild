@@ -42,12 +42,12 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">For Business</h3>
+            <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Resources</h3>
             <ul className="mt-4 space-y-4">
-              <li><Link to="/create-store" className="text-base text-gray-400 hover:text-white">Claim Business</Link></li>
+              <li><Link to="/blog" className="text-base text-gray-400 hover:text-white">Blog</Link></li>
+              <li><Link to="/create-store" className="text-base text-gray-400 hover:text-white">Start Selling</Link></li>
               <li><Link to="/earn" className="text-base text-gray-400 hover:text-white">Partner Program</Link></li>
               <li><Link to="/pricing" className="text-base text-gray-400 hover:text-white">Pricing & Plans</Link></li>
-              <li><Link to="/blog" className="text-base text-gray-400 hover:text-white">Success Stories</Link></li>
               <li><Link to="/affiliate" className="text-base text-gray-400 hover:text-white">Affiliate Program</Link></li>
             </ul>
           </div>
