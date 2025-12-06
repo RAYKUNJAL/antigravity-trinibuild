@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
     Activity,
@@ -57,8 +58,6 @@ interface SectionConfig {
 }
 
 interface AdminSidebarProps {
-    activeSection: AdminSection;
-    onSectionChange: (section: AdminSection) => void;
     userRole?: AdminRole;
     collapsed?: boolean;
     onLogout?: () => void;
@@ -119,8 +118,6 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
 // ============================================
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
-    activeSection,
-    onSectionChange,
     userRole = 'super_admin',
     collapsed = false,
     onLogout
@@ -156,11 +153,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                         <ul className="space-y-1 px-2">
                             {group.sections.filter(s => canAccess(s.roles)).map(section => (
                                 <li key={section.id}>
-                                    <button
-                                        onClick={() => onSectionChange(section.id)}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${activeSection === section.id
-                                                ? 'bg-trini-red text-white'
-                                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    <NavLink
+                                        to={section.id === 'overview' ? '/admin/command-center' : `/admin/command-center/${section.id.replace(/_/g, '-')}`}
+                                        end={section.id === 'overview'}
+                                        className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
+                                            ? 'bg-trini-red text-white'
+                                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                             }`}
                                         title={collapsed ? section.label : undefined}
                                     >
@@ -173,10 +171,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                                         {section.badge}
                                                     </span>
                                                 )}
-                                                <ChevronRight className={`h-4 w-4 transition-transform ${activeSection === section.id ? 'rotate-90' : ''}`} />
+                                                <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100" />
                                             </>
                                         )}
-                                    </button>
+                                    </NavLink>
                                 </li>
                             ))}
                         </ul>
