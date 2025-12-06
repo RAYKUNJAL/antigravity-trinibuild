@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, UserCircle, User } from 'lucide-react';
+import { Menu, X, UserCircle, User, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 // Placeholder logo URL
 const LOGO_URL = "/trinibuild-logo.png";
@@ -9,6 +10,8 @@ const LOGO_URL = "/trinibuild-logo.png";
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
 
   const isHome = location.pathname === '/';
@@ -25,6 +28,18 @@ export const Navbar: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const user = await authService.getCurrentUser();
+      setIsLoggedIn(!!user);
+      if (user && (user.role === 'admin' || user.role === 'super_admin')) {
+        setIsAdmin(true);
+      }
+    };
+    checkAdmin();
+  }, [location]);
 
   const navLinks = [
     { name: 'Directory', path: '/directory' },
@@ -85,6 +100,16 @@ export const Navbar: React.FC = () => {
               </Link>
             ))}
             <Link to="/earn" className={linkClasses('/earn')}>Earn</Link>
+
+            {/* Admin Command Center Link - Only visible to admins */}
+            {isAdmin && (
+              <Link
+                to="/admin/command-center"
+                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold transition-colors ${isTransparent ? 'bg-purple-500/80 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
+              >
+                <Settings className="h-4 w-4" /> Admin
+              </Link>
+            )}
 
             {/* Real Estate Specific Link */}
             {location.pathname.startsWith('/real-estate') && (
@@ -147,6 +172,12 @@ export const Navbar: React.FC = () => {
             {location.pathname.startsWith('/real-estate') && (
               <Link to="/real-estate/agent" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-blue-700 bg-blue-50 mt-1">
                 Agent Hub
+              </Link>
+            )}
+            {/* Admin Command Center - Mobile */}
+            {isAdmin && (
+              <Link to="/admin/command-center" onClick={() => setIsOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold text-white bg-purple-600 mt-1">
+                <Settings className="h-4 w-4" /> Admin Command Center
               </Link>
             )}
             <div className="border-t border-gray-100 my-2"></div>
