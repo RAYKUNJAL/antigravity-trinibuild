@@ -121,7 +121,7 @@ const App: React.FC = () => {
               {/* Core Flows */}
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<Navigate to="/" replace />} />
+              <Route path="/admin" element={<AdminSignup />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
@@ -149,9 +149,6 @@ const App: React.FC = () => {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/blog/location/:slug" element={<LocationBlogPost />} />
-
-              {/* Admin Access */}
-              <Route path="/admin/signup" element={<AdminSignup />} />
 
               <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
               <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
