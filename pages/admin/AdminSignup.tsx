@@ -197,6 +197,16 @@ export const AdminSignup: React.FC = () => {
                             >
                                 {status === 'loading' ? 'Verifying...' : 'Grant Access'}
                             </button>
+
+                            <div className="text-center mt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/auth?mode=login')}
+                                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                                >
+                                    Already have an account? <span className="text-trini-red">Login</span>
+                                </button>
+                            </div>
                         </form>
                     )}
                 </div>
