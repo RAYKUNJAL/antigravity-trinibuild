@@ -32,6 +32,15 @@ import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
 import CommandCenter from './pages/CommandCenter';
+import { AdminLayout } from './layouts/AdminLayout';
+import {
+  TrafficHub, AdsEngine, ContentAICenter, UserManagement,
+  TrustSafety, FinancePayouts, SystemHealth, DeveloperTools,
+  MarketplaceMonitor, JobsMonitor, RealEstateMonitor, RideshareFleet,
+  TicketsMonitor, ReportsAnalytics
+} from './components/admin';
+import { MessagingCenter } from './pages/admin/MessagingCenter';
+import { Automations } from './pages/admin/Automations';
 import { Legal } from './pages/Legal';
 import { RealEstate } from './pages/RealEstate';
 import { ListProperty } from './pages/ListProperty';
@@ -142,7 +151,31 @@ const App: React.FC = () => {
               <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
               <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
               <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
-              <Route path="/admin/command-center" element={<ProtectedRoute><CommandCenter /></ProtectedRoute>} />
+            </Route>
+
+            {/* Admin Command Center Sub-Website */}
+            <Route path="/admin/command-center" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<CommandCenter />} />
+              <Route path="traffic-hub" element={<TrafficHub />} />
+              <Route path="ads-engine" element={<AdsEngine />} />
+              <Route path="seo-keyword-hub" element={<KeywordDashboard />} />
+              <Route path="content-ai-center" element={<ContentAICenter />} />
+              <Route path="user-management" element={<UserManagement />} />
+              <Route path="marketplace-monitor" element={<MarketplaceMonitor />} />
+              <Route path="jobs-monitor" element={<JobsMonitor />} />
+              <Route path="real-estate-monitor" element={<RealEstateMonitor />} />
+              <Route path="rideshare-fleet" element={<RideshareFleet />} />
+              <Route path="tickets-events-monitor" element={<TicketsMonitor />} />
+              <Route path="trust-and-safety" element={<TrustSafety />} />
+              <Route path="messaging-center" element={<MessagingCenter />} />
+              <Route path="finance-and-payouts" element={<FinancePayouts />} />
+              <Route path="system-health" element={<SystemHealth />} />
+              <Route path="automations" element={<Automations />} />
+              <Route path="developer-tools" element={<DeveloperTools />} />
+              <Route path="reports-and-analytics" element={<ReportsAnalytics />} />
+            </Route>
+
+            <Route element={<PageLayout />}>
               <Route path="/contact" element={<Contact />} />
 
               {/* Legal Documents */}
