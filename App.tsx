@@ -31,6 +31,7 @@ import { LocationBlogPost } from './pages/LocationBlogPost';
 import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
+import { AdminSignup } from './pages/admin/AdminSignup';
 import CommandCenter from './pages/CommandCenter';
 import { AdminLayout } from './layouts/AdminLayout';
 import {
@@ -148,6 +149,10 @@ const App: React.FC = () => {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/blog/location/:slug" element={<LocationBlogPost />} />
+
+              {/* Admin Access */}
+              <Route path="/admin/signup" element={<AdminSignup />} />
+
               <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
               <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
               <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
