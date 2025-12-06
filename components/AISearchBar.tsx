@@ -18,6 +18,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { quickSearch, performSearch, SearchResponse, SearchVertical } from '../services/aiSearchService';
+import { logKeywordSearch } from '../services/keywordEngineService';
 import { TRINIDAD_LOCATIONS } from '../data/trinidadLocations';
 
 // ============================================
@@ -174,6 +175,10 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
         if (onSearch) {
             onSearch(searchQuery);
         } else {
+            // Log the search
+            logKeywordSearch(searchQuery, 'search_bar', {
+                locationSlug: 'trinidad' // Default or detected
+            });
             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
         }
     }, [navigate, onSearch]);

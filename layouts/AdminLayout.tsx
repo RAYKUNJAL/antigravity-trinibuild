@@ -28,6 +28,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         { id: 'content', icon: FileEdit, label: 'Content' },
         { id: 'videos', icon: Video, label: 'Videos' },
         { id: 'video-analytics', icon: TrendingUp, label: 'Analytics' },
+        { id: 'keyword-intelligence', icon: TrendingUp, label: 'Keywords' },
         { id: 'stores', icon: Globe, label: 'Stores' },
         { id: 'users', icon: Users, label: 'Users' },
         { id: 'jobs', icon: Briefcase, label: 'Jobs' },

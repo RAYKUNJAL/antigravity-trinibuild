@@ -1,2 +1,0 @@
-npm create vite@latest petpal-portraits -- --template react
-
