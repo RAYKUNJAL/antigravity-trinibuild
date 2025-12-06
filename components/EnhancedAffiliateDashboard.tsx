@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, DollarSign, Users, TrendingUp, Award, Zap, Check, AlertCircle } from 'lucide-react';
 import { affiliateServiceV2, AffiliateEligibility, PayoutRequest, LeaderboardEntry, REWARD_TIERS, PAYOUT_CONFIG } from '../services/affiliateServiceV2';
 import { viralLoopsService, UserReferralStats } from '../services/viralLoopsService';
-import { authService } from '../services/auth';
+import { authService } from '../services/authService';
 import { ReferralDashboard } from './ReferralDashboard';
 
 export const EnhancedAffiliateDashboard: React.FC = () => {
@@ -12,6 +12,7 @@ export const EnhancedAffiliateDashboard: React.FC = () => {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [showPayoutModal, setShowPayoutModal] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     useEffect(() => {
         loadData();
@@ -19,8 +20,9 @@ export const EnhancedAffiliateDashboard: React.FC = () => {
 
     const loadData = async () => {
         try {
-            const user = authService.getCurrentUser();
+            const user = await authService.getCurrentUser();
             if (!user) return;
+            setCurrentUserId(user.id);
 
             const [eligData, statsData, payoutsData, leaderData] = await Promise.all([
                 affiliateServiceV2.checkEligibility(user.id),
@@ -203,7 +205,7 @@ export const EnhancedAffiliateDashboard: React.FC = () => {
                     </div>
                     <p className="text-sm text-gray-500 mb-1">Your Rank</p>
                     <p className="text-3xl font-bold text-gray-900">
-                        #{leaderboard.find(l => l.user_id === authService.getCurrentUser()?.id)?.rank || '-'}
+                        #{leaderboard.find(l => l.user_id === currentUserId)?.rank || '-'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Top 50 Affiliates</p>
                 </div>
@@ -235,14 +237,14 @@ export const EnhancedAffiliateDashboard: React.FC = () => {
                             {leaderboard.slice(0, 10).map((entry) => (
                                 <tr
                                     key={entry.user_id}
-                                    className={entry.user_id === authService.getCurrentUser()?.id ? 'bg-yellow-50' : 'hover:bg-gray-50'}
+                                    className={entry.user_id === currentUserId ? 'bg-yellow-50' : 'hover:bg-gray-50'}
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             {entry.rank <= 3 && (
                                                 <Trophy className={`h-5 w-5 ${entry.rank === 1 ? 'text-yellow-500' :
-                                                        entry.rank === 2 ? 'text-gray-400' :
-                                                            'text-orange-600'
+                                                    entry.rank === 2 ? 'text-gray-400' :
+                                                        'text-orange-600'
                                                     }`} />
                                             )}
                                             <span className="font-bold text-gray-900">#{entry.rank}</span>

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { storeService, Store } from '../services/storeService';
 import { orderService, CreateOrderData } from '../services/orderService';
 import { SocialContactWidget } from '../components/SocialContactWidget';
+import { ChatWidget } from '../components/ChatWidget';
 
 export const Storefront: React.FC = () => {
   const { id } = useParams();
@@ -142,7 +143,7 @@ export const Storefront: React.FC = () => {
 
       // Call API
       const response = await orderService.createOrder(orderData);
-      setOrderId(response.orderNumber || 'ORD-' + Math.floor(Math.random() * 10000));
+      setOrderId(response.order_number || 'ORD-' + Math.floor(Math.random() * 10000));
       setCheckoutStep(4); // Success Step
 
     } catch (err) {

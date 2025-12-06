@@ -1,6 +1,8 @@
 import { supabase } from './supabaseClient';
 import { Store, Product, ProductVariant, Collection, Order, OrderItem } from '../types';
 
+export type { Store } from '../types';
+
 export const storeService = {
     // --- STORE MANAGEMENT ---
 

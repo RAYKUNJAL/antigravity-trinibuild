@@ -20,6 +20,7 @@ import { VideoPlacementModal } from '../components/VideoPlacementModal';
 import { videoAnalyticsService, VideoPerformance } from '../services/videoAnalyticsService';
 import { VideoAnalyticsDashboard } from '../components/VideoAnalyticsDashboard';
 import { AdminLayout } from '../layouts/AdminLayout';
+import { KeywordDashboard } from './KeywordDashboard';
 
 const REVENUE_DATA = [
    { name: 'Jan', revenue: 1200 },
@@ -31,7 +32,7 @@ const REVENUE_DATA = [
 ];
 
 export const AdminDashboard: React.FC = () => {
-   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings' | 'videos' | 'video-analytics'>('overview');
+   const [activeView, setActiveView] = useState<'overview' | 'stores' | 'users' | 'jobs' | 'content' | 'monetization' | 'system' | 'integrations' | 'payments' | 'analytics' | 'settings' | 'videos' | 'video-analytics' | 'keyword-intelligence'>('overview');
 
    // Site Settings Logic
    const [settings, setSettings] = useState<Record<string, string>>({});
@@ -521,6 +522,13 @@ export const AdminDashboard: React.FC = () => {
                      <div className="flex items-center gap-2 text-xs"><div className="w-3 h-3 rounded-full bg-blue-500"></div> Low Traffic</div>
                   </div>
                </div>
+            </div>
+         )}
+
+         {/* VIEW: KEYWORD INTELLIGENCE */}
+         {activeView === 'keyword-intelligence' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4">
+               <KeywordDashboard />
             </div>
          )}
 
