@@ -47,7 +47,7 @@ export type AdminSection =
     | 'developer_tools'
     | 'reports_and_analytics';
 
-export type AdminRole = 'super_admin' | 'admin' | 'moderator' | 'support_agent' | 'finance_admin' | 'developer';
+export type AdminRole = 'super_admin' | 'admin' | 'store_admin' | 'moderator' | 'support_agent' | 'finance_admin' | 'developer';
 
 interface SectionConfig {
     id: AdminSection;
@@ -71,14 +71,14 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
     {
         title: 'Dashboard',
         sections: [
-            { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" />, roles: ['super_admin', 'admin', 'moderator', 'support_agent', 'finance_admin', 'developer'] },
+            { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin', 'moderator', 'support_agent', 'finance_admin', 'developer'] },
         ]
     },
     {
         title: 'Traffic & Marketing',
         sections: [
             { id: 'traffic_hub', label: 'Traffic Hub', icon: <Activity className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
-            { id: 'ads_engine', label: 'Ads Engine', icon: <Megaphone className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
+            { id: 'ads_engine', label: 'Ads Engine', icon: <Megaphone className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin'] },
             { id: 'seo_keyword_hub', label: 'SEO & Keywords', icon: <Search className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
             { id: 'content_ai_center', label: 'Content AI', icon: <FileText className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
         ]
@@ -87,7 +87,7 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
         title: 'Platform Monitors',
         sections: [
             { id: 'user_management', label: 'Users', icon: <Users className="h-5 w-5" />, roles: ['super_admin', 'admin', 'moderator', 'support_agent'] },
-            { id: 'marketplace_monitor', label: 'Marketplace', icon: <ShoppingBag className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
+            { id: 'marketplace_monitor', label: 'Marketplace', icon: <ShoppingBag className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin'] },
             { id: 'jobs_monitor', label: 'Jobs', icon: <Briefcase className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
             { id: 'real_estate_monitor', label: 'Real Estate', icon: <Home className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
             { id: 'rideshare_fleet', label: 'Rideshare', icon: <Car className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
@@ -98,7 +98,7 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
         title: 'Operations',
         sections: [
             { id: 'trust_and_safety', label: 'Trust & Safety', icon: <Shield className="h-5 w-5" />, roles: ['super_admin', 'admin', 'moderator'] },
-            { id: 'messaging_center', label: 'Messaging', icon: <MessageCircle className="h-5 w-5" />, roles: ['super_admin', 'admin', 'support_agent'] },
+            { id: 'messaging_center', label: 'Messaging', icon: <MessageCircle className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin', 'support_agent'] },
             { id: 'finance_and_payouts', label: 'Finance', icon: <DollarSign className="h-5 w-5" />, roles: ['super_admin', 'finance_admin'] },
         ]
     },
@@ -108,7 +108,7 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
             { id: 'system_health', label: 'System Health', icon: <Server className="h-5 w-5" />, roles: ['super_admin', 'admin', 'developer'] },
             { id: 'automations', label: 'Automations', icon: <Zap className="h-5 w-5" />, roles: ['super_admin', 'admin'] },
             { id: 'developer_tools', label: 'Developer', icon: <Code className="h-5 w-5" />, roles: ['super_admin', 'developer'] },
-            { id: 'reports_and_analytics', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, roles: ['super_admin', 'admin', 'finance_admin'] },
+            { id: 'reports_and_analytics', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin', 'finance_admin'] },
         ]
     }
 ];
