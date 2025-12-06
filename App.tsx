@@ -122,6 +122,7 @@ const App: React.FC = () => {
               <Route path="/rides" element={<Rides />} />
               <Route path="/drive-with-us" element={<DriveWithUs />} />
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
+              <Route path="/drive/signup" element={<DriverOnboarding />} />
               <Route path="/driver/hub" element={<DriverHub />} />
 
               <Route path="/jobs" element={<Jobs />} />
@@ -131,6 +132,7 @@ const App: React.FC = () => {
               <Route path="/real-estate/sell" element={<ListProperty />} />
               <Route path="/real-estate/dashboard" element={<RealEstateAgentDashboard />} />
               <Route path="/real-estate/agent" element={<RealEstateAgentDashboard />} />
+              <Route path="/real-estate/agent-signup" element={<RealEstateAgentDashboard />} />
 
               {/* Blog & Content */}
               <Route path="/search" element={<SearchResults />} />
