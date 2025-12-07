@@ -9,6 +9,11 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+// Handle direct /admin access for HashRouter
+if (window.location.pathname === '/admin') {
+  window.location.replace('/#/admin');
+}
+
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
