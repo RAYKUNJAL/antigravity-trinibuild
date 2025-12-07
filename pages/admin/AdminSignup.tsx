@@ -94,14 +94,20 @@ export const AdminSignup: React.FC = () => {
 
             if (!user) throw new Error('User creation/retrieval failed');
 
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ role: role })
-                .eq('id', user.id);
+            // Use secure RPC call to update role
+            const { data: rpcData, error: rpcError } = await supabase.rpc('assign_admin_role', {
+                target_role: role,
+                secret_key: formData.secretKey
+            });
 
-            if (updateError) {
-                console.error('Role update failed:', updateError);
-                throw new Error('Account accessed but role assignment failed. Please contact support.');
+            if (rpcError) {
+                console.error('RPC Error:', rpcError);
+                throw new Error('System error during role assignment. Please contact support.');
+            }
+
+            // Check the custom response from our function
+            if (rpcData && !rpcData.success) {
+                throw new Error(rpcData.message || 'Role assignment failed.');
             }
 
             setStatus('success');
