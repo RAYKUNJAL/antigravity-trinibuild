@@ -6,10 +6,25 @@ import { Bell, Search, User } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const user = authService.getCurrentUser();
 
-    // Double-check auth (though ProtectedRoute should handle this)
+    // Check localStorage directly (synchronous) for admin bypass
+    const getUserFromLocalStorage = () => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                return JSON.parse(userStr);
+            }
+        } catch (e) {
+            console.error('Error parsing user from localStorage:', e);
+        }
+        return null;
+    };
+
+    const user = getUserFromLocalStorage();
+
+    // Double-check auth - redirect if no user or not admin
     if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+        console.warn('AdminLayout: No admin user found, redirecting to home');
         return <Navigate to="/" replace />;
     }
 

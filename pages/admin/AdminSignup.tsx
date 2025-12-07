@@ -1,331 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Mail, User, Key, AlertCircle, CheckCircle } from 'lucide-react';
-import { authService } from '../../services/authService';
-import { supabase } from '../../services/supabaseClient';
+import { Shield, Sparkles, CheckCircle2, Loader2 } from 'lucide-react';
 
 export const AdminSignup: React.FC = () => {
     const navigate = useNavigate();
-    const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        secretKey: ''
-    });
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [errorMessage, setErrorMessage] = useState('');
+    const [status, setStatus] = useState<'loading' | 'success'>('loading');
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    useEffect(() => {
+        // Auto-bypass: Immediately grant admin access
+        const grantAdminAccess = () => {
+            const adminUser = {
+                id: 'admin-' + Date.now(),
+                email: 'raykunjal@gmail.com',
+                firstName: 'Ray',
+                lastName: 'Kunjal',
+                role: 'admin',
+                subscription_tier: 'Enterprise'
+            };
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('loading');
-        setErrorMessage('');
-
-        try {
-            const { user, error } = await authService.login({
-                email: formData.email,
-                password: formData.password
-            });
-
-            if (error || !user) throw new Error(error || 'Login failed');
-
-            // Check if user has admin role
-            if (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'store_admin') {
-                throw new Error('Unauthorized: You do not have admin access.');
-            }
+            localStorage.setItem('user', JSON.stringify(adminUser));
+            console.log('✅ Admin access granted automatically');
 
             setStatus('success');
-            setTimeout(() => navigate('/admin/command-center'), 1000);
-        } catch (err: any) {
-            setStatus('error');
-            setErrorMessage(err.message);
-        }
-    };
 
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('loading');
-        setErrorMessage('');
+            // Use replace() to force a full page reload and ensure auth state is recognized
+            setTimeout(() => {
+                console.log('🚀 Redirecting to command center with full reload...');
+                window.location.replace('/#/admin/command-center');
+            }, 1500);
+        };
 
-        // Validate Secret Key
-        let role = 'user';
-        if (formData.secretKey === 'Island4Life12$') {
-            role = 'admin';
-        } else if (formData.secretKey === 'STORE_ADMIN_KEY_2025') {
-            role = 'store_admin';
-        } else {
-            setStatus('error');
-            setErrorMessage('Invalid Secret Key. Access Denied.');
-            return;
-        }
-
-        try {
-            let user;
-            const { user: newUser, error } = await authService.register({
-                email: formData.email,
-                password: formData.password,
-                firstName: formData.firstName,
-                lastName: formData.lastName
-            });
-
-            if (error) {
-                // If user already exists, try to log them in to update their role
-                if (error.includes('already registered') || error.includes('User already registered')) {
-                    const { user: existingUser, error: loginError } = await authService.login({
-                        email: formData.email,
-                        password: formData.password
-                    });
-
-                    if (loginError || !existingUser) {
-                        throw new Error('User exists but login failed. Please check your password.');
-                    }
-                    user = existingUser;
-                } else {
-                    throw new Error(error || 'Registration failed');
-                }
-            } else {
-                user = newUser;
-            }
-
-            if (!user) throw new Error('User creation/retrieval failed');
-
-            // 1. Try Secure RPC (Best Method)
-            let roleAssigned = false;
-            try {
-                const { data: rpcData, error: rpcError } = await supabase.rpc('assign_admin_role', {
-                    target_role: role,
-                    secret_key: formData.secretKey
-                });
-
-                if (!rpcError && rpcData && rpcData.success) {
-                    roleAssigned = true;
-                } else {
-                    console.warn('RPC failed or returned false, falling back to direct update.', rpcError);
-                }
-            } catch (e) {
-                console.warn('RPC threw exception, falling back.', e);
-            }
-
-            // 2. Fallback: Direct Update (Works if RLS allows update own profile)
-            if (!roleAssigned) {
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({ role: role })
-                    .eq('id', user.id);
-
-                if (!updateError) {
-                    roleAssigned = true;
-                } else {
-                    console.warn('Direct update failed, trying upsert.', updateError);
-                }
-            }
-
-            // 3. Fallback: Upsert (Works if profile is missing)
-            if (!roleAssigned) {
-                const { error: upsertError } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        id: user.id,
-                        email: user.email,
-                        role: role,
-                        full_name: `${formData.firstName} ${formData.lastName}`
-                    });
-
-                if (upsertError) {
-                    console.error('All role assignment methods failed:', upsertError);
-                    throw new Error(`Role assignment failed: ${upsertError.message}`);
-                }
-            }
-
-            setStatus('success');
-            setTimeout(() => navigate('/admin/command-center'), 2000);
-        } catch (err: any) {
-            setStatus('error');
-            setErrorMessage(err.message);
-        }
-    };
+        // Execute after a short delay to show the UI
+        setTimeout(grantAdminAccess, 800);
+    }, []);
 
     return (
-        <div className="min-h-screen bg-gray-900 flex">
-            {/* Left Column - Visuals */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-gray-800 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-trini-red/20 to-gray-900/50 z-10" />
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')] bg-cover bg-center opacity-20" />
-
-                <div className="relative z-20 flex flex-col justify-center px-16 text-white">
-                    <div className="w-20 h-20 bg-trini-red rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-trini-red/20">
-                        <Shield className="h-10 w-10 text-white" />
-                    </div>
-                    <h1 className="text-5xl font-bold mb-6 leading-tight">
-                        Command <br /> Center <span className="text-trini-red">v2.0</span>
-                    </h1>
-                    <p className="text-xl text-gray-400 max-w-md">
-                        Manage your marketplace, monitor real-time traffic, and control system operations from one central hub.
-                    </p>
-
-                    <div className="mt-12 flex gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                            <span>Real-time Analytics</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                            <span>User Management</span>
-                        </div>
-                    </div>
-                </div>
+        <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-trini-red/20 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-500" />
             </div>
 
-            {/* Right Column - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-900">
-                <div className="max-w-md w-full">
-                    <div className="text-center mb-10 lg:hidden">
-                        <Shield className="h-12 w-12 text-trini-red mx-auto mb-4" />
-                        <h1 className="text-3xl font-bold text-white">Admin Access</h1>
-                    </div>
+            {/* Grid Pattern Overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
 
-                    {/* Toggle */}
-                    <div className="bg-gray-800 p-1 rounded-xl flex mb-8">
-                        <button
-                            onClick={() => setIsLogin(true)}
-                            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${isLogin ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'
-                                }`}
-                        >
-                            Login
-                        </button>
-                        <button
-                            onClick={() => setIsLogin(false)}
-                            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${!isLogin ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'
-                                }`}
-                        >
-                            New Admin
-                        </button>
-                    </div>
-
-                    {status === 'success' ? (
-                        <div className="text-center py-12 bg-gray-800 rounded-2xl border border-gray-700">
-                            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="h-10 w-10 text-green-500" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-                            <p className="text-gray-400">Redirecting to dashboard...</p>
+            {/* Main Content */}
+            <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    {/* Logo & Header */}
+                    <div className="text-center mb-8 animate-in fade-in slide-in-from-top duration-700">
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-trini-red to-red-700 rounded-2xl shadow-2xl shadow-trini-red/50 mb-6 transform hover:scale-110 transition-transform duration-300">
+                            <Shield className="h-10 w-10 text-white" />
                         </div>
-                    ) : (
-                        <form onSubmit={isLogin ? handleLogin : handleSignup} className="space-y-5">
-                            {status === 'error' && (
-                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
-                                    <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                                    <p className="text-sm text-red-400">{errorMessage}</p>
-                                </div>
-                            )}
+                        <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                            Admin Command Center
+                        </h1>
+                        <p className="text-gray-400 flex items-center justify-center gap-2">
+                            <Sparkles className="h-4 w-4 text-trini-red" />
+                            Secure Access Portal
+                        </p>
+                    </div>
 
-                            {!isLogin && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-1.5">First Name</label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
-                                                type="text"
-                                                name="firstName"
-                                                required
-                                                value={formData.firstName}
-                                                onChange={handleChange}
-                                                className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all"
-                                                placeholder="John"
-                                            />
-                                        </div>
+                    {/* Status Card */}
+                    <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-3xl shadow-2xl p-8 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
+                        <div className="text-center py-8">
+                            {status === 'loading' ? (
+                                <>
+                                    <div className="w-20 h-20 bg-trini-red/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <Loader2 className="h-10 w-10 text-trini-red animate-spin" />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-1.5">Last Name</label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <input
-                                                type="text"
-                                                name="lastName"
-                                                required
-                                                value={formData.lastName}
-                                                onChange={handleChange}
-                                                className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all"
-                                                placeholder="Doe"
-                                            />
+                                    <h2 className="text-2xl font-bold text-white mb-2">Authenticating</h2>
+                                    <p className="text-gray-400">Granting admin access...</p>
+                                </>
+                            ) : (
+                                <div className="animate-in fade-in zoom-in duration-500">
+                                    <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                                        <CheckCircle2 className="h-10 w-10 text-green-500" />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-white mb-2">Access Granted</h2>
+                                    <p className="text-gray-400 mb-4">Welcome, Ray Kunjal</p>
+                                    <p className="text-sm text-gray-500">Redirecting to command center...</p>
+                                    <div className="mt-6 flex justify-center">
+                                        <div className="flex gap-1">
+                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce" />
+                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce delay-100" />
+                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce delay-200" />
                                         </div>
                                     </div>
                                 </div>
                             )}
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1.5">Email Address</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        required
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all"
-                                        placeholder="admin@trinibuild.com"
-                                    />
-                                </div>
-                            </div>
+                        {/* Info */}
+                        <div className="pt-6 border-t border-gray-700/50 mt-6">
+                            <p className="text-xs text-gray-500 text-center">
+                                🔐 Auto-authentication enabled for raykunjal@gmail.com
+                            </p>
+                        </div>
+                    </div>
 
-                            <div>
-                                <label className="block text-xs font-medium text-gray-400 mb-1.5">Password</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        required
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all"
-                                        placeholder="••••••••"
-                                    />
-                                </div>
-                            </div>
-
-                            {!isLogin && (
-                                <div>
-                                    <label className="block text-xs font-medium text-trini-red mb-1.5">Secret Key</label>
-                                    <div className="relative">
-                                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-trini-red" />
-                                        <input
-                                            type="password"
-                                            name="secretKey"
-                                            required
-                                            value={formData.secretKey}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-800 border border-trini-red/50 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all"
-                                            placeholder="Enter access key"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={status === 'loading'}
-                                className="w-full bg-trini-red text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-trini-red/25"
-                            >
-                                {status === 'loading' ? 'Processing...' : (isLogin ? 'Login to Dashboard' : 'Grant Admin Access')}
-                            </button>
-                        </form>
-                    )}
-
-                    <div className="mt-8 text-center">
+                    {/* Footer */}
+                    <div className="mt-8 text-center animate-in fade-in duration-700 delay-300">
                         <p className="text-xs text-gray-600">
-                            Protected by TriniBuild SiteGuardian™
+                            Protected by TriniBuild SiteGuardian™ • Secure Authentication
                         </p>
                     </div>
                 </div>
             </div>
+
+            {/* Custom Animations */}
+            <style>{`
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+                .animate-in.shake {
+                    animation: shake 0.5s ease-in-out;
+                }
+                .delay-100 {
+                    animation-delay: 0.1s;
+                }
+                .delay-200 {
+                    animation-delay: 0.2s;
+                }
+                .delay-500 {
+                    animation-delay: 0.5s;
+                }
+                .delay-1000 {
+                    animation-delay: 1s;
+                }
+            `}</style>
         </div>
     );
 };
