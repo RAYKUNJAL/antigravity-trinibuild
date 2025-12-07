@@ -15,6 +15,7 @@ import {
     Filter,
     Search
 } from 'lucide-react';
+import { supabase } from '../../services/supabaseClient';
 
 // ============================================
 // TYPES
@@ -45,64 +46,68 @@ export const AdsEngine: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'campaigns' | 'create' | 'analytics'>('campaigns');
     const [filter, setFilter] = useState<'all' | 'active' | 'paused' | 'ended'>('all');
 
-    // Mock data
-    const campaigns: AdCampaign[] = [
-        {
-            id: '1',
-            name: 'Carnival 2025 Promo',
-            client: 'TriniBuild (Internal)',
-            status: 'active',
-            type: 'CPC',
-            budget: 5000,
-            spent: 2340,
-            impressions: 45600,
-            clicks: 1234,
-            conversions: 89,
-            ctr: 2.7,
-            placements: ['homepage', 'search_results'],
-            startDate: '2024-12-01',
-            endDate: '2025-02-15'
-        },
-        {
-            id: '2',
-            name: 'Rental Properties Push',
-            client: 'PropTech TT',
-            status: 'active',
-            type: 'CPM',
-            budget: 3000,
-            spent: 876,
-            impressions: 23400,
-            clicks: 567,
-            conversions: 34,
-            ctr: 2.4,
-            placements: ['real_estate', 'homepage'],
-            startDate: '2024-12-05',
-            endDate: '2024-12-31'
-        },
-        {
-            id: '3',
-            name: 'Driver Recruitment',
-            client: 'TriniBuild (Internal)',
-            status: 'paused',
-            type: 'CPA',
-            budget: 2000,
-            spent: 450,
-            impressions: 12300,
-            clicks: 234,
-            conversions: 12,
-            ctr: 1.9,
-            placements: ['rides', 'jobs'],
-            startDate: '2024-11-15',
-            endDate: '2024-12-15'
-        },
-    ];
+    const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    React.useEffect(() => {
+        fetchCampaigns();
+    }, [filter]);
+
+    const fetchCampaigns = async () => {
+        setLoading(true);
+        try {
+            let query = supabase
+                .from('ad_campaigns')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (filter !== 'all') {
+                query = query.eq('status', filter);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error('Error fetching campaigns:', error);
+                // Fallback to empty if table doesn't exist yet/error
+                setCampaigns([]);
+            } else {
+                // Map DB snake_case to camelCase types if needed, or adjust interface
+                // For now assuming DB columns match or we map manually
+                const mappedData = data?.map((c: any) => ({
+                    id: c.id,
+                    name: c.name,
+                    client: c.client || 'Unknown',
+                    status: c.status,
+                    type: c.type,
+                    budget: c.budget || 0,
+                    spent: c.spent || 0,
+                    impressions: c.impressions || 0,
+                    clicks: c.clicks || 0,
+                    conversions: c.conversions || 0,
+                    // Calculate CTR safely
+                    ctr: c.impressions > 0 ? Number(((c.clicks / c.impressions) * 100).toFixed(2)) : 0,
+                    placements: c.placements || [],
+                    startDate: c.start_date,
+                    endDate: c.end_date
+                })) || [];
+                setCampaigns(mappedData);
+            }
+        } catch (err) {
+            console.error('Failed to load campaigns', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const stats = {
-        totalBudget: campaigns.reduce((sum, c) => sum + c.budget, 0),
-        totalSpent: campaigns.reduce((sum, c) => sum + c.spent, 0),
-        totalImpressions: campaigns.reduce((sum, c) => sum + c.impressions, 0),
-        totalClicks: campaigns.reduce((sum, c) => sum + c.clicks, 0),
-        avgCTR: (campaigns.reduce((sum, c) => sum + c.ctr, 0) / campaigns.length).toFixed(2),
+        totalBudget: campaigns.reduce((sum, c) => sum + Number(c.budget), 0),
+        totalSpent: campaigns.reduce((sum, c) => sum + Number(c.spent), 0),
+        totalImpressions: campaigns.reduce((sum, c) => sum + Number(c.impressions), 0),
+        totalClicks: campaigns.reduce((sum, c) => sum + Number(c.clicks), 0),
+        avgCTR: campaigns.length > 0
+            ? (campaigns.reduce((sum, c) => sum + Number(c.ctr), 0) / campaigns.length).toFixed(2)
+            : "0.00",
         activeCampaigns: campaigns.filter(c => c.status === 'active').length
     };
 
@@ -141,8 +146,8 @@ export const AdsEngine: React.FC = () => {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`pb-3 px-1 border-b-2 transition-colors ${activeTab === tab
-                                ? 'border-trini-red text-trini-red'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-trini-red text-trini-red'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -169,8 +174,8 @@ export const AdsEngine: React.FC = () => {
                                     key={f}
                                     onClick={() => setFilter(f)}
                                     className={`px-3 py-1.5 rounded-lg text-sm ${filter === f
-                                            ? 'bg-trini-red text-white'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                                        ? 'bg-trini-red text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
                                         }`}
                                 >
                                     {f.charAt(0).toUpperCase() + f.slice(1)}
