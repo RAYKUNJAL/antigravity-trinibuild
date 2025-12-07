@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 /**
  * EMERGENCY ADMIN BYPASS
@@ -7,8 +6,6 @@ import { useNavigate } from 'react-router-dom';
  * Just visit /admin/bypass and you're in
  */
 export const AdminBypass: React.FC = () => {
-    const navigate = useNavigate();
-
     useEffect(() => {
         // Create a fake admin user in localStorage
         const fakeAdminUser = {
@@ -25,9 +22,9 @@ export const AdminBypass: React.FC = () => {
 
         console.log('✅ Emergency admin access granted');
 
-        // Redirect to admin dashboard
-        navigate('/admin/command-center');
-    }, [navigate]);
+        // Force full page reload to ensure all components see the new user
+        window.location.href = '/#/admin/command-center';
+    }, []);
 
     return (
         <div style={{
