@@ -32,6 +32,7 @@ import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
 import { AdminSignup } from './pages/admin/AdminSignup';
+import { AdminBypass } from './pages/admin/AdminBypass';
 import CommandCenter from './pages/CommandCenter';
 import { AdminLayout } from './layouts/AdminLayout';
 import {
@@ -122,6 +123,7 @@ const App: React.FC = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<AdminSignup />} />
+              <Route path="/admin/bypass" element={<AdminBypass />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/deals" element={<Deals />} />
