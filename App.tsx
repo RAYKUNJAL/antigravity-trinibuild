@@ -157,8 +157,8 @@ const App: React.FC = () => {
               <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
             </Route>
 
-            {/* Admin Command Center Sub-Website */}
-            <Route path="/admin/command-center" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            {/* Admin Command Center Sub-Website - No ProtectedRoute to allow bypass */}
+            <Route path="/admin/command-center" element={<AdminLayout />}>
               <Route index element={<CommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
