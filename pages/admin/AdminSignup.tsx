@@ -65,21 +65,44 @@ export const AdminSignup: React.FC = () => {
         }
 
         try {
-            const { user, error } = await authService.register({
+            let user;
+            const { user: newUser, error } = await authService.register({
                 email: formData.email,
                 password: formData.password,
                 firstName: formData.firstName,
                 lastName: formData.lastName
             });
 
-            if (error || !user) throw new Error(error || 'Registration failed');
+            if (error) {
+                // If user already exists, try to log them in to update their role
+                if (error.includes('already registered') || error.includes('User already registered')) {
+                    const { user: existingUser, error: loginError } = await authService.login({
+                        email: formData.email,
+                        password: formData.password
+                    });
+
+                    if (loginError || !existingUser) {
+                        throw new Error('User exists but login failed. Please check your password.');
+                    }
+                    user = existingUser;
+                } else {
+                    throw new Error(error || 'Registration failed');
+                }
+            } else {
+                user = newUser;
+            }
+
+            if (!user) throw new Error('User creation/retrieval failed');
 
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ role: role })
                 .eq('id', user.id);
 
-            if (updateError) throw new Error('Account created but role assignment failed.');
+            if (updateError) {
+                console.error('Role update failed:', updateError);
+                throw new Error('Account accessed but role assignment failed. Please contact support.');
+            }
 
             setStatus('success');
             setTimeout(() => navigate('/admin/command-center'), 2000);
