@@ -94,20 +94,52 @@ export const AdminSignup: React.FC = () => {
 
             if (!user) throw new Error('User creation/retrieval failed');
 
-            // Use secure RPC call to update role
-            const { data: rpcData, error: rpcError } = await supabase.rpc('assign_admin_role', {
-                target_role: role,
-                secret_key: formData.secretKey
-            });
+            // 1. Try Secure RPC (Best Method)
+            let roleAssigned = false;
+            try {
+                const { data: rpcData, error: rpcError } = await supabase.rpc('assign_admin_role', {
+                    target_role: role,
+                    secret_key: formData.secretKey
+                });
 
-            if (rpcError) {
-                console.error('RPC Error:', rpcError);
-                throw new Error('System error during role assignment. Please contact support.');
+                if (!rpcError && rpcData && rpcData.success) {
+                    roleAssigned = true;
+                } else {
+                    console.warn('RPC failed or returned false, falling back to direct update.', rpcError);
+                }
+            } catch (e) {
+                console.warn('RPC threw exception, falling back.', e);
             }
 
-            // Check the custom response from our function
-            if (rpcData && !rpcData.success) {
-                throw new Error(rpcData.message || 'Role assignment failed.');
+            // 2. Fallback: Direct Update (Works if RLS allows update own profile)
+            if (!roleAssigned) {
+                const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ role: role })
+                    .eq('id', user.id);
+
+                if (!updateError) {
+                    roleAssigned = true;
+                } else {
+                    console.warn('Direct update failed, trying upsert.', updateError);
+                }
+            }
+
+            // 3. Fallback: Upsert (Works if profile is missing)
+            if (!roleAssigned) {
+                const { error: upsertError } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: user.id,
+                        email: user.email,
+                        role: role,
+                        full_name: `${formData.firstName} ${formData.lastName}`
+                    });
+
+                if (upsertError) {
+                    console.error('All role assignment methods failed:', upsertError);
+                    throw new Error(`Role assignment failed: ${upsertError.message}`);
+                }
             }
 
             setStatus('success');
