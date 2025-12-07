@@ -54,7 +54,7 @@ export const AdminSignup: React.FC = () => {
 
         // Validate Secret Key
         let role = 'user';
-        if (formData.secretKey === 'TRINIBUILD_MASTER_KEY_2025') {
+        if (formData.secretKey === 'Island4Life12$') {
             role = 'admin';
         } else if (formData.secretKey === 'STORE_ADMIN_KEY_2025') {
             role = 'store_admin';
