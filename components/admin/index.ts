@@ -14,3 +14,5 @@ export { RealEstateMonitor } from './RealEstateMonitor';
 export { RideshareFleet } from './RideshareFleet';
 export { TicketsMonitor } from './TicketsMonitor';
 export { ReportsAnalytics } from './ReportsAnalytics';
+export { MessagingCenter } from './MessagingCenter';
+export { Automations } from './Automations';

@@ -16,12 +16,45 @@ declare global {
 const GOOGLE_MAPS_KEY = 'AIzaSyAbjOn5lpjfYw6Ig3M-KWU1y0JP5z0LbPM';
 
 const CATEGORIES = [
-  { id: 'restaurant', label: 'Food & Drink', icon: '🍔' },
-  { id: 'store', label: 'Shopping', icon: '🛍️' },
-  { id: 'service', label: 'Services', icon: '🔧' },
-  { id: 'lodging', label: 'Hotels', icon: '🏨' },
-  { id: 'gas_station', label: 'Gas', icon: '⛽' },
+  // Food & Drink
+  { id: 'restaurant', label: 'Restaurants', icon: '🍽️' },
+  { id: 'street_food', label: 'Doubles & Street Food', icon: '🌮' },
+  { id: 'roti_shop', label: 'Roti Shops', icon: '🥘' },
+  { id: 'bakery', label: 'Bakeries', icon: '🥐' },
+  { id: 'bar', label: 'Bars & Liming', icon: '🍻' },
+  { id: 'cafe', label: 'Cafes', icon: '☕' },
+
+  // Shopping
+  { id: 'supermarket', label: 'Supermarkets', icon: '🛒' },
+  { id: 'clothing_store', label: 'Fashion', icon: '👗' },
+  { id: 'electronics_store', label: 'Electronics', icon: '📱' },
+  { id: 'hardware_store', label: 'Hardware', icon: '🔨' },
+  { id: 'furniture_store', label: 'Furniture', icon: '🛋️' },
+  { id: 'store', label: 'General Stores', icon: '🛍️' },
+
+  // Services
+  { id: 'car_repair', label: 'Mechanic & Auto', icon: '🔧' },
+  { id: 'taxi_stand', label: 'Taxi & Transport', icon: '🚕' },
+  { id: 'beauty_salon', label: 'Beauty & Spas', icon: '💅' },
+  { id: 'plumber', label: 'Plumbing', icon: '🚿' },
+  { id: 'electrician', label: 'Electrical', icon: '⚡' },
+  { id: 'laundry', label: 'Cleaning & Laundry', icon: '🧺' },
+
+  // Professional
+  { id: 'doctor', label: 'Doctors & Medical', icon: '👨‍⚕️' },
+  { id: 'pharmacy', label: 'Pharmacies', icon: '💊' },
+  { id: 'lawyer', label: 'Legal', icon: '⚖️' },
+  { id: 'real_estate_agency', label: 'Real Estate', icon: '🏠' },
   { id: 'bank', label: 'Banks', icon: '🏦' },
+  { id: 'gym', label: 'Gyms', icon: '💪' },
+
+  // Tourism & Misc
+  { id: 'lodging', label: 'Hotels & Guest Houses', icon: '🏨' },
+  { id: 'travel_agency', label: 'Travel Agents', icon: '✈️' },
+  { id: 'farm', label: 'Agriculture', icon: '🚜' },
+  { id: 'carnival', label: 'Carnival & Mas', icon: '🎭' },
+  { id: 'night_club', label: 'Night Life', icon: '🎵' },
+  { id: 'police', label: 'Police', icon: '👮' },
 ];
 
 // Comprehensive list of places in Trinidad & Tobago
@@ -309,9 +342,38 @@ export const Directory: React.FC = () => {
           handleSearchResults(results, status, query, center.lat(), center.lng());
         });
       } else if (type) {
-        serviceRef.current.nearbySearch(request, (results: PlaceResult[], status: any) => {
-          handleSearchResults(results, status);
-        });
+        // Determine if 'type' is a standard Google Maps type or a custom keyword
+        const standardTypes = [
+          'accounting', 'airport', 'amusement_park', 'aquarium', 'art_gallery', 'atm', 'bakery', 'bank', 'bar', 'beauty_salon',
+          'bicycle_store', 'book_store', 'bowling_alley', 'bus_station', 'cafe', 'campground', 'car_dealer', 'car_rental',
+          'car_repair', 'car_wash', 'casino', 'cemetery', 'church', 'city_hall', 'clothing_store', 'convenience_store',
+          'courthouse', 'dentist', 'department_store', 'doctor', 'drugstore', 'electrician', 'electronics_store', 'embassy',
+          'fire_station', 'florist', 'funeral_home', 'furniture_store', 'gas_station', 'gym', 'hair_care', 'hardware_store',
+          'hindu_temple', 'home_goods_store', 'hospital', 'insurance_agency', 'jewelry_store', 'laundry', 'lawyer', 'library',
+          'light_rail_station', 'liquor_store', 'local_government_office', 'locksmith', 'lodging', 'meal_delivery',
+          'meal_takeaway', 'mosque', 'movie_rental', 'movie_theater', 'moving_company', 'museum', 'night_club', 'painter', 'park',
+          'parking', 'pet_store', 'pharmacy', 'physiotherapist', 'plumber', 'police', 'post_office', 'primary_school',
+          'real_estate_agency', 'restaurant', 'roofing_contractor', 'rv_park', 'school', 'secondary_school', 'shoe_store',
+          'shopping_mall', 'spa', 'stadium', 'storage', 'store', 'subway_station', 'supermarket', 'synagogue', 'taxi_stand',
+          'tourist_attraction', 'train_station', 'transit_station', 'travel_agency', 'university', 'veterinary_care', 'zoo'
+        ];
+
+        if (standardTypes.includes(type)) {
+          // It's a valid type
+          request.type = type;
+          serviceRef.current.nearbySearch(request, (results: PlaceResult[], status: any) => {
+            handleSearchResults(results, status);
+          });
+        } else {
+          // It's a custom keyword (e.g. roti_shop, street_food)
+          // Use keyword search instead of type
+          request.keyword = type.replace(/_/g, ' ');
+          delete request.type;
+
+          serviceRef.current.nearbySearch(request, (results: PlaceResult[], status: any) => {
+            handleSearchResults(results, status);
+          });
+        }
       } else {
         setLoading(false);
       }
