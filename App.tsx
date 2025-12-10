@@ -62,6 +62,10 @@ import { JobsLanding } from './pages/landing/JobsLanding';
 import { TicketsLanding } from './pages/landing/TicketsLanding';
 import { PromoterOnboarding } from './pages/PromoterOnboarding';
 import { LivingLanding } from './pages/landing/LivingLanding';
+import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
+import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
+import { StoreBuilder } from './pages/StoreBuilder';
+import { StorefrontV2 } from './pages/StorefrontV2';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
@@ -117,6 +121,19 @@ const App: React.FC = () => {
               <Route path="/solutions/rides" element={<RidesLanding />} />
               <Route path="/solutions/jobs" element={<JobsLanding />} />
               <Route path="/solutions/living" element={<LivingLanding />} />
+              <Route path="/solutions/stores" element={<StoreServicesLanding />} />
+
+              {/* Service Landing Pages */}
+              <Route path="/services/stores" element={<StoreServicesLanding />} />
+              <Route path="/services/food" element={<FoodServicesLanding />} />
+              <Route path="/services/marketplace" element={<MarketplaceLanding />} />
+              <Route path="/services/rides" element={<RidesLanding />} />
+              <Route path="/services/jobs" element={<JobsLanding />} />
+              <Route path="/services/living" element={<LivingLanding />} />
+
+              {/* Store Builder & Storefront */}
+              <Route path="/store/builder" element={<ProtectedRoute><StoreBuilder /></ProtectedRoute>} />
+              <Route path="/store/:slug/v2" element={<StorefrontV2 />} />
 
               {/* Ticket Ecosystem */}
               <Route path="/solutions/tickets" element={<TicketsLanding />} />
