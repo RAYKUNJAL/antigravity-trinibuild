@@ -11,16 +11,59 @@ interface FlaggedItem {
     reportedAt: string;
 }
 
+import { supabase } from '../../services/supabaseClient';
+
 export const TrustSafety: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'flagged' | 'fraud' | 'scores'>('flagged');
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [stats, setStats] = useState({ pending: 0, critical: 0, resolved: 0 });
+    const [loading, setLoading] = useState(true);
 
-    const flaggedItems: FlaggedItem[] = [
-        { id: '1', type: 'listing', title: 'Suspicious rental listing', reason: 'Price too low', severity: 'high', status: 'pending', reportedAt: '2024-12-05' },
-        { id: '2', type: 'user', title: 'Multiple accounts detected', reason: 'Same phone on 3 accounts', severity: 'critical', status: 'pending', reportedAt: '2024-12-05' },
-        { id: '3', type: 'message', title: 'Phishing attempt', reason: 'External suspicious link', severity: 'high', status: 'pending', reportedAt: '2024-12-05' },
-    ];
+    React.useEffect(() => {
+        fetchAlerts();
+    }, []);
 
-    const stats = { pending: 5, critical: 2, resolved: 12 };
+    const fetchAlerts = async () => {
+        setLoading(true);
+        try {
+            const { data } = await supabase
+                .from('site_alerts')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            const pending = data?.filter(a => a.status === 'new' || a.status === 'pending') || [];
+            const resolved = data?.filter(a => a.status === 'resolved') || [];
+            const critical = pending.filter(a => a.severity === 'critical' || a.severity === 'high');
+
+            setAlerts(pending);
+            setStats({
+                pending: pending.length,
+                critical: critical.length,
+                resolved: resolved.length
+            });
+        } catch (error) {
+            console.error('Error fetching alerts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAction = async (id: string, action: 'resolve' | 'dismiss') => {
+        try {
+            await supabase
+                .from('site_alerts')
+                .update({
+                    status: action === 'resolve' ? 'resolved' : 'ignored',
+                    resolved_at: new Date().toISOString()
+                })
+                .eq('id', id);
+
+            // Refresh
+            fetchAlerts();
+        } catch (error) {
+            console.error('Error updating alert:', error);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -59,27 +102,29 @@ export const TrustSafety: React.FC = () => {
                 ))}
             </div>
 
-            {activeTab === 'flagged' && (
-                <div className="space-y-3">
-                    {flaggedItems.map(item => (
-                        <div key={item.id} className={`bg-white dark:bg-gray-800 rounded-xl p-4 border-l-4 ${item.severity === 'critical' ? 'border-l-red-500' : item.severity === 'high' ? 'border-l-orange-500' : 'border-l-yellow-500'
-                            }`}>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 dark:text-white">{item.title}</h3>
-                                    <p className="text-sm text-gray-500">{item.reason}</p>
+            {loading ? <div className="text-center py-10">Loading alerts...</div> : (
+                activeTab === 'flagged' && (
+                    <div className="space-y-3">
+                        {alerts.map(item => (
+                            <div key={item.id} className={`bg-white dark:bg-gray-800 rounded-xl p-4 border-l-4 ${item.severity === 'critical' ? 'border-l-red-500' : item.severity === 'high' ? 'border-l-orange-500' : 'border-l-yellow-500'
+                                }`}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 dark:text-white">{item.title}</h3>
+                                        <p className="text-sm text-gray-500">{item.message || item.reason}</p>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded text-xs ${item.severity === 'critical' ? 'bg-red-500/10 text-red-600' : 'bg-orange-500/10 text-orange-600'
+                                        }`}>{item.severity?.toUpperCase() || 'MEDIUM'}</span>
                                 </div>
-                                <span className={`px-2 py-0.5 rounded text-xs ${item.severity === 'critical' ? 'bg-red-500/10 text-red-600' : 'bg-orange-500/10 text-orange-600'
-                                    }`}>{item.severity.toUpperCase()}</span>
+                                <div className="flex gap-2 mt-3">
+                                    <button onClick={() => handleAction(item.id, 'resolve')} className="px-3 py-1 bg-green-500 text-white rounded text-sm">Resolve</button>
+                                    <button onClick={() => handleAction(item.id, 'dismiss')} className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm">Dismiss</button>
+                                </div>
                             </div>
-                            <div className="flex gap-2 mt-3">
-                                <button className="px-3 py-1 bg-green-500 text-white rounded text-sm">Approve</button>
-                                <button className="px-3 py-1 bg-red-500 text-white rounded text-sm">Remove</button>
-                                <button className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded text-sm">Dismiss</button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                        {alerts.length === 0 && <div className="text-center py-10 text-gray-500">No pending alerts. Safe travels!</div>}
+                    </div>
+                )
             )}
 
             {activeTab !== 'flagged' && (

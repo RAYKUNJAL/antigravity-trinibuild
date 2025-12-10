@@ -66,6 +66,39 @@ export const storeService = {
         return data as Store;
     },
 
+    // Get all active stores (public directory)
+    getAllStores: async (): Promise<any[]> => {
+        const { data, error } = await supabase
+            .from('stores')
+            .select(`
+                id,
+                name,
+                slug,
+                description,
+                location,
+                category,
+                logo_url,
+                owner_id
+            `)
+            .eq('status', 'active')
+            .limit(100);
+
+        if (error) {
+            console.error('Error fetching all stores:', error);
+            return [];
+        }
+
+        // Map to ensure shape matches what's expected by directory
+        return data.map(store => ({
+            id: 'store-' + store.id,
+            businessName: store.name,
+            description: store.description,
+            address: store.location,
+            category: store.category,
+            logoUrl: store.logo_url
+        }));
+    },
+
     // Create a new store
     createStore: async (storeData: Partial<Store>): Promise<Store | null> => {
         const { data: { user } } = await supabase.auth.getUser();

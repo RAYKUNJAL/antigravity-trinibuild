@@ -1,336 +1,538 @@
 import { supabase } from './supabaseClient';
 
-export interface Notification {
-    id: string;
-    user_id: string;
+export interface NotificationPayload {
+    userId: string;
     type: string;
     title: string;
     message: string;
-    data?: any;
-    read: boolean;
-    read_at?: string;
-    created_at: string;
+    linkUrl?: string;
+    linkText?: string;
+    metadata?: Record<string, any>;
 }
 
-class NotificationService {
-    /**
-     * Create a notification
-     */
-    async createNotification(notification: {
-        user_id: string;
-        type: string;
-        title: string;
-        message: string;
-        data?: any;
-    }) {
+export interface EmailPayload {
+    to: string;
+    toName?: string;
+    subject: string;
+    htmlBody: string;
+    textBody?: string;
+    templateName?: string;
+    templateData?: Record<string, any>;
+}
+
+export interface WhatsAppPayload {
+    phoneNumber: string;
+    message: string;
+    templateName?: string;
+    templateParams?: Record<string, any>;
+    mediaUrl?: string;
+}
+
+export interface SMSPayload {
+    phoneNumber: string;
+    message: string;
+}
+
+export const notificationService = {
+    // ============================================
+    // IN-APP NOTIFICATIONS
+    // ============================================
+
+    async createNotification(payload: NotificationPayload, channels: {
+        app?: boolean;
+        email?: boolean;
+        sms?: boolean;
+        whatsapp?: boolean;
+    } = { app: true }): Promise<void> {
         try {
-            const { data, error } = await supabase
-                .from('notifications')
-                .insert([notification])
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            // Send push notification if enabled
-            await this.sendPushNotification(notification.user_id, {
-                title: notification.title,
-                body: notification.message,
-                data: notification.data,
-            });
-
-            return data;
-        } catch (error: any) {
-            console.error('Create notification error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get notifications for current user
-     */
-    async getMyNotifications(limit = 50) {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
-            const { data, error } = await supabase
-                .from('notifications')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .order('created_at', { ascending: false })
-                .limit(limit);
-
-            if (error) throw error;
-            return data || [];
-        } catch (error: any) {
-            console.error('Get notifications error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get unread notification count
-     */
-    async getUnreadCount() {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
-            const { count, error } = await supabase
-                .from('notifications')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', session.user.id)
-                .eq('read', false);
-
-            if (error) throw error;
-            return count || 0;
-        } catch (error: any) {
-            console.error('Get unread count error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Mark notification as read
-     */
-    async markAsRead(notificationId: string) {
-        try {
-            const { data, error } = await supabase
-                .from('notifications')
-                .update({
-                    read: true,
-                    read_at: new Date().toISOString(),
-                })
-                .eq('id', notificationId)
-                .select()
-                .single();
-
-            if (error) throw error;
-            return data;
-        } catch (error: any) {
-            console.error('Mark as read error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Mark all notifications as read
-     */
-    async markAllAsRead() {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
+            // Create in-app notification
             const { error } = await supabase
                 .from('notifications')
-                .update({
-                    read: true,
-                    read_at: new Date().toISOString(),
-                })
-                .eq('user_id', session.user.id)
-                .eq('read', false);
+                .insert({
+                    user_id: payload.userId,
+                    type: payload.type,
+                    title: payload.title,
+                    message: payload.message,
+                    link_url: payload.linkUrl,
+                    link_text: payload.linkText,
+                    metadata: payload.metadata || {},
+                    sent_via_app: channels.app !== false,
+                    sent_via_email: channels.email === true,
+                    sent_via_sms: channels.sms === true,
+                    sent_via_whatsapp: channels.whatsapp === true
+                });
 
             if (error) throw error;
-        } catch (error: any) {
-            console.error('Mark all as read error:', error);
-            throw error;
-        }
-    }
 
-    /**
-     * Delete a notification
-     */
-    async deleteNotification(notificationId: string) {
-        try {
-            const { error } = await supabase
-                .from('notifications')
-                .delete()
-                .eq('id', notificationId);
+            // Get user contact info for other channels
+            if (channels.email || channels.sms || channels.whatsapp) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('email, full_name')
+                    .eq('id', payload.userId)
+                    .single();
 
-            if (error) throw error;
-        } catch (error: any) {
-            console.error('Delete notification error:', error);
-            throw error;
-        }
-    }
+                if (profile) {
+                    // Send email if requested
+                    if (channels.email && profile.email) {
+                        await this.sendEmail({
+                            to: profile.email,
+                            toName: profile.full_name || undefined,
+                            subject: payload.title,
+                            htmlBody: `<h2>${payload.title}</h2><p>${payload.message}</p>`,
+                            textBody: `${payload.title}\n\n${payload.message}`
+                        });
+                    }
 
-    /**
-     * Subscribe to real-time notifications
-     */
-    subscribeToNotifications(userId: string, callback: (notification: Notification) => void) {
-        return supabase
-            .channel(`notifications:${userId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'notifications',
-                    filter: `user_id=eq.${userId}`,
-                },
-                (payload) => {
-                    callback(payload.new as Notification);
+                    // Send WhatsApp if requested
+                    if (channels.whatsapp) {
+                        // Get phone from user metadata or separate phone field
+                        const phone = (payload.metadata as any)?.phone;
+                        if (phone) {
+                            await this.sendWhatsApp({
+                                phoneNumber: phone,
+                                message: `*${payload.title}*\n\n${payload.message}`
+                            });
+                        }
+                    }
+
+                    // Send SMS if requested
+                    if (channels.sms) {
+                        const phone = (payload.metadata as any)?.phone;
+                        if (phone) {
+                            await this.sendSMS({
+                                phoneNumber: phone,
+                                message: `${payload.title}: ${payload.message}`
+                            });
+                        }
+                    }
                 }
-            )
-            .subscribe();
-    }
-
-    /**
-     * Send push notification (Web Push API)
-     */
-    private async sendPushNotification(
-        userId: string,
-        notification: {
-            title: string;
-            body: string;
-            data?: any;
-        }
-    ) {
-        try {
-            // Check if push notifications are supported
-            if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-                return;
             }
-
-            // Check permission
-            if (Notification.permission !== 'granted') {
-                return;
-            }
-
-            // Get service worker registration
-            const registration = await navigator.serviceWorker.ready;
-
-            // Show notification
-            await registration.showNotification(notification.title, {
-                body: notification.body,
-                icon: '/logo.png',
-                badge: '/badge.png',
-                data: notification.data,
-                tag: `notification-${Date.now()}`,
-                requireInteraction: false,
-            });
         } catch (error) {
-            console.error('Push notification error:', error);
-        }
-    }
-
-    /**
-     * Request push notification permission
-     */
-    async requestPermission() {
-        try {
-            if (!('Notification' in window)) {
-                throw new Error('Push notifications not supported');
-            }
-
-            const permission = await Notification.requestPermission();
-            return permission === 'granted';
-        } catch (error: any) {
-            console.error('Request permission error:', error);
+            console.error('Failed to create notification:', error);
             throw error;
         }
-    }
+    },
 
-    /**
-     * Send email notification (via backend)
-     */
-    async sendEmailNotification(params: {
-        to: string;
-        subject: string;
-        html: string;
-        text?: string;
-    }) {
+    async markAsRead(notificationId: string): Promise<void> {
+        const { error } = await supabase
+            .from('notifications')
+            .update({
+                read: true,
+                read_at: new Date().toISOString()
+            })
+            .eq('id', notificationId);
+
+        if (error) throw error;
+    },
+
+    async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<any[]> {
+        let query = supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (unreadOnly) {
+            query = query.eq('read', false);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data || [];
+    },
+
+    async getUnreadCount(userId: string): Promise<number> {
+        const { count, error } = await supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('read', false);
+
+        if (error) throw error;
+        return count || 0;
+    },
+
+    // ============================================
+    // EMAIL NOTIFICATIONS
+    // ============================================
+
+    async sendEmail(payload: EmailPayload): Promise<void> {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
+            const { error } = await supabase
+                .from('email_queue')
+                .insert({
+                    to_email: payload.to,
+                    to_name: payload.toName,
+                    subject: payload.subject,
+                    html_body: payload.htmlBody,
+                    text_body: payload.textBody,
+                    template_name: payload.templateName,
+                    template_data: payload.templateData
+                });
 
-            const response = await fetch('/api/notifications/email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
-                },
-                body: JSON.stringify(params),
+            if (error) throw error;
+
+            // In production, this would trigger a background job to actually send the email
+            // For now, we'll call the email service directly
+            await this.processEmailQueue();
+        } catch (error) {
+            console.error('Failed to queue email:', error);
+            throw error;
+        }
+    },
+
+    async processEmailQueue(): Promise<void> {
+        // This would be called by a background worker
+        // For MVP, we can use a simple polling mechanism or Supabase Edge Functions
+
+        const { data: emails, error } = await supabase
+            .from('email_queue')
+            .select('*')
+            .eq('status', 'pending')
+            .lt('attempts', 3)
+            .limit(10);
+
+        if (error || !emails) return;
+
+        for (const email of emails) {
+            try {
+                // Send via your email provider (SendGrid, Mailgun, etc.)
+                await this.sendEmailViaProvider(email);
+
+                // Mark as sent
+                await supabase
+                    .from('email_queue')
+                    .update({
+                        status: 'sent',
+                        sent_at: new Date().toISOString()
+                    })
+                    .eq('id', email.id);
+            } catch (error: any) {
+                // Mark as failed
+                await supabase
+                    .from('email_queue')
+                    .update({
+                        status: 'failed',
+                        attempts: email.attempts + 1,
+                        last_error: error.message
+                    })
+                    .eq('id', email.id);
+            }
+        }
+    },
+
+    async sendEmailViaProvider(email: any): Promise<void> {
+        // Integration with email provider
+        // Example: SendGrid, Mailgun, AWS SES
+
+        if (import.meta.env.DEV) {
+            console.log('📧 Email (DEV MODE):', {
+                to: email.to_email,
+                subject: email.subject,
+                body: email.html_body
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to send email');
-            }
-
-            return await response.json();
-        } catch (error: any) {
-            console.error('Send email error:', error);
-            throw error;
+            return;
         }
-    }
 
-    /**
-     * Send SMS notification (via Twilio)
-     */
-    async sendSMSNotification(params: {
-        to: string;
-        message: string;
-    }) {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
-            const response = await fetch('/api/notifications/sms', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
+        // Production email sending
+        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${import.meta.env.VITE_SENDGRID_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                personalizations: [{
+                    to: [{ email: email.to_email, name: email.to_name }],
+                    subject: email.subject
+                }],
+                from: {
+                    email: 'noreply@trinibuild.com',
+                    name: 'TriniBuild'
                 },
-                body: JSON.stringify(params),
-            });
+                content: [
+                    { type: 'text/plain', value: email.text_body || email.html_body },
+                    { type: 'text/html', value: email.html_body }
+                ]
+            })
+        });
 
-            if (!response.ok) {
-                throw new Error('Failed to send SMS');
+        if (!response.ok) {
+            throw new Error(`Email send failed: ${response.statusText}`);
+        }
+    },
+
+    // ============================================
+    // WHATSAPP NOTIFICATIONS
+    // ============================================
+
+    async sendWhatsApp(payload: WhatsAppPayload): Promise<void> {
+        try {
+            const { error } = await supabase
+                .from('whatsapp_queue')
+                .insert({
+                    phone_number: payload.phoneNumber,
+                    message: payload.message,
+                    template_name: payload.templateName,
+                    template_params: payload.templateParams,
+                    media_url: payload.mediaUrl
+                });
+
+            if (error) throw error;
+
+            // Process immediately in development
+            if (import.meta.env.DEV) {
+                await this.processWhatsAppQueue();
             }
-
-            return await response.json();
-        } catch (error: any) {
-            console.error('Send SMS error:', error);
+        } catch (error) {
+            console.error('Failed to queue WhatsApp message:', error);
             throw error;
         }
+    },
+
+    async processWhatsAppQueue(): Promise<void> {
+        const { data: messages, error } = await supabase
+            .from('whatsapp_queue')
+            .select('*')
+            .eq('status', 'pending')
+            .lt('attempts', 3)
+            .limit(10);
+
+        if (error || !messages) return;
+
+        for (const msg of messages) {
+            try {
+                await this.sendWhatsAppViaProvider(msg);
+
+                await supabase
+                    .from('whatsapp_queue')
+                    .update({
+                        status: 'sent',
+                        sent_at: new Date().toISOString()
+                    })
+                    .eq('id', msg.id);
+            } catch (error: any) {
+                await supabase
+                    .from('whatsapp_queue')
+                    .update({
+                        status: 'failed',
+                        attempts: msg.attempts + 1,
+                        last_error: error.message
+                    })
+                    .eq('id', msg.id);
+            }
+        }
+    },
+
+    async sendWhatsAppViaProvider(message: any): Promise<void> {
+        if (import.meta.env.DEV) {
+            console.log('💬 WhatsApp (DEV MODE):', {
+                to: message.phone_number,
+                message: message.message
+            });
+            return;
+        }
+
+        // WhatsApp Business API integration
+        // Using Twilio WhatsApp API as example
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                From: `whatsapp:${import.meta.env.VITE_TWILIO_WHATSAPP_NUMBER}`,
+                To: `whatsapp:${message.phone_number}`,
+                Body: message.message
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`WhatsApp send failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Update with WhatsApp message ID
+        await supabase
+            .from('whatsapp_queue')
+            .update({ whatsapp_message_id: data.sid })
+            .eq('id', message.id);
+    },
+
+    // ============================================
+    // SMS NOTIFICATIONS
+    // ============================================
+
+    async sendSMS(payload: SMSPayload): Promise<void> {
+        try {
+            const { error } = await supabase
+                .from('sms_queue')
+                .insert({
+                    phone_number: payload.phoneNumber,
+                    message: payload.message
+                });
+
+            if (error) throw error;
+
+            if (import.meta.env.DEV) {
+                await this.processSMSQueue();
+            }
+        } catch (error) {
+            console.error('Failed to queue SMS:', error);
+            throw error;
+        }
+    },
+
+    async processSMSQueue(): Promise<void> {
+        const { data: messages, error } = await supabase
+            .from('sms_queue')
+            .select('*')
+            .eq('status', 'pending')
+            .lt('attempts', 3)
+            .limit(10);
+
+        if (error || !messages) return;
+
+        for (const msg of messages) {
+            try {
+                await this.sendSMSViaProvider(msg);
+
+                await supabase
+                    .from('sms_queue')
+                    .update({
+                        status: 'sent',
+                        sent_at: new Date().toISOString()
+                    })
+                    .eq('id', msg.id);
+            } catch (error: any) {
+                await supabase
+                    .from('sms_queue')
+                    .update({
+                        status: 'failed',
+                        attempts: msg.attempts + 1,
+                        last_error: error.message
+                    })
+                    .eq('id', msg.id);
+            }
+        }
+    },
+
+    async sendSMSViaProvider(message: any): Promise<void> {
+        if (import.meta.env.DEV) {
+            console.log('📱 SMS (DEV MODE):', {
+                to: message.phone_number,
+                message: message.message
+            });
+            return;
+        }
+
+        // Twilio SMS API
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                From: import.meta.env.VITE_TWILIO_PHONE_NUMBER,
+                To: message.phone_number,
+                Body: message.message
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`SMS send failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        await supabase
+            .from('sms_queue')
+            .update({ sms_id: data.sid })
+            .eq('id', message.id);
+    },
+
+    // ============================================
+    // ORDER NOTIFICATIONS (Pre-built templates)
+    // ============================================
+
+    async notifyOrderPlaced(orderId: string, customerId: string, customerPhone: string, customerEmail?: string): Promise<void> {
+        await this.createNotification({
+            userId: customerId,
+            type: 'order_placed',
+            title: 'Order Confirmed!',
+            message: `Your order #${orderId} has been placed successfully. We'll notify you when it ships.`,
+            linkUrl: `/orders/${orderId}`,
+            linkText: 'View Order',
+            metadata: { orderId, phone: customerPhone }
+        }, {
+            app: true,
+            email: !!customerEmail,
+            whatsapp: true,
+            sms: true
+        });
+    },
+
+    async notifyOrderShipped(orderId: string, customerId: string, trackingNumber: string, customerPhone: string): Promise<void> {
+        await this.createNotification({
+            userId: customerId,
+            type: 'order_shipped',
+            title: 'Order Shipped!',
+            message: `Your order #${orderId} is on its way! Tracking: ${trackingNumber}`,
+            linkUrl: `/orders/${orderId}/track`,
+            linkText: 'Track Order',
+            metadata: { orderId, trackingNumber, phone: customerPhone }
+        }, {
+            app: true,
+            whatsapp: true,
+            sms: true
+        });
+    },
+
+    async notifyDeliveryAssigned(orderId: string, customerId: string, driverName: string, customerPhone: string): Promise<void> {
+        await this.createNotification({
+            userId: customerId,
+            type: 'delivery_assigned',
+            title: 'Driver Assigned!',
+            message: `${driverName} is delivering your order #${orderId}. You can track them in real-time.`,
+            linkUrl: `/orders/${orderId}/track`,
+            linkText: 'Track Delivery',
+            metadata: { orderId, driverName, phone: customerPhone }
+        }, {
+            app: true,
+            whatsapp: true
+        });
+    },
+
+    async notifyPriceDrop(productId: string, userId: string, productName: string, oldPrice: number, newPrice: number): Promise<void> {
+        await this.createNotification({
+            userId,
+            type: 'price_drop',
+            title: 'Price Drop Alert!',
+            message: `${productName} is now TT$${newPrice.toFixed(2)} (was TT$${oldPrice.toFixed(2)})`,
+            linkUrl: `/products/${productId}`,
+            linkText: 'Buy Now'
+        }, {
+            app: true,
+            email: true
+        });
+    },
+
+    async notifyBackInStock(productId: string, userId: string, productName: string): Promise<void> {
+        await this.createNotification({
+            userId,
+            type: 'back_in_stock',
+            title: 'Back in Stock!',
+            message: `${productName} is back in stock. Order now before it sells out again!`,
+            linkUrl: `/products/${productId}`,
+            linkText: 'Shop Now'
+        }, {
+            app: true,
+            email: true
+        });
     }
-
-    /**
-     * Notification templates
-     */
-    templates = {
-        orderConfirmed: (orderNumber: string) => ({
-            type: 'order',
-            title: 'Order Confirmed',
-            message: `Your order #${orderNumber} has been confirmed and is being processed.`,
-        }),
-        orderShipped: (orderNumber: string, trackingNumber: string) => ({
-            type: 'order',
-            title: 'Order Shipped',
-            message: `Your order #${orderNumber} has been shipped. Tracking: ${trackingNumber}`,
-        }),
-        rideMatched: (driverName: string, eta: number) => ({
-            type: 'ride',
-            title: 'Driver Found',
-            message: `${driverName} is on the way. ETA: ${eta} minutes`,
-        }),
-        rideCompleted: (fare: number) => ({
-            type: 'ride',
-            title: 'Ride Completed',
-            message: `Your ride has been completed. Total fare: TTD ${fare.toFixed(2)}`,
-        }),
-        paymentReceived: (amount: number) => ({
-            type: 'payment',
-            title: 'Payment Received',
-            message: `Payment of TTD ${amount.toFixed(2)} has been received.`,
-        }),
-        newReview: (rating: number, productName: string) => ({
-            type: 'review',
-            title: 'New Review',
-            message: `You received a ${rating}-star review on ${productName}`,
-        }),
-    };
-}
-
-export const notificationService = new NotificationService();
+};

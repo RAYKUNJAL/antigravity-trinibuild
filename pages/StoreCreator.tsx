@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wand2, Loader2, CheckCircle, MapPin, Store, ArrowRight, Zap, LayoutTemplate, ShieldCheck, Smartphone, Monitor, RefreshCw, Palette, CreditCard, Camera, Star, Lock, Award, TrendingUp, FileSignature, X } from 'lucide-react';
+import { Wand2, Loader2, CheckCircle, MapPin, Store, ArrowRight, Zap, LayoutTemplate, ShieldCheck, Smartphone, Monitor, RefreshCw, Palette, CreditCard, Camera, Star, Lock, Award, TrendingUp, FileSignature, X, Clock, Shield, Brain } from 'lucide-react';
 import { generateStoreProfile } from '../services/geminiService';
 import { Business, Theme } from '../types';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { themeService } from '../services/themeService';
 import { supabase } from '../services/supabaseClient';
 import { LogoBuilder } from '../components/LogoBuilder';
 import { ThemeGenerator } from '../components/ThemeGenerator';
+import { AIGeneratingOverlay } from '../components/AIGeneratingOverlay';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 // Placeholder logo URL
@@ -38,10 +39,23 @@ export const StoreCreator: React.FC = () => {
    const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
    const [imageSeed, setImageSeed] = useState(1);
 
+   // UPGRADE 2: Magic Social Import State
+   const [importUrl, setImportUrl] = useState('');
+   const [isImporting, setIsImporting] = useState(false);
+
+   // UPGRADE 3: Interactive Preview State
+   const [previewCartCount, setPreviewCartCount] = useState(0);
+   const [showPreviewCart, setShowPreviewCart] = useState(false);
+   const [previewCartItems, setPreviewCartItems] = useState<any[]>([]);
+
    // Legal State
    const [showLegalModal, setShowLegalModal] = useState(false);
    const [isSigning, setIsSigning] = useState(false);
    const [hasSigned, setHasSigned] = useState(false);
+
+   // Enhanced Builder State (User Request)
+   const [timeRemaining, setTimeRemaining] = useState(90); // 90 seconds goal
+   const [lastAutoSave, setLastAutoSave] = useState<number | null>(null);
 
    // Check for claim parameters or saved draft on load
    useEffect(() => {
@@ -68,6 +82,27 @@ export const StoreCreator: React.FC = () => {
          if (draftName) setFormData(prev => ({ ...prev, name: draftName }));
       }
    }, [searchParams]);
+
+   // Timer countdown
+   useEffect(() => {
+      const timer = setInterval(() => {
+         setTimeRemaining(prev => Math.max(0, prev - 1));
+      }, 1000);
+      return () => clearInterval(timer);
+   }, []);
+
+   // Auto-save simulation
+   useEffect(() => {
+      const interval = setInterval(() => {
+         setLastAutoSave(Date.now());
+         localStorage.setItem('storeBuilder_progress', JSON.stringify({
+            step,
+            formData,
+            timestamp: Date.now()
+         }));
+      }, 10000);
+      return () => clearInterval(interval);
+   }, [step, formData]);
 
    const handleInfoSubmit = async () => {
       if (!formData.name || !formData.type) return;
@@ -190,6 +225,43 @@ export const StoreCreator: React.FC = () => {
       }
    };
 
+   // UPGRADE 2: Simulate Social Import
+   const handleSocialImport = () => {
+      if (!importUrl) return;
+      setIsImporting(true);
+
+      // Simulate "Scraping" delay
+      setTimeout(() => {
+         // Mock extracted data based on URL or random
+         const mockName = "Island Vibes Cafe";
+         setFormData(prev => ({
+            ...prev,
+            name: mockName,
+            type: "Restaurant",
+            vibe: "Tropical"
+         }));
+         setIsImporting(false);
+         alert(`🎉 Successfully imported data for ${mockName}!`);
+      }, 2000);
+   };
+
+   // UPGRADE 3: Interactive Add to Cart
+   const addToPreviewCart = (product: any) => {
+      setPreviewCartCount(prev => prev + 1);
+      setPreviewCartItems(prev => [...prev, product]);
+      // Show feedback
+      const btn = document.getElementById(`btn-${product.name}`);
+      if (btn) {
+         const originalText = btn.innerText;
+         btn.innerText = "Added!";
+         btn.style.backgroundColor = "green";
+         setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = "";
+         }, 1000);
+      }
+   };
+
    // Helper to generate AI image URL on the fly (Fallback)
    const getAiImageUrl = (prompt: string) => {
       const basePrompt = `${prompt} ${formData.type} ${formData.vibe} style high quality photography`;
@@ -201,44 +273,97 @@ export const StoreCreator: React.FC = () => {
       <div className="min-h-screen bg-gray-50 py-12 font-sans relative overflow-x-hidden">
          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Branding Header */}
+            {/* STICKY PROGRESS BAR - IMPROVED */}
             {step < 5 && (
-               <div className="text-center mb-10">
-                  <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-                     {claimMode ? 'Claim Your Business Listing' : 'Launch Your Free Store'}
-                  </h1>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                     Step {step} of 4: {
-                        step === 1 ? 'Business Details' :
-                           step === 2 ? 'Brand Identity' :
-                              step === 3 ? 'Store Theme' : 'Final Review'
-                     }
-                  </p>
-               </div>
-            )}
-
-            {/* Progress Bar */}
-            {step < 5 && (
-               <div className="mb-12 relative">
-                  <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 rounded-full"></div>
-                  <div className="flex justify-between max-w-2xl mx-auto">
-                     {[1, 2, 3, 4].map((s) => (
-                        <div key={s} className="flex flex-col items-center bg-gray-50 px-4">
-                           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white mb-2 transition-colors shadow-lg ${step >= s ? 'bg-trini-red' : 'bg-gray-300'}`}>
-                              {step > s ? <CheckCircle className="h-5 w-5" /> : s}
+               <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-8">
+                  <div className="max-w-6xl mx-auto">
+                     {/* Top Row: Progress + Time */}
+                     <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center space-x-4">
+                           <span className="text-sm font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                              Step {step} of 4
+                           </span>
+                           <div className="flex items-center text-sm font-medium text-gray-600">
+                              <Clock className="w-4 h-4 mr-1.5 text-gray-400" />
+                              <span className={timeRemaining > 60 ? 'text-green-600' : 'text-orange-600 font-bold'}>
+                                 {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')} remaining
+                              </span>
                            </div>
                         </div>
-                     ))}
+
+                        {/* Auto-save Indicator */}
+                        {lastAutoSave && (
+                           <div className="flex items-center text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded border border-green-100">
+                              <Shield className="w-3 h-3 mr-1.5" />
+                              <span>Auto-saved {new Date(lastAutoSave).toLocaleTimeString()}</span>
+                           </div>
+                        )}
+                     </div>
+
+                     {/* Progress Bar - Visual Track */}
+                     <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                           className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-700 ease-out rounded-full"
+                           style={{ width: `${(step / 4) * 100}%` }}
+                        ></div>
+                        {/* Step Markers */}
+                        <div className="absolute top-0 left-0 w-full h-full flex justify-between px-[12.5%]">
+                           <div className={`w-0.5 h-full ${step > 1 ? 'bg-white/30' : 'bg-transparent'}`}></div>
+                           <div className={`w-0.5 h-full ${step > 2 ? 'bg-white/30' : 'bg-transparent'}`}></div>
+                           <div className={`w-0.5 h-full ${step > 3 ? 'bg-white/30' : 'bg-transparent'}`}></div>
+                        </div>
+                     </div>
                   </div>
                </div>
             )}
 
             <div className={`bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 relative transition-all duration-500 ${step >= 5 ? 'fixed inset-0 z-50 rounded-none m-0 border-0' : ''}`}>
 
+               {/* AI Generation Overlay */}
+               {loading && <AIGeneratingOverlay businessName={formData.name} businessType={formData.type} />}
+
                {/* Step 1: Input Form */}
                {step === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-2">
                      <div className="p-8 md:p-12 flex flex-col justify-center">
+
+                        {/* UPGRADE 2: Magic Import Tab */}
+                        <div className="mb-8 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                           <h3 className="text-sm font-bold text-blue-800 mb-2 flex items-center">
+                              <Monitor className="w-4 h-4 mr-2" />
+                              Import from Social Media (Magic)
+                           </h3>
+                           <div className="flex gap-2">
+                              <input
+                                 type="text"
+                                 placeholder="Paste Instagram or FB Link..."
+                                 className="flex-grow border border-blue-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                                 value={importUrl}
+                                 onChange={(e) => setImportUrl(e.target.value)}
+                              />
+                              <button
+                                 onClick={handleSocialImport}
+                                 disabled={isImporting}
+                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+                              >
+                                 {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Import"}
+                              </button>
+                           </div>
+                           <p className="text-xs text-blue-600 mt-2">
+                              *Auto-fills Name, Category & Vibe
+                           </p>
+                        </div>
+
+                        <div className="relative">
+                           <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t border-gray-200"></div>
+                           </div>
+                           <div className="relative flex justify-center text-sm">
+                              <span className="px-2 bg-white text-gray-500">Or start manually</span>
+                           </div>
+                        </div>
+                        <div className="h-4"></div>
+
                         <div className="mb-6">
                            <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Business Name *</label>
                            <input
@@ -257,12 +382,66 @@ export const StoreCreator: React.FC = () => {
                               value={formData.type}
                               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                            >
-                              <option value="" disabled>Select...</option>
-                              <option value="Restaurant">Restaurant</option>
-                              <option value="Fashion">Fashion</option>
-                              <option value="Electronics">Electronics</option>
-                              <option value="Services">Services</option>
-                              <option value="Grocery">Grocery</option>
+                              <option value="" disabled>Select Business Category...</option>
+
+                              {/* Food & Hospitality */}
+                              <optgroup label="Food & Dining">
+                                 <option value="Restaurant">Restaurant / Fine Dining</option>
+                                 <option value="Street Food">Doubles / Street Food Vendor</option>
+                                 <option value="Roti Shop">Roti Shop</option>
+                                 <option value="Bakery">Bakery & Pastries</option>
+                                 <option value="Catering">Catering Service</option>
+                                 <option value="Bar">Bar / Pub / Lounge</option>
+                              </optgroup>
+
+                              {/* Retail */}
+                              <optgroup label="Retail & Shopping">
+                                 <option value="Fashion">Clothing & Fashion</option>
+                                 <option value="Electronics">Electronics & Computers</option>
+                                 <option value="Variety Store">Variety Store / Parlour</option>
+                                 <option value="Hardware">Hardware & Construction Supplies</option>
+                                 <option value="Supermarket">Supermarket / Grocery</option>
+                                 <option value="Auto Parts">Auto Parts & Accessories</option>
+                                 <option value="Furniture">Furniture & Home Decor</option>
+                              </optgroup>
+
+                              {/* Services */}
+                              <optgroup label="Services">
+                                 <option value="Taxi">Taxi / Maxi Taxi / Transport</option>
+                                 <option value="Mechanic">Auto Mechanic / Repairs</option>
+                                 <option value="Construction">Construction & Contracting</option>
+                                 <option value="Plumbing">Plumbing Services</option>
+                                 <option value="Electrical">Electrical Services</option>
+                                 <option value="Cleaning">Cleaning / Janitorial</option>
+                                 <option value="Landscaping">Landscaping & Gardening</option>
+                                 <option value="Beauty">Hair / Nails / Spam / Barber</option>
+                              </optgroup>
+
+                              {/* Professional */}
+                              <optgroup label="Professional Services">
+                                 <option value="Medical">Doctor / Medical / Pharmacy</option>
+                                 <option value="Legal">Legal Services</option>
+                                 <option value="Real Estate">Real Estate Agent</option>
+                                 <option value="Consulting">Business Consulting</option>
+                                 <option value="Accounting">Accounting / Tax</option>
+                              </optgroup>
+
+                              {/* Entertainment */}
+                              <optgroup label="Events & Entertainment">
+                                 <option value="Promoter">Event Promoter</option>
+                                 <option value="DJ">DJ / Sound System</option>
+                                 <option value="Venue">Event Venue</option>
+                                 <option value="Carnival">Carnival Band / Mas</option>
+                              </optgroup>
+
+                              {/* Agriculture */}
+                              <optgroup label="Agriculture">
+                                 <option value="Farming">Farming / Agriculture</option>
+                                 <option value="Market Vendor">Market Vendor</option>
+                                 <option value="Fishing">Fisherman / Seafood</option>
+                              </optgroup>
+
+                              <option value="Other">Other</option>
                            </select>
                         </div>
 
@@ -340,20 +519,95 @@ export const StoreCreator: React.FC = () => {
                               </div>
                            </div>
 
-                           {/* Products Grid */}
-                           <div className="p-8" style={{ backgroundColor: selectedTheme?.tokens?.colors?.background || '#fff' }}>
+                           {/* Products Grid - INTERACTIVE UPGRADE */}
+                           <div className="p-8 relative" style={{ backgroundColor: selectedTheme?.tokens?.colors?.background || '#fff' }}>
                               <h3 className="font-bold mb-6" style={{ color: selectedTheme?.tokens?.colors?.text_primary }}>Featured Products</h3>
                               <div className={`grid gap-6 ${viewMode === 'mobile' ? 'grid-cols-1' : 'grid-cols-3'}`}>
                                  {generatedStore.products?.map((prod, idx) => (
-                                    <div key={idx} className="border rounded-lg overflow-hidden" style={{ borderColor: selectedTheme?.tokens?.colors?.secondary }}>
-                                       <img src={prod.image_url || getAiImageUrl(prod.name)} alt={prod.name} className="w-full h-48 object-cover" />
-                                       <div className="p-4">
-                                          <h4 className="font-bold">{prod.name}</h4>
-                                          <p className="text-sm text-gray-500">TT${prod.base_price}</p>
+                                    <div key={idx} className="border rounded-lg overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow" style={{ borderColor: selectedTheme?.tokens?.colors?.secondary }}>
+                                       <div className="relative h-48 group">
+                                          <img src={prod.image_url || getAiImageUrl(prod.name)} alt={prod.name} className="w-full h-full object-cover" />
+                                          <button
+                                             id={`btn-${prod.name}`}
+                                             onClick={() => addToPreviewCart(prod)}
+                                             className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-800 opacity-0 group-hover:opacity-100"
+                                          >
+                                             <Store className="w-4 h-4" />
+                                          </button>
+                                       </div>
+                                       <div className="p-4 flex-grow flex flex-col justify-between">
+                                          <div>
+                                             <h4 className="font-bold mb-1 line-clamp-1">{prod.name}</h4>
+                                             <p className="text-sm text-gray-500 line-clamp-2">{prod.description}</p>
+                                          </div>
+                                          <div className="mt-3 flex justify-between items-center">
+                                             <span className="font-bold text-green-600">TT${prod.base_price}</span>
+                                             <button
+                                                onClick={() => addToPreviewCart(prod)}
+                                                className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded hover:bg-gray-700 transition-colors"
+                                             >
+                                                Add
+                                             </button>
+                                          </div>
                                        </div>
                                     </div>
                                  ))}
                               </div>
+
+                              {/* UPGRADE 3: Interactive Cart Drawer Overlay */}
+                              {showPreviewCart && (
+                                 <div className="absolute inset-0 z-20 bg-black/20 backdrop-blur-sm flex justify-end">
+                                    <div className="w-3/4 max-w-sm bg-white h-full shadow-2xl p-6 flex flex-col animate-in slide-in-from-right duration-300">
+                                       <div className="flex justify-between items-center mb-6 border-b pb-4">
+                                          <h3 className="font-bold text-lg">Your Cart ({previewCartCount})</h3>
+                                          <button onClick={() => setShowPreviewCart(false)} className="bg-gray-100 p-1 rounded-full"><X className="w-5 h-5" /></button>
+                                       </div>
+                                       <div className="flex-grow overflow-y-auto space-y-4 pr-1">
+                                          {previewCartItems.length === 0 ? (
+                                             <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+                                                <Store className="w-8 h-8 mb-2 opacity-20" />
+                                                <p>Your cart is empty</p>
+                                             </div>
+                                          ) : (
+                                             previewCartItems.map((item, i) => (
+                                                <div key={i} className="flex gap-3 items-center bg-gray-50 p-2 rounded-lg">
+                                                   <div className="w-12 h-12 bg-gray-200 rounded shrink-0 overflow-hidden">
+                                                      <img src={item.image_url || getAiImageUrl(item.name)} className="w-full h-full object-cover" />
+                                                   </div>
+                                                   <div className="flex-grow">
+                                                      <div className="font-bold text-sm line-clamp-1">{item.name}</div>
+                                                      <div className="text-xs text-gray-500">TT${item.base_price}</div>
+                                                   </div>
+                                                </div>
+                                             ))
+                                          )}
+                                       </div>
+                                       <div className="mt-4 pt-4 border-t">
+                                          <div className="flex justify-between font-bold text-lg mb-4">
+                                             <span>Total</span>
+                                             <span>TT${previewCartItems.reduce((acc, item) => acc + item.base_price, 0).toFixed(2)}</span>
+                                          </div>
+                                          <button className="w-full bg-trini-red text-white py-3 rounded-xl font-bold shadow-lg hover:bg-red-700 transition-colors">Checkout</button>
+                                          <p className="text-xs text-center text-gray-400 mt-2">Interactive Demo Mode</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              )}
+
+                              {/* Floating Cart Button for Preview */}
+                              <button
+                                 onClick={() => setShowPreviewCart(true)}
+                                 className="absolute bottom-6 right-6 z-10 bg-black text-white p-4 rounded-full shadow-xl hover:scale-105 transition-transform"
+                              >
+                                 <div className="relative">
+                                    <Store className="w-6 h-6" />
+                                    {previewCartCount > 0 && (
+                                       <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full animate-bounce">
+                                          {previewCartCount}
+                                       </span>
+                                    )}
+                                 </div>
+                              </button>
                            </div>
                         </div>
                      </div>
@@ -487,15 +741,68 @@ export const StoreCreator: React.FC = () => {
             </div>
 
             {/* Legal Modal */}
+            {/* Legal Modal */}
             {showLegalModal && (
                <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                  <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-                     <h3 className="text-xl font-bold mb-4">One Last Step</h3>
-                     <p className="mb-6 text-gray-600">Please sign the Merchant Agreement to activate your store.</p>
-                     <button onClick={handleSign} disabled={isSigning} className="w-full bg-black text-white py-3 rounded-lg font-bold">
-                        {isSigning ? 'Signing...' : 'Sign & Launch'}
-                     </button>
-                     <button onClick={() => setShowLegalModal(false)} className="w-full mt-2 py-2 text-gray-500">Cancel</button>
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh]">
+                     <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                        <h3 className="text-xl font-bold text-gray-900">Merchant Agreement</h3>
+                        <button onClick={() => setShowLegalModal(false)} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
+                           <X className="h-6 w-6" />
+                        </button>
+                     </div>
+
+                     <div className="p-6 overflow-y-auto flex-grow bg-white text-gray-600 leading-relaxed text-sm">
+                        <div className="prose prose-sm max-w-none">
+                           <p className="font-bold mb-4">By creating a store on TriniBuild, you agree to the following terms:</p>
+
+                           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
+                              <h4 className="font-bold text-gray-800 mb-2">1. Vendor Responsibilities</h4>
+                              <p className="mb-2">You are responsible for product accuracy, delivery, safety, legality, refunds, and customer communication.</p>
+
+                              <h4 className="font-bold text-gray-800 mb-2 mt-4">2. Independent Business</h4>
+                              <p className="mb-2">You operate as an independent business entity. TriniBuild provides the platform but is not your employer or partner.</p>
+
+                              <h4 className="font-bold text-gray-800 mb-2 mt-4">3. Prohibited Items</h4>
+                              <p className="mb-2">Strictly prohibited: weapons, illegal drugs, counterfeit goods, or any items illegal under Trinidad & Tobago law.</p>
+
+                              <h4 className="font-bold text-gray-800 mb-2 mt-4">4. Fees & Payments</h4>
+                              <p className="mb-2">Platform fees may apply to transactions. Payouts are processed according to the standard schedule.</p>
+                           </div>
+
+                           <p className="text-xs text-center text-gray-400 mt-4">
+                              Official Document ID: vendor_agreement_v2.0.0<br />
+                              Effective Date: {new Date().toLocaleDateString()}
+                           </p>
+                        </div>
+                     </div>
+
+                     <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+                        <div className="flex items-start mb-4">
+                           <input type="checkbox" id="agree" className="mt-1 mr-3 h-4 w-4 rounded border-gray-300 text-trini-red focus:ring-trini-red" />
+                           <label htmlFor="agree" className="text-sm text-gray-600">
+                              I have read and agree to the <strong>Vendor Agreement</strong>, <strong>Terms of Service</strong>, and <strong>Privacy Policy</strong>.
+                           </label>
+                        </div>
+                        <div className="flex gap-4">
+                           <button onClick={() => setShowLegalModal(false)} className="flex-1 py-3 px-4 border border-gray-300 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">
+                              Cancel
+                           </button>
+                           <button onClick={handleSign} disabled={isSigning} className="flex-1 py-3 px-4 bg-black text-white rounded-xl font-bold shadow-lg hover:bg-gray-800 transition-all flex justify-center items-center">
+                              {isSigning ? (
+                                 <>
+                                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                                    Signing...
+                                 </>
+                              ) : (
+                                 <>
+                                    <FileSignature className="mr-2 h-5 w-5" />
+                                    Sign & Launch Store
+                                 </>
+                              )}
+                           </button>
+                        </div>
+                     </div>
                   </div>
                </div>
             )}

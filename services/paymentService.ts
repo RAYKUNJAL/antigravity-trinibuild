@@ -1,341 +1,201 @@
 import { supabase } from './supabaseClient';
 
-export type PaymentMethod = 'paypal' | 'cod' | 'wipay' | 'ttbank';
+// Payment Methods for Trinidad & Tobago
+export type PaymentMethod = 'cod' | 'cash' | 'wipay' | 'google_pay' | 'bank_transfer' | 'linx';
 
-export interface PaymentMethodConfig {
-    id: PaymentMethod;
-    name: string;
-    description: string;
-    available: boolean;
-    comingSoon: boolean;
-    icon: string;
-}
-
-export const PAYMENT_METHODS: PaymentMethodConfig[] = [
-    {
-        id: 'paypal',
-        name: 'PayPal',
-        description: 'Pay securely with PayPal',
-        available: true,
-        comingSoon: false,
-        icon: '💳',
-    },
-    {
-        id: 'cod',
-        name: 'Cash on Delivery',
-        description: 'Pay with cash when you receive your order',
-        available: true,
-        comingSoon: false,
-        icon: '💵',
-    },
-    {
-        id: 'wipay',
-        name: 'WiPay',
-        description: 'Trinidad & Tobago local payment gateway',
-        available: false,
-        comingSoon: true,
-        icon: '🇹🇹',
-    },
-    {
-        id: 'ttbank',
-        name: 'Trinidad Bank Transfer',
-        description: 'Direct bank transfer from local Trinidad banks',
-        available: false,
-        comingSoon: true,
-        icon: '🏦',
-    },
-];
-
-interface CreatePayPalOrderParams {
+export interface PaymentConfig {
+    method: PaymentMethod;
     amount: number;
-    currency?: string;
-    description: string;
+    currency: string;
     orderId: string;
-    returnUrl: string;
-    cancelUrl: string;
+    customerInfo: {
+        name: string;
+        email?: string;
+        phone: string;
+    };
 }
 
-interface CreateCODOrderParams {
-    amount: number;
-    currency?: string;
-    description: string;
-    orderId: string;
-    deliveryAddress: any;
-    customerPhone: string;
+export interface PaymentResponse {
+    success: boolean;
+    transactionId?: string;
+    redirectUrl?: string;
+    error?: string;
 }
 
-class PaymentService {
-    /**
-     * Get available payment methods
-     */
-    getAvailablePaymentMethods(): PaymentMethodConfig[] {
-        return PAYMENT_METHODS.filter(method => method.available);
-    }
-
-    /**
-     * Get all payment methods (including coming soon)
-     */
-    getAllPaymentMethods(): PaymentMethodConfig[] {
-        return PAYMENT_METHODS;
-    }
-
-    /**
-     * Create PayPal order
-     */
-    async createPayPalOrder(params: CreatePayPalOrderParams) {
+export const paymentService = {
+    // WiPay Integration (Trinidad's #1 Payment Gateway)
+    processWiPayPayment: async (config: PaymentConfig): Promise<PaymentResponse> => {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
+            // In production, this would call WiPay API
+            // For now, we'll simulate the flow
+            const isDev = import.meta.env.DEV;
 
-            // Call backend to create PayPal order
-            const response = await fetch('/api/paypal/create-order', {
+            if (isDev) {
+                // Mock response for development
+                return {
+                    success: true,
+                    transactionId: `WIPAY_MOCK_${Date.now()}`,
+                    redirectUrl: undefined
+                };
+            }
+
+            // Production WiPay API call would go here
+            const response = await fetch('https://tt.wipayfinancial.com/v1/gateway', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
+                    'Authorization': `Bearer ${import.meta.env.VITE_WIPAY_API_KEY}`
                 },
                 body: JSON.stringify({
-                    amount: params.amount,
-                    currency: params.currency || 'TTD',
-                    description: params.description,
-                    order_id: params.orderId,
-                    return_url: params.returnUrl,
-                    cancel_url: params.cancelUrl,
-                }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to create PayPal order');
-            }
-
-            const data = await response.json();
-
-            // Record payment intent in database
-            await this.recordPayment({
-                payment_intent_id: data.paypalOrderId,
-                user_id: session.user.id,
-                order_id: params.orderId,
-                amount: params.amount,
-                currency: params.currency || 'TTD',
-                status: 'pending',
-                payment_method: 'paypal',
-                metadata: { paypalOrderId: data.paypalOrderId },
-            });
-
-            return {
-                paypalOrderId: data.paypalOrderId,
-                approvalUrl: data.approvalUrl,
-            };
-        } catch (error: any) {
-            console.error('PayPal order creation error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Capture PayPal payment
-     */
-    async capturePayPalPayment(paypalOrderId: string) {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
-            const response = await fetch('/api/paypal/capture-order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
-                },
-                body: JSON.stringify({ paypalOrderId }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to capture PayPal payment');
-            }
-
-            const data = await response.json();
-
-            // Update payment status
-            await supabase
-                .from('payments')
-                .update({ status: 'succeeded' })
-                .eq('payment_intent_id', paypalOrderId);
-
-            return data;
-        } catch (error: any) {
-            console.error('PayPal capture error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Create Cash on Delivery order
-     */
-    async createCODOrder(params: CreateCODOrderParams) {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User must be authenticated');
-
-            // Generate COD reference number
-            const codReference = `COD-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
-            // Record payment in database
-            const payment = await this.recordPayment({
-                payment_intent_id: codReference,
-                user_id: session.user.id,
-                order_id: params.orderId,
-                amount: params.amount,
-                currency: params.currency || 'TTD',
-                status: 'pending',
-                payment_method: 'cod',
-                metadata: {
-                    deliveryAddress: params.deliveryAddress,
-                    customerPhone: params.customerPhone,
-                    codReference,
-                },
-            });
-
-            return {
-                codReference,
-                payment,
-                message: 'Order placed successfully. Pay with cash on delivery.',
-            };
-        } catch (error: any) {
-            console.error('COD order creation error:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Confirm COD payment (called by driver/delivery person)
-     */
-    async confirmCODPayment(codReference: string, confirmedBy: string) {
-        try {
-            const { data, error } = await supabase
-                .from('payments')
-                .update({
-                    status: 'succeeded',
-                    metadata: supabase.rpc('jsonb_set', {
-                        target: 'metadata',
-                        path: '{confirmedBy,confirmedAt}',
-                        new_value: JSON.stringify({
-                            confirmedBy,
-                            confirmedAt: new Date().toISOString(),
-                        }),
-                    }),
+                    account_number: import.meta.env.VITE_WIPAY_MERCHANT_ID,
+                    amount: config.amount,
+                    currency: config.currency,
+                    order_id: config.orderId,
+                    return_url: `${window.location.origin}/payment/success`,
+                    customer_name: config.customerInfo.name,
+                    customer_email: config.customerInfo.email,
+                    customer_phone: config.customerInfo.phone
                 })
-                .eq('payment_intent_id', codReference)
-                .select()
-                .single();
+            });
 
-            if (error) throw error;
-            return data;
-        } catch (error: any) {
-            console.error('COD confirmation error:', error);
-            throw error;
+            const data = await response.json();
+
+            return {
+                success: data.status === 'success',
+                transactionId: data.transaction_id,
+                redirectUrl: data.redirect_url
+            };
+        } catch (error) {
+            console.error('WiPay payment error:', error);
+            return {
+                success: false,
+                error: 'Payment processing failed. Please try again.'
+            };
         }
-    }
+    },
 
-    /**
-     * WiPay integration (Coming Soon)
-     */
-    async createWiPayOrder(params: any) {
-        throw new Error('WiPay integration coming soon! Stay tuned for Trinidad & Tobago local payment support.');
-    }
-
-    /**
-     * Trinidad Bank Transfer (Coming Soon)
-     */
-    async createBankTransferOrder(params: any) {
-        throw new Error('Trinidad Bank Transfer coming soon! We\'re working on integrating local banks for seamless payments.');
-    }
-
-    /**
-     * Record payment in database
-     */
-    private async recordPayment(paymentData: {
-        payment_intent_id: string;
-        user_id: string;
-        order_id?: string;
-        amount: number;
-        currency: string;
-        status: string;
-        payment_method: string;
-        metadata?: any;
-    }) {
+    // Google Pay Integration
+    processGooglePayPayment: async (config: PaymentConfig, paymentData: any): Promise<PaymentResponse> => {
         try {
-            const { data, error } = await supabase
-                .from('payments')
-                .insert([paymentData])
-                .select()
-                .single();
+            // Google Pay token processing
+            const response = await fetch('/api/process-google-pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paymentData,
+                    amount: config.amount,
+                    orderId: config.orderId
+                })
+            });
 
-            if (error) throw error;
-            return data;
-        } catch (error: any) {
-            console.error('Payment recording error:', error);
-            throw error;
+            const result = await response.json();
+
+            return {
+                success: result.success,
+                transactionId: result.transactionId
+            };
+        } catch (error) {
+            console.error('Google Pay error:', error);
+            return {
+                success: false,
+                error: 'Google Pay processing failed.'
+            };
         }
-    }
+    },
 
-    /**
-     * Get payment by ID
-     */
-    async getPayment(paymentIntentId: string) {
+    // Cash on Delivery / Cash Payment
+    processCashPayment: async (config: PaymentConfig): Promise<PaymentResponse> => {
+        // Record COD order in database
+        const { data, error } = await supabase
+            .from('payment_transactions')
+            .insert({
+                order_id: config.orderId,
+                method: config.method,
+                amount: config.amount,
+                currency: config.currency,
+                status: 'pending',
+                customer_name: config.customerInfo.name,
+                customer_phone: config.customerInfo.phone
+            })
+            .select()
+            .single();
+
+        if (error) {
+            return {
+                success: false,
+                error: 'Failed to record cash payment.'
+            };
+        }
+
+        return {
+            success: true,
+            transactionId: data.id
+        };
+    },
+
+    // Bank Transfer (Republic Bank, Scotiabank, First Citizens, etc.)
+    processBankTransfer: async (config: PaymentConfig, bankDetails: {
+        bank: string;
+        accountNumber: string;
+        accountName: string;
+    }): Promise<PaymentResponse> => {
+        // Generate payment instructions
+        const { data, error } = await supabase
+            .from('payment_transactions')
+            .insert({
+                order_id: config.orderId,
+                method: 'bank_transfer',
+                amount: config.amount,
+                currency: config.currency,
+                status: 'awaiting_confirmation',
+                customer_name: config.customerInfo.name,
+                customer_phone: config.customerInfo.phone,
+                bank_details: bankDetails
+            })
+            .select()
+            .single();
+
+        if (error) {
+            return {
+                success: false,
+                error: 'Failed to initiate bank transfer.'
+            };
+        }
+
+        return {
+            success: true,
+            transactionId: data.id
+        };
+    },
+
+    // Linx (Trinidad's Debit Card Network)
+    processLinxPayment: async (config: PaymentConfig): Promise<PaymentResponse> => {
         try {
-            const { data, error } = await supabase
-                .from('payments')
-                .select('*')
-                .eq('payment_intent_id', paymentIntentId)
-                .single();
-
-            if (error) throw error;
-            return data;
-        } catch (error: any) {
-            console.error('Get payment error:', error);
-            throw error;
+            // Linx integration would go through WiPay or direct POS terminal
+            return await paymentService.processWiPayPayment(config);
+        } catch (error) {
+            return {
+                success: false,
+                error: 'Linx payment failed.'
+            };
         }
-    }
+    },
 
-    /**
-     * Get payment history for a user
-     */
-    async getPaymentHistory(userId: string) {
-        try {
-            const { data, error } = await supabase
-                .from('payments')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
+    // Verify payment status
+    verifyPayment: async (transactionId: string): Promise<{ verified: boolean; status: string }> => {
+        const { data, error } = await supabase
+            .from('payment_transactions')
+            .select('*')
+            .eq('id', transactionId)
+            .single();
 
-            if (error) throw error;
-            return data || [];
-        } catch (error: any) {
-            console.error('Payment history error:', error);
-            throw error;
+        if (error || !data) {
+            return { verified: false, status: 'unknown' };
         }
+
+        return {
+            verified: data.status === 'completed',
+            status: data.status
+        };
     }
-
-    /**
-     * Update payment status
-     */
-    async updatePaymentStatus(paymentIntentId: string, status: string) {
-        try {
-            const { data, error } = await supabase
-                .from('payments')
-                .update({ status })
-                .eq('payment_intent_id', paymentIntentId)
-                .select()
-                .single();
-
-            if (error) throw error;
-            return data;
-        } catch (error: any) {
-            console.error('Update payment status error:', error);
-            throw error;
-        }
-    }
-}
-
-export const paymentService = new PaymentService();
+};

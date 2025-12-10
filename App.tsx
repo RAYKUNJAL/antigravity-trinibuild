@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { WelcomeScreen } from './components/WelcomeScreen';
 import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -96,6 +97,7 @@ const App: React.FC = () => {
           <Routes>
             {/* Home Page has its own layout (hero goes under navbar) */}
             <Route path="/" element={<Home />} />
+            <Route path="/welcome" element={<WelcomeScreen />} />
 
             {/* Pages with padding */}
             <Route element={<PageLayout />}>

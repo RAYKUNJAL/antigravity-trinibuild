@@ -44,8 +44,13 @@ interface ScheduledTask {
 // COMPONENT
 // ============================================
 
+import { supabase } from '../../services/supabaseClient';
+
 export const ContentAICenter: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'tools' | 'scheduled' | 'history'>('tools');
+    const [scheduledTasks, setScheduledTasks] = useState<ScheduledTask[]>([]);
+    const [stats, setStats] = useState({ totalGenerated: 0, activeTasks: 0, successRate: 100, creditsUsed: 0 });
+    const [loading, setLoading] = useState(true);
 
     const aiTools: AITool[] = [
         { id: 'blog_writer', name: 'AI Blog Writer', description: 'Generate SEO-optimized blog posts for any topic or location', icon: <BookOpen className="h-6 w-6" />, status: 'ready' },
@@ -58,13 +63,74 @@ export const ContentAICenter: React.FC = () => {
         { id: 'image_prompt', name: 'Image Prompt Creator', description: 'Generate prompts for AI image generation', icon: <Image className="h-6 w-6" />, status: 'ready' },
     ];
 
-    const scheduledTasks: ScheduledTask[] = [
-        { id: '1', name: 'Daily Blog Posts', schedule: 'Every day at 6:00 AM', lastRun: '2024-12-05 06:00', nextRun: '2024-12-06 06:00', status: 'active', successRate: 98 },
-        { id: '2', name: 'Weekly Topic Clusters', schedule: 'Every Monday at 8:00 AM', lastRun: '2024-12-02 08:00', nextRun: '2024-12-09 08:00', status: 'active', successRate: 100 },
-        { id: '3', name: 'Hourly Keyword Updates', schedule: 'Every hour', lastRun: '2024-12-05 21:00', nextRun: '2024-12-05 22:00', status: 'active', successRate: 95 },
-        { id: '4', name: 'Auto Link Insertion', schedule: 'Every 4 hours', lastRun: '2024-12-05 20:00', nextRun: '2024-12-06 00:00', status: 'paused', successRate: 87 },
-        { id: '5', name: 'Content Audit & Fix', schedule: 'Every Sunday at 2:00 AM', lastRun: '2024-12-01 02:00', nextRun: '2024-12-08 02:00', status: 'active', successRate: 92 },
-    ];
+    React.useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const { data: logs } = await supabase
+                .from('automation_logs')
+                .select('*')
+                .order('executed_at', { ascending: false });
+
+            // Derive tasks from logs
+            const taskMap = new Map<string, ScheduledTask>();
+            // Define known system tasks
+            const knownTasks = [
+                { id: 'auto_sys_1', name: 'Daily Blog Post', schedule: 'Daily 6:00 AM' },
+                { id: 'auto_sys_2', name: 'Keyword Update', schedule: 'Hourly' },
+                { id: 'auto_sys_3', name: 'Ad Optimizer', schedule: 'Daily 12:00 PM' }
+            ];
+
+            // Initialize with known tasks
+            knownTasks.forEach(kt => {
+                taskMap.set(kt.name, {
+                    id: kt.id,
+                    name: kt.name,
+                    schedule: kt.schedule,
+                    lastRun: 'Never',
+                    nextRun: 'Pending',
+                    status: 'active',
+                    successRate: 100
+                });
+            });
+
+            let successCount = 0;
+            let totalRuns = 0;
+
+            logs?.forEach(log => {
+                totalRuns++;
+                if (log.status === 'success') successCount++;
+
+                const existing = taskMap.get(log.automation_name);
+                if (existing) {
+                    // Update last run if newer
+                    if (existing.lastRun === 'Never' || new Date(log.executed_at) > new Date(existing.lastRun)) {
+                        existing.lastRun = new Date(log.executed_at).toLocaleString();
+                        existing.status = log.status === 'success' ? 'active' : 'error';
+                        // Simple next run calc
+                        existing.nextRun = 'Scheduled';
+                    }
+                }
+            });
+
+            setScheduledTasks(Array.from(taskMap.values()));
+            setStats({
+                totalGenerated: totalRuns,
+                activeTasks: logs?.length ? new Set(logs.map(l => l.automation_name)).size : 3,
+                successRate: totalRuns > 0 ? Math.round((successCount / totalRuns) * 100) : 100,
+                creditsUsed: totalRuns * 50 // Approx cost
+            });
+
+        } catch (error) {
+            console.error('Error fetching AI stats:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <div className="space-y-6">
@@ -85,10 +151,10 @@ export const ContentAICenter: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard label="Posts Generated Today" value="12" color="purple" />
-                <StatCard label="Scheduled Tasks" value={scheduledTasks.filter(t => t.status === 'active').length.toString()} color="blue" />
-                <StatCard label="Success Rate" value="96%" color="green" />
-                <StatCard label="AI Credits Used" value="2,450" color="orange" />
+                <StatCard label="Lifetime Executions" value={stats.totalGenerated.toString()} color="purple" />
+                <StatCard label="Active Tasks" value={stats.activeTasks.toString()} color="blue" />
+                <StatCard label="Success Rate" value={`${stats.successRate}%`} color="green" />
+                <StatCard label="Est. Credits" value={stats.creditsUsed.toLocaleString()} color="orange" />
             </div>
 
             {/* Tabs */}
@@ -98,8 +164,8 @@ export const ContentAICenter: React.FC = () => {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`pb-3 px-1 border-b-2 transition-colors ${activeTab === tab
-                                ? 'border-purple-500 text-purple-500'
-                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                            ? 'border-purple-500 text-purple-500'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         {tab === 'tools' ? 'AI Tools' : tab === 'scheduled' ? 'Scheduled Automation' : 'History'}
