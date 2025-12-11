@@ -99,7 +99,7 @@ export const Home: React.FC = () => {
 
                {/* Dual Path Selection - NEW */}
                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                  <Link to="/auth?mode=signup&type=business" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center group">
+                  <Link to="/get-started" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center group">
                      <Briefcase className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                      I'm a Business - Start Selling
                      <ArrowRight className="ml-2 h-5 w-5" />
@@ -148,7 +148,7 @@ export const Home: React.FC = () => {
                   With TriniBuild, we put all the pieces together. Want to sell your goods? Open a marketplace store. Need to list your property? We got a real estate hub. Looking to offer rides or find a job? It’s all here, easy as doubles on a Saturday morning. One login, one platform, and all the tools that get you moving.
                </p>
                <div className="mt-8">
-                  <Link to="/auth?mode=signup" className="inline-flex items-center text-trini-red font-bold text-lg hover:underline">
+                  <Link to="/get-started" className="inline-flex items-center text-trini-red font-bold text-lg hover:underline">
                      Join the Movement <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                </div>
@@ -275,7 +275,7 @@ export const Home: React.FC = () => {
                      <p className="text-xl text-gray-600 mb-10 leading-relaxed">
                         Look, we know how it goes in T&T. Banking’s a hassle. Getting a website feels like a big-company thing. And sometimes it feels like nobody building nothing for we. Well, that’s why we built this. On TriniBuild, you don’t need a credit card to get started. Get a free website and list your first 10 items on us. We set you up as your own boss and give you the tools to prove your income, handle your business, and do it all ‘for we, by we.’
                      </p>
-                     <Link to="/auth?mode=signup" className="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg shadow-lg hover:bg-gray-800 transition-all hover:scale-105">
+                     <Link to="/get-started" className="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg shadow-lg hover:bg-gray-800 transition-all hover:scale-105">
                         Build My Free Page Now <ArrowRight className="ml-2 h-5 w-5" />
                      </Link>
                   </div>
@@ -356,7 +356,7 @@ export const Home: React.FC = () => {
                   This isn’t some foreign platform trying to fit into we island life. This is homegrown, just like a good pelau. We know the vibes. We know the challenges. And we built TriniBuild so that every vendor, every creative, every hustler in T&T can have their own space. This is ‘For We, By We.’
                </p>
                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/auth?mode=signup" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                  <Link to="/get-started" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center">
                      Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                </div>

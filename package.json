@@ -16,6 +16,7 @@
     "cypress:run": "cypress run"
   },
   "dependencies": {
+    "@google-pay/button-react": "^3.2.1",
     "@google/genai": "^1.30.0",
     "@paypal/react-paypal-js": "^8.9.2",
     "@sentry/react": "^8.0.0",

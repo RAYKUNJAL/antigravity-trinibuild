@@ -68,27 +68,27 @@ export const SmartOnboarding: React.FC = () => {
             seller: [
                 {
                     id: 'business-info',
-                    title: 'Tell We About Your Business',
-                    aiPrompt: 'What kind of business you have? (e.g., roti shop, clothing store, bakery)',
+                    title: 'Let\'s Build Your Dream Store',
+                    aiPrompt: 'What kind of business you starting? (e.g., clothing store, roti shop, minimart)',
                     fields: ['businessName', 'businessType', 'description']
                 },
                 {
                     id: 'contact',
-                    title: 'How Customers Can Reach You',
-                    aiPrompt: 'Your contact details for customers',
+                    title: 'Where Customers Can Find You',
+                    aiPrompt: 'Your business contact details',
                     fields: ['phone', 'whatsapp', 'email', 'location']
                 },
                 {
                     id: 'products',
-                    title: 'What You Selling',
-                    aiPrompt: 'Tell we about your products or services',
+                    title: 'Stock Up Your Shelves',
+                    aiPrompt: 'Tell we what you selling so we can help you list it fast.',
                     fields: ['productCount', 'priceRange', 'hasInventory'],
                     optional: true
                 },
                 {
                     id: 'delivery',
-                    title: 'Delivery Options',
-                    aiPrompt: 'How you want to deliver to customers?',
+                    title: 'How You Getting It to Them?',
+                    aiPrompt: 'Set up your delivery options (TriniBuild Go, Own Driver, or Pickup)',
                     fields: ['deliveryMethod', 'deliveryZones'],
                     optional: true
                 }
@@ -96,46 +96,46 @@ export const SmartOnboarding: React.FC = () => {
             driver: [
                 {
                     id: 'personal-info',
-                    title: 'Your Information',
-                    aiPrompt: 'Tell we about yourself',
+                    title: 'Get Ready to Drive',
+                    aiPrompt: 'Basic info to get you on the road and making money.',
                     fields: ['fullName', 'phone', 'email', 'address']
                 },
                 {
                     id: 'vehicle',
-                    title: 'Your Vehicle',
-                    aiPrompt: 'What you driving?',
+                    title: 'What You Using to Deliver?',
+                    aiPrompt: 'Details about your vehicle for verification.',
                     fields: ['vehicleType', 'vehicleMake', 'vehicleYear', 'licensePlate']
                 },
                 {
                     id: 'availability',
-                    title: 'When You Available',
-                    aiPrompt: 'What hours you can work?',
+                    title: 'When You Want to Work?',
+                    aiPrompt: 'Set your own schedule. Work when you want.',
                     fields: ['workingHours', 'workingDays', 'serviceArea']
                 },
                 {
                     id: 'documents',
-                    title: 'Required Documents',
-                    aiPrompt: 'Upload your documents',
+                    title: 'Quick Verification Documents',
+                    aiPrompt: 'Upload your license and insurance to get approved fast.',
                     fields: ['driversLicense', 'vehicleInsurance', 'vehicleRegistration']
                 }
             ],
             customer: [
                 {
                     id: 'profile',
-                    title: 'Create Your Account',
-                    aiPrompt: 'Your basic information',
+                    title: 'Create Your Free Account',
+                    aiPrompt: 'Just your name and contact so we can deliver to you.',
                     fields: ['fullName', 'email', 'phone']
                 },
                 {
                     id: 'delivery-address',
-                    title: 'Where We Delivering',
-                    aiPrompt: 'Your delivery address',
+                    title: 'Where We Dropping Off?',
+                    aiPrompt: 'Your main delivery address (Home or Work).',
                     fields: ['address', 'area', 'landmark']
                 },
                 {
                     id: 'preferences',
-                    title: 'Your Preferences',
-                    aiPrompt: 'What you like to shop for?',
+                    title: 'What You Looking For?',
+                    aiPrompt: 'Tell we your interests so we can show you the best deals.',
                     fields: ['interests', 'favoriteStores'],
                     optional: true
                 }
@@ -143,20 +143,20 @@ export const SmartOnboarding: React.FC = () => {
             promoter: [
                 {
                     id: 'promoter-info',
-                    title: 'Your Information',
-                    aiPrompt: 'Tell we about yourself',
+                    title: 'Start Promoting Events',
+                    aiPrompt: 'Your promoter profile details.',
                     fields: ['fullName', 'phone', 'email', 'company']
                 },
                 {
                     id: 'event-details',
-                    title: 'Your Events',
-                    aiPrompt: 'What kind of events you promoting?',
+                    title: 'What Events You Hosting?',
+                    aiPrompt: 'Tell we about your upcoming fetes or events.',
                     fields: ['eventTypes', 'averageAttendance', 'frequency']
                 },
                 {
                     id: 'payment-info',
-                    title: 'Payment Setup',
-                    aiPrompt: 'How you want to get paid?',
+                    title: 'Get Paid Fast',
+                    aiPrompt: 'Where should we send your ticket sales revenue?',
                     fields: ['bankName', 'accountNumber', 'accountName']
                 }
             ]
@@ -382,7 +382,7 @@ export const SmartOnboarding: React.FC = () => {
                                     <div className="text-sm text-gray-600">Average Rating</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-3xl font-bold text-gray-900 mb-1">< 2min</div>
+                                    <div className="text-3xl font-bold text-gray-900 mb-1">&lt; 2min</div>
                                     <div className="text-sm text-gray-600">Setup Time</div>
                                 </div>
                             </div>
@@ -569,8 +569,8 @@ const SmartField: React.FC<{
                                 key={idx}
                                 onClick={() => onChange(optionValue)}
                                 className={`w-full p-4 border-2 rounded-xl text-left transition-all ${value === optionValue
-                                        ? 'border-trini-red bg-red-50'
-                                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                                    ? 'border-trini-red bg-red-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
                                     }`}
                             >
                                 <div className="flex items-center">
