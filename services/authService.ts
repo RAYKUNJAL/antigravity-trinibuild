@@ -175,33 +175,64 @@ export const authService = {
     },
 
     // Update Subscription Tier
-    updateSubscription: async (tier: string): Promise<boolean> => {
+    updateSubscription: async (planName: string): Promise<boolean> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
 
-        // Upsert profile to ensure it exists
-        const { error } = await supabase
-            .from('profiles')
-            .upsert({
-                id: user.id,
-                subscription_tier: tier,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'id' });
+        // Map display names to plan IDs
+        const planMap: Record<string, string> = {
+            'The Hustle': 'hustle',
+            'The Storefront': 'storefront',
+            'The Growth': 'growth',
+            'The Empire': 'empire',
+            'Community Plan': 'hustle', // Legacy fallback
+            'Growth': 'growth', // Legacy fallback
+            'Empire': 'empire' // Legacy fallback
+        };
 
-        if (error) {
-            console.error("Failed to update subscription:", error);
+        const planId = planMap[planName] || 'hustle';
+
+        try {
+            // 1. Get the user's store
+            const { data: store, error: storeError } = await supabase
+                .from('stores')
+                .select('id')
+                .eq('owner_id', user.id)
+                .single();
+
+            if (storeError || !store) {
+                console.error("Store not found for user:", storeError);
+                return false;
+            }
+
+            // 2. Update the subscription
+            const { error: subError } = await supabase
+                .from('store_subscriptions')
+                .upsert({
+                    store_id: store.id,
+                    plan_id: planId,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'store_id' });
+
+            if (subError) {
+                console.error("Failed to update subscription:", subError);
+                return false;
+            }
+
+            // 3. Update local user state for immediate UI feedback
+            const localUser = localStorage.getItem('user');
+            if (localUser) {
+                const parsed = JSON.parse(localUser);
+                parsed.subscription_tier = planName;
+                localStorage.setItem('user', JSON.stringify(parsed));
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error("Error in updateSubscription:", error);
             return false;
         }
-
-        // Update local storage user
-        const localUser = localStorage.getItem('user');
-        if (localUser) {
-            const parsed = JSON.parse(localUser);
-            parsed.subscription_tier = tier;
-            localStorage.setItem('user', JSON.stringify(parsed));
-        }
-
-        return true;
     },
 
     // Check if user is authenticated

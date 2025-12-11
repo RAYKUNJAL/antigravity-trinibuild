@@ -117,7 +117,9 @@ export const storeService = {
                 location: storeData.location,
                 whatsapp: storeData.whatsapp,
                 category: storeData.category || 'General',
-                status: 'active' // Default to active for MVP
+                status: 'active', // Default to active for MVP
+                logo_url: storeData.logo_url,
+                theme_config: storeData.theme_config
             })
             .select()
             .single();

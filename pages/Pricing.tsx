@@ -8,8 +8,8 @@ export const Pricing: React.FC = () => {
   const [processing, setProcessing] = React.useState<string | null>(null);
 
   const handleSelectPlan = async (planName: string) => {
-    if (planName === 'Community Plan') {
-      await authService.updateSubscription('Community Plan');
+    if (planName === 'The Hustle') {
+      await authService.updateSubscription('The Hustle');
       localStorage.removeItem('trinibuild_subscription');
       navigate('/create-store');
     } else {
@@ -33,53 +33,72 @@ export const Pricing: React.FC = () => {
 
   const tiers = [
     {
-      name: 'Community Plan',
+      name: 'The Hustle',
       price: '0',
-      desc: 'Your right to be online. No credit card needed.',
-      fee: '8%',
+      desc: 'Start Tonight. Risk Free.',
+      fee: '5%',
       features: [
-        '10 Product Listings',
-        'Basic Directory Profile',
-        'Accept COD Orders',
-        'Subdomain Website',
-        'Photo Receipts',
-        'Community Support'
+        '1 TriniBuild Storefront',
+        '15 Listings',
+        'TriniBuild Go Delivery Access',
+        'Basic SEO & Analytics',
+        'In-app Messaging',
+        'Auto Income Dashboard'
       ],
-      cta: 'Claim Free Account',
+      cta: 'Start Free',
+      popular: false,
       color: 'border-gray-200 border-t-4 border-t-gray-400'
     },
     {
-      name: 'Growth',
-      price: '99',
-      desc: 'For vendors ready to scale up.',
-      fee: '6%',
+      name: 'The Storefront',
+      price: '100',
+      desc: 'Your Brand. Your Rules.',
+      fee: '0%',
       features: [
-        '50 Product Listings',
-        'Verified Business Badge',
-        'Loyalty Rewards System',
-        'AI Sales Insights',
-        'Official Documents (Job Letters)',
-        'WhatsApp Integration'
+        '50 Listings',
+        'Custom Domain (.com)',
+        'No TriniBuild Branding',
+        'Full Theme Customization',
+        'Abandoned Cart Emails',
+        'Email Capture Popups'
       ],
-      cta: 'Start Scaling',
+      cta: 'Go Professional',
       popular: true,
-      color: 'border-trini-red ring-2 ring-trini-red ring-opacity-50'
+      color: 'border-blue-500 border-t-4 border-t-blue-500 ring-1 ring-blue-500 ring-opacity-50'
     },
     {
-      name: 'Empire',
-      price: '299',
-      desc: 'Dominate your market category.',
-      fee: '0% (Cash Orders)',
+      name: 'The Growth',
+      price: '200',
+      desc: 'Business on Autopilot.',
+      fee: '0%',
       features: [
         'Unlimited Listings',
-        'Custom Domain Name',
-        'Bulk Product Upload',
-        'Priority Search Placement',
-        'Advanced Inventory',
-        'Official Documents & Invoices'
+        'WhatsApp Order Alerts',
+        'Advanced Analytics',
+        'Discount Codes & Coupons',
+        'AI SEO Optimizer',
+        'Social Media Automation'
       ],
-      cta: 'Build Empire',
-      color: 'border-gray-200 border-t-4 border-t-purple-600'
+      cta: 'Scale Up',
+      popular: false,
+      color: 'border-purple-500 border-t-4 border-t-purple-500'
+    },
+    {
+      name: 'The Empire',
+      price: '400',
+      desc: 'The VIP Treatment.',
+      fee: '0%',
+      features: [
+        'Unlimited Everything',
+        'Staff Accounts',
+        'POS Mode (Physical Shop)',
+        'Priority Support',
+        'One-Time "We Build It" Service',
+        'Early Feature Access'
+      ],
+      cta: 'Contact Sales',
+      popular: false,
+      color: 'border-trini-gold border-t-4 border-t-trini-gold bg-gray-50'
     }
   ];
 
@@ -96,7 +115,7 @@ export const Pricing: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {tiers.map((tier) => (
             <div key={tier.name} className={`bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col border ${tier.color} relative transform hover:-translate-y-1 transition-transform`}>
               {tier.popular && (
