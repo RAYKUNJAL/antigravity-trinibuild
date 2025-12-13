@@ -73,6 +73,10 @@ export interface StoreSettings {
       expiresAt?: string;
     }[];
   };
+  inventory?: {
+    lowStockThreshold: number;
+    enableLowStockAlerts: boolean;
+  };
 }
 
 export interface StoreTheme {
