@@ -390,8 +390,10 @@ export const StoreCreator: React.FC = () => {
                         </div>
 
                         <div className="mb-6">
-                           <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Category *</label>
+                           <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide" htmlFor="business-category">Category *</label>
                            <select
+                              id="business-category"
+                              aria-label="Business Category"
                               className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red text-base"
                               value={formData.type}
                               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
