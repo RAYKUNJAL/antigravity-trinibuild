@@ -135,7 +135,7 @@ export const StoreBuilder: React.FC = () => {
             case 'design': return <DesignTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'marketing': return <MarketingTab store={store} />;
             case 'delivery': return <DeliveryTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
-            case 'payments': return <PaymentsTab store={store} />;
+            case 'payments': return <PaymentsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'settings': return <SettingsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             default: return <DashboardTab stats={stats} orders={orders} products={products} />;
         }
@@ -723,24 +723,62 @@ const MarketingTab: React.FC<{ store: StoreType }> = ({ store }) => (
 // DELIVERY TAB - FULL IMPLEMENTATION
 // ============================================
 const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<StoreType>) => void }> = ({ store, onUpdate }) => {
-    const [deliveryZones, setDeliveryZones] = useState([
+    // Initialize from store settings
+    const defaults = [
         { id: '1', name: 'Port of Spain & Environs', price: 25, estimatedTime: '30-45 min', enabled: true },
         { id: '2', name: 'North Trinidad', price: 40, estimatedTime: '45-60 min', enabled: true },
         { id: '3', name: 'Central Trinidad', price: 50, estimatedTime: '1-1.5 hrs', enabled: true },
         { id: '4', name: 'South Trinidad', price: 75, estimatedTime: '1.5-2 hrs', enabled: false },
         { id: '5', name: 'Tobago', price: 150, estimatedTime: '2-3 hrs', enabled: false },
-    ]);
-    const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(500);
-    const [pickupEnabled, setPickupEnabled] = useState(true);
-    const [pickupAddress, setPickupAddress] = useState('');
-    const [trinibuildGoEnabled, setTrinibuildGoEnabled] = useState(false);
+    ];
 
+    const [deliveryZones, setDeliveryZones] = useState(() => {
+        const savedZones = store.settings?.delivery?.zones;
+        if (!savedZones || savedZones.length === 0) return defaults;
+
+        // Merge defaults with saved to ensure we have all zones if new ones are added
+        return defaults.map(def => {
+            const saved = savedZones.find(z => z.id === def.id);
+            return saved ? { ...def, ...saved } : def;
+        });
+    });
+
+    const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(store.settings?.delivery?.freeDeliveryThreshold ?? 500);
+    const [pickupEnabled, setPickupEnabled] = useState(store.settings?.delivery?.pickup?.enabled ?? true);
+    const [pickupAddress, setPickupAddress] = useState(store.settings?.delivery?.pickup?.address || store.location || '');
+    const [trinibuildGoEnabled, setTrinibuildGoEnabled] = useState(store.settings?.delivery?.trinibuildGo ?? false);
+
+    // Save changes to store
+    const saveChanges = useCallback((
+        zones = deliveryZones,
+        thresh = freeDeliveryThreshold,
+        pickup = { enabled: pickupEnabled, address: pickupAddress },
+        go = trinibuildGoEnabled
+    ) => {
+        onUpdate({
+            settings: {
+                ...store.settings,
+                delivery: {
+                    zones,
+                    freeDeliveryThreshold: thresh,
+                    pickup,
+                    trinibuildGo: go
+                }
+            }
+        });
+    }, [deliveryZones, freeDeliveryThreshold, pickupEnabled, pickupAddress, trinibuildGoEnabled, store.settings, onUpdate]);
+
+    // Handle updates
     const toggleZone = (id: string) => {
-        setDeliveryZones(zones => zones.map(z => z.id === id ? { ...z, enabled: !z.enabled } : z));
+        const newZones = deliveryZones.map(z => z.id === id ? { ...z, enabled: !z.enabled } : z);
+        setDeliveryZones(newZones);
+        saveChanges(newZones);
     };
 
     const updateZonePrice = (id: string, price: number) => {
-        setDeliveryZones(zones => zones.map(z => z.id === id ? { ...z, price } : z));
+        const newZones = deliveryZones.map(z => z.id === id ? { ...z, price } : z);
+        setDeliveryZones(newZones);
+        saveChanges(newZones);
     };
 
     return (
@@ -761,7 +799,17 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                         </ul>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={trinibuildGoEnabled} onChange={() => setTrinibuildGoEnabled(!trinibuildGoEnabled)} className="sr-only peer" aria-label="Enable TriniBuild Go" />
+                        <input
+                            type="checkbox"
+                            checked={trinibuildGoEnabled}
+                            onChange={() => {
+                                const newVal = !trinibuildGoEnabled;
+                                setTrinibuildGoEnabled(newVal);
+                                saveChanges(deliveryZones, freeDeliveryThreshold, { enabled: pickupEnabled, address: pickupAddress }, newVal);
+                            }}
+                            className="sr-only peer"
+                            aria-label="Enable TriniBuild Go"
+                        />
                         <div className="w-14 h-7 bg-white/30 peer-checked:bg-white rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white peer-checked:after:bg-green-600 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-7"></div>
                     </label>
                 </div>
@@ -786,7 +834,11 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                         <input
                             type="number"
                             value={freeDeliveryThreshold}
-                            onChange={(e) => setFreeDeliveryThreshold(Number(e.target.value))}
+                            onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setFreeDeliveryThreshold(val);
+                                saveChanges(deliveryZones, val);
+                            }}
                             className="w-24 border border-gray-300 rounded-lg px-3 py-2 font-bold"
                             aria-label="Free delivery threshold"
                         />
@@ -842,7 +894,17 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                         <p className="text-sm text-gray-500">Let customers collect orders from your location</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={pickupEnabled} onChange={() => setPickupEnabled(!pickupEnabled)} className="sr-only peer" aria-label="Enable in-store pickup" />
+                        <input
+                            type="checkbox"
+                            checked={pickupEnabled}
+                            onChange={() => {
+                                const newVal = !pickupEnabled;
+                                setPickupEnabled(newVal);
+                                saveChanges(deliveryZones, freeDeliveryThreshold, { enabled: newVal, address: pickupAddress });
+                            }}
+                            className="sr-only peer"
+                            aria-label="Enable in-store pickup"
+                        />
                         <div className="w-11 h-6 bg-gray-200 peer-checked:bg-purple-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                 </div>
@@ -852,7 +914,12 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                         <input
                             type="text"
                             value={pickupAddress}
-                            onChange={(e) => setPickupAddress(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setPickupAddress(val);
+                                // Debounce or save on blur would be better, but immediate save for now
+                                saveChanges(deliveryZones, freeDeliveryThreshold, { enabled: pickupEnabled, address: val });
+                            }}
                             placeholder="e.g. 123 Main Street, Chaguanas"
                             className="w-full border border-gray-300 rounded-lg px-4 py-3"
                             aria-label="Pickup address"
@@ -867,29 +934,86 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
 // ============================================
 // PAYMENTS TAB - FULL IMPLEMENTATION
 // ============================================
-const PaymentsTab: React.FC<{ store: StoreType }> = ({ store }) => {
-    const [paymentMethods, setPaymentMethods] = useState([
-        { id: 'cod', name: 'Cash on Delivery', desc: 'Collect payment on delivery', enabled: true, icon: '💵', fee: '0%', popular: true },
-        { id: 'wipay', name: 'WiPay', desc: 'Credit/Debit/Linx', enabled: false, icon: '💳', fee: '3.5%', setup: true },
-        { id: 'bank', name: 'Bank Transfer', desc: 'Direct deposit to your account', enabled: true, icon: '🏦', fee: '0%', setup: true },
-        { id: 'paypal', name: 'PayPal', desc: 'International payments', enabled: false, icon: '🅿️', fee: '4.4%', setup: true },
-    ]);
-    const [wipayConfig, setWipayConfig] = useState({ merchantId: '', apiKey: '', sandbox: true });
-    const [paypalConfig, setPaypalConfig] = useState({ clientId: '', sandbox: true });
-    const [bankConfig, setBankConfig] = useState({ bankName: '', accountNumber: '', accountName: '' });
+const PaymentsTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<StoreType>) => void }> = ({ store, onUpdate }) => {
+    // Initialize state from store settings or defaults
+    const [paymentMethods, setPaymentMethods] = useState(() => {
+        const existingProviders = store.settings?.paymentProviders || [];
+        const defaults = [
+            { id: 'cod', name: 'Cash on Delivery', desc: 'Collect payment on delivery', icon: '💵', fee: '0%', popular: true },
+            { id: 'wipay', name: 'WiPay', desc: 'Credit/Debit/Linx', icon: '💳', fee: '3.5%', setup: true },
+            { id: 'bank', name: 'Bank Transfer', desc: 'Direct deposit to your account', icon: '🏦', fee: '0%', setup: true },
+            { id: 'paypal', name: 'PayPal', desc: 'International payments', icon: '🅿️', fee: '4.4%', setup: true },
+        ];
+
+        return defaults.map(def => {
+            const existing = existingProviders.find(p => p.id === def.id);
+            return {
+                ...def,
+                enabled: existing ? existing.enabled : (def.id === 'cod'), // Default COD to true if no settings
+            };
+        });
+    });
+
+    // Helper to get config from store settings
+    const getConfig = (providerId: string) => {
+        return store.settings?.paymentProviders?.find(p => p.id === providerId)?.config || {};
+    };
+
+    const [wipayConfig, setWipayConfig] = useState({
+        merchantId: getConfig('wipay').merchantId || '',
+        apiKey: getConfig('wipay').apiKey || '',
+        sandbox: getConfig('wipay').sandbox ?? true
+    });
+
+    const [paypalConfig, setPaypalConfig] = useState({
+        clientId: getConfig('paypal').clientId || '',
+        sandbox: getConfig('paypal').sandbox ?? true
+    });
+
+    const [bankConfig, setBankConfig] = useState({
+        bankName: getConfig('bank').bankName || '',
+        accountNumber: getConfig('bank').accountNumber || '',
+        accountName: getConfig('bank').accountName || ''
+    });
+
     const [showWipaySetup, setShowWipaySetup] = useState(false);
     const [showPaypalSetup, setShowPaypalSetup] = useState(false);
     const [showBankSetup, setShowBankSetup] = useState(false);
 
+    // Save payment provider settings to store
+    const saveProviderSettings = (id: string, enabled: boolean, config: any = {}) => {
+        const currentProviders = store.settings?.paymentProviders || [];
+        const otherProviders = currentProviders.filter(p => p.id !== id);
+
+        const newProviders = [
+            ...otherProviders,
+            { id, enabled, config }
+        ];
+
+        onUpdate({
+            settings: {
+                ...store.settings,
+                paymentProviders: newProviders
+            }
+        });
+
+        // Update local state UI
+        setPaymentMethods(methods => methods.map(m => m.id === id ? { ...m, enabled } : m));
+    };
+
     const toggleMethod = (id: string) => {
-        if (id === 'wipay' && !paymentMethods.find(m => m.id === 'wipay')?.enabled) {
-            setShowWipaySetup(true);
-        } else if (id === 'paypal' && !paymentMethods.find(m => m.id === 'paypal')?.enabled) {
-            setShowPaypalSetup(true);
-        } else if (id === 'bank' && !paymentMethods.find(m => m.id === 'bank')?.enabled) {
-            setShowBankSetup(true);
+        const method = paymentMethods.find(m => m.id === id);
+        if (!method) return;
+
+        if (!method.enabled) {
+            // Enabling
+            if (id === 'wipay') setShowWipaySetup(true);
+            else if (id === 'paypal') setShowPaypalSetup(true);
+            else if (id === 'bank') setShowBankSetup(true);
+            else saveProviderSettings(id, true); // COD enables immediately
         } else {
-            setPaymentMethods(methods => methods.map(m => m.id === id ? { ...m, enabled: !m.enabled } : m));
+            // Disabling
+            saveProviderSettings(id, false, getConfig(id));
         }
     };
 
@@ -984,7 +1108,7 @@ const PaymentsTab: React.FC<{ store: StoreType }> = ({ store }) => {
                             <button onClick={() => setShowWipaySetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
                             <button
                                 onClick={() => {
-                                    setPaymentMethods(m => m.map(pm => pm.id === 'wipay' ? { ...pm, enabled: true } : pm));
+                                    saveProviderSettings('wipay', true, wipayConfig);
                                     setShowWipaySetup(false);
                                 }}
                                 className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"
@@ -1025,7 +1149,7 @@ const PaymentsTab: React.FC<{ store: StoreType }> = ({ store }) => {
                             <button onClick={() => setShowPaypalSetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
                             <button
                                 onClick={() => {
-                                    setPaymentMethods(m => m.map(pm => pm.id === 'paypal' ? { ...pm, enabled: true } : pm));
+                                    saveProviderSettings('paypal', true, paypalConfig);
                                     setShowPaypalSetup(false);
                                 }}
                                 className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"
@@ -1079,7 +1203,7 @@ const PaymentsTab: React.FC<{ store: StoreType }> = ({ store }) => {
                             <button onClick={() => setShowBankSetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
                             <button
                                 onClick={() => {
-                                    setPaymentMethods(m => m.map(pm => pm.id === 'bank' ? { ...pm, enabled: true } : pm));
+                                    saveProviderSettings('bank', true, bankConfig);
                                     setShowBankSetup(false);
                                 }}
                                 className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"

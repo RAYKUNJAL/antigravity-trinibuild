@@ -52,6 +52,12 @@ export interface StoreSettings {
     enabled: boolean;
     config: Record<string, any>;
   }[];
+  delivery?: {
+    zones: { id: string; name: string; price: number; estimatedTime: string; enabled: boolean }[];
+    freeDeliveryThreshold: number;
+    pickup: { enabled: boolean; address: string };
+    trinibuildGo: boolean;
+  };
 }
 
 export interface StoreTheme {
