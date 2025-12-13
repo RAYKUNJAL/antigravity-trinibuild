@@ -134,8 +134,8 @@ export const StoreBuilder: React.FC = () => {
             case 'customers': return <CustomersTab orders={orders} />;
             case 'design': return <DesignTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'marketing': return <MarketingTab store={store} />;
-            case 'delivery': return <DeliveryTab />;
-            case 'payments': return <PaymentsTab />;
+            case 'delivery': return <DeliveryTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
+            case 'payments': return <PaymentsTab store={store} />;
             case 'settings': return <SettingsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             default: return <DashboardTab stats={stats} orders={orders} products={products} />;
         }
@@ -720,56 +720,390 @@ const MarketingTab: React.FC<{ store: StoreType }> = ({ store }) => (
 );
 
 // ============================================
-// DELIVERY TAB
+// DELIVERY TAB - FULL IMPLEMENTATION
 // ============================================
-const DeliveryTab = () => (
-    <div className="space-y-6">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-xl text-white">
-            <h3 className="text-xl font-bold mb-2">TriniBuild Go Integration</h3>
-            <p className="mb-4 opacity-90">Connect your store to our driver network for fast, reliable delivery</p>
-            <button className="bg-white text-blue-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100">Enable TriniBuild Go</button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center"><MapPin className="h-5 w-5 mr-2 text-red-600" />Delivery Zones</h4>
-                <p className="text-gray-600 text-sm mb-4">Set up delivery areas and pricing for your store</p>
-                <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">Configure Zones</button>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center"><Clock className="h-5 w-5 mr-2 text-purple-600" />Pickup Options</h4>
-                <p className="text-gray-600 text-sm mb-4">Allow customers to collect orders from your location</p>
-                <button className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">Add Pickup Location</button>
-            </div>
-        </div>
-    </div>
-);
+const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<StoreType>) => void }> = ({ store, onUpdate }) => {
+    const [deliveryZones, setDeliveryZones] = useState([
+        { id: '1', name: 'Port of Spain & Environs', price: 25, estimatedTime: '30-45 min', enabled: true },
+        { id: '2', name: 'North Trinidad', price: 40, estimatedTime: '45-60 min', enabled: true },
+        { id: '3', name: 'Central Trinidad', price: 50, estimatedTime: '1-1.5 hrs', enabled: true },
+        { id: '4', name: 'South Trinidad', price: 75, estimatedTime: '1.5-2 hrs', enabled: false },
+        { id: '5', name: 'Tobago', price: 150, estimatedTime: '2-3 hrs', enabled: false },
+    ]);
+    const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(500);
+    const [pickupEnabled, setPickupEnabled] = useState(true);
+    const [pickupAddress, setPickupAddress] = useState('');
+    const [trinibuildGoEnabled, setTrinibuildGoEnabled] = useState(false);
 
-// ============================================
-// PAYMENTS TAB
-// ============================================
-const PaymentsTab = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[
-            { name: 'Cash on Delivery', desc: 'Most popular in Trinidad', enabled: true, icon: '💵' },
-            { name: 'WiPay', desc: 'Credit/Debit/Linx', enabled: false, icon: '💳' },
-            { name: 'Bank Transfer', desc: 'Direct deposit', enabled: true, icon: '🏦' },
-            { name: 'Google Pay', desc: 'Fast mobile payments', enabled: false, icon: '📱' },
-            { name: 'PayPal', desc: 'International payments', enabled: false, icon: '🅿️' }
-        ].map(pm => (
-            <div key={pm.name} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="flex items-start justify-between mb-4">
-                    <span className="text-4xl">{pm.icon}</span>
+    const toggleZone = (id: string) => {
+        setDeliveryZones(zones => zones.map(z => z.id === id ? { ...z, enabled: !z.enabled } : z));
+    };
+
+    const updateZonePrice = (id: string, price: number) => {
+        setDeliveryZones(zones => zones.map(z => z.id === id ? { ...z, price } : z));
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* TriniBuild Go Integration */}
+            <div className={`p-6 rounded-xl ${trinibuildGoEnabled ? 'bg-gradient-to-r from-green-600 to-green-700' : 'bg-gradient-to-r from-blue-600 to-blue-700'} text-white`}>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h3 className="text-xl font-bold mb-2 flex items-center">
+                            <Truck className="h-6 w-6 mr-2" />
+                            TriniBuild Go Integration
+                        </h3>
+                        <p className="mb-4 opacity-90">Connect to our driver network for on-demand delivery across Trinidad & Tobago</p>
+                        <ul className="text-sm opacity-80 space-y-1 mb-4">
+                            <li>✓ Real-time driver tracking</li>
+                            <li>✓ Automatic dispatch</li>
+                            <li>✓ Customer notifications</li>
+                        </ul>
+                    </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked={pm.enabled} className="sr-only peer" aria-label={`Enable ${pm.name}`} />
-                        <div className="w-11 h-6 bg-gray-200 peer-checked:bg-green-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                        <input type="checkbox" checked={trinibuildGoEnabled} onChange={() => setTrinibuildGoEnabled(!trinibuildGoEnabled)} className="sr-only peer" aria-label="Enable TriniBuild Go" />
+                        <div className="w-14 h-7 bg-white/30 peer-checked:bg-white rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white peer-checked:after:bg-green-600 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-7"></div>
                     </label>
                 </div>
-                <h4 className="font-bold text-gray-900">{pm.name}</h4>
-                <p className="text-sm text-gray-500">{pm.desc}</p>
+                {trinibuildGoEnabled && (
+                    <div className="mt-4 p-4 bg-white/10 rounded-lg">
+                        <p className="text-sm font-bold">🟢 Connected to TriniBuild Go</p>
+                        <p className="text-xs opacity-80">Orders will be automatically dispatched to nearby drivers</p>
+                    </div>
+                )}
             </div>
-        ))}
-    </div>
-);
+
+            {/* Free Delivery Threshold */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 className="font-bold text-gray-900 mb-4 flex items-center">
+                    <Gift className="h-5 w-5 mr-2 text-green-600" />
+                    Free Delivery Promotion
+                </h4>
+                <div className="flex items-center gap-4">
+                    <label className="text-sm text-gray-600">Free delivery on orders over:</label>
+                    <div className="flex items-center">
+                        <span className="text-gray-500 mr-1">TT$</span>
+                        <input
+                            type="number"
+                            value={freeDeliveryThreshold}
+                            onChange={(e) => setFreeDeliveryThreshold(Number(e.target.value))}
+                            className="w-24 border border-gray-300 rounded-lg px-3 py-2 font-bold"
+                            aria-label="Free delivery threshold"
+                        />
+                    </div>
+                    <span className="text-xs text-gray-400">Set to 0 to disable</span>
+                </div>
+            </div>
+
+            {/* Delivery Zones */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 className="font-bold text-gray-900 mb-4 flex items-center">
+                    <MapPin className="h-5 w-5 mr-2 text-red-600" />
+                    Delivery Zones & Pricing
+                </h4>
+                <div className="space-y-3">
+                    {deliveryZones.map(zone => (
+                        <div key={zone.id} className={`flex items-center justify-between p-4 rounded-lg border ${zone.enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex items-center gap-4">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={zone.enabled} onChange={() => toggleZone(zone.id)} className="sr-only peer" aria-label={`Enable ${zone.name}`} />
+                                    <div className="w-10 h-5 bg-gray-300 peer-checked:bg-green-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+                                </label>
+                                <div>
+                                    <p className={`font-medium ${zone.enabled ? 'text-gray-900' : 'text-gray-500'}`}>{zone.name}</p>
+                                    <p className="text-xs text-gray-400">{zone.estimatedTime}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-500 text-sm">TT$</span>
+                                <input
+                                    type="number"
+                                    value={zone.price}
+                                    onChange={(e) => updateZonePrice(zone.id, Number(e.target.value))}
+                                    className="w-20 border border-gray-300 rounded px-2 py-1 text-right font-bold"
+                                    disabled={!zone.enabled}
+                                    aria-label={`${zone.name} delivery price`}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <button className="mt-4 text-blue-600 font-medium text-sm hover:underline">+ Add Custom Zone</button>
+            </div>
+
+            {/* Pickup Option */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex items-start justify-between mb-4">
+                    <div>
+                        <h4 className="font-bold text-gray-900 flex items-center">
+                            <Store className="h-5 w-5 mr-2 text-purple-600" />
+                            In-Store Pickup
+                        </h4>
+                        <p className="text-sm text-gray-500">Let customers collect orders from your location</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked={pickupEnabled} onChange={() => setPickupEnabled(!pickupEnabled)} className="sr-only peer" aria-label="Enable in-store pickup" />
+                        <div className="w-11 h-6 bg-gray-200 peer-checked:bg-purple-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                    </label>
+                </div>
+                {pickupEnabled && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Address</label>
+                        <input
+                            type="text"
+                            value={pickupAddress}
+                            onChange={(e) => setPickupAddress(e.target.value)}
+                            placeholder="e.g. 123 Main Street, Chaguanas"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-3"
+                            aria-label="Pickup address"
+                        />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// ============================================
+// PAYMENTS TAB - FULL IMPLEMENTATION
+// ============================================
+const PaymentsTab: React.FC<{ store: StoreType }> = ({ store }) => {
+    const [paymentMethods, setPaymentMethods] = useState([
+        { id: 'cod', name: 'Cash on Delivery', desc: 'Collect payment on delivery', enabled: true, icon: '💵', fee: '0%', popular: true },
+        { id: 'wipay', name: 'WiPay', desc: 'Credit/Debit/Linx', enabled: false, icon: '💳', fee: '3.5%', setup: true },
+        { id: 'bank', name: 'Bank Transfer', desc: 'Direct deposit to your account', enabled: true, icon: '🏦', fee: '0%', setup: true },
+        { id: 'paypal', name: 'PayPal', desc: 'International payments', enabled: false, icon: '🅿️', fee: '4.4%', setup: true },
+    ]);
+    const [wipayConfig, setWipayConfig] = useState({ merchantId: '', apiKey: '', sandbox: true });
+    const [paypalConfig, setPaypalConfig] = useState({ clientId: '', sandbox: true });
+    const [bankConfig, setBankConfig] = useState({ bankName: '', accountNumber: '', accountName: '' });
+    const [showWipaySetup, setShowWipaySetup] = useState(false);
+    const [showPaypalSetup, setShowPaypalSetup] = useState(false);
+    const [showBankSetup, setShowBankSetup] = useState(false);
+
+    const toggleMethod = (id: string) => {
+        if (id === 'wipay' && !paymentMethods.find(m => m.id === 'wipay')?.enabled) {
+            setShowWipaySetup(true);
+        } else if (id === 'paypal' && !paymentMethods.find(m => m.id === 'paypal')?.enabled) {
+            setShowPaypalSetup(true);
+        } else if (id === 'bank' && !paymentMethods.find(m => m.id === 'bank')?.enabled) {
+            setShowBankSetup(true);
+        } else {
+            setPaymentMethods(methods => methods.map(m => m.id === id ? { ...m, enabled: !m.enabled } : m));
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Payout Summary */}
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-xl text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-bold mb-1">Available for Payout</h3>
+                        <p className="text-4xl font-extrabold">TT$ 0.00</p>
+                        <p className="text-sm opacity-80 mt-1">Next payout: Connect a payment method</p>
+                    </div>
+                    <button className="bg-white text-green-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 disabled:opacity-50" disabled>
+                        Request Payout
+                    </button>
+                </div>
+            </div>
+
+            {/* Payment Methods Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {paymentMethods.map(pm => (
+                    <div key={pm.id} className={`bg-white p-6 rounded-lg shadow-sm border-2 transition-all ${pm.enabled ? 'border-green-500' : 'border-gray-200'}`}>
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-4xl">{pm.icon}</span>
+                                <div>
+                                    <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                                        {pm.name}
+                                        {pm.popular && <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">Popular</span>}
+                                    </h4>
+                                    <p className="text-sm text-gray-500">{pm.desc}</p>
+                                </div>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" checked={pm.enabled} onChange={() => toggleMethod(pm.id)} className="sr-only peer" aria-label={`Enable ${pm.name}`} />
+                                <div className="w-11 h-6 bg-gray-200 peer-checked:bg-green-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                            </label>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500">Transaction Fee: <span className="font-bold text-gray-900">{pm.fee}</span></span>
+                            {pm.setup && pm.enabled && (
+                                <button
+                                    onClick={() => {
+                                        if (pm.id === 'wipay') setShowWipaySetup(true);
+                                        if (pm.id === 'paypal') setShowPaypalSetup(true);
+                                        if (pm.id === 'bank') setShowBankSetup(true);
+                                    }}
+                                    className="text-blue-600 font-medium hover:underline"
+                                >
+                                    Configure
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* WiPay Setup Modal */}
+            {showWipaySetup && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold mb-4 flex items-center">💳 WiPay Setup</h3>
+                        <p className="text-sm text-gray-500 mb-4">Connect your WiPay merchant account to accept credit cards, debit cards, and Linx payments.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Merchant ID</label>
+                                <input
+                                    type="text"
+                                    value={wipayConfig.merchantId}
+                                    onChange={(e) => setWipayConfig({ ...wipayConfig, merchantId: e.target.value })}
+                                    placeholder="Your WiPay Merchant ID"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                                <input
+                                    type="password"
+                                    value={wipayConfig.apiKey}
+                                    onChange={(e) => setWipayConfig({ ...wipayConfig, apiKey: e.target.value })}
+                                    placeholder="Your WiPay API Key"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2">
+                                <input type="checkbox" checked={wipayConfig.sandbox} onChange={(e) => setWipayConfig({ ...wipayConfig, sandbox: e.target.checked })} />
+                                <span className="text-sm">Sandbox/Test Mode</span>
+                            </label>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setShowWipaySetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
+                            <button
+                                onClick={() => {
+                                    setPaymentMethods(m => m.map(pm => pm.id === 'wipay' ? { ...pm, enabled: true } : pm));
+                                    setShowWipaySetup(false);
+                                }}
+                                className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"
+                            >
+                                Save & Enable
+                            </button>
+                        </div>
+                        <a href="https://wipay.co.tt" target="_blank" rel="noopener noreferrer" className="block text-center text-sm text-blue-600 mt-4 hover:underline">
+                            Don't have a WiPay account? Sign up →
+                        </a>
+                    </div>
+                </div>
+            )}
+
+            {/* PayPal Setup Modal */}
+            {showPaypalSetup && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold mb-4">🅿️ PayPal Setup</h3>
+                        <p className="text-sm text-gray-500 mb-4">Accept international payments via PayPal.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+                                <input
+                                    type="text"
+                                    value={paypalConfig.clientId}
+                                    onChange={(e) => setPaypalConfig({ ...paypalConfig, clientId: e.target.value })}
+                                    placeholder="Your PayPal Client ID"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2">
+                                <input type="checkbox" checked={paypalConfig.sandbox} onChange={(e) => setPaypalConfig({ ...paypalConfig, sandbox: e.target.checked })} />
+                                <span className="text-sm">Sandbox/Test Mode</span>
+                            </label>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setShowPaypalSetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
+                            <button
+                                onClick={() => {
+                                    setPaymentMethods(m => m.map(pm => pm.id === 'paypal' ? { ...pm, enabled: true } : pm));
+                                    setShowPaypalSetup(false);
+                                }}
+                                className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"
+                            >
+                                Save & Enable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bank Transfer Setup Modal */}
+            {showBankSetup && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-md w-full p-6">
+                        <h3 className="text-xl font-bold mb-4">🏦 Bank Transfer Setup</h3>
+                        <p className="text-sm text-gray-500 mb-4">Your bank details will be shown to customers for direct transfers.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                                <input
+                                    type="text"
+                                    value={bankConfig.bankName}
+                                    onChange={(e) => setBankConfig({ ...bankConfig, bankName: e.target.value })}
+                                    placeholder="e.g. Republic Bank, First Citizens"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+                                <input
+                                    type="text"
+                                    value={bankConfig.accountName}
+                                    onChange={(e) => setBankConfig({ ...bankConfig, accountName: e.target.value })}
+                                    placeholder="Name on the account"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                                <input
+                                    type="text"
+                                    value={bankConfig.accountNumber}
+                                    onChange={(e) => setBankConfig({ ...bankConfig, accountNumber: e.target.value })}
+                                    placeholder="Your account number"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setShowBankSetup(false)} className="flex-1 border border-gray-300 rounded-lg py-2 font-medium">Cancel</button>
+                            <button
+                                onClick={() => {
+                                    setPaymentMethods(m => m.map(pm => pm.id === 'bank' ? { ...pm, enabled: true } : pm));
+                                    setShowBankSetup(false);
+                                }}
+                                className="flex-1 bg-blue-600 text-white rounded-lg py-2 font-bold"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Transaction Fee Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-bold text-yellow-800 mb-2">💡 Understanding Fees</h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• <strong>Cash on Delivery:</strong> No fees - you collect payment directly</li>
+                    <li>• <strong>WiPay:</strong> 3.5% per transaction (handled by WiPay)</li>
+                    <li>• <strong>PayPal:</strong> 4.4% + fixed fee for international cards</li>
+                    <li>• <strong>Bank Transfer:</strong> No platform fees, normal bank transfer fees may apply</li>
+                </ul>
+            </div>
+        </div>
+    );
+};
 
 // ============================================
 // SETTINGS TAB
