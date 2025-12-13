@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Wand2, Loader2, CheckCircle, MapPin, Store, ArrowRight, Zap, LayoutTemplate, ShieldCheck, Smartphone, Monitor, RefreshCw, Palette, CreditCard, Camera, Star, Lock, Award, TrendingUp, FileSignature, X, Clock, Shield, Brain } from 'lucide-react';
 import { generateStoreProfile } from '../services/geminiService';
 import { Business, Theme } from '../types';
