@@ -410,61 +410,89 @@ export const StoreCreator: React.FC = () => {
                               >
                                  <option value="" disabled>Select Business Category...</option>
 
-                                 {/* Food & Hospitality */}
+                                 {/* Food & Dining */}
                                  <optgroup label="Food & Dining">
-                                    <option value="Restaurant">Restaurant / Fine Dining</option>
                                     <option value="Street Food">Doubles / Street Food Vendor</option>
                                     <option value="Roti Shop">Roti Shop</option>
+                                    <option value="BBQ">BBQ / Jerk / Grill</option>
+                                    <option value="Restaurant">Restaurant / Fine Dining</option>
+                                    <option value="Fast Food">Fast Food / Gyros / Burgers</option>
+                                    <option value="Chinese">Chinese Restaurant</option>
                                     <option value="Bakery">Bakery & Pastries</option>
+                                    <option value="Cafe">Cafe / Juice Bar / Punch</option>
                                     <option value="Catering">Catering Service</option>
                                     <option value="Bar">Bar / Pub / Lounge</option>
+                                    <option value="Souse">Soup / Souse / Traditional</option>
                                  </optgroup>
 
-                                 {/* Retail */}
+                                 {/* Retail & Shopping */}
                                  <optgroup label="Retail & Shopping">
-                                    <option value="Fashion">Clothing & Fashion</option>
-                                    <option value="Electronics">Electronics & Computers</option>
-                                    <option value="Variety Store">Variety Store / Parlour</option>
-                                    <option value="Hardware">Hardware & Construction Supplies</option>
                                     <option value="Supermarket">Supermarket / Grocery</option>
+                                    <option value="Parlour">Parlour / Mini Mart / Variety Store</option>
+                                    <option value="Fashion">Clothing / Shoes / Fashion</option>
+                                    <option value="Electronics">Electronics / Phones / Computers</option>
+                                    <option value="Hardware">Hardware / Construction Supplies</option>
                                     <option value="Auto Parts">Auto Parts & Accessories</option>
                                     <option value="Furniture">Furniture & Home Decor</option>
+                                    <option value="Beauty Retail">Cosmetics / Beauty Supply</option>
+                                    <option value="Pharmacy">Pharmacy / Health</option>
+                                    <option value="Puja">Puja Store / Religious Items</option>
+                                    <option value="Agro Shop">Agro Shop / Farm Supplies</option>
+                                    <option value="Souvenir">Souvenirs / Local Crafts</option>
+                                    <option value="Bookstore">Bookstore / Stationery</option>
                                  </optgroup>
 
-                                 {/* Services */}
-                                 <optgroup label="Services">
-                                    <option value="Taxi">Taxi / Maxi Taxi / Transport</option>
-                                    <option value="Mechanic">Auto Mechanic / Repairs</option>
-                                    <option value="Construction">Construction & Contracting</option>
+                                 {/* Skilled Trades */}
+                                 <optgroup label="Skilled Trades">
+                                    <option value="Mechanic">Auto Mechanic / Straightening</option>
+                                    <option value="Electrician">Electrical Services</option>
                                     <option value="Plumbing">Plumbing Services</option>
-                                    <option value="Electrical">Electrical Services</option>
+                                    <option value="AC Tech">AC & Refrigeration</option>
+                                    <option value="Construction">Masonry / Construction / Builder</option>
+                                    <option value="Welding">Welding & Fabrication</option>
+                                    <option value="Woodworking">Joinery / Woodworking</option>
+                                    <option value="Landscaping">Landscaping / Lawn Service</option>
                                     <option value="Cleaning">Cleaning / Janitorial</option>
-                                    <option value="Landscaping">Landscaping & Gardening</option>
-                                    <option value="Beauty">Hair / Nails / Spam / Barber</option>
                                  </optgroup>
 
-                                 {/* Professional */}
+                                 {/* Personal Services */}
+                                 <optgroup label="Personal Services">
+                                    <option value="Taxi">Taxi / Maxi / Private Ride</option>
+                                    <option value="Beauty">Hair / Nails / Spa / Makeup</option>
+                                    <option value="Barber">Barber Shop</option>
+                                    <option value="Tailor">Tailor / Seamstress</option>
+                                    <option value="Fitness">Gym / Personal Trainer</option>
+                                    <option value="Tutor">Daycare / Tutoring / Lessons</option>
+                                 </optgroup>
+
+                                 {/* Professional Services */}
                                  <optgroup label="Professional Services">
-                                    <option value="Medical">Doctor / Medical / Pharmacy</option>
-                                    <option value="Legal">Legal Services</option>
+                                    <option value="Medical">Doctor / Medical / Optical</option>
+                                    <option value="Legal">Legal Services / JP</option>
                                     <option value="Real Estate">Real Estate Agent</option>
-                                    <option value="Consulting">Business Consulting</option>
+                                    <option value="Insurance">Insurance / Financial</option>
                                     <option value="Accounting">Accounting / Tax</option>
+                                    <option value="Tech Services">Graphic Design / Web / IT</option>
+                                    <option value="Consulting">Consulting</option>
                                  </optgroup>
 
-                                 {/* Entertainment */}
+                                 {/* Events & Entertainment */}
                                  <optgroup label="Events & Entertainment">
                                     <option value="Promoter">Event Promoter</option>
                                     <option value="DJ">DJ / Sound System</option>
-                                    <option value="Venue">Event Venue</option>
+                                    <option value="Event Planning">Event Planner / Decor</option>
+                                    <option value="Photography">Photography / Videography</option>
+                                    <option value="Venue">Event Venue / Rental</option>
                                     <option value="Carnival">Carnival Band / Mas</option>
                                  </optgroup>
 
-                                 {/* Agriculture */}
-                                 <optgroup label="Agriculture">
-                                    <option value="Farming">Farming / Agriculture</option>
+                                 {/* Agriculture & Production */}
+                                 <optgroup label="Agriculture & Production">
+                                    <option value="Farming">Farmer (Crops)</option>
+                                    <option value="Livestock">Poultry / Livestock</option>
+                                    <option value="Fishing">Fisherman / Seafood Depot</option>
                                     <option value="Market Vendor">Market Vendor</option>
-                                    <option value="Fishing">Fisherman / Seafood</option>
+                                    <option value="Manufacturing">Manufacturing / Production</option>
                                  </optgroup>
 
                                  <option value="Other">Other</option>
