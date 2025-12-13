@@ -133,7 +133,7 @@ export const StoreBuilder: React.FC = () => {
             case 'orders': return <OrdersTab orders={orders} />;
             case 'customers': return <CustomersTab orders={orders} />;
             case 'design': return <DesignTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
-            case 'marketing': return <MarketingTab store={store} />;
+            case 'marketing': return <MarketingTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'delivery': return <DeliveryTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'payments': return <PaymentsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'settings': return <SettingsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
@@ -462,22 +462,26 @@ const ProductModal: React.FC<{ storeId: string; product: Product | null; onClose
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
                         <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                            aria-label="Product Name"
                             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-trini-red" />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3}
+                            aria-label="Product Description"
                             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-trini-red" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Price (TT$) *</label>
                             <input type="number" required min="0" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: parseFloat(e.target.value) })}
+                                aria-label="price"
                                 className="w-full border border-gray-300 rounded-lg px-4 py-2" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
                             <input type="number" required min="0" value={form.stock} onChange={e => setForm({ ...form, stock: parseInt(e.target.value) })}
+                                aria-label="stock"
                                 className="w-full border border-gray-300 rounded-lg px-4 py-2" />
                         </div>
                     </div>
@@ -671,53 +675,282 @@ const DesignTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<StoreT
 // ============================================
 // MARKETING TAB (SEO & CRO)
 // ============================================
-const MarketingTab: React.FC<{ store: StoreType }> = ({ store }) => (
-    <div className="space-y-6">
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-xl text-white">
-            <h3 className="text-xl font-bold mb-2">SEO & Conversion Optimization</h3>
-            <p className="opacity-90">Maximize your store's visibility and sales</p>
-        </div>
+// ============================================
+// MARKETING TAB - FULL IMPLEMENTATION
+// ============================================
+const MarketingTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<StoreType>) => void }> = ({ store, onUpdate }) => {
+    // Initialize state
+    const marketingSettings = store.settings?.marketing || { discounts: [] };
+    const [discounts, setDiscounts] = useState(marketingSettings.discounts || []);
+    const [showDiscountForm, setShowDiscountForm] = useState(false);
+    const [newDiscount, setNewDiscount] = useState({ code: '', type: 'percentage', value: 10 });
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    const [seo, setSeo] = useState({
+        title: marketingSettings.seoTitle || store.name,
+        description: marketingSettings.seoDescription || store.description || '',
+        gaId: marketingSettings.googleAnalyticsId || '',
+        fbPixel: marketingSettings.facebookPixelId || ''
+    });
+
+    // Save helpers
+    const saveMarketingSettings = (newDiscounts = discounts, newSeo = seo) => {
+        onUpdate({
+            settings: {
+                ...store.settings,
+                marketing: {
+                    ...store.settings?.marketing,
+                    discounts: newDiscounts,
+                    seoTitle: newSeo.title,
+                    seoDescription: newSeo.description,
+                    googleAnalyticsId: newSeo.gaId,
+                    facebookPixelId: newSeo.fbPixel
+                }
+            }
+        });
+    };
+
+    const handleAddDiscount = () => {
+        if (!newDiscount.code) return;
+        const discountToAdd = {
+            id: Date.now().toString(),
+            code: newDiscount.code.toUpperCase(),
+            type: newDiscount.type as 'percentage' | 'fixed',
+            value: Number(newDiscount.value),
+            active: true,
+            usageCount: 0
+        };
+        const updatedDiscounts = [...discounts, discountToAdd];
+        setDiscounts(updatedDiscounts);
+        saveMarketingSettings(updatedDiscounts, seo);
+        setShowDiscountForm(false);
+        setNewDiscount({ code: '', type: 'percentage', value: 10 });
+    };
+
+    const toggleDiscount = (id: string) => {
+        const updated = discounts.map(d => d.id === id ? { ...d, active: !d.active } : d);
+        setDiscounts(updated);
+        saveMarketingSettings(updated, seo);
+    };
+
+    const deleteDiscount = (id: string) => {
+        if (!confirm('Delete this code?')) return;
+        const updated = discounts.filter(d => d.id !== id);
+        setDiscounts(updated);
+        saveMarketingSettings(updated, seo);
+    };
+
+    return (
+        <div className="space-y-8">
+            {/* Header Stats */}
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-xl text-white shadow-lg">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-bold mb-2">Marketing & Promotions</h3>
+                        <p className="opacity-90">Manage SEO, multiple discount codes, and tracking pixels.</p>
+                    </div>
+                    <div className="bg-white/20 p-3 rounded-lg text-center">
+                        <p className="text-xs opacity-75 uppercase tracking-wider">Active Promos</p>
+                        <p className="text-2xl font-bold">{discounts.filter(d => d.active).length}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Discount Codes Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center"><Globe className="h-5 w-5 mr-2 text-blue-600" />SEO Score</h4>
-                <div className="text-center py-6">
-                    <div className="text-5xl font-bold text-green-600 mb-2">85%</div>
-                    <p className="text-gray-500">Good - Room for improvement</p>
+                <div className="flex justify-between items-center mb-6">
+                    <h4 className="font-bold text-gray-900 flex items-center text-lg">
+                        <Tag className="h-5 w-5 mr-2 text-green-600" />
+                        Discount Codes
+                    </h4>
+                    <button
+                        onClick={() => setShowDiscountForm(true)}
+                        className="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center"
+                    >
+                        <Plus className="h-4 w-4 mr-1" /> New Code
+                    </button>
                 </div>
-                <div className="space-y-2 text-sm">
-                    <div className="flex items-center text-green-600"><Check className="h-4 w-4 mr-2" />Meta title set</div>
-                    <div className="flex items-center text-green-600"><Check className="h-4 w-4 mr-2" />Meta description set</div>
-                    <div className="flex items-center text-yellow-600"><AlertCircle className="h-4 w-4 mr-2" />Add more product descriptions</div>
-                </div>
+
+                {showDiscountForm && (
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-in slide-in-from-top-2">
+                        <h5 className="font-bold text-sm mb-3">Create New Discount</h5>
+                        <div className="flex gap-4 items-end">
+                            <div className="flex-1">
+                                <label className="block text-xs font-bold text-gray-500 mb-1">CODE</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. SUMMER25"
+                                    className="w-full border p-2 rounded uppercase"
+                                    value={newDiscount.code}
+                                    aria-label="Discount Code"
+                                    onChange={e => setNewDiscount({ ...newDiscount, code: e.target.value.toUpperCase() })}
+                                />
+                            </div>
+                            <div className="w-32">
+                                <label className="block text-xs font-bold text-gray-500 mb-1">TYPE</label>
+                                <select
+                                    className="w-full border p-2 rounded"
+                                    value={newDiscount.type}
+                                    aria-label="Discount Type"
+                                    onChange={e => setNewDiscount({ ...newDiscount, type: e.target.value as any })}
+                                >
+                                    <option value="percentage">% Off</option>
+                                    <option value="fixed">$ Off</option>
+                                </select>
+                            </div>
+                            <div className="w-24">
+                                <label className="block text-xs font-bold text-gray-500 mb-1">VALUE</label>
+                                <input
+                                    type="number"
+                                    className="w-full border p-2 rounded"
+                                    value={newDiscount.value}
+                                    aria-label="Discount Value"
+                                    onChange={e => setNewDiscount({ ...newDiscount, value: Number(e.target.value) })}
+                                />
+                            </div>
+                            <button
+                                onClick={handleAddDiscount}
+                                className="bg-green-600 text-white px-4 py-2 rounded font-bold h-[42px]"
+                            >
+                                Save
+                            </button>
+                            <button
+                                onClick={() => setShowDiscountForm(false)}
+                                className="text-gray-500 px-2 py-2 font-medium h-[42px]"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {discounts.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8 italic">No discount codes active. Create one to boost sales!</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50 text-gray-500 font-medium">
+                                <tr>
+                                    <th className="px-4 py-2">Code</th>
+                                    <th className="px-4 py-2">Discount</th>
+                                    <th className="px-4 py-2">Status</th>
+                                    <th className="px-4 py-2">Usage</th>
+                                    <th className="px-4 py-2 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {discounts.map(d => (
+                                    <tr key={d.id} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3 font-mono font-bold text-gray-800">{d.code}</td>
+                                        <td className="px-4 py-3 text-green-600 font-bold">
+                                            {d.type === 'percentage' ? `${d.value}% OFF` : `$${d.value} OFF`}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${d.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                {d.active ? 'ACTIVE' : 'INACTIVE'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500">{d.usageCount} uses</td>
+                                        <td className="px-4 py-3 text-right space-x-2">
+                                            <button
+                                                onClick={() => toggleDiscount(d.id)}
+                                                className="text-xs text-blue-600 hover:underline"
+                                            >
+                                                {d.active ? 'Deactivate' : 'Activate'}
+                                            </button>
+                                            <button
+                                                onClick={() => deleteDiscount(d.id)}
+                                                className="text-xs text-red-600 hover:underline"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
+            {/* SEO Settings */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center"><TrendingUp className="h-5 w-5 mr-2 text-green-600" />CRO Tips</h4>
-                <ul className="space-y-3 text-sm">
-                    <li className="flex items-start"><Star className="h-4 w-4 mr-2 text-yellow-500 mt-0.5" />Add product reviews to build trust</li>
-                    <li className="flex items-start"><Zap className="h-4 w-4 mr-2 text-orange-500 mt-0.5" />Create urgency with flash sales</li>
-                    <li className="flex items-start"><Gift className="h-4 w-4 mr-2 text-pink-500 mt-0.5" />Offer bundle discounts</li>
-                    <li className="flex items-start"><Mail className="h-4 w-4 mr-2 text-blue-500 mt-0.5" />Set up abandoned cart emails</li>
-                </ul>
+                <h4 className="font-bold text-gray-900 mb-4 flex items-center">
+                    <Globe className="h-5 w-5 mr-2 text-blue-600" />
+                    SEO & Meta Tags
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
+                        <input
+                            type="text"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                            value={seo.title}
+                            onChange={(e) => {
+                                const newSeo = { ...seo, title: e.target.value };
+                                setSeo(newSeo);
+                                // Debounce ideal, but simple inline for now
+                            }}
+                            onBlur={() => saveMarketingSettings(discounts, seo)}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Recommended length: 50-60 characters</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+                        <textarea
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                            rows={3}
+                            value={seo.description}
+                            onChange={(e) => {
+                                const newSeo = { ...seo, description: e.target.value };
+                                setSeo(newSeo);
+                            }}
+                            onBlur={() => saveMarketingSettings(discounts, seo)}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">Recommended length: 150-160 characters</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h4 className="font-bold text-gray-900 mb-4">Store Meta Tags</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
-                    <input type="text" defaultValue={`${store.name} - Shop Online`} className="w-full border border-gray-300 rounded-lg px-4 py-2" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
-                    <input type="text" defaultValue={store.description || ''} className="w-full border border-gray-300 rounded-lg px-4 py-2" />
+            {/* Tracking Pixels */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h4 className="font-bold text-gray-900 mb-4 flex items-center">
+                    <BarChart3 className="h-5 w-5 mr-2 text-orange-600" />
+                    Tracking & Analytics
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Google Analytics ID</label>
+                        <input
+                            type="text"
+                            placeholder="G-XXXXXXXXXX"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                            value={seo.gaId}
+                            onChange={(e) => {
+                                const newSeo = { ...seo, gaId: e.target.value };
+                                setSeo(newSeo);
+                            }}
+                            onBlur={() => saveMarketingSettings(discounts, seo)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Facebook Pixel ID</label>
+                        <input
+                            type="text"
+                            placeholder="1234567890"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                            value={seo.fbPixel}
+                            onChange={(e) => {
+                                const newSeo = { ...seo, fbPixel: e.target.value };
+                                setSeo(newSeo);
+                            }}
+                            onBlur={() => saveMarketingSettings(discounts, seo)}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 // ============================================
 // DELIVERY TAB - FULL IMPLEMENTATION

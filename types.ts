@@ -58,6 +58,21 @@ export interface StoreSettings {
     pickup: { enabled: boolean; address: string };
     trinibuildGo: boolean;
   };
+  marketing?: {
+    seoTitle?: string;
+    seoDescription?: string;
+    googleAnalyticsId?: string;
+    facebookPixelId?: string;
+    discounts: {
+      id: string;
+      code: string;
+      type: 'percentage' | 'fixed';
+      value: number;
+      active: boolean;
+      usageCount: number;
+      expiresAt?: string;
+    }[];
+  };
 }
 
 export interface StoreTheme {
