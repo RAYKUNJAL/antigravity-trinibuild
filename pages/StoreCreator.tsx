@@ -29,7 +29,8 @@ export const StoreCreator: React.FC = () => {
       address: '',
       placeId: '',
       whatsapp: '',
-      vibe: 'Modern'
+      vibe: 'Modern',
+      customCategory: ''
    });
    const [loading, setLoading] = useState(false);
    const [generatedStore, setGeneratedStore] = useState<Partial<Business> | null>(null);
@@ -124,7 +125,8 @@ export const StoreCreator: React.FC = () => {
       setLoading(true);
       // Generate Store Content
       try {
-         const result = await generateStoreProfile(formData.name, formData.type);
+         const type = formData.type === 'Other' ? formData.customCategory : formData.type;
+         const result = await generateStoreProfile(formData.name, type);
          setGeneratedStore(result);
          setStep(4); // Move to Preview
       } catch (error) {
@@ -142,7 +144,7 @@ export const StoreCreator: React.FC = () => {
             description: generatedStore.description || '',
             location: formData.address || 'Trinidad',
             whatsapp: formData.whatsapp || '18680000000',
-            category: formData.type,
+            category: formData.type === 'Other' ? formData.customCategory : formData.type,
             logo_url: selectedLogo || undefined,
             theme_config: selectedTheme?.tokens || {}
          };
@@ -499,6 +501,20 @@ export const StoreCreator: React.FC = () => {
                               </select>
                            </div>
 
+                           {formData.type === 'Other' && (
+                              <div className="mb-6 animate-in slide-in-from-top-2">
+                                 <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Custom Category *</label>
+                                 <input
+                                    type="text"
+                                    value={formData.customCategory}
+                                    onChange={(e) => setFormData({ ...formData, customCategory: e.target.value })}
+                                    placeholder="e.g. Pet Grooming"
+                                    aria-label="Custom Category"
+                                    className="w-full border-2 border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-trini-red focus:border-trini-red text-lg"
+                                 />
+                              </div>
+                           )}
+
                            <div className="mb-6">
                               <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">WhatsApp Number *</label>
                               <input
@@ -512,8 +528,8 @@ export const StoreCreator: React.FC = () => {
 
                            <button
                               onClick={handleInfoSubmit}
-                              disabled={!formData.name || !formData.type || !formData.whatsapp}
-                              className="w-full py-4 px-6 rounded-xl shadow-lg text-lg font-bold text-white bg-trini-red hover:bg-red-700 transition-all"
+                              disabled={!formData.name || !formData.type || !formData.whatsapp || (formData.type === 'Other' && !formData.customCategory)}
+                              className="w-full py-4 px-6 rounded-xl shadow-lg text-lg font-bold text-white bg-trini-red hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                            >
                               Next: Design Logo <ArrowRight className="inline ml-2 h-5 w-5" />
                            </button>
