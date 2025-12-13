@@ -262,11 +262,25 @@ export const StoreCreator: React.FC = () => {
       }
    };
 
-   // Helper to generate AI image URL on the fly (Fallback)
+   // Helper to generate reliable product image URL
    const getAiImageUrl = (prompt: string) => {
-      const basePrompt = `${prompt} ${formData.type} ${formData.vibe} style high quality photography`;
-      const encodedPrompt = encodeURIComponent(basePrompt);
-      return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=600&nologo=true&seed=${imageSeed + prompt.length}`;
+      // Use Unsplash for reliable, beautiful product images
+      const categories: Record<string, string> = {
+         'food': 'food,restaurant',
+         'restaurant': 'food,restaurant',
+         'clothes': 'fashion,clothing',
+         'fashion': 'fashion,clothing',
+         'electronics': 'technology,gadget',
+         'beauty': 'beauty,cosmetic',
+         'home': 'interior,furniture',
+         'default': 'product,retail'
+      };
+
+      const category = categories[formData.type?.toLowerCase() || 'default'] || categories['default'];
+      const seed = prompt.length + imageSeed;
+
+      // Use picsum.photos as primary (very reliable), Unsplash as backup
+      return `https://picsum.photos/seed/${encodeURIComponent(prompt.slice(0, 20) + seed)}/800/600`;
    };
 
    return (

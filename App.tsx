@@ -216,9 +216,10 @@ const App: React.FC = () => {
               <Route path="/legal/all" element={<AllLegalDocuments />} />
             </Route>
 
-            {/* Storefront Route */}
-            <Route path="/store/:id" element={<Storefront />} />
-            <Route path="/store/preview" element={<Storefront />} />
+            {/* Storefront Routes - Using V2 as primary */}
+            <Route path="/store/:slug" element={<StorefrontV2 />} />
+            <Route path="/store/:id/v1" element={<Storefront />} />
+            <Route path="/store/preview" element={<StorefrontV2 />} />
 
             {/* 404 Catch-all */}
             <Route path="*" element={<NotFound />} />
