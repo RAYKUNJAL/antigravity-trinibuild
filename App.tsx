@@ -1,4 +1,5 @@
 
+console.log('🔄 App.tsx file is loading...');
 import React from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
