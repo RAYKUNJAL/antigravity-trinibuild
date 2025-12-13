@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Search, Loader2, BadgeCheck, ArrowRight, Navigation, Crosshair, Map as MapIcon, AlertCircle, ExternalLink, Star, ChevronDown } from 'lucide-react';
 import { findLocalBusinesses } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
@@ -586,277 +587,287 @@ export const Directory: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
-      <div className="bg-white shadow-md border-b border-gray-200 z-30 flex-shrink-0 relative">
-        <div className="max-w-7xl mx-auto w-full px-4 py-3">
-          <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-3 mb-3">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Trinidad for shops, restaurants, services..."
-                className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:bg-white focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all shadow-sm text-base"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <span className="sr-only">Clear</span>
-                  ✕
-                </button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {/* Location Selector */}
-              <div className="relative min-w-[160px] md:min-w-[200px]">
-                <select
-                  value={activeLocation}
-                  onChange={(e) => handleLocationChange(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-trini-red focus:border-trini-red block px-3 py-3 font-medium appearance-none"
-                >
-                  {LOCATIONS.map(loc => (
-                    <option key={loc.id} value={loc.id}>{loc.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+    <>
+      <Helmet>
+        <title>Business Directory Trinidad & Tobago | Find Local Shops & Services | TriniBuild</title>
+        <meta name="description" content="Find local businesses, restaurants, shops, and services across Trinidad & Tobago. Search by category, location, or use our AI-powered directory to discover hidden gems." />
+        <meta name="keywords" content="Trinidad business directory, Tobago local shops, find businesses T&T, restaurants Trinidad, services Port of Spain" />
+        <link rel="canonical" href="https://trinibuild.com/#/directory" />
+        <meta property="og:title" content="Business Directory Trinidad & Tobago | TriniBuild" />
+        <meta property="og:description" content="Discover local businesses across Trinidad & Tobago. AI-powered search for shops, restaurants, and services." />
+      </Helmet>
+      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
+        <div className="bg-white shadow-md border-b border-gray-200 z-30 flex-shrink-0 relative">
+          <div className="max-w-7xl mx-auto w-full px-4 py-3">
+            <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-3 mb-3">
+              <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search Trinidad for shops, restaurants, services..."
+                  className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:bg-white focus:border-trini-red focus:ring-1 focus:ring-trini-red transition-all shadow-sm text-base"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="sr-only">Clear</span>
+                    ✕
+                  </button>
+                )}
               </div>
+              <div className="flex gap-2">
+                {/* Location Selector */}
+                <div className="relative min-w-[160px] md:min-w-[200px]">
+                  <select
+                    value={activeLocation}
+                    onChange={(e) => handleLocationChange(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-trini-red focus:border-trini-red block px-3 py-3 font-medium appearance-none"
+                  >
+                    {LOCATIONS.map(loc => (
+                      <option key={loc.id} value={loc.id}>{loc.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-8 py-3 bg-trini-red text-white rounded-lg hover:bg-red-700 font-bold disabled:opacity-50 shadow-md transition-transform active:scale-95 flex items-center justify-center min-w-[100px]"
-              >
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
-              </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 py-3 bg-trini-red text-white rounded-lg hover:bg-red-700 font-bold disabled:opacity-50 shadow-md transition-transform active:scale-95 flex items-center justify-center min-w-[100px]"
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Search'}
+                </button>
+              </div>
+            </form>
+
+            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`flex items-center px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === cat.id
+                    ? 'bg-trini-black text-white border-trini-black'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                    }`}
+                >
+                  <span className="mr-2">{cat.icon}</span> {cat.label}
+                </button>
+              ))}
             </div>
-          </form>
-
-          <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat.id)}
-                className={`flex items-center px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${activeCategory === cat.id
-                  ? 'bg-trini-black text-white border-trini-black'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                  }`}
-              >
-                <span className="mr-2">{cat.icon}</span> {cat.label}
-              </button>
-            ))}
           </div>
         </div>
-      </div>
 
-      <div className="flex flex-col-reverse lg:flex-row flex-grow overflow-hidden relative">
-        <div className="w-full lg:w-[450px] xl:w-[500px] bg-white flex flex-col border-r border-gray-200 z-20 shadow-xl h-[45vh] lg:h-auto relative">
-          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            <span>{places.length} Results Found</span>
-            <span>{mapError ? 'via TriniBuild AI' : (activeLocation !== 'all' ? LOCATIONS.find(z => z.id === activeLocation)?.label : 'Trinidad & Tobago')}</span>
-          </div>
+        <div className="flex flex-col-reverse lg:flex-row flex-grow overflow-hidden relative">
+          <div className="w-full lg:w-[450px] xl:w-[500px] bg-white flex flex-col border-r border-gray-200 z-20 shadow-xl h-[45vh] lg:h-auto relative">
+            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <span>{places.length} Results Found</span>
+              <span>{mapError ? 'via TriniBuild AI' : (activeLocation !== 'all' ? LOCATIONS.find(z => z.id === activeLocation)?.label : 'Trinidad & Tobago')}</span>
+            </div>
 
-          <div className="flex-grow overflow-y-auto p-4 custom-scrollbar bg-gray-50">
-            <AdSpot page="marketplace" slot="top" className="mb-4" />
-            {!loading && aiResponseText && (
-              <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 shadow-sm">
-                <div className="flex items-center mb-2 text-blue-800">
-                  <BadgeCheck className="h-5 w-5 mr-2 text-blue-600" />
-                  <h3 className="font-bold text-sm uppercase tracking-wider">AI Local Insights</h3>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {aiResponseText.split('\n')[0]}
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-3 pb-8">
-              {places.length > 0 ? (
-                places.map((place, idx) => (
-                  <div
-                    key={place.place_id || idx}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 hover:border-trini-red hover:shadow-md transition-all duration-200 cursor-pointer group overflow-hidden"
-                    onClick={() => handleListClick(place)}
-                  >
-                    <div className="flex h-32">
-                      <div className="w-32 h-full bg-gray-100 flex-shrink-0 relative">
-                        {place.photos && place.photos.length > 0 ? (
-                          <img
-                            src={place.photos[0].getUrl({ maxWidth: 200, maxHeight: 200 })}
-                            alt={place.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 bg-gray-100">
-                            <MapIcon className="h-8 w-8 mb-1 opacity-50" />
-                            <span className="text-[10px]">No Photo</span>
-                          </div>
-                        )}
-                        {mapError && (
-                          <div className="absolute top-1 right-1">
-                            <div className="bg-blue-500 text-white p-1 rounded-full shadow-sm" title="From TriniBuild AI">
-                              <BadgeCheck className="h-3 w-3" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-grow p-3 flex flex-col justify-between min-w-0">
-                        <div>
-                          <div className="flex justify-between items-start gap-2">
-                            <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{place.name}</h3>
-                            <span className="bg-gray-800 text-white text-[10px] px-1.5 rounded font-mono">{idx + 1}</span>
-                          </div>
-
-                          <div className="flex items-center mt-1 mb-1">
-                            {place.rating ? (
-                              <>
-                                <div className="flex items-center text-yellow-500">
-                                  <span className="font-bold text-sm mr-1 text-gray-900">{place.rating}</span>
-                                  <div className="flex">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star key={i} className={`h-3 w-3 ${i < Math.round(place.rating || 0) ? 'fill-current' : 'text-gray-300'}`} />
-                                    ))}
-                                  </div>
-                                </div>
-                                <span className="text-xs text-gray-400 ml-2">({place.user_ratings_total})</span>
-                              </>
-                            ) : (
-                              <span className="text-xs text-gray-400 italic">
-                                {mapError ? 'AI Verified' : 'No ratings yet'}
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="text-xs text-gray-500 line-clamp-2 mb-2">
-                            {place.formatted_address || place.vicinity || "Trinidad & Tobago"}
-                          </p>
-                        </div>
-
-                        <div className="flex justify-end gap-2">
-                          {place.url && (
-                            <a
-                              href={place.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-xs font-bold text-gray-500 hover:bg-gray-100 px-2 py-1.5 rounded transition-colors flex items-center"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (place.place_id && place.place_id.startsWith('store-')) {
-                                navigate(`/store/${place.place_id}`);
-                              } else {
-                                handleClaim(place);
-                              }
-                            }}
-                            className={`text-xs font-bold px-3 py-1.5 rounded transition-colors flex items-center border ${place.place_id && place.place_id.startsWith('store-')
-                              ? 'text-white bg-trini-red border-trini-red hover:bg-red-700'
-                              : 'text-trini-red hover:bg-red-50 border-trini-red/20'
-                              }`}
-                          >
-                            {place.place_id && place.place_id.startsWith('store-') ? (
-                              <>View Store <ArrowRight className="h-3 w-3 ml-1" /></>
-                            ) : (
-                              <>Claim This Business <ArrowRight className="h-3 w-3 ml-1" /></>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+            <div className="flex-grow overflow-y-auto p-4 custom-scrollbar bg-gray-50">
+              <AdSpot page="marketplace" slot="top" className="mb-4" />
+              {!loading && aiResponseText && (
+                <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 shadow-sm">
+                  <div className="flex items-center mb-2 text-blue-800">
+                    <BadgeCheck className="h-5 w-5 mr-2 text-blue-600" />
+                    <h3 className="font-bold text-sm uppercase tracking-wider">AI Local Insights</h3>
                   </div>
-                ))
-              ) : (
-                !loading && (
-                  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                    <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-                      <MapIcon className="h-10 w-10 text-gray-300" />
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900">Explore Trinidad & Tobago</h3>
-                    <p className="text-gray-500 text-sm mt-2 max-w-xs">
-                      {mapError
-                        ? "Map unavailable due to API Key restriction. You can still search businesses using AI."
-                        : "Use the map or search bar to find local businesses, services, and hidden gems."}
-                    </p>
-                  </div>
-                )
-              )}
-
-              {loading && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 text-trini-red animate-spin mb-2" />
-                  <p className="text-sm text-gray-500">
-                    {mapError ? 'Searching database via TriniBuild AI...' : 'Searching T&T\'s database...'}
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {aiResponseText.split('\n')[0]}
                   </p>
                 </div>
               )}
+
+              <div className="space-y-3 pb-8">
+                {places.length > 0 ? (
+                  places.map((place, idx) => (
+                    <div
+                      key={place.place_id || idx}
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 hover:border-trini-red hover:shadow-md transition-all duration-200 cursor-pointer group overflow-hidden"
+                      onClick={() => handleListClick(place)}
+                    >
+                      <div className="flex h-32">
+                        <div className="w-32 h-full bg-gray-100 flex-shrink-0 relative">
+                          {place.photos && place.photos.length > 0 ? (
+                            <img
+                              src={place.photos[0].getUrl({ maxWidth: 200, maxHeight: 200 })}
+                              alt={place.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 bg-gray-100">
+                              <MapIcon className="h-8 w-8 mb-1 opacity-50" />
+                              <span className="text-[10px]">No Photo</span>
+                            </div>
+                          )}
+                          {mapError && (
+                            <div className="absolute top-1 right-1">
+                              <div className="bg-blue-500 text-white p-1 rounded-full shadow-sm" title="From TriniBuild AI">
+                                <BadgeCheck className="h-3 w-3" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-grow p-3 flex flex-col justify-between min-w-0">
+                          <div>
+                            <div className="flex justify-between items-start gap-2">
+                              <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{place.name}</h3>
+                              <span className="bg-gray-800 text-white text-[10px] px-1.5 rounded font-mono">{idx + 1}</span>
+                            </div>
+
+                            <div className="flex items-center mt-1 mb-1">
+                              {place.rating ? (
+                                <>
+                                  <div className="flex items-center text-yellow-500">
+                                    <span className="font-bold text-sm mr-1 text-gray-900">{place.rating}</span>
+                                    <div className="flex">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={`h-3 w-3 ${i < Math.round(place.rating || 0) ? 'fill-current' : 'text-gray-300'}`} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <span className="text-xs text-gray-400 ml-2">({place.user_ratings_total})</span>
+                                </>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic">
+                                  {mapError ? 'AI Verified' : 'No ratings yet'}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-gray-500 line-clamp-2 mb-2">
+                              {place.formatted_address || place.vicinity || "Trinidad & Tobago"}
+                            </p>
+                          </div>
+
+                          <div className="flex justify-end gap-2">
+                            {place.url && (
+                              <a
+                                href={place.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-xs font-bold text-gray-500 hover:bg-gray-100 px-2 py-1.5 rounded transition-colors flex items-center"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (place.place_id && place.place_id.startsWith('store-')) {
+                                  navigate(`/store/${place.place_id}`);
+                                } else {
+                                  handleClaim(place);
+                                }
+                              }}
+                              className={`text-xs font-bold px-3 py-1.5 rounded transition-colors flex items-center border ${place.place_id && place.place_id.startsWith('store-')
+                                ? 'text-white bg-trini-red border-trini-red hover:bg-red-700'
+                                : 'text-trini-red hover:bg-red-50 border-trini-red/20'
+                                }`}
+                            >
+                              {place.place_id && place.place_id.startsWith('store-') ? (
+                                <>View Store <ArrowRight className="h-3 w-3 ml-1" /></>
+                              ) : (
+                                <>Claim This Business <ArrowRight className="h-3 w-3 ml-1" /></>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  !loading && (
+                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                      <div className="bg-white p-4 rounded-full shadow-sm mb-4">
+                        <MapIcon className="h-10 w-10 text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900">Explore Trinidad & Tobago</h3>
+                      <p className="text-gray-500 text-sm mt-2 max-w-xs">
+                        {mapError
+                          ? "Map unavailable due to API Key restriction. You can still search businesses using AI."
+                          : "Use the map or search bar to find local businesses, services, and hidden gems."}
+                      </p>
+                    </div>
+                  )
+                )}
+
+                {loading && (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 text-trini-red animate-spin mb-2" />
+                    <p className="text-sm text-gray-500">
+                      {mapError ? 'Searching database via TriniBuild AI...' : 'Searching T&T\'s database...'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex-grow h-[45vh] lg:h-auto bg-gray-200 relative group">
-          {mapError ? (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-500 p-6 text-center border-l border-gray-200">
-              <div className="bg-red-50 p-4 rounded-full mb-4">
-                <AlertCircle className="h-8 w-8 text-red-500" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-1">Visual Map Unavailable</h3>
-              <p className="text-sm mb-4 max-w-md">
-                {mapError}
-              </p>
-              <div className="bg-white px-4 py-3 rounded-md shadow-sm border border-gray-200 text-xs text-gray-600 text-left max-w-sm mx-auto">
-                <strong>Likely Cause:</strong> Your API Key is valid for AI Studio but does not have the "Maps JavaScript API" service enabled in Google Cloud Console.
-              </div>
-              <p className="text-sm text-gray-600 mt-6 font-medium">
-                Don't worry! Search works via the "Built-in Backend" (TriniBuild AI).
-              </p>
-              <Link to="/settings" className="mt-4 inline-block bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">
-                Update Maps API Key
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div ref={mapRef} className="w-full h-full min-h-[400px]" />
-              {showSearchAreaBtn && !mapError && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <button
-                    onClick={searchCurrentArea}
-                    className="bg-white text-gray-800 px-4 py-2 rounded-full shadow-lg font-semibold text-sm flex items-center hover:bg-gray-50 transition-transform transform hover:scale-105 animate-in fade-in slide-in-from-top-4"
-                  >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Crosshair className="h-4 w-4 mr-2 text-trini-red" />}
-                    Search this area
-                  </button>
+          <div className="flex-grow h-[45vh] lg:h-auto bg-gray-200 relative group">
+            {mapError ? (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-500 p-6 text-center border-l border-gray-200">
+                <div className="bg-red-50 p-4 rounded-full mb-4">
+                  <AlertCircle className="h-8 w-8 text-red-500" />
                 </div>
-              )}
+                <h3 className="font-bold text-gray-900 text-lg mb-1">Visual Map Unavailable</h3>
+                <p className="text-sm mb-4 max-w-md">
+                  {mapError}
+                </p>
+                <div className="bg-white px-4 py-3 rounded-md shadow-sm border border-gray-200 text-xs text-gray-600 text-left max-w-sm mx-auto">
+                  <strong>Likely Cause:</strong> Your API Key is valid for AI Studio but does not have the "Maps JavaScript API" service enabled in Google Cloud Console.
+                </div>
+                <p className="text-sm text-gray-600 mt-6 font-medium">
+                  Don't worry! Search works via the "Built-in Backend" (TriniBuild AI).
+                </p>
+                <Link to="/settings" className="mt-4 inline-block bg-gray-800 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">
+                  Update Maps API Key
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div ref={mapRef} className="w-full h-full min-h-[400px]" />
+                {showSearchAreaBtn && !mapError && (
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <button
+                      onClick={searchCurrentArea}
+                      className="bg-white text-gray-800 px-4 py-2 rounded-full shadow-lg font-semibold text-sm flex items-center hover:bg-gray-50 transition-transform transform hover:scale-105 animate-in fade-in slide-in-from-top-4"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Crosshair className="h-4 w-4 mr-2 text-trini-red" />}
+                      Search this area
+                    </button>
+                  </div>
+                )}
 
-              {!mapError && (
-                <button
-                  onClick={handleLocateMe}
-                  className="absolute bottom-8 right-4 bg-white p-3 rounded-full shadow-lg hover:bg-gray-50 focus:outline-none z-10 text-gray-600"
-                  title="Locate Me"
-                >
-                  <Navigation className="h-6 w-6 transform hover:text-trini-red transition-colors" />
-                </button>
-              )}
-            </>
-          )}
+                {!mapError && (
+                  <button
+                    onClick={handleLocateMe}
+                    className="absolute bottom-8 right-4 bg-white p-3 rounded-full shadow-lg hover:bg-gray-50 focus:outline-none z-10 text-gray-600"
+                    title="Locate Me"
+                  >
+                    <Navigation className="h-6 w-6 transform hover:text-trini-red transition-colors" />
+                  </button>
+                )}
+              </>
+            )}
 
-          {!window.google && !mapError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 z-10">
-              <Loader2 className="h-10 w-10 text-gray-400 animate-spin" />
-            </div>
-          )}
+            {!window.google && !mapError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-50 z-10">
+                <Loader2 className="h-10 w-10 text-gray-400 animate-spin" />
+              </div>
+            )}
+          </div>
+
         </div>
-
       </div>
-    </div>
+    </>
   );
 };
