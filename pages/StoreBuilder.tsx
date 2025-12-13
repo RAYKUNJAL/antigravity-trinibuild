@@ -128,7 +128,7 @@ export const StoreBuilder: React.FC = () => {
         if (!store) return <NoStoreState />;
 
         switch (activeTab) {
-            case 'dashboard': return <DashboardTab stats={stats} orders={orders} products={products} />;
+            case 'dashboard': return <DashboardTab stats={stats} orders={orders} products={products} store={store} />;
             case 'products': return <ProductsTab storeId={store.id} products={products} onRefresh={loadStoreData} />;
             case 'orders': return <OrdersTab orders={orders} />;
             case 'customers': return <CustomersTab orders={orders} />;
@@ -137,7 +137,7 @@ export const StoreBuilder: React.FC = () => {
             case 'delivery': return <DeliveryTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'payments': return <PaymentsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'settings': return <SettingsTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
-            default: return <DashboardTab stats={stats} orders={orders} products={products} />;
+            default: return <DashboardTab stats={stats} orders={orders} products={products} store={store} />;
         }
     };
 
@@ -243,67 +243,90 @@ const NoStoreState = () => {
 // ============================================
 // DASHBOARD TAB
 // ============================================
-const DashboardTab: React.FC<{ stats: StoreStats; orders: Order[]; products: Product[] }> = ({ stats, orders, products }) => (
-    <div className="space-y-6">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Total Sales" value={`TT$${stats.totalSales.toLocaleString()}`} change={stats.salesChange} icon={<DollarSign />} />
-            <StatCard title="Orders" value={stats.totalOrders.toString()} change={stats.ordersChange} icon={<ShoppingBag />} />
-            <StatCard title="Customers" value={stats.totalCustomers.toString()} change={stats.customersChange} icon={<Users />} />
-            <StatCard title="Conversion" value={`${stats.conversionRate.toFixed(1)}%`} change={stats.conversionChange} icon={<TrendingUp />} />
-        </div>
+const DashboardTab: React.FC<{ stats: StoreStats; orders: Order[]; products: Product[]; store?: StoreType }> = ({ stats, orders, products, store }) => {
+    // Inventory Alerts
+    const threshold = store?.settings?.inventory?.lowStockThreshold ?? 5;
+    const alertsEnabled = store?.settings?.inventory?.enableLowStockAlerts ?? true;
+    const lowStockItems = products.filter(p => p.stock <= threshold);
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Orders */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-4">Recent Orders</h3>
-                {orders.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No orders yet. Share your store to get started!</p>
-                ) : (
-                    <div className="space-y-3">
-                        {orders.slice(0, 5).map(order => (
-                            <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div>
-                                    <p className="font-medium text-sm">Order #{order.id.slice(0, 8)}</p>
-                                    <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-green-600">TT${order.total}</p>
-                                    <span className={`text-xs px-2 py-1 rounded-full ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
-                                        }`}>{order.status}</span>
-                                </div>
-                            </div>
-                        ))}
+    return (
+        <div className="space-y-6">
+            {/* Alerts */}
+            {alertsEnabled && lowStockItems.length > 0 && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-start">
+                        <AlertCircle className="h-5 w-5 text-red-500 mr-3 mt-0.5" />
+                        <div>
+                            <h3 className="font-bold text-red-800">Low Stock Alert</h3>
+                            <p className="text-sm text-red-700 mt-1">
+                                {lowStockItems.length} products are running low on stock ({lowStockItems.map(p => p.name).slice(0, 3).join(', ')}{lowStockItems.length > 3 ? '...' : ''}).
+                            </p>
+                        </div>
+                        <button className="ml-auto text-red-700 text-sm font-bold hover:underline">View Products</button>
                     </div>
-                )}
+                </div>
+            )}
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <StatCard title="Total Sales" value={`TT$${stats.totalSales.toLocaleString()}`} change={stats.salesChange} icon={<DollarSign />} />
+                <StatCard title="Orders" value={stats.totalOrders.toString()} change={stats.ordersChange} icon={<ShoppingBag />} />
+                <StatCard title="Customers" value={stats.totalCustomers.toString()} change={stats.customersChange} icon={<Users />} />
+                <StatCard title="Conversion" value={`${stats.conversionRate.toFixed(1)}%`} change={stats.conversionChange} icon={<TrendingUp />} />
             </div>
 
-            {/* Top Products */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-4">Top Products</h3>
-                {products.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No products yet. Add your first product!</p>
-                ) : (
-                    <div className="space-y-3">
-                        {products.slice(0, 5).map(product => (
-                            <div key={product.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
-                                    {product.image_url && <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Recent Orders */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-bold text-gray-900 mb-4">Recent Orders</h3>
+                    {orders.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No orders yet. Share your store to get started!</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {orders.slice(0, 5).map(order => (
+                                <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-sm">Order #{order.id.slice(0, 8)}</p>
+                                        <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-green-600">TT${order.total}</p>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                                            }`}>{order.status}</span>
+                                    </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-sm truncate">{product.name}</p>
-                                    <p className="text-xs text-gray-500">Stock: {product.stock}</p>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Top Products */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="font-bold text-gray-900 mb-4">Top Products</h3>
+                    {products.length === 0 ? (
+                        <p className="text-gray-500 text-sm">No products yet. Add your first product!</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {products.slice(0, 5).map(product => (
+                                <div key={product.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden shrink-0">
+                                        {product.image_url && <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm truncate">{product.name}</p>
+                                        <p className="text-xs text-gray-500">Stock: {product.stock}</p>
+                                    </div>
+                                    <p className="font-bold text-green-600">TT${product.price}</p>
                                 </div>
-                                <p className="font-bold text-green-600">TT${product.price}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 // ============================================
 // PRODUCTS TAB
@@ -1494,6 +1517,64 @@ const SettingsTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                     <input type="text" value={store.location || ''} onChange={e => onUpdate({ location: e.target.value })} className="w-full border border-gray-300 rounded-lg px-4 py-2" />
+                </div>
+            </div>
+        </div>
+
+        {/* Inventory Settings */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+                <Package className="h-5 w-5 mr-2 text-blue-600" />
+                Inventory & Alerts
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Low Stock Threshold</label>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            min="0"
+                            value={store.settings?.inventory?.lowStockThreshold ?? 5}
+                            onChange={e => onUpdate({
+                                settings: {
+                                    ...store.settings,
+                                    inventory: {
+                                        ...store.settings?.inventory,
+                                        lowStockThreshold: parseInt(e.target.value),
+                                        enableLowStockAlerts: store.settings?.inventory?.enableLowStockAlerts ?? true
+                                    }
+                                }
+                            })}
+                            aria-label="Low Stock Threshold"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                        />
+                        <span className="text-sm text-gray-500">units</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Alert when product stock falls below this number</p>
+                </div>
+                <div className="flex items-center">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={store.settings?.inventory?.enableLowStockAlerts ?? true}
+                            onChange={e => onUpdate({
+                                settings: {
+                                    ...store.settings,
+                                    inventory: {
+                                        ...store.settings?.inventory,
+                                        enableLowStockAlerts: e.target.checked,
+                                        lowStockThreshold: store.settings?.inventory?.lowStockThreshold ?? 5
+                                    }
+                                }
+                            })}
+                            aria-label="Enable Stock Alerts"
+                            className="w-5 h-5 text-trini-red rounded border-gray-300 focus:ring-trini-red"
+                        />
+                        <div>
+                            <span className="font-bold text-gray-900">Enable Low Stock Alerts</span>
+                            <p className="text-xs text-gray-500">Show warnings on dashboard</p>
+                        </div>
+                    </label>
                 </div>
             </div>
         </div>
