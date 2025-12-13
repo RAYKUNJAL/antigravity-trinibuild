@@ -546,6 +546,7 @@ export const StoreCreator: React.FC = () => {
                                           <button
                                              id={`btn-${prod.name}`}
                                              onClick={() => addToPreviewCart(prod)}
+                                             aria-label={`Add ${prod.name} to cart`}
                                              className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-lg hover:scale-110 active:scale-95 transition-all text-gray-800 opacity-0 group-hover:opacity-100"
                                           >
                                              <Store className="w-4 h-4" />
@@ -576,7 +577,7 @@ export const StoreCreator: React.FC = () => {
                                     <div className="w-3/4 max-w-sm bg-white h-full shadow-2xl p-6 flex flex-col animate-in slide-in-from-right duration-300">
                                        <div className="flex justify-between items-center mb-6 border-b pb-4">
                                           <h3 className="font-bold text-lg">Your Cart ({previewCartCount})</h3>
-                                          <button onClick={() => setShowPreviewCart(false)} className="bg-gray-100 p-1 rounded-full"><X className="w-5 h-5" /></button>
+                                          <button onClick={() => setShowPreviewCart(false)} className="bg-gray-100 p-1 rounded-full" aria-label="Close cart"><X className="w-5 h-5" /></button>
                                        </div>
                                        <div className="flex-grow overflow-y-auto space-y-4 pr-1">
                                           {previewCartItems.length === 0 ? (
