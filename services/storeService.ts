@@ -1,7 +1,23 @@
 import { supabase } from './supabaseClient';
-import { Store, Product, ProductVariant, Collection, Order, OrderItem } from '../types';
+import { Store, Product, Order, OrderItem } from '../types';
 
 export type { Store } from '../types';
+
+// Extended types for service layer
+interface CreateStoreData extends Partial<Store> {
+    theme_config?: Record<string, any>;
+}
+
+interface CreateProductData {
+    name?: string;
+    description?: string | null;
+    base_price?: number;
+    stock?: number;
+    category?: string;
+    image_url?: string;
+    status?: string;
+    seo?: any;
+}
 
 export const storeService = {
     // --- STORE MANAGEMENT ---
@@ -100,7 +116,7 @@ export const storeService = {
     },
 
     // Create a new store
-    createStore: async (storeData: Partial<Store>): Promise<Store | null> => {
+    createStore: async (storeData: CreateStoreData): Promise<Store | null> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
@@ -159,7 +175,18 @@ export const storeService = {
             console.error('Error fetching products:', error);
             return [];
         }
-        return data as Product[];
+        // Map base_price to price for frontend compatibility
+        return (data || []).map(p => ({
+            ...p,
+            price: p.base_price || p.price || 0,
+            stock: p.stock || 0,
+            status: p.status || 'active',
+            seo: p.seo || {},
+            variants: p.variants || [],
+            gallery_images: p.gallery_images || [],
+            category_ids: p.category_ids || [],
+            specifications: p.specifications || {}
+        })) as Product[];
     },
 
     getProductById: async (productId: string): Promise<Product | null> => {
@@ -173,7 +200,7 @@ export const storeService = {
         return data as Product;
     },
 
-    addProduct: async (storeId: string, productData: Partial<Product>): Promise<Product | null> => {
+    addProduct: async (storeId: string, productData: CreateProductData): Promise<Product | null> => {
         const slug = productData.name?.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 1000);
 
         const { data, error } = await supabase

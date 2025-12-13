@@ -1,4 +1,29 @@
 
+// -- SUBSCRIPTION TIERS --
+export enum SubscriptionTier {
+  FREE = 'free',
+  STARTER = 'starter',
+  PROFESSIONAL = 'professional',
+  ENTERPRISE = 'enterprise'
+}
+
+// -- BLOG POST INTERFACE --
+export interface BlogPostData {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+  status: 'draft' | 'published';
+  seoKeywords?: string[];
+}
+
+// Alias for backward compatibility
+export type BlogPost = BlogPostData;
+
 // -- EXISTING INTERFACES (Preserved Basic Types) --
 
 export interface UserProfile {
@@ -134,7 +159,49 @@ export interface Order {
   store_id: string;
   total: number;
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  items: any[];
+  items: OrderItem[];
   delivery_address: string | null;
   created_at: string;
 }
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+}
+
+// Business type for legacy compatibility
+export interface Business {
+  id?: string;
+  name: string;
+  description?: string;
+  category?: string;
+  products?: Array<{
+    name: string;
+    description: string;
+    base_price: number;
+    image_url?: string;
+  }>;
+}
+
+// Theme type for store theming
+export interface Theme {
+  id?: string;
+  name?: string;
+  tokens?: {
+    colors?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
+      background?: string;
+      text_primary?: string;
+    };
+    layout?: {
+      card_radius?: string;
+    };
+  };
+}
+

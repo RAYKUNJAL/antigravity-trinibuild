@@ -132,7 +132,8 @@ const App: React.FC = () => {
               <Route path="/services/living" element={<LivingLanding />} />
 
               {/* Store Builder & Storefront */}
-              <Route path="/store/builder" element={<ProtectedRoute><StoreBuilder /></ProtectedRoute>} />
+              <Route path="/store/builder" element={<StoreBuilder />} />
+              <Route path="/store-builder" element={<StoreBuilder />} />
               <Route path="/store/:slug/v2" element={<StorefrontV2 />} />
 
               {/* Ticket Ecosystem */}
