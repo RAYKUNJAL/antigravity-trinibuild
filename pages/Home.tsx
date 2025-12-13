@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, Ticket, UserCheck, Clock, FileText } from 'lucide-react';
+import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, Ticket, UserCheck, Clock, FileText, Store, Building2, Users, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAdConfig, AdConfig } from '../services/adService';
 import { AdSpot } from '../components/AdSpot';
@@ -191,48 +191,61 @@ export const Home: React.FC = () => {
                   </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-2 gap-6 h-auto md:h-[600px]">
+               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-                  {/* Marketplace - Large Tile */}
-                  <div className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100 cursor-pointer" onClick={() => navigate('/classifieds')}>
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
+                  {/* Marketplace - Feature Tile */}
+                  <div className="md:col-span-2 relative group overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100 cursor-pointer hover:shadow-2xl transition-all" onClick={() => navigate('/classifieds')}>
+                     <div className="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-blue-900/50 to-transparent z-10"></div>
                      <img src="https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=2070&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Marketplace" />
                      <div className="absolute bottom-0 left-0 p-8 z-20 text-white">
                         <div className="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
                            <ShoppingCart className="h-6 w-6" />
                         </div>
                         <h3 className="text-3xl font-bold mb-2">Marketplace</h3>
-                        <p className="text-gray-200 mb-4">Open your free store today. List up to 10 items for free. Shop Verified.</p>
-                        <span className="inline-flex items-center font-bold text-blue-300 group-hover:text-white transition-colors">Start Shopping <ArrowRight className="ml-2 h-4 w-4" /></span>
+                        <p className="text-gray-200 mb-4">Buy & sell anything. Open your free store. 10 free listings.</p>
+                        <span className="inline-flex items-center font-bold text-blue-300 group-hover:text-white transition-colors">Shop Now <ArrowRight className="ml-2 h-4 w-4" /></span>
                      </div>
                   </div>
 
-                  {/* Jobs - Tall Tile */}
-                  <div className="md:col-span-1 md:row-span-2 relative group overflow-hidden rounded-3xl bg-gray-900 shadow-xl border border-gray-800 cursor-pointer" onClick={() => navigate('/jobs')}>
+                  {/* Living / Real Estate - Feature Tile */}
+                  <div className="md:col-span-2 relative group overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100 cursor-pointer hover:shadow-2xl transition-all" onClick={() => navigate('/real-estate')}>
+                     <div className="absolute inset-0 bg-gradient-to-t from-teal-900/90 via-teal-900/50 to-transparent z-10"></div>
+                     <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Real Estate" />
+                     <div className="absolute bottom-0 left-0 p-8 z-20 text-white">
+                        <div className="bg-teal-600 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+                           <Building2 className="h-6 w-6" />
+                        </div>
+                        <h3 className="text-3xl font-bold mb-2">Living</h3>
+                        <p className="text-gray-200 mb-4">Find your next home. Rent or buy. Verified property listings.</p>
+                        <span className="inline-flex items-center font-bold text-teal-300 group-hover:text-white transition-colors">Browse Properties <ArrowRight className="ml-2 h-4 w-4" /></span>
+                     </div>
+                  </div>
+
+                  {/* Jobs / TriniWorks */}
+                  <div className="relative group overflow-hidden rounded-3xl bg-gray-900 shadow-xl border border-gray-800 cursor-pointer hover:shadow-2xl transition-all" onClick={() => navigate('/jobs')}>
                      <div className="absolute inset-0 bg-gradient-to-b from-purple-900/50 to-black/90 z-10"></div>
-                     <div className="absolute inset-0 p-6 z-20 flex flex-col justify-end">
-                        <div className="bg-purple-600 w-10 h-10 rounded-lg flex items-center justify-center mb-4">
-                           <Briefcase className="h-5 w-5 text-white" />
+                     <div className="relative p-6 z-20 h-full flex flex-col justify-between min-h-[200px]">
+                        <div className="flex justify-between items-start">
+                           <div className="bg-purple-600 w-10 h-10 rounded-lg flex items-center justify-center text-white">
+                              <Briefcase className="h-5 w-5" />
+                           </div>
+                           <span className="bg-purple-500/20 text-purple-300 text-xs font-bold px-2 py-1 rounded-full border border-purple-500/30">Hiring</span>
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">TriniWorks</h3>
-                        <p className="text-gray-400 text-sm mb-4">Can't Find Good Help? Hire Vetted Pros.</p>
-                        <div className="space-y-2">
-                           <div className="flex items-center text-xs text-gray-300 bg-white/10 p-2 rounded-lg">
-                              <Check className="h-3 w-3 text-green-400 mr-2" /> Plumbers
-                           </div>
-                           <div className="flex items-center text-xs text-gray-300 bg-white/10 p-2 rounded-lg">
-                              <Check className="h-3 w-3 text-green-400 mr-2" /> Electricians
-                           </div>
-                           <div className="flex items-center text-xs text-gray-300 bg-white/10 p-2 rounded-lg">
-                              <Check className="h-3 w-3 text-green-400 mr-2" /> Mechanics
+                        <div>
+                           <h3 className="text-2xl font-bold text-white mb-1">Jobs</h3>
+                           <p className="text-gray-400 text-sm mb-3">Hire vetted pros or find work.</p>
+                           <div className="flex flex-wrap gap-2">
+                              <span className="text-xs text-gray-300 bg-white/10 px-2 py-1 rounded">Plumbers</span>
+                              <span className="text-xs text-gray-300 bg-white/10 px-2 py-1 rounded">Electricians</span>
+                              <span className="text-xs text-gray-300 bg-white/10 px-2 py-1 rounded">+50 more</span>
                            </div>
                         </div>
                      </div>
                   </div>
 
-                  {/* Rides - Small Tile */}
-                  <div className="md:col-span-1 relative group overflow-hidden rounded-3xl bg-green-50 shadow-lg border border-green-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/rides')}>
-                     <div className="p-6 h-full flex flex-col justify-between">
+                  {/* Rides */}
+                  <div className="relative group overflow-hidden rounded-3xl bg-green-50 shadow-lg border border-green-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/rides')}>
+                     <div className="p-6 h-full flex flex-col justify-between min-h-[200px]">
                         <div className="flex justify-between items-start">
                            <div className="bg-green-500 w-10 h-10 rounded-lg flex items-center justify-center text-white">
                               <Car className="h-5 w-5" />
@@ -241,14 +254,14 @@ export const Home: React.FC = () => {
                         </div>
                         <div>
                            <h3 className="text-xl font-bold text-gray-900">Rides</h3>
-                           <p className="text-sm text-gray-500">Travel Safe. Tracked Rides.</p>
+                           <p className="text-sm text-gray-500">Safe, tracked rides across T&T.</p>
                         </div>
                      </div>
                   </div>
 
-                  {/* Tickets - Small Tile */}
-                  <div className="md:col-span-1 relative group overflow-hidden rounded-3xl bg-pink-50 shadow-lg border border-pink-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/tickets')}>
-                     <div className="p-6 h-full flex flex-col justify-between">
+                  {/* Tickets / Events */}
+                  <div className="relative group overflow-hidden rounded-3xl bg-pink-50 shadow-lg border border-pink-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/tickets')}>
+                     <div className="p-6 h-full flex flex-col justify-between min-h-[200px]">
                         <div className="flex justify-between items-start">
                            <div className="bg-pink-500 w-10 h-10 rounded-lg flex items-center justify-center text-white">
                               <Ticket className="h-5 w-5" />
@@ -257,7 +270,23 @@ export const Home: React.FC = () => {
                         </div>
                         <div>
                            <h3 className="text-xl font-bold text-gray-900">Events</h3>
-                           <p className="text-sm text-gray-500">No Scalpers. Real Tickets.</p>
+                           <p className="text-sm text-gray-500">Legit tickets. No scalpers.</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Stores / Directory */}
+                  <div className="relative group overflow-hidden rounded-3xl bg-orange-50 shadow-lg border border-orange-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/stores')}>
+                     <div className="p-6 h-full flex flex-col justify-between min-h-[200px]">
+                        <div className="flex justify-between items-start">
+                           <div className="bg-orange-500 w-10 h-10 rounded-lg flex items-center justify-center text-white">
+                              <Store className="h-5 w-5" />
+                           </div>
+                           <span className="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded-full">5K+ Stores</span>
+                        </div>
+                        <div>
+                           <h3 className="text-xl font-bold text-gray-900">Stores</h3>
+                           <p className="text-sm text-gray-500">Discover local businesses.</p>
                         </div>
                      </div>
                   </div>
