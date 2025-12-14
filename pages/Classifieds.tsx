@@ -1,26 +1,88 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, Filter, Camera, MapPin, DollarSign, Tag, Clock, MessageCircle, ChevronRight, TrendingUp, Star } from 'lucide-react';
+import { Search, Filter, Camera, MapPin, DollarSign, Tag, Clock, MessageCircle, ChevronRight, TrendingUp, Star, X, Upload, Loader } from 'lucide-react';
 import { AdSpot } from '../components/AdSpot';
+import { classifiedService, ClassifiedListing } from '../services/classifiedService';
+import { supabase } from '../services/supabaseClient';
 
 export const Classifieds: React.FC = () => {
    const [activeCategory, setActiveCategory] = useState('All');
+   const [searchTerm, setSearchTerm] = useState('');
+   const [listings, setListings] = useState<ClassifiedListing[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [showPostModal, setShowPostModal] = useState(false);
+   const [isSubmitting, setIsSubmitting] = useState(false);
 
-   const categories = ['All', 'Vehicles', 'Electronics', 'Furniture', 'Real Estate', 'Jobs', 'Services'];
+   // Post Ad Form State
+   const [newAd, setNewAd] = useState({
+      title: '',
+      price: '',
+      category: 'Vehicles',
+      location: '',
+      description: '',
+      phone: '',
+      images: [] as File[]
+   });
 
-   const items = [
-      { id: 1, title: "2018 Toyota Aqua", price: 65000, location: "Chaguanas", category: "Vehicles", image: "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?q=80&w=800", posted: "2 hrs ago", promoted: true },
-      { id: 2, title: "iPhone 14 Pro Max", price: 6500, location: "Port of Spain", category: "Electronics", image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=800", posted: "5 hrs ago", promoted: false },
-      { id: 3, title: "L-Shape Sofa Set", price: 2500, location: "Arima", category: "Furniture", image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800", posted: "1 day ago", promoted: false },
-      { id: 4, title: "Gaming PC Full Setup", price: 8000, location: "San Fernando", category: "Electronics", image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800", posted: "3 days ago", promoted: true },
-      { id: 5, title: "Honda Civic Rims 17 inch", price: 3000, location: "Curepe", category: "Vehicles", image: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800", posted: "1 week ago", promoted: false },
-   ];
+   const categories = ['All', 'Vehicles', 'Electronics', 'Furniture', 'Real Estate', 'Jobs', 'Services', 'Clothing', 'Tools', 'Other'];
 
-   const filteredItems = activeCategory === 'All' ? items : items.filter(i => i.category === activeCategory);
+   // Fetch Listings
+   useEffect(() => {
+      loadListings();
+   }, [activeCategory, searchTerm]);
 
-   const handleContact = (title: string) => {
-      alert(`Opening WhatsApp chat for: ${title}`);
+   const loadListings = async () => {
+      setLoading(true);
+      try {
+         const data = await classifiedService.getListings(activeCategory, searchTerm);
+         setListings(data);
+      } catch (err) {
+         console.error(err);
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   // Handle Post Ad
+   const handlePostAd = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      try {
+         const { data: { user } } = await supabase.auth.getUser();
+         if (!user) {
+            alert("Please sign in to post an ad.");
+            // Navigate to login or show auth modal (omitted for brevity)
+            return;
+         }
+
+         await classifiedService.createListing({
+            title: newAd.title,
+            price: parseFloat(newAd.price),
+            category: newAd.category,
+            location: newAd.location,
+            description: newAd.description,
+            contact_info: { phone: newAd.phone }
+         }, newAd.images);
+
+         alert("Ad posted successfully!");
+         setShowPostModal(false);
+         setNewAd({ title: '', price: '', category: 'Vehicles', location: '', description: '', phone: '', images: [] });
+         loadListings(); // Refresh feed
+      } catch (err) {
+         alert("Failed to post ad. Please try again.");
+         console.error(err);
+      } finally {
+         setIsSubmitting(false);
+      }
+   };
+
+   const handleContact = (title: string, phone?: string) => {
+      if (phone) {
+         window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi, I'm interested in your ad on TriniBuild: ${title}`, '_blank');
+      } else {
+         alert("No phone number provided.");
+      }
    };
 
    return (
@@ -33,6 +95,7 @@ export const Classifieds: React.FC = () => {
             <meta property="og:title" content="TriniBuild Market - Buy & Sell in Trinidad & Tobago" />
             <meta property="og:description" content="Free online classifieds for Trinidad & Tobago. List your items and reach thousands of local buyers." />
          </Helmet>
+
          <div className="min-h-screen bg-gray-50 font-sans pb-20">
             {/* Header */}
             <div className="bg-white shadow-sm border-b border-gray-200 py-8">
@@ -43,7 +106,7 @@ export const Classifieds: React.FC = () => {
                         <p className="text-gray-500">Buy and sell anything in Trinidad & Tobago.</p>
                      </div>
                      <div className="flex gap-3">
-                        <button onClick={() => alert("Post Ad Wizard")} className="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-purple-700 flex items-center">
+                        <button onClick={() => setShowPostModal(true)} className="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-purple-700 flex items-center transition-all hover:scale-105">
                            <Camera className="h-5 w-5 mr-2" /> Post Free Ad
                         </button>
                      </div>
@@ -53,9 +116,15 @@ export const Classifieds: React.FC = () => {
                   <div className="mt-8 flex flex-col md:flex-row gap-4">
                      <div className="relative flex-grow">
                         <Search className="absolute left-3 top-3 text-gray-400 h-5 w-5" />
-                        <input type="text" placeholder="What are you looking for?" className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" />
+                        <input
+                           type="text"
+                           placeholder="What are you looking for?"
+                           value={searchTerm}
+                           onChange={(e) => setSearchTerm(e.target.value)}
+                           className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500"
+                        />
                      </div>
-                     <div className="flex gap-2 overflow-x-auto pb-1">
+                     <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                         {categories.map(cat => (
                            <button
                               key={cat}
@@ -73,45 +142,57 @@ export const Classifieds: React.FC = () => {
             {/* Listings */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-               {/* Ad Spot */}
                <AdSpot page="classifieds" slot="top" className="mb-8" />
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {filteredItems.map(item => (
-                     <div key={item.id} className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all group ${item.promoted ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-gray-200'}`}>
-                        <div className="h-48 relative">
-                           <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                           {item.promoted && (
-                              <div className="absolute top-2 left-2 bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center">
-                                 <TrendingUp className="h-3 w-3 mr-1" /> Featured
+               {loading ? (
+                  <div className="text-center py-20">
+                     <Loader className="h-10 w-10 animate-spin text-purple-600 mx-auto mb-4" />
+                     <p className="text-gray-500">Loading listings...</p>
+                  </div>
+               ) : listings.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                     <Tag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                     <p className="text-gray-500 text-lg">No listings found.</p>
+                     <button onClick={() => setShowPostModal(true)} className="mt-4 text-purple-600 font-bold hover:underline">Post the first ad!</button>
+                  </div>
+               ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                     {listings.map(item => (
+                        <div key={item.id} className={`bg-white rounded-xl border overflow-hidden hover:shadow-lg transition-all group ${item.promoted ? 'border-yellow-400 ring-1 ring-yellow-400' : 'border-gray-200'}`}>
+                           <div className="h-48 relative bg-gray-100">
+                              <img src={item.images[0] || 'https://via.placeholder.com/400?text=No+Image'} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              {item.promoted && (
+                                 <div className="absolute top-2 left-2 bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center">
+                                    <TrendingUp className="h-3 w-3 mr-1" /> Featured
+                                 </div>
+                              )}
+                              <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded">
+                                 {new Date(item.created_at).toLocaleDateString()}
                               </div>
-                           )}
-                           <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded">
-                              {item.posted}
+                           </div>
+                           <div className="p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                 <h3 className="font-bold text-gray-900 line-clamp-1" title={item.title}>{item.title}</h3>
+                              </div>
+                              <p className="text-purple-700 font-extrabold text-lg mb-3">TT$ {item.price.toLocaleString()}</p>
+
+                              <div className="flex items-center text-xs text-gray-500 mb-4">
+                                 <MapPin className="h-3 w-3 mr-1" /> {item.location}
+                                 <span className="mx-2">•</span>
+                                 <Tag className="h-3 w-3 mr-1" /> {item.category}
+                              </div>
+
+                              <button
+                                 onClick={() => handleContact(item.title, item.contact_info?.phone || item.contact_info?.whatsapp)}
+                                 className="w-full border border-purple-600 text-purple-700 font-bold py-2 rounded-lg hover:bg-purple-50 flex items-center justify-center text-sm transition-colors"
+                              >
+                                 <MessageCircle className="h-4 w-4 mr-2" /> Chat Seller
+                              </button>
                            </div>
                         </div>
-                        <div className="p-4">
-                           <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-bold text-gray-900 line-clamp-1" title={item.title}>{item.title}</h3>
-                           </div>
-                           <p className="text-purple-700 font-extrabold text-lg mb-3">TT$ {item.price.toLocaleString()}</p>
-
-                           <div className="flex items-center text-xs text-gray-500 mb-4">
-                              <MapPin className="h-3 w-3 mr-1" /> {item.location}
-                              <span className="mx-2">•</span>
-                              <Tag className="h-3 w-3 mr-1" /> {item.category}
-                           </div>
-
-                           <button
-                              onClick={() => handleContact(item.title)}
-                              className="w-full border border-purple-600 text-purple-700 font-bold py-2 rounded-lg hover:bg-purple-50 flex items-center justify-center text-sm transition-colors"
-                           >
-                              <MessageCircle className="h-4 w-4 mr-2" /> Chat Seller
-                           </button>
-                        </div>
-                     </div>
-                  ))}
-               </div>
+                     ))}
+                  </div>
+               )}
             </div>
 
             {/* Monetization Strip */}
@@ -127,7 +208,84 @@ export const Classifieds: React.FC = () => {
                   </div>
                </div>
             </div>
+
+            {/* Post Ad Modal */}
+            {showPostModal && (
+               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                     <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                        <h2 className="text-2xl font-bold text-gray-800">Post a New Ad</h2>
+                        <button onClick={() => setShowPostModal(false)} className="text-gray-400 hover:text-gray-600"><X /></button>
+                     </div>
+                     <form onSubmit={handlePostAd} className="p-6 space-y-6">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+                              <input required type="text" className="w-full border rounded-lg p-3" placeholder="e.g. 2015 Kia Sportage" value={newAd.title} onChange={e => setNewAd({ ...newAd, title: e.target.value })} />
+                           </div>
+                           <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-2">Price (TTD)</label>
+                              <div className="relative">
+                                 <DollarSign className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                 <input required type="number" className="w-full border rounded-lg pl-10 p-3" placeholder="0.00" value={newAd.price} onChange={e => setNewAd({ ...newAd, price: e.target.value })} />
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                              <select className="w-full border rounded-lg p-3" value={newAd.category} onChange={e => setNewAd({ ...newAd, category: e.target.value })}>
+                                 {categories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                           </div>
+                           <div>
+                              <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                              <input required type="text" className="w-full border rounded-lg p-3" placeholder="e.g. Chaguanas" value={newAd.location} onChange={e => setNewAd({ ...newAd, location: e.target.value })} />
+                           </div>
+                        </div>
+
+                        <div>
+                           <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                           <textarea required rows={4} className="w-full border rounded-lg p-3" placeholder="Describe your item..." value={newAd.description} onChange={e => setNewAd({ ...newAd, description: e.target.value })} />
+                        </div>
+
+                        <div>
+                           <label className="block text-sm font-bold text-gray-700 mb-2">Photos</label>
+                           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
+                              <input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => e.target.files && setNewAd({ ...newAd, images: Array.from(e.target.files) })} />
+                              <Camera className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                              <p className="text-gray-500 text-sm font-medium">Click to upload photos</p>
+                              {newAd.images.length > 0 && <p className="text-green-600 font-bold mt-2">{newAd.images.length} files selected</p>}
+                           </div>
+                        </div>
+
+                        <div>
+                           <label className="block text-sm font-bold text-gray-700 mb-2">Contact Number (WhatsApp)</label>
+                           <input required type="tel" className="w-full border rounded-lg p-3" placeholder="e.g. 868-123-4567" value={newAd.phone} onChange={e => setNewAd({ ...newAd, phone: e.target.value })} />
+                        </div>
+
+                        <div className="pt-4 border-t">
+                           <button disabled={isSubmitting} type="submit" className="w-full bg-purple-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-purple-700 transition-all flex items-center justify-center text-lg disabled:opacity-50">
+                              {isSubmitting ? (
+                                 <>
+                                    <Loader className="mr-2 animate-spin" /> Posting...
+                                 </>
+                              ) : (
+                                 <>
+                                    Post Ad Now <ChevronRight className="ml-2 h-5 w-5" />
+                                 </>
+                              )}
+                           </button>
+                           <p className="text-center text-xs text-gray-500 mt-2">By posting, you agree to our Terms of Service.</p>
+                        </div>
+                     </form>
+                  </div>
+               </div>
+            )}
          </div>
       </>
    );
 };
+
