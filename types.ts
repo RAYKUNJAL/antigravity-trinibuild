@@ -230,3 +230,24 @@ export interface Theme {
   };
 }
 
+// Google Maps PlaceResult Mock/Type
+export interface PlaceResult {
+  place_id: string;
+  name: string;
+  formatted_address?: string;
+  geometry?: {
+    location: any;
+    viewport?: any;
+  };
+  rating?: number;
+  user_ratings_total?: number;
+  photos?: any[];
+  types?: string[];
+  url?: string;
+  website?: string;
+  opening_hours?: {
+    open_now: boolean;
+    weekday_text?: string[];
+  };
+}
+
