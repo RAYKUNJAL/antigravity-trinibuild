@@ -98,9 +98,16 @@ export const StoreBuilder: React.FC = () => {
                 customersChange: 15.2,
                 conversionChange: 2.1
             });
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error loading store:', err);
-            setError('Failed to load store data');
+            const errorMessage = err?.message || 'Failed to load store data';
+            if (errorMessage.includes('JWT')) {
+                setError('Session expired. Please log in again.');
+            } else if (errorMessage.includes('network')) {
+                setError('Network error. Please check your connection and try again.');
+            } else {
+                setError(`Unable to load store: ${errorMessage}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -115,8 +122,16 @@ export const StoreBuilder: React.FC = () => {
         setSaving(true);
         try {
             await storeService.updateStore(store.id, store);
-        } catch (err) {
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            successMsg.textContent = '✓ Changes saved successfully';
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+        } catch (err: any) {
             console.error('Save failed:', err);
+            const errorMsg = err?.message || 'Failed to save changes';
+            alert(`Error: ${errorMsg}. Please try again.`);
         } finally {
             setSaving(false);
         }
@@ -156,7 +171,7 @@ export const StoreBuilder: React.FC = () => {
                         <div className="flex items-center justify-between mb-2">
                             <h2 className="font-bold text-gray-900 truncate">{store?.name || 'Loading...'}</h2>
                             <button
-                                onClick={() => store && navigate(`/store/${store.slug}`)}
+                                onClick={() => store && navigate(`/store/${store.slug}?preview=true`)}
                                 className="p-1 hover:bg-gray-100 rounded"
                                 title="Preview Store"
                             >
