@@ -26,6 +26,9 @@ import { DriveWithUs } from './pages/DriveWithUs';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
+import { About } from './pages/About';
+import { Features } from './pages/Features';
+import { Events } from './pages/Events';
 import { Blog } from './pages/Blog';
 import { BlogPost } from './pages/BlogPost';
 import { BlogGenerator } from './pages/BlogGenerator';
@@ -206,6 +209,9 @@ const App: React.FC = () => {
             </Route>
 
             <Route element={<PageLayout />}>
+              <Route path="/about" element={<About />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
 
               {/* Legal Documents */}
