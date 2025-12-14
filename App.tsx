@@ -41,7 +41,7 @@ import {
   TrafficHub, AdsEngine, ContentAICenter, UserManagement,
   TrustSafety, FinancePayouts, SystemHealth, DeveloperTools,
   MarketplaceMonitor, JobsMonitor, RealEstateMonitor, RideshareFleet,
-  TicketsMonitor, ReportsAnalytics
+  TicketsMonitor, ReportsAnalytics, VideoControlCenter
 } from './components/admin';
 import { MessagingCenter } from './pages/admin/MessagingCenter';
 import { Automations } from './pages/admin/Automations';
@@ -187,6 +187,7 @@ const App: React.FC = () => {
               <Route index element={<CommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
+              <Route path="video-control" element={<VideoControlCenter />} />
               <Route path="seo-keyword-hub" element={<KeywordDashboard />} />
               <Route path="content-ai-center" element={<ContentAICenter />} />
               <Route path="user-management" element={<UserManagement />} />
