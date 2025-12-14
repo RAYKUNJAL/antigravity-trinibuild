@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye } from 'lucide-react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
@@ -13,6 +13,8 @@ const GooglePayButton = lazy(() => import('@google-pay/button-react'));
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const isPreview = searchParams.get('preview') === 'true';
 
     // State
     const [store, setStore] = useState<Store | null>(null);
@@ -296,6 +298,20 @@ export const StorefrontV2: React.FC = () => {
             </Helmet>
 
             <div className="min-h-screen bg-gray-50">
+                {/* Preview Mode Banner */}
+                {isPreview && (
+                    <div className="bg-yellow-500 text-gray-900 text-center py-3 px-4 text-sm font-bold flex items-center justify-center gap-3">
+                        <Eye className="h-4 w-4" />
+                        <span>Preview Mode - This is how your store will look to customers</span>
+                        <button
+                            onClick={() => navigate('/store-builder')}
+                            className="ml-4 bg-white text-gray-900 px-4 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                            Back to Builder
+                        </button>
+                    </div>
+                )}
+
                 {/* Top Announcement Bar - CRO Element */}
                 <div className="bg-gradient-to-r from-trini-red to-red-600 text-white text-center py-2 px-4 text-sm font-bold">
                     <Truck className="inline h-4 w-4 mr-2" />

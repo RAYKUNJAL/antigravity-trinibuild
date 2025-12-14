@@ -133,9 +133,9 @@ const App: React.FC = () => {
               <Route path="/services/living" element={<LivingLanding />} />
 
               {/* Store Builder & Storefront */}
-              <Route path="/store/builder" element={<StoreBuilder />} />
               <Route path="/store-builder" element={<StoreBuilder />} />
-              <Route path="/store/:slug/v2" element={<StorefrontV2 />} />
+              <Route path="/store/builder" element={<Navigate to="/store-builder" replace />} />
+              <Route path="/store/:slug/v2" element={<Navigate to="/store/:slug" replace />} />
 
               {/* Ticket Ecosystem */}
               <Route path="/solutions/tickets" element={<TicketsLanding />} />
