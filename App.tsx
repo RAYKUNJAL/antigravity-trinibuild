@@ -164,6 +164,7 @@ const App: React.FC = () => {
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
               <Route path="/drive/signup" element={<DriverOnboarding />} />
               <Route path="/driver/hub" element={<DriverHub />} />
+              <Route path="/driver/dashboard" element={<DriverHub />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
