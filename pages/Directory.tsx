@@ -17,45 +17,70 @@ declare global {
 const GOOGLE_MAPS_KEY = 'AIzaSyAbjOn5lpjfYw6Ig3M-KWU1y0JP5z0LbPM';
 
 const CATEGORIES = [
-  // Food & Drink
-  { id: 'restaurant', label: 'Restaurants', icon: '🍽️' },
-  { id: 'street_food', label: 'Doubles & Street Food', icon: '🌮' },
-  { id: 'roti_shop', label: 'Roti Shops', icon: '🥘' },
-  { id: 'bakery', label: 'Bakeries', icon: '🥐' },
-  { id: 'bar', label: 'Bars & Liming', icon: '🍻' },
-  { id: 'cafe', label: 'Cafes', icon: '☕' },
+  // Food & Dining
+  { id: 'street_food', label: 'Doubles & Street Food', icon: '🌮', keywords: ['Street Food', 'Doubles'] },
+  { id: 'roti_shop', label: 'Roti Shops', icon: '🥘', keywords: ['Roti Shop'] },
+  { id: 'bbq', label: 'BBQ / Grill', icon: '🍖', keywords: ['BBQ'] },
+  { id: 'restaurant', label: 'Restaurants', icon: '🍽️', keywords: ['Restaurant'] },
+  { id: 'fast_food', label: 'Fast Food', icon: '🍔', keywords: ['Fast Food'] },
+  { id: 'chinese_restaurant', label: 'Chinese', icon: '🥡', keywords: ['Chinese'] },
+  { id: 'bakery', label: 'Bakery', icon: '🥐', keywords: ['Bakery'] },
+  { id: 'cafe', label: 'Cafe', icon: '☕', keywords: ['Cafe'] },
+  { id: 'catering', label: 'Catering', icon: '👩‍🍳', keywords: ['Catering'] },
+  { id: 'bar', label: 'Bar & Lounge', icon: '🍻', keywords: ['Bar'] },
+  { id: 'souse', label: 'Soup & Souse', icon: '🥣', keywords: ['Souse'] },
 
-  // Shopping
-  { id: 'supermarket', label: 'Supermarkets', icon: '🛒' },
-  { id: 'clothing_store', label: 'Fashion', icon: '👗' },
-  { id: 'electronics_store', label: 'Electronics', icon: '📱' },
-  { id: 'hardware_store', label: 'Hardware', icon: '🔨' },
-  { id: 'furniture_store', label: 'Furniture', icon: '🛋️' },
-  { id: 'store', label: 'General Stores', icon: '🛍️' },
+  // Retail
+  { id: 'supermarket', label: 'Supermarket', icon: '🛒', keywords: ['Supermarket'] },
+  { id: 'parlour', label: 'Parlour / Variety', icon: '🏪', keywords: ['Parlour'] },
+  { id: 'clothing_store', label: 'Fashion', icon: '👗', keywords: ['Fashion'] },
+  { id: 'electronics_store', label: 'Electronics', icon: '📱', keywords: ['Electronics'] },
+  { id: 'hardware_store', label: 'Hardware', icon: '🔨', keywords: ['Hardware'] },
+  { id: 'auto_parts_store', label: 'Auto Parts', icon: '⚙️', keywords: ['Auto Parts'] },
+  { id: 'furniture_store', label: 'Furniture', icon: '🛋️', keywords: ['Furniture'] },
+  { id: 'beauty_supply', label: 'Beauty Supply', icon: '💄', keywords: ['Beauty Retail'] },
+  { id: 'pharmacy', label: 'Pharmacy', icon: '💊', keywords: ['Pharmacy'] },
+  { id: 'puja_store', label: 'Puja Store', icon: '🕉️', keywords: ['Puja'] },
+  { id: 'agro_shop', label: 'Agro Shop', icon: '🌱', keywords: ['Agro Shop'] },
+  { id: 'souvenir_store', label: 'Souvenirs', icon: '🎁', keywords: ['Souvenir'] },
+  { id: 'book_store', label: 'Bookstore', icon: '📚', keywords: ['Bookstore'] },
 
-  // Services
-  { id: 'car_repair', label: 'Mechanic & Auto', icon: '🔧' },
-  { id: 'taxi_stand', label: 'Taxi & Transport', icon: '🚕' },
-  { id: 'beauty_salon', label: 'Beauty & Spas', icon: '💅' },
-  { id: 'plumber', label: 'Plumbing', icon: '🚿' },
-  { id: 'electrician', label: 'Electrical', icon: '⚡' },
-  { id: 'laundry', label: 'Cleaning & Laundry', icon: '🧺' },
+  // Trades
+  { id: 'car_repair', label: 'Mechanic', icon: '🔧', keywords: ['Mechanic'] },
+  { id: 'electrician', label: 'Electrician', icon: '⚡', keywords: ['Electrician'] },
+  { id: 'plumber', label: 'Plumber', icon: '🚰', keywords: ['Plumbing'] },
+  { id: 'hvac', label: 'AC Tech', icon: '❄️', keywords: ['AC Tech'] },
+  { id: 'general_contractor', label: 'Construction', icon: '👷', keywords: ['Construction', 'Masonry'] },
+  { id: 'welder', label: 'Welding', icon: '👨‍🏭', keywords: ['Welding'] },
+  { id: 'carpenter', label: 'Woodworking', icon: '🪚', keywords: ['Woodworking'] },
+  { id: 'landscaping', label: 'Landscaping', icon: '🌳', keywords: ['Landscaping'] },
+  { id: 'cleaning_services', label: 'Cleaning', icon: '🧹', keywords: ['Cleaning'] },
 
-  // Professional
-  { id: 'doctor', label: 'Doctors & Medical', icon: '👨‍⚕️' },
-  { id: 'pharmacy', label: 'Pharmacies', icon: '💊' },
-  { id: 'lawyer', label: 'Legal', icon: '⚖️' },
-  { id: 'real_estate_agency', label: 'Real Estate', icon: '🏠' },
-  { id: 'bank', label: 'Banks', icon: '🏦' },
-  { id: 'gym', label: 'Gyms', icon: '💪' },
+  // Personal Services
+  { id: 'taxi_stand', label: 'Taxi / Rides', icon: '🚕', keywords: ['Taxi'] },
+  { id: 'beauty_salon', label: 'Beauty / Spa', icon: '💅', keywords: ['Beauty'] },
+  { id: 'barber_shop', label: 'Barber', icon: '✂️', keywords: ['Barber'] },
+  { id: 'tailor', label: 'Tailoring', icon: '🧵', keywords: ['Tailor'] },
+  { id: 'gym', label: 'Fitness', icon: '💪', keywords: ['Fitness'] },
+  { id: 'school', label: 'Education / Tutors', icon: '🎓', keywords: ['Tutor'] },
 
-  // Tourism & Misc
-  { id: 'lodging', label: 'Hotels & Guest Houses', icon: '🏨' },
-  { id: 'travel_agency', label: 'Travel Agents', icon: '✈️' },
-  { id: 'farm', label: 'Agriculture', icon: '🚜' },
-  { id: 'carnival', label: 'Carnival & Mas', icon: '🎭' },
-  { id: 'night_club', label: 'Night Life', icon: '🎵' },
-  { id: 'police', label: 'Police', icon: '👮' },
+  // Pro Services
+  { id: 'doctor', label: 'Medical', icon: '👨‍⚕️', keywords: ['Medical'] },
+  { id: 'lawyer', label: 'Legal', icon: '⚖️', keywords: ['Legal'] },
+  { id: 'real_estate_agency', label: 'Real Estate', icon: '🏠', keywords: ['Real Estate'] },
+  { id: 'insurance_agency', label: 'Insurance', icon: '🛡️', keywords: ['Insurance'] },
+  { id: 'accounting', label: 'Accounting', icon: '📊', keywords: ['Accounting'] },
+  { id: 'consultant', label: 'Consulting', icon: '💼', keywords: ['Consulting', 'Tech Services'] },
+
+  // Events
+  { id: 'event_planner', label: 'Event Planning', icon: '🎉', keywords: ['Event Planning', 'Promoter'] },
+  { id: 'photographer', label: 'Photography', icon: '📸', keywords: ['Photography'] },
+  { id: 'night_club', label: 'Night Life / DJ', icon: '🎵', keywords: ['DJ', 'Night Life'] },
+
+  // Ag / Other
+  { id: 'farm', label: 'Farming', icon: '🚜', keywords: ['Farming', 'Livestock'] },
+  { id: 'fishing_store', label: 'Fishing', icon: '🎣', keywords: ['Fishing'] },
+  { id: 'manufacturer', label: 'Manufacturing', icon: '🏭', keywords: ['Manufacturing'] }
 ];
 
 // Comprehensive list of places in Trinidad & Tobago
@@ -363,7 +388,7 @@ export const Directory: React.FC = () => {
           // It's a valid type
           request.type = type;
           serviceRef.current.nearbySearch(request, (results: PlaceResult[], status: any) => {
-            handleSearchResults(results, status);
+            handleSearchResults(results, status, undefined, center.lat(), center.lng(), type);
           });
         } else {
           // It's a custom keyword (e.g. roti_shop, street_food)
@@ -372,7 +397,7 @@ export const Directory: React.FC = () => {
           delete request.type;
 
           serviceRef.current.nearbySearch(request, (results: PlaceResult[], status: any) => {
-            handleSearchResults(results, status);
+            handleSearchResults(results, status, undefined, center.lat(), center.lng(), type);
           });
         }
       } else {
@@ -384,11 +409,23 @@ export const Directory: React.FC = () => {
     }
   };
 
-  const handleSearchResults = (results: PlaceResult[], status: any, query?: string, lat?: number, lng?: number) => {
+  const handleSearchResults = (results: PlaceResult[], status: any, query?: string, lat?: number, lng?: number, type?: string) => {
     let combinedResults: PlaceResult[] = [];
 
-    // Filter local stores based on query
+    // Filter local stores based on query OR category
     const matchingLocalStores = localStores.filter(store => {
+      // 1. Filter by Category Type
+      if (type) {
+        const category = CATEGORIES.find(c => c.id === type);
+        if (category && category.keywords) {
+          const storeCat = (store.category || '').toLowerCase();
+          // Check if store category includes any of the keywords
+          const matches = category.keywords.some(k => storeCat.includes(k.toLowerCase()));
+          if (!matches) return false;
+        }
+      }
+
+      // 2. Filter by Query
       if (!query) return true;
       return store.businessName.toLowerCase().includes(query.toLowerCase()) ||
         store.description?.toLowerCase().includes(query.toLowerCase());
@@ -398,7 +435,9 @@ export const Directory: React.FC = () => {
       formatted_address: store.address || "Trinidad & Tobago",
       geometry: {
         location: {
-        }, // Mock location with slight randomization
+          lat: lat || 10.65,
+          lng: lng || -61.50
+        } as any,
         viewport: null
       },
       rating: 5.0,
