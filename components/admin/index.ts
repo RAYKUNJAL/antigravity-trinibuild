@@ -16,3 +16,4 @@ export { TicketsMonitor } from './TicketsMonitor';
 export { ReportsAnalytics } from './ReportsAnalytics';
 export { MessagingCenter } from './MessagingCenter';
 export { Automations } from './Automations';
+export { VideoControlCenter } from './VideoControlCenter';
