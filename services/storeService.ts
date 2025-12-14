@@ -115,6 +115,39 @@ export const storeService = {
         }));
     },
 
+    // Validate discount code
+    validateDiscount: async (storeId: string, code: string, subtotal: number): Promise<{ valid: boolean; discount?: number; type?: string; error?: string }> => {
+        const { data: store, error } = await supabase
+            .from('stores')
+            .select('settings')
+            .eq('id', storeId)
+            .single();
+
+        if (error || !store) return { valid: false, error: 'Store not found' };
+
+        const settings = store.settings as any;
+        const discounts = settings?.marketing?.discounts || [];
+
+        const discount = discounts.find((d: any) => d.code === code && d.active);
+
+        if (!discount) return { valid: false, error: 'Invalid or inactive code' };
+
+        if (discount.expiresAt && new Date(discount.expiresAt) < new Date()) {
+            return { valid: false, error: 'Code expired' };
+        }
+
+        let amount = 0;
+        if (discount.type === 'percentage') {
+            amount = (subtotal * discount.value) / 100;
+        } else {
+            amount = discount.value;
+        }
+
+        if (amount > subtotal) amount = subtotal;
+
+        return { valid: true, discount: amount, type: discount.type };
+    },
+
     // Create a new store
     createStore: async (storeData: CreateStoreData): Promise<Store | null> => {
         const { data: { user } } = await supabase.auth.getUser();

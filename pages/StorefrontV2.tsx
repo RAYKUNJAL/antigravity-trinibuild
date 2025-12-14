@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { storeService } from '../services/storeService';
+import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import type { Store, Product } from '../types';
 
@@ -36,6 +37,11 @@ export const StorefrontV2: React.FC = () => {
     });
     const [processing, setProcessing] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
+
+    // Discount State
+    const [promoCode, setPromoCode] = useState('');
+    const [activeDiscount, setActiveDiscount] = useState<{ code: string; amount: number; type: string } | null>(null);
+    const [discountError, setDiscountError] = useState('');
 
     // Load store data
     useEffect(() => {
@@ -80,6 +86,13 @@ export const StorefrontV2: React.FC = () => {
 
     // Cart actions
     const addToCart = (product: Product) => {
+        // Commercial Grade: Inventory Check
+        const currentInCart = cart.find(item => item.id === product.id)?.quantity || 0;
+        if (product.stock !== undefined && currentInCart + 1 > product.stock) {
+            alert(`Sorry, only ${product.stock} items available!`);
+            return;
+        }
+
         setCart(prev => {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
@@ -99,6 +112,14 @@ export const StorefrontV2: React.FC = () => {
             return prev.map(item => {
                 if (item.id === productId) {
                     const newQty = item.quantity + delta;
+
+                    // Commercial Grade: Inventory Check
+                    const product = products.find(p => p.id === productId);
+                    if (delta > 0 && product?.stock !== undefined && newQty > product.stock) {
+                        alert(`Only ${product.stock} items available`);
+                        return item;
+                    }
+
                     return newQty > 0 ? { ...item, quantity: newQty } : item;
                 }
                 return item;
@@ -109,6 +130,26 @@ export const StorefrontV2: React.FC = () => {
     const removeFromCart = (productId: string) => {
         setCart(prev => prev.filter(item => item.id !== productId));
     };
+
+    const handleApplyPromo = async () => {
+        setDiscountError('');
+        if (!store?.id || !promoCode) return;
+
+        const result = await storeService.validateDiscount(store.id, promoCode, cartTotal);
+
+        if (result.valid && result.discount !== undefined) {
+            setActiveDiscount({ code: promoCode, amount: result.discount, type: result.type || 'fixed' });
+        } else {
+            setDiscountError(result.error || 'Invalid code');
+            setActiveDiscount(null);
+        }
+    };
+
+    // Calculate Final Total
+    const finalTotal = useMemo(() => {
+        const discount = activeDiscount ? activeDiscount.amount : 0;
+        return Math.max(0, cartTotal - discount);
+    }, [cartTotal, activeDiscount]);
 
     // Checkout flow
     const handleCheckout = async () => {
@@ -130,7 +171,24 @@ export const StorefrontV2: React.FC = () => {
         if (checkoutStep === 'payment') {
             setProcessing(true);
             try {
-                const newOrderId = `ORD-${Date.now()}`;
+                // 1. Create Persistent Order
+                const order = await storeService.createOrder({
+                    store_id: store?.id,
+                    // Use a placeholder UUID for guests if no auth (assuming DB allows or we handle auth later)
+                    customer_id: '00000000-0000-0000-0000-000000000000',
+                    total: finalTotal,
+                    status: 'pending',
+                    delivery_address: JSON.stringify(shippingInfo),
+                }, cart.map(item => ({
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    unit_price: item.price,
+                    total_price: item.price * item.quantity
+                })));
+
+                if (!order) throw new Error("Failed to create order record");
+                const newOrderId = order.id;
+                setOrderId(newOrderId);
 
                 const paymentConfig = {
                     method: paymentMethod,
@@ -659,9 +717,42 @@ export const StorefrontV2: React.FC = () => {
                                 {/* Cart Footer */}
                                 {checkoutStep !== 'success' && cart.length > 0 && (
                                     <div className="border-t px-6 py-4 bg-gray-50">
-                                        <div className="flex justify-between text-lg font-bold mb-4">
-                                            <span>Total:</span>
-                                            <span className="text-trini-red">TT${cartTotal.toFixed(2)}</span>
+                                        {/* Promo Code Input */}
+                                        {checkoutStep === 'cart' && (
+                                            <div className="mb-4">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Promo Code"
+                                                        value={promoCode}
+                                                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                                        className="flex-1 border rounded-lg px-3 py-2 text-sm uppercase"
+                                                    />
+                                                    <button
+                                                        onClick={handleApplyPromo}
+                                                        className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-black transition-colors"
+                                                    >Apply</button>
+                                                </div>
+                                                {discountError && <p className="text-red-500 text-xs mt-1">{discountError}</p>}
+                                                {activeDiscount && <p className="text-green-600 text-xs mt-1">Code applied: -${activeDiscount.amount.toFixed(2)}</p>}
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-2 mb-4">
+                                            <div className="flex justify-between text-gray-600 text-sm">
+                                                <span>Subtotal:</span>
+                                                <span>TT${cartTotal.toFixed(2)}</span>
+                                            </div>
+                                            {activeDiscount && (
+                                                <div className="flex justify-between text-green-600 text-sm">
+                                                    <span>Discount ({activeDiscount.code}):</span>
+                                                    <span>-TT${activeDiscount.amount.toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                                                <span>Total:</span>
+                                                <span className="text-trini-red">TT${finalTotal.toFixed(2)}</span>
+                                            </div>
                                         </div>
                                         <div className="flex gap-3">
                                             {checkoutStep !== 'cart' && (
