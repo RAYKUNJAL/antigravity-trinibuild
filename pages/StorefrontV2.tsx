@@ -237,6 +237,36 @@ export const StorefrontV2: React.FC = () => {
         }
     };
 
+    // Dynamic Theme Styles
+    const themeStyles = useMemo(() => {
+        if (!store?.color_scheme) return '';
+        const primary = store.color_scheme.primary;
+
+        return `
+            :root {
+                --store-primary: ${primary};
+            }
+            .text-trini-red { color: var(--store-primary) !important; }
+            .bg-trini-red { background-color: var(--store-primary) !important; }
+            .border-trini-red { border-color: var(--store-primary) !important; }
+            
+            /* Hover states */
+            .hover\\:bg-trini-red:hover { background-color: var(--store-primary) !important; }
+            .hover\\:text-trini-red:hover { color: var(--store-primary) !important; }
+            
+            /* Focus rings */
+            .focus\\:ring-trini-red:focus { --tw-ring-color: var(--store-primary) !important; }
+            
+            /* General Red Overrides for consistency */
+            .bg-red-600 { background-color: var(--store-primary) !important; }
+            .text-red-600 { color: var(--store-primary) !important; }
+            .hover\\:bg-red-700:hover { filter: brightness(90%); background-color: var(--store-primary) !important; }
+            
+            /* Gradient adjustments (best effort) */
+            .from-trini-red { --tw-gradient-from: var(--store-primary) !important; }
+        `;
+    }, [store]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -264,6 +294,7 @@ export const StorefrontV2: React.FC = () => {
             {/* SEO Optimization */}
             <Helmet>
                 <title>{store.name} - Shop Online in Trinidad & Tobago | TriniBuild</title>
+                {themeStyles && <style>{themeStyles}</style>}
                 <meta name="description" content={store.description || `Shop at ${store.name} - Fast delivery across Trinidad & Tobago. Cash on delivery available.`} />
                 <meta name="keywords" content={`${store.name}, Trinidad shopping, online store, ${store.category}, TriniBuild`} />
 

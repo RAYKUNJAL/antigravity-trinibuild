@@ -1,0 +1,1832 @@
+{
+    "system": {
+        "name": "TriniBuild Store Builder",
+        "version": "2.0.0",
+        "environment": "production",
+        "region": "trinidad_tobago",
+        "timezone": "America/Port_of_Spain",
+        "language": "en_TT",
+        "currency": "TTD"
+    },
+    "wizard": {
+        "total_steps": 5,
+        "current_step": 0,
+        "estimated_completion_minutes": 8,
+        "auto_save": {
+            "enabled": true,
+            "debounce_ms": 2000,
+            "storage": "cloud",
+            "backup_interval_ms": 30000,
+            "retention_days": 30
+        },
+        "session": {
+            "timeout_minutes": 60,
+            "warning_before_timeout_minutes": 5,
+            "max_inactive_minutes": 30,
+            "recovery_enabled": true
+        },
+        "progress_visualization": {
+            "type": "stepped_progress_bar",
+            "show_percentage": true,
+            "show_time_estimate": true,
+            "show_step_names": true
+        }
+    },
+    "step_0_quick_start": {
+        "title": "Let's Build Your Store",
+        "subtitle": "Import from social media or start fresh - takes less than 5 minutes",
+        "duration_estimate_seconds": 30,
+        "fields": {
+            "import_method": {
+                "type": "choice",
+                "required": true,
+                "options": [
+                    {
+                        "value": "social_import",
+                        "label": "Import from Social Media",
+                        "icon": "instagram",
+                        "description": "Auto-fill from your Instagram, Facebook, or TikTok",
+                        "time_estimate": "30 seconds",
+                        "recommended": true
+                    },
+                    {
+                        "value": "manual",
+                        "label": "Start Fresh",
+                        "icon": "edit",
+                        "description": "Manually enter your business details",
+                        "time_estimate": "5 minutes"
+                    }
+                ]
+            },
+            "social_platform": {
+                "type": "single_select",
+                "required": false,
+                "visible_when": "import_method === 'social_import'",
+                "options": [
+                    {
+                        "value": "instagram",
+                        "label": "Instagram",
+                        "icon": "instagram",
+                        "placeholder": "instagram.com/yourbusiness"
+                    },
+                    {
+                        "value": "facebook",
+                        "label": "Facebook",
+                        "icon": "facebook",
+                        "placeholder": "facebook.com/yourbusiness"
+                    },
+                    {
+                        "value": "tiktok",
+                        "label": "TikTok",
+                        "icon": "tiktok",
+                        "placeholder": "tiktok.com/@yourbusiness"
+                    }
+                ]
+            },
+            "social_url": {
+                "type": "url",
+                "required": false,
+                "visible_when": "import_method === 'social_import'",
+                "placeholder": "Paste your profile link",
+                "validation": {
+                    "pattern": "^https?:\\/\\/(www\\.)?(instagram\\.com|facebook\\.com|tiktok\\.com)\\/.*$",
+                    "timeout_seconds": 10
+                },
+                "ai_processing": {
+                    "enabled": true,
+                    "extract_fields": [
+                        "name",
+                        "category",
+                        "description",
+                        "images",
+                        "vibe",
+                        "colors"
+                    ],
+                    "fallback_on_error": "manual_entry"
+                }
+            }
+        },
+        "cta_button": {
+            "text": "Continue",
+            "icon": "arrow-right",
+            "color": "#DC2626",
+            "enabled_when": "import_method_selected",
+            "next_step": 1
+        },
+        "skip_option": {
+            "enabled": false
+        }
+    },
+    "step_1_business_basics": {
+        "title": "Business Basics",
+        "subtitle": "Tell us about your business",
+        "duration_estimate_seconds": 90,
+        "fields": {
+            "business_name": {
+                "required": true,
+                "type": "text",
+                "min_length": 2,
+                "max_length": 100,
+                "placeholder": "e.g. Aunty May's Roti Shop",
+                "label": "Business Name",
+                "auto_fill_from_social": true,
+                "validation": {
+                    "pattern": "^[a-zA-Z0-9\\s'&.-]+$",
+                    "unique": true,
+                    "blacklist_check": true,
+                    "profanity_check": true,
+                    "real_time": true
+                },
+                "ai_features": {
+                    "name_suggestions": {
+                        "enabled": true,
+                        "based_on": [
+                            "category",
+                            "location",
+                            "keywords"
+                        ],
+                        "count": 5
+                    },
+                    "availability_check": {
+                        "enabled": true,
+                        "check_domains": true,
+                        "check_social_handles": true
+                    }
+                },
+                "hints": [
+                    "Make it memorable and easy to spell",
+                    "Include your specialty if possible",
+                    "Avoid special characters"
+                ]
+            },
+            "category": {
+                "required": true,
+                "type": "single_select",
+                "label": "Business Category",
+                "searchable": true,
+                "allow_custom": false,
+                "show_popular_first": true,
+                "auto_fill_from_social": true,
+                "ai_features": {
+                    "smart_suggestions": {
+                        "enabled": true,
+                        "based_on": [
+                            "business_name",
+                            "description",
+                            "social_content"
+                        ],
+                        "confidence_threshold": 0.7
+                    }
+                },
+                "groups": [
+                    {
+                        "id": "food_dining",
+                        "name": "Food & Dining",
+                        "icon": "utensils",
+                        "options": [
+                            {
+                                "value": "doubles_street",
+                                "label": "Doubles / Street Food Vendor",
+                                "popular": true,
+                                "icon": "🌮"
+                            },
+                            {
+                                "value": "roti_shop",
+                                "label": "Roti Shop",
+                                "popular": true,
+                                "icon": "🫓"
+                            },
+                            {
+                                "value": "bbq_jerk",
+                                "label": "BBQ / Jerk / Grill",
+                                "popular": true,
+                                "icon": "🍖"
+                            },
+                            {
+                                "value": "restaurant_fine",
+                                "label": "Restaurant / Fine Dining",
+                                "icon": "🍽️"
+                            },
+                            {
+                                "value": "fast_food",
+                                "label": "Fast Food / Gyros / Burgers",
+                                "icon": "🍔"
+                            },
+                            {
+                                "value": "chinese",
+                                "label": "Chinese Restaurant",
+                                "icon": "🥡"
+                            },
+                            {
+                                "value": "bakery",
+                                "label": "Bakery & Pastries",
+                                "popular": true,
+                                "icon": "🥐"
+                            },
+                            {
+                                "value": "cafe_juice",
+                                "label": "Cafe / Juice Bar / Punch",
+                                "icon": "🧃"
+                            },
+                            {
+                                "value": "catering",
+                                "label": "Catering Service",
+                                "icon": "🎉"
+                            },
+                            {
+                                "value": "bar_pub",
+                                "label": "Bar / Pub / Lounge",
+                                "icon": "🍺"
+                            },
+                            {
+                                "value": "soup_souse",
+                                "label": "Soup / Souse / Traditional",
+                                "icon": "🍲"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "retail_shopping",
+                        "name": "Retail & Shopping",
+                        "icon": "shopping-cart",
+                        "options": [
+                            {
+                                "value": "supermarket",
+                                "label": "Supermarket / Grocery",
+                                "icon": "🛒"
+                            },
+                            {
+                                "value": "parlour",
+                                "label": "Parlour / Mini Mart / Variety Store",
+                                "popular": true,
+                                "icon": "🏪"
+                            },
+                            {
+                                "value": "clothing",
+                                "label": "Clothing / Shoes / Fashion",
+                                "icon": "👗"
+                            },
+                            {
+                                "value": "electronics",
+                                "label": "Electronics / Phones / Computers",
+                                "icon": "📱"
+                            },
+                            {
+                                "value": "hardware",
+                                "label": "Hardware / Construction Supplies",
+                                "icon": "🔨"
+                            },
+                            {
+                                "value": "auto_parts",
+                                "label": "Auto Parts & Accessories",
+                                "icon": "🔧"
+                            },
+                            {
+                                "value": "furniture",
+                                "label": "Furniture & Home Decor",
+                                "icon": "🛋️"
+                            },
+                            {
+                                "value": "cosmetics",
+                                "label": "Cosmetics / Beauty Supply",
+                                "icon": "💄"
+                            },
+                            {
+                                "value": "pharmacy",
+                                "label": "Pharmacy / Health",
+                                "icon": "💊"
+                            },
+                            {
+                                "value": "puja_store",
+                                "label": "Puja Store / Religious Items",
+                                "icon": "🕉️"
+                            },
+                            {
+                                "value": "agro_shop",
+                                "label": "Agro Shop / Farm Supplies",
+                                "icon": "🌾"
+                            },
+                            {
+                                "value": "souvenirs",
+                                "label": "Souvenirs / Local Crafts",
+                                "icon": "🎁"
+                            },
+                            {
+                                "value": "bookstore",
+                                "label": "Bookstore / Stationery",
+                                "icon": "📚"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "skilled_trades",
+                        "name": "Skilled Trades",
+                        "icon": "tools",
+                        "options": [
+                            {
+                                "value": "auto_mechanic",
+                                "label": "Auto Mechanic / Straightening",
+                                "popular": true,
+                                "icon": "🚗"
+                            },
+                            {
+                                "value": "electrical",
+                                "label": "Electrical Services",
+                                "icon": "⚡"
+                            },
+                            {
+                                "value": "plumbing",
+                                "label": "Plumbing Services",
+                                "icon": "🚰"
+                            },
+                            {
+                                "value": "ac_refrigeration",
+                                "label": "AC & Refrigeration",
+                                "icon": "❄️"
+                            },
+                            {
+                                "value": "masonry",
+                                "label": "Masonry / Construction / Builder",
+                                "icon": "🧱"
+                            },
+                            {
+                                "value": "welding",
+                                "label": "Welding & Fabrication",
+                                "icon": "🔥"
+                            },
+                            {
+                                "value": "joinery",
+                                "label": "Joinery / Woodworking",
+                                "icon": "🪵"
+                            },
+                            {
+                                "value": "landscaping",
+                                "label": "Landscaping / Lawn Service",
+                                "icon": "🌳"
+                            },
+                            {
+                                "value": "cleaning",
+                                "label": "Cleaning / Janitorial",
+                                "icon": "🧹"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "personal_services",
+                        "name": "Personal Services",
+                        "icon": "user",
+                        "options": [
+                            {
+                                "value": "taxi_maxi",
+                                "label": "Taxi / Maxi / Private Ride",
+                                "popular": true,
+                                "icon": "🚕"
+                            },
+                            {
+                                "value": "hair_spa",
+                                "label": "Hair / Nails / Spa / Makeup",
+                                "icon": "💇"
+                            },
+                            {
+                                "value": "barber",
+                                "label": "Barber Shop",
+                                "icon": "✂️"
+                            },
+                            {
+                                "value": "tailor",
+                                "label": "Tailor / Seamstress",
+                                "icon": "🧵"
+                            },
+                            {
+                                "value": "gym",
+                                "label": "Gym / Personal Trainer",
+                                "icon": "💪"
+                            },
+                            {
+                                "value": "daycare_tutoring",
+                                "label": "Daycare / Tutoring / Lessons",
+                                "icon": "📖"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "professional_services",
+                        "name": "Professional Services",
+                        "icon": "briefcase",
+                        "options": [
+                            {
+                                "value": "medical",
+                                "label": "Doctor / Medical / Optical",
+                                "icon": "🏥"
+                            },
+                            {
+                                "value": "legal",
+                                "label": "Legal Services / JP",
+                                "icon": "⚖️"
+                            },
+                            {
+                                "value": "real_estate",
+                                "label": "Real Estate Agent",
+                                "icon": "🏠"
+                            },
+                            {
+                                "value": "insurance",
+                                "label": "Insurance / Financial",
+                                "icon": "💼"
+                            },
+                            {
+                                "value": "accounting",
+                                "label": "Accounting / Tax",
+                                "icon": "📊"
+                            },
+                            {
+                                "value": "graphic_design",
+                                "label": "Graphic Design / Web / IT",
+                                "icon": "💻"
+                            },
+                            {
+                                "value": "consulting",
+                                "label": "Consulting",
+                                "icon": "📈"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "events_entertainment",
+                        "name": "Events & Entertainment",
+                        "icon": "music",
+                        "options": [
+                            {
+                                "value": "event_promoter",
+                                "label": "Event Promoter",
+                                "icon": "🎪"
+                            },
+                            {
+                                "value": "dj_sound",
+                                "label": "DJ / Sound System",
+                                "icon": "🎧"
+                            },
+                            {
+                                "value": "event_planner",
+                                "label": "Event Planner / Decor",
+                                "icon": "🎈"
+                            },
+                            {
+                                "value": "photography",
+                                "label": "Photography / Videography",
+                                "icon": "📸"
+                            },
+                            {
+                                "value": "event_venue",
+                                "label": "Event Venue / Rental",
+                                "icon": "🏛️"
+                            },
+                            {
+                                "value": "carnival_mas",
+                                "label": "Carnival Band / Mas",
+                                "icon": "🎭"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "agriculture_production",
+                        "name": "Agriculture & Production",
+                        "icon": "leaf",
+                        "options": [
+                            {
+                                "value": "farmer_crops",
+                                "label": "Farmer (Crops)",
+                                "icon": "🌽"
+                            },
+                            {
+                                "value": "poultry_livestock",
+                                "label": "Poultry / Livestock",
+                                "icon": "🐔"
+                            },
+                            {
+                                "value": "fisherman",
+                                "label": "Fisherman / Seafood Depot",
+                                "icon": "🐟"
+                            },
+                            {
+                                "value": "market_vendor",
+                                "label": "Market Vendor",
+                                "icon": "🥬"
+                            },
+                            {
+                                "value": "manufacturing",
+                                "label": "Manufacturing / Production",
+                                "icon": "🏭"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "other",
+                        "name": "Other",
+                        "icon": "ellipsis",
+                        "options": [
+                            {
+                                "value": "other",
+                                "label": "Other",
+                                "icon": "📦"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "tagline": {
+                "required": false,
+                "type": "text",
+                "max_length": 60,
+                "label": "Tagline (Optional)",
+                "placeholder": "e.g. Best Doubles in South Trinidad",
+                "auto_fill_from_social": true,
+                "ai_features": {
+                    "generate_suggestions": {
+                        "enabled": true,
+                        "based_on": [
+                            "business_name",
+                            "category",
+                            "description"
+                        ],
+                        "count": 5,
+                        "tone_options": [
+                            "professional",
+                            "casual",
+                            "playful",
+                            "traditional"
+                        ]
+                    }
+                },
+                "hints": [
+                    "Keep it short and catchy",
+                    "Highlight what makes you unique"
+                ]
+            }
+        },
+        "validation_rules": {
+            "required_fields": [
+                "business_name",
+                "category"
+            ],
+            "validate_on_blur": true,
+            "validate_on_change": false,
+            "show_errors_inline": true,
+            "block_navigation_if_invalid": true
+        },
+        "cta_button": {
+            "text": "Next: Design Your Brand",
+            "icon": "arrow-right",
+            "color": "#DC2626",
+            "enabled_when": "all_required_fields_valid",
+            "next_step": 2
+        }
+    },
+    "step_2_design_branding": {
+        "title": "Design Your Brand",
+        "subtitle": "Create a professional look that stands out",
+        "duration_estimate_seconds": 120,
+        "fields": {
+            "logo": {
+                "required": false,
+                "type": "image_upload_or_generate",
+                "label": "Business Logo",
+                "auto_fill_from_social": true,
+                "upload_options": {
+                    "max_size_mb": 5,
+                    "accepted_formats": [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "svg",
+                        "webp"
+                    ],
+                    "min_resolution": {
+                        "width": 200,
+                        "height": 200
+                    },
+                    "recommended_resolution": {
+                        "width": 1000,
+                        "height": 1000
+                    },
+                    "aspect_ratio": "1:1",
+                    "auto_crop": true,
+                    "auto_optimize": true
+                },
+                "ai_generation": {
+                    "enabled": true,
+                    "provider": "openai_dalle3",
+                    "based_on": [
+                        "business_name",
+                        "category",
+                        "tagline",
+                        "color_scheme"
+                    ],
+                    "styles": [
+                        {
+                            "value": "modern",
+                            "label": "Modern & Clean",
+                            "preview": "modern_preview.png"
+                        },
+                        {
+                            "value": "traditional",
+                            "label": "Traditional Trini",
+                            "preview": "traditional_preview.png"
+                        },
+                        {
+                            "value": "playful",
+                            "label": "Fun & Playful",
+                            "preview": "playful_preview.png"
+                        },
+                        {
+                            "value": "elegant",
+                            "label": "Elegant & Premium",
+                            "preview": "elegant_preview.png"
+                        },
+                        {
+                            "value": "bold",
+                            "label": "Bold & Vibrant",
+                            "preview": "bold_preview.png"
+                        }
+                    ],
+                    "variations_count": 4,
+                    "allow_regenerate": true,
+                    "allow_edit_prompt": true
+                },
+                "templates": {
+                    "enabled": true,
+                    "category_specific": true,
+                    "customizable": true,
+                    "count_per_category": 10
+                },
+                "hints": [
+                    "Upload your existing logo or let AI create one",
+                    "Square logos work best (1:1 ratio)",
+                    "High resolution recommended (1000x1000px)"
+                ]
+            },
+            "color_scheme": {
+                "required": true,
+                "type": "color_palette_selector",
+                "label": "Brand Colors",
+                "auto_fill_from_social": true,
+                "ai_generation": {
+                    "enabled": true,
+                    "based_on": [
+                        "category",
+                        "logo",
+                        "vibe",
+                        "social_images"
+                    ],
+                    "algorithm": "color_harmony",
+                    "palettes_count": 8
+                },
+                "preset_palettes": [
+                    {
+                        "id": "trini_carnival",
+                        "name": "Carnival Vibes",
+                        "colors": {
+                            "primary": "#DC2626",
+                            "secondary": "#F59E0B",
+                            "accent": "#10B981",
+                            "background": "#FFFFFF",
+                            "text": "#1F2937"
+                        },
+                        "preview": "carnival_palette.png"
+                    },
+                    {
+                        "id": "ocean_breeze",
+                        "name": "Ocean Breeze",
+                        "colors": {
+                            "primary": "#0EA5E9",
+                            "secondary": "#06B6D4",
+                            "accent": "#14B8A6",
+                            "background": "#F0FDFA",
+                            "text": "#164E63"
+                        }
+                    },
+                    {
+                        "id": "sunset_glow",
+                        "name": "Sunset Glow",
+                        "colors": {
+                            "primary": "#F97316",
+                            "secondary": "#FB923C",
+                            "accent": "#FBBF24",
+                            "background": "#FFFBEB",
+                            "text": "#78350F"
+                        }
+                    },
+                    {
+                        "id": "forest_green",
+                        "name": "Forest Green",
+                        "colors": {
+                            "primary": "#059669",
+                            "secondary": "#10B981",
+                            "accent": "#34D399",
+                            "background": "#ECFDF5",
+                            "text": "#064E3B"
+                        }
+                    },
+                    {
+                        "id": "elegant_black",
+                        "name": "Elegant Black & Gold",
+                        "colors": {
+                            "primary": "#1F2937",
+                            "secondary": "#F59E0B",
+                            "accent": "#FCD34D",
+                            "background": "#FFFFFF",
+                            "text": "#111827"
+                        }
+                    }
+                ],
+                "custom_palette": {
+                    "enabled": true,
+                    "color_picker": "advanced",
+                    "harmony_suggestions": true,
+                    "accessibility_check": true,
+                    "contrast_validation": true
+                },
+                "hints": [
+                    "Choose colors that match your brand personality",
+                    "AI can suggest palettes based on your logo",
+                    "Ensure good contrast for readability"
+                ]
+            },
+            "font_selection": {
+                "required": true,
+                "type": "font_pair_selector",
+                "label": "Typography",
+                "ai_suggestions": {
+                    "enabled": true,
+                    "based_on": [
+                        "category",
+                        "vibe",
+                        "color_scheme"
+                    ],
+                    "pairs_count": 6
+                },
+                "preset_pairs": [
+                    {
+                        "id": "modern_clean",
+                        "name": "Modern & Clean",
+                        "heading_font": "Inter",
+                        "body_font": "Inter",
+                        "preview": "modern_font.png",
+                        "recommended_for": [
+                            "tech",
+                            "professional",
+                            "modern"
+                        ]
+                    },
+                    {
+                        "id": "elegant_serif",
+                        "name": "Elegant Serif",
+                        "heading_font": "Playfair Display",
+                        "body_font": "Lato",
+                        "preview": "elegant_font.png",
+                        "recommended_for": [
+                            "restaurant",
+                            "luxury",
+                            "traditional"
+                        ]
+                    },
+                    {
+                        "id": "bold_impact",
+                        "name": "Bold Impact",
+                        "heading_font": "Montserrat",
+                        "body_font": "Open Sans",
+                        "preview": "bold_font.png",
+                        "recommended_for": [
+                            "retail",
+                            "food",
+                            "events"
+                        ]
+                    },
+                    {
+                        "id": "friendly_casual",
+                        "name": "Friendly & Casual",
+                        "heading_font": "Poppins",
+                        "body_font": "Nunito",
+                        "preview": "friendly_font.png",
+                        "recommended_for": [
+                            "cafe",
+                            "bakery",
+                            "personal_services"
+                        ]
+                    },
+                    {
+                        "id": "professional",
+                        "name": "Professional",
+                        "heading_font": "Roboto",
+                        "body_font": "Roboto",
+                        "preview": "professional_font.png",
+                        "recommended_for": [
+                            "medical",
+                            "legal",
+                            "consulting"
+                        ]
+                    }
+                ],
+                "google_fonts_library": {
+                    "enabled": true,
+                    "searchable": true,
+                    "preview_text_customizable": true
+                }
+            },
+            "vibe_tags": {
+                "required": false,
+                "type": "multi_select",
+                "label": "Business Vibe (Optional)",
+                "max_selections": 3,
+                "auto_fill_from_social": true,
+                "options": [
+                    {
+                        "value": "traditional",
+                        "label": "Traditional",
+                        "icon": "🏛️"
+                    },
+                    {
+                        "value": "modern",
+                        "label": "Modern",
+                        "icon": "✨"
+                    },
+                    {
+                        "value": "family_friendly",
+                        "label": "Family Friendly",
+                        "icon": "👨‍👩‍👧‍👦"
+                    },
+                    {
+                        "value": "upscale",
+                        "label": "Upscale",
+                        "icon": "💎"
+                    },
+                    {
+                        "value": "casual",
+                        "label": "Casual",
+                        "icon": "😊"
+                    },
+                    {
+                        "value": "fast_service",
+                        "label": "Fast Service",
+                        "icon": "⚡"
+                    },
+                    {
+                        "value": "authentic",
+                        "label": "Authentic",
+                        "icon": "🌟"
+                    },
+                    {
+                        "value": "innovative",
+                        "label": "Innovative",
+                        "icon": "🚀"
+                    },
+                    {
+                        "value": "eco_friendly",
+                        "label": "Eco-Friendly",
+                        "icon": "🌱"
+                    },
+                    {
+                        "value": "local",
+                        "label": "Local",
+                        "icon": "🇹🇹"
+                    }
+                ],
+                "ai_suggestions": {
+                    "enabled": true,
+                    "based_on": [
+                        "category",
+                        "description",
+                        "social_content"
+                    ]
+                }
+            }
+        },
+        "live_preview": {
+            "enabled": true,
+            "update_on_change": true,
+            "debounce_ms": 500,
+            "show_multiple_views": [
+                "desktop",
+                "mobile",
+                "logo_only"
+            ]
+        },
+        "validation_rules": {
+            "required_fields": [
+                "color_scheme",
+                "font_selection"
+            ],
+            "validate_on_blur": true,
+            "show_errors_inline": true,
+            "block_navigation_if_invalid": true
+        },
+        "cta_button": {
+            "text": "Next: Store Details",
+            "icon": "arrow-right",
+            "color": "#DC2626",
+            "enabled_when": "all_required_fields_valid",
+            "next_step": 3
+        }
+    },
+    "step_3_store_details": {
+        "title": "Store Details",
+        "subtitle": "Help customers find and contact you",
+        "duration_estimate_seconds": 180,
+        "fields": {
+            "description": {
+                "required": true,
+                "type": "textarea",
+                "label": "Business Description",
+                "min_length": 50,
+                "max_length": 500,
+                "placeholder": "Tell customers what makes your business special...",
+                "auto_fill_from_social": true,
+                "ai_features": {
+                    "generate_description": {
+                        "enabled": true,
+                        "based_on": [
+                            "business_name",
+                            "category",
+                            "tagline",
+                            "vibe_tags"
+                        ],
+                        "tones": [
+                            "professional",
+                            "friendly",
+                            "casual",
+                            "enthusiastic"
+                        ],
+                        "lengths": [
+                            "short",
+                            "medium",
+                            "long"
+                        ],
+                        "include_keywords": true,
+                        "seo_optimized": true
+                    },
+                    "improve_existing": {
+                        "enabled": true,
+                        "suggestions": [
+                            "clarity",
+                            "seo",
+                            "engagement",
+                            "grammar"
+                        ]
+                    },
+                    "keyword_suggestions": {
+                        "enabled": true,
+                        "based_on": "category"
+                    }
+                },
+                "character_counter": true,
+                "formatting_toolbar": false,
+                "hints": [
+                    "Describe what you offer and what makes you unique",
+                    "Include key products or services",
+                    "Mention your location or delivery area"
+                ]
+            },
+            "whatsapp_number": {
+                "required": true,
+                "type": "tel",
+                "label": "WhatsApp Business Number",
+                "placeholder": "e.g. 1868-123-4567",
+                "validation": {
+                    "pattern": "^1868[0-9]{7}$",
+                    "format": "international",
+                    "verify_via_sms": true,
+                    "verification_timing": "deferred",
+                    "allow_duplicates": false,
+                    "check_whatsapp_active": true
+                },
+                "formatting": {
+                    "display": "+1 (868) XXX-XXXX",
+                    "storage": "18681234567",
+                    "auto_format": true,
+                    "mask_input": true
+                },
+                "verification": {
+                    "method": "sms",
+                    "code_length": 6,
+                    "code_expiry_minutes": 10,
+                    "retry_limit": 3,
+                    "retry_cooldown_seconds": 60,
+                    "alternative_method": "call",
+                    "skip_allowed": true,
+                    "skip_warning": "Your store won't be live until you verify your number"
+                },
+                "hints": [
+                    "Enter your Trinidad number (must start with 1868)",
+                    "This will be your main contact for orders",
+                    "We'll send a verification code"
+                ]
+            },
+            "location": {
+                "required": true,
+                "type": "location_picker",
+                "label": "Business Location",
+                "address": {
+                    "street": {
+                        "required": false,
+                        "placeholder": "e.g. 123 Main Road"
+                    },
+                    "area": {
+                        "required": true,
+                        "type": "autocomplete",
+                        "placeholder": "e.g. Chaguanas, San Fernando, Port of Spain",
+                        "options": [
+                            "Arima",
+                            "Arouca",
+                            "Barataria",
+                            "Carenage",
+                            "Chaguanas",
+                            "Couva",
+                            "Cunupia",
+                            "D'Abadie",
+                            "Diego Martin",
+                            "Fyzabad",
+                            "Gasparillo",
+                            "Marabella",
+                            "Maraval",
+                            "Mayaro",
+                            "Morvant",
+                            "Mt. Hope",
+                            "Penal",
+                            "Piarco",
+                            "Point Fortin",
+                            "Port of Spain",
+                            "Princes Town",
+                            "Rio Claro",
+                            "San Fernando",
+                            "San Juan",
+                            "Sangre Grande",
+                            "Siparia",
+                            "St. Augustine",
+                            "St. Joseph",
+                            "Tacarigua",
+                            "Tobago",
+                            "Tunapuna",
+                            "Valsayn"
+                        ]
+                    },
+                    "region": {
+                        "required": true,
+                        "type": "select",
+                        "options": [
+                            "Port of Spain",
+                            "San Fernando",
+                            "Arima",
+                            "Point Fortin",
+                            "Chaguanas",
+                            "Couva-Tabaquite-Talparo",
+                            "Diego Martin",
+                            "Penal-Debe",
+                            "Princes Town",
+                            "Rio Claro-Mayaro",
+                            "Sangre Grande",
+                            "San Juan-Laventille",
+                            "Siparia",
+                            "Tunapuna-Piarco",
+                            "Tobago"
+                        ]
+                    }
+                },
+                "map_picker": {
+                    "enabled": true,
+                    "default_center": {
+                        "lat": 10.6918,
+                        "lng": -61.2225
+                    },
+                    "default_zoom": 10,
+                    "draggable_marker": true,
+                    "search_enabled": true
+                },
+                "geolocation": {
+                    "auto_detect": true,
+                    "request_permission": true
+                },
+                "hints": [
+                    "Pin your exact location on the map",
+                    "Customers will use this to find you"
+                ]
+            },
+            "operating_hours": {
+                "required": true,
+                "type": "schedule_builder",
+                "label": "Operating Hours",
+                "quick_presets": [
+                    {
+                        "label": "Mon-Fri (9am-5pm)",
+                        "schedule": {
+                            "monday": {
+                                "open": "09:00",
+                                "close": "17:00"
+                            },
+                            "tuesday": {
+                                "open": "09:00",
+                                "close": "17:00"
+                            },
+                            "wednesday": {
+                                "open": "09:00",
+                                "close": "17:00"
+                            },
+                            "thursday": {
+                                "open": "09:00",
+                                "close": "17:00"
+                            },
+                            "friday": {
+                                "open": "09:00",
+                                "close": "17:00"
+                            },
+                            "saturday": {
+                                "closed": true
+                            },
+                            "sunday": {
+                                "closed": true
+                            }
+                        }
+                    },
+                    {
+                        "label": "Mon-Sat (8am-6pm)",
+                        "schedule": {
+                            "monday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "tuesday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "wednesday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "thursday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "friday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "saturday": {
+                                "open": "08:00",
+                                "close": "18:00"
+                            },
+                            "sunday": {
+                                "closed": true
+                            }
+                        }
+                    },
+                    {
+                        "label": "Every Day (24 Hours)",
+                        "schedule": {
+                            "monday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "tuesday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "wednesday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "thursday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "friday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "saturday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            },
+                            "sunday": {
+                                "open": "00:00",
+                                "close": "23:59"
+                            }
+                        }
+                    }
+                ],
+                "custom_schedule": {
+                    "enabled": true,
+                    "time_format": "12h",
+                    "interval_minutes": 30,
+                    "allow_multiple_shifts": true,
+                    "allow_closed_days": true
+                },
+                "special_hours": {
+                    "enabled": true,
+                    "holidays": true,
+                    "temporary_closures": true
+                }
+            },
+            "delivery_options": {
+                "required": false,
+                "type": "multi_option",
+                "label": "Service Options",
+                "options": [
+                    {
+                        "value": "pickup",
+                        "label": "Pickup",
+                        "icon": "shopping-bag",
+                        "default": true
+                    },
+                    {
+                        "value": "delivery",
+                        "label": "Delivery",
+                        "icon": "truck",
+                        "additional_fields": {
+                            "delivery_areas": {
+                                "type": "multi_select",
+                                "label": "Delivery Areas",
+                                "searchable": true,
+                                "options": [
+                                    "Arima",
+                                    "Arouca",
+                                    "Barataria",
+                                    "Carenage",
+                                    "Chaguanas",
+                                    "Couva",
+                                    "Diego Martin",
+                                    "Marabella",
+                                    "Port of Spain",
+                                    "San Fernando",
+                                    "San Juan",
+                                    "Tunapuna"
+                                ]
+                            },
+                            "delivery_fee": {
+                                "type": "number",
+                                "label": "Delivery Fee (TTD)",
+                                "min": 0,
+                                "max": 500,
+                                "step": 5,
+                                "placeholder": "e.g. 25"
+                            },
+                            "free_delivery_minimum": {
+                                "type": "number",
+                                "label": "Free Delivery Over (TTD)",
+                                "min": 0,
+                                "placeholder": "e.g. 200 (optional)"
+                            }
+                        }
+                    },
+                    {
+                        "value": "dine_in",
+                        "label": "Dine In",
+                        "icon": "utensils",
+                        "visible_for_categories": [
+                            "restaurant_fine",
+                            "cafe_juice",
+                            "bar_pub",
+                            "fast_food"
+                        ]
+                    },
+                    {
+                        "value": "curbside",
+                        "label": "Curbside Pickup",
+                        "icon": "car"
+                    }
+                ]
+            },
+            "payment_methods": {
+                "required": true,
+                "type": "multi_select",
+                "label": "Payment Methods Accepted",
+                "min_selections": 1,
+                "options": [
+                    {
+                        "value": "cash",
+                        "label": "Cash",
+                        "icon": "💵",
+                        "default": true
+                    },
+                    {
+                        "value": "linx",
+                        "label": "Linx",
+                        "icon": "💳"
+                    },
+                    {
+                        "value": "bank_transfer",
+                        "label": "Bank Transfer",
+                        "icon": "🏦"
+                    },
+                    {
+                        "value": "online_payment",
+                        "label": "Online Payment",
+                        "icon": "💻"
+                    },
+                    {
+                        "value": "mobile_wallet",
+                        "label": "Mobile Wallet",
+                        "icon": "📱"
+                    }
+                ]
+            },
+            "gallery_images": {
+                "required": false,
+                "type": "multi_image_upload",
+                "label": "Gallery Images (Optional)",
+                "min_images": 0,
+                "max_images": 10,
+                "auto_fill_from_social": true,
+                "upload_options": {
+                    "max_size_mb": 5,
+                    "accepted_formats": [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "webp"
+                    ],
+                    "min_resolution": {
+                        "width": 800,
+                        "height": 600
+                    },
+                    "recommended_resolution": {
+                        "width": 1920,
+                        "height": 1080
+                    },
+                    "auto_optimize": true,
+                    "auto_crop": false
+                },
+                "ai_features": {
+                    "auto_enhance": true,
+                    "background_removal": false,
+                    "smart_crop": true,
+                    "quality_check": true
+                },
+                "hints": [
+                    "Add photos of your products, location, or team",
+                    "High-quality images attract more customers",
+                    "We'll optimize them automatically"
+                ]
+            },
+            "social_links": {
+                "required": false,
+                "type": "social_links",
+                "label": "Social Media (Optional)",
+                "auto_fill_from_social": true,
+                "platforms": [
+                    {
+                        "value": "instagram",
+                        "label": "Instagram",
+                        "icon": "instagram",
+                        "placeholder": "@yourbusiness"
+                    },
+                    {
+                        "value": "facebook",
+                        "label": "Facebook",
+                        "icon": "facebook",
+                        "placeholder": "facebook.com/yourbusiness"
+                    },
+                    {
+                        "value": "tiktok",
+                        "label": "TikTok",
+                        "icon": "tiktok",
+                        "placeholder": "@yourbusiness"
+                    },
+                    {
+                        "value": "twitter",
+                        "label": "Twitter/X",
+                        "icon": "twitter",
+                        "placeholder": "@yourbusiness"
+                    }
+                ]
+            }
+        },
+        "validation_rules": {
+            "required_fields": [
+                "description",
+                "whatsapp_number",
+                "location",
+                "operating_hours",
+                "payment_methods"
+            ],
+            "validate_on_blur": true,
+            "show_errors_inline": true,
+            "block_navigation_if_invalid": true
+        },
+        "cta_button": {
+            "text": "Next: Preview & Launch",
+            "icon": "arrow-right",
+            "color": "#DC2626",
+            "enabled_when": "all_required_fields_valid",
+            "next_step": 4
+        }
+    },
+    "step_4_preview_launch": {
+        "title": "Preview & Launch",
+        "subtitle": "Review your store and go live",
+        "duration_estimate_seconds": 120,
+        "preview": {
+            "enabled": true,
+            "live_preview": true,
+            "device_views": [
+                "desktop",
+                "tablet",
+                "mobile"
+            ],
+            "default_view": "mobile",
+            "interactive": true,
+            "shareable_link": true
+        },
+        "verification_checklist": {
+            "enabled": true,
+            "items": [
+                {
+                    "id": "whatsapp_verified",
+                    "label": "WhatsApp number verified",
+                    "required": true,
+                    "auto_check": true
+                },
+                {
+                    "id": "business_info_complete",
+                    "label": "Business information complete",
+                    "required": true,
+                    "auto_check": true
+                },
+                {
+                    "id": "branding_set",
+                    "label": "Branding and design set",
+                    "required": true,
+                    "auto_check": true
+                },
+                {
+                    "id": "preview_reviewed",
+                    "label": "I've reviewed the preview",
+                    "required": true,
+                    "auto_check": false
+                }
+            ]
+        },
+        "fields": {
+            "terms_acceptance": {
+                "required": true,
+                "type": "checkbox",
+                "label": "I agree to the Terms of Service and Merchant Agreement",
+                "documents": [
+                    {
+                        "id": "terms_of_service",
+                        "title": "Terms of Service",
+                        "url": "/legal/terms",
+                        "version": "1.0",
+                        "required": true
+                    },
+                    {
+                        "id": "merchant_agreement",
+                        "title": "Merchant Agreement",
+                        "url": "/legal/merchant-agreement",
+                        "version": "1.0",
+                        "required": true
+                    },
+                    {
+                        "id": "privacy_policy",
+                        "title": "Privacy Policy",
+                        "url": "/legal/privacy",
+                        "version": "1.0",
+                        "required": false
+                    }
+                ],
+                "signature": {
+                    "required": true,
+                    "type": "digital",
+                    "capture_ip": true,
+                    "capture_timestamp": true,
+                    "capture_user_agent": true
+                }
+            },
+            "payment_plan": {
+                "required": true,
+                "type": "plan_selector",
+                "label": "Choose Your Plan",
+                "default": "free",
+                "plans": [
+                    {
+                        "id": "free",
+                        "name": "Free Starter",
+                        "price": 0,
+                        "currency": "TTD",
+                        "billing_period": "forever",
+                        "features": [
+                            "Basic store page",
+                            "WhatsApp integration",
+                            "Up to 20 products",
+                            "Basic analytics",
+                            "TriniBuild branding"
+                        ],
+                        "limitations": [
+                            "Limited customization",
+                            "Standard support"
+                        ],
+                        "recommended": false
+                    },
+                    {
+                        "id": "pro",
+                        "name": "Pro",
+                        "price": 199,
+                        "currency": "TTD",
+                        "billing_period": "month",
+                        "trial_days": 14,
+                        "features": [
+                            "Everything in Free",
+                            "Unlimited products",
+                            "Custom domain",
+                            "Advanced analytics",
+                            "No TriniBuild branding",
+                            "Priority support",
+                            "Marketing tools",
+                            "Discount codes"
+                        ],
+                        "recommended": true
+                    },
+                    {
+                        "id": "enterprise",
+                        "name": "Enterprise",
+                        "price": 499,
+                        "currency": "TTD",
+                        "billing_period": "month",
+                        "features": [
+                            "Everything in Pro",
+                            "Multi-location support",
+                            "API access",
+                            "Dedicated account manager",
+                            "Custom integrations",
+                            "Advanced inventory management",
+                            "White-label option"
+                        ],
+                        "recommended": false,
+                        "contact_sales": true
+                    }
+                ]
+            },
+            "launch_options": {
+                "type": "radio",
+                "label": "Launch Options",
+                "default": "publish_now",
+                "options": [
+                    {
+                        "value": "publish_now",
+                        "label": "Publish Now",
+                        "description": "Make your store live immediately",
+                        "icon": "rocket"
+                    },
+                    {
+                        "value": "save_draft",
+                        "label": "Save as Draft",
+                        "description": "Save and publish later",
+                        "icon": "save"
+                    },
+                    {
+                        "value": "schedule",
+                        "label": "Schedule Launch",
+                        "description": "Choose a specific date and time",
+                        "icon": "calendar",
+                        "additional_fields": {
+                            "launch_date": {
+                                "type": "datetime",
+                                "min": "now",
+                                "max": "+30days"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "actions": {
+            "save_draft": {
+                "enabled": true,
+                "label": "Save Draft",
+                "icon": "save",
+                "color": "secondary"
+            },
+            "preview_share": {
+                "enabled": true,
+                "label": "Share Preview",
+                "icon": "share",
+                "generate_link": true,
+                "expiry_hours": 48
+            },
+            "go_back": {
+                "enabled": true,
+                "label": "Edit Details",
+                "icon": "arrow-left"
+            }
+        },
+        "validation_rules": {
+            "required_fields": [
+                "terms_acceptance",
+                "payment_plan"
+            ],
+            "checklist_complete": true,
+            "whatsapp_verified": "required_for_publish",
+            "block_publish_if_invalid": true
+        },
+        "cta_button": {
+            "text": "Launch My Store 🚀",
+            "icon": "rocket",
+            "color": "#DC2626",
+            "size": "large",
+            "enabled_when": "all_validations_passed",
+            "loading_text": "Launching...",
+            "success_redirect": "/store/dashboard"
+        }
+    },
+    "integrations": {
+        "social_media": {
+            "instagram": {
+                "enabled": true,
+                "api_version": "v18.0",
+                "scopes": [
+                    "basic",
+                    "business_info"
+                ],
+                "rate_limit_per_hour": 200,
+                "scraping_fallback": true
+            },
+            "facebook": {
+                "enabled": true,
+                "api_version": "v18.0",
+                "scopes": [
+                    "pages_read_engagement",
+                    "pages_show_list"
+                ],
+                "rate_limit_per_hour": 200
+            },
+            "tiktok": {
+                "enabled": true,
+                "scraping_only": true
+            }
+        },
+        "messaging": {
+            "whatsapp_business": {
+                "enabled": true,
+                "provider": "twilio",
+                "verification_required": true,
+                "message_templates": [
+                    "welcome",
+                    "order_confirmation",
+                    "delivery_update"
+                ]
+            },
+            "sms": {
+                "enabled": true,
+                "provider": "twilio",
+                "use_cases": [
+                    "verification",
+                    "notifications"
+                ]
+            }
+        },
+        "ai_services": {
+            "openai": {
+                "enabled": true,
+                "models": {
+                    "text": "gpt-4-turbo",
+                    "image": "dall-e-3"
+                },
+                "use_cases": [
+                    "description_generation",
+                    "tagline_generation",
+                    "logo_generation",
+                    "category_detection",
+                    "content_improvement"
+                ]
+            }
+        },
+        "payments": {
+            "providers": [
+                "stripe",
+                "paypal",
+                "ttd_bank_transfer"
+            ],
+            "currencies": [
+                "TTD",
+                "USD"
+            ],
+            "default_currency": "TTD"
+        },
+        "maps": {
+            "provider": "google_maps",
+            "api_key_required": true,
+            "features": [
+                "geocoding",
+                "places",
+                "static_maps"
+            ]
+        }
+    },
+    "analytics": {
+        "tracking": {
+            "google_analytics": true,
+            "mixpanel": true,
+            "hotjar": false
+        },
+        "events": [
+            "wizard_started",
+            "step_completed",
+            "step_abandoned",
+            "field_changed",
+            "social_import_attempted",
+            "social_import_success",
+            "social_import_failed",
+            "ai_feature_used",
+            "logo_generated",
+            "description_generated",
+            "preview_viewed",
+            "preview_shared",
+            "draft_saved",
+            "store_published",
+            "wizard_abandoned",
+            "payment_plan_selected"
+        ],
+        "metrics": [
+            "completion_rate",
+            "time_per_step",
+            "total_time",
+            "category_distribution",
+            "social_import_success_rate",
+            "ai_feature_usage_rate",
+            "plan_selection_distribution",
+            "abandonment_points",
+            "device_distribution"
+        ]
+    },
+    "security": {
+        "csrf_protection": true,
+        "rate_limiting": {
+            "enabled": true,
+            "max_requests_per_hour": 100,
+            "max_social_imports_per_day": 10,
+            "max_ai_generations_per_session": 50
+        },
+        "data_encryption": {
+            "at_rest": true,
+            "in_transit": true,
+            "algorithm": "AES-256"
+        },
+        "pii_handling": {
+            "anonymize_analytics": true,
+            "gdpr_compliant": true,
+            "data_retention_days": 365
+        },
+        "input_sanitization": {
+            "enabled": true,
+            "xss_protection": true,
+            "sql_injection_protection": true
+        }
+    },
+    "performance": {
+        "optimization": {
+            "lazy_loading": true,
+            "image_optimization": true,
+            "code_splitting": true,
+            "cdn_enabled": true
+        },
+        "targets": {
+            "first_contentful_paint_ms": 1500,
+            "time_to_interactive_ms": 3000,
+            "lighthouse_score": 90
+        }
+    },
+    "accessibility": {
+        "wcag_level": "AA",
+        "features": {
+            "screen_reader_optimized": true,
+            "keyboard_navigation": true,
+            "high_contrast_mode": true,
+            "focus_indicators": true,
+            "aria_labels": true
+        }
+    },
+    "mobile": {
+        "responsive": true,
+        "breakpoints": [
+            320,
+            768,
+            1024,
+            1440
+        ],
+        "touch_optimized": true,
+        "pwa_enabled": true,
+        "features": {
+            "camera_integration": true,
+            "geolocation": true,
+            "whatsapp_deep_link": true,
+            "offline_support": true
+        }
+    },
+    "error_recovery": {
+        "auto_save_recovery": true,
+        "session_recovery": true,
+        "social_import_fallback": "manual_entry_with_suggestions",
+        "sms_retry_limit": 3,
+        "sms_alternative": "email_verification",
+        "ai_generation_retry": true,
+        "graceful_degradation": true
+    }
+}

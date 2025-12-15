@@ -116,6 +116,17 @@ export interface Store {
     social?: Record<string, string>;
   };
 
+  // V2 Fields
+  tagline?: string | null;
+  logo_style?: string | null;
+  vibe?: string[];
+  operating_hours?: Record<string, any>;
+  delivery_options?: string[];
+  payment_methods?: string[];
+  font_pair?: Record<string, string>;
+  color_scheme?: Record<string, string>;
+  social_links?: Record<string, string>;
+
   status: 'pending' | 'active' | 'suspended';
   created_at: string;
 }

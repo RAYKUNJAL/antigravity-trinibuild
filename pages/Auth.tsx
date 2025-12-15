@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Mail, Lock, ArrowRight, Phone, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 import { supabase } from '../services/supabaseClient';
 
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export const Auth: React.FC = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}${searchParams.get('redirect') || '/dashboard'}`
         }
       });
       if (error) throw error;
@@ -50,7 +51,7 @@ export const Auth: React.FC = () => {
         const { error, data } = await authService.login({ email, password });
         if (error) throw new Error(error);
         if (data.user) {
-          navigate('/dashboard');
+          navigate(searchParams.get('redirect') || '/dashboard');
         }
       } else {
         // SIGN UP

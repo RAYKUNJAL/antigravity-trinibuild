@@ -6,6 +6,16 @@ export type { Store } from '../types';
 // Extended types for service layer
 interface CreateStoreData extends Partial<Store> {
     theme_config?: Record<string, any>;
+    tagline?: string;
+    logo_style?: string;
+    vibe?: string[];
+    operating_hours?: Record<string, any>;
+    delivery_options?: string[];
+    payment_methods?: string[];
+    font_pair?: Record<string, string>;
+    color_scheme?: Record<string, string>;
+    social_links?: Record<string, string>;
+    plan_id?: string;
 }
 
 interface CreateProductData {
@@ -168,7 +178,18 @@ export const storeService = {
                 category: storeData.category || 'General',
                 status: 'active', // Default to active for MVP
                 logo_url: storeData.logo_url,
-                theme_config: storeData.theme_config
+                theme_config: storeData.theme_config,
+
+                // V2 New Fields
+                tagline: storeData.tagline,
+                logo_style: storeData.logo_style,
+                vibe: storeData.vibe,
+                operating_hours: storeData.operating_hours,
+                delivery_options: storeData.delivery_options,
+                payment_methods: storeData.payment_methods,
+                font_pair: storeData.font_pair,
+                color_scheme: storeData.color_scheme,
+                social_links: storeData.social_links
             })
             .select()
             .single();
@@ -177,6 +198,20 @@ export const storeService = {
             console.error('Error creating store:', error);
             throw error;
         }
+
+        // Handle Subscription Plan if not default 'hustle'
+        // Trigger 'handle_new_store_subscription' creates the initial 'hustle' record
+        if (data && storeData.plan_id && storeData.plan_id !== 'hustle') {
+            const { error: subError } = await supabase
+                .from('store_subscriptions')
+                .update({ plan_id: storeData.plan_id }) // Trigger handles stores.plan_tier update
+                .eq('store_id', data.id);
+
+            if (subError) {
+                console.error('Error updating subscription plan:', subError);
+            }
+        }
+
         return data as Store;
     },
 
