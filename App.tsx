@@ -8,6 +8,7 @@ import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Directory } from './pages/Directory';
 import { StoreCreator } from './pages/StoreCreator';
+import { StoreCreatorV2 } from './pages/StoreCreatorV2';
 import { Dashboard } from './pages/Dashboard';
 import { Storefront } from './pages/Storefront';
 // AdminDashboard removed; external redirect will be used
@@ -75,6 +76,7 @@ import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
 import { AdsPortal } from './pages/AdsPortal';
+import { DriverSignupAI } from './pages/DriverSignupAI';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -115,7 +117,8 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
-              <Route path="/create-store" element={<StoreCreator />} />
+              <Route path="/create-store" element={<StoreCreatorV2 />} />
+              <Route path="/create-store-v1" element={<StoreCreator />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
@@ -162,7 +165,8 @@ const App: React.FC = () => {
               <Route path="/rides" element={<Rides />} />
               <Route path="/drive-with-us" element={<DriveWithUs />} />
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
-              <Route path="/drive/signup" element={<DriverOnboarding />} />
+              <Route path="/driver/signup" element={<DriverSignupAI />} />
+              <Route path="/drive/signup" element={<DriverSignupAI />} />
               <Route path="/driver/hub" element={<DriverHub />} />
               <Route path="/driver/dashboard" element={<DriverHub />} />
 
