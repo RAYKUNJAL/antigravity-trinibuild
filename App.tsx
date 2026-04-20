@@ -84,6 +84,7 @@ import { DriverSignupAI } from './pages/DriverSignupAI';
 import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
 import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard';
+import { LoginPage } from './pages/LoginPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -121,6 +122,8 @@ const App: React.FC = () => {
             {/* Pages with padding */}
             <Route element={<PageLayout />}>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signin" element={<LoginPage />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
