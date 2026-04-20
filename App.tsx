@@ -81,6 +81,9 @@ import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
 import { AdsPortal } from './pages/AdsPortal';
 import { DriverSignupAI } from './pages/DriverSignupAI';
+import { TemplateGallery } from './components/TemplateGallery';
+import { AIProductListingPage } from './pages/AIProductListingPage';
+import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -179,6 +182,11 @@ const App: React.FC = () => {
 
               {/* Payment & Order Tracking */}
               <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
+
+              {/* NEW ROUTES - Template Gallery & AI Features */}
+              <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
+              <Route path="/products/ai-add" element={<AIProductListingPage />} />
+              <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
