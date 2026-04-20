@@ -2,13 +2,16 @@
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
-import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Directory } from './pages/Directory';
 import { StoreCreator } from './pages/StoreCreator';
 import { StoreCreatorV2 } from './pages/StoreCreatorV2';
+import SimpleStoreCreator from './components/SimpleStoreCreator';
+import MerchantTaxDashboard from './components/MerchantTaxDashboard';
+import AdminFinancialDashboard from './components/AdminFinancialDashboard';
 import { Dashboard } from './pages/Dashboard';
 import { Storefront } from './pages/Storefront';
 // AdminDashboard removed; external redirect will be used
@@ -118,8 +121,11 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
-              <Route path="/create-store" element={<StoreCreatorV2 />} />
+              <Route path="/create-store" element={<SimpleStoreCreator />} />
+              <Route path="/create-store-v2" element={<StoreCreatorV2 />} />
               <Route path="/create-store-v1" element={<StoreCreator />} />
+              <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
+              <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
