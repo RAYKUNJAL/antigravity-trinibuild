@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --trini-red: #E61E2B;
+    --trini-black: #000000;
+    --trini-white: #FFFFFF;
+    --trini-gold: #FFD700;
+  }
+  
+  body {
+    @apply bg-white text-gray-900;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
