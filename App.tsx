@@ -37,6 +37,7 @@ import { LocationBlogPost } from './pages/LocationBlogPost';
 import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
+import { CODTrackingPage } from './pages/CODTrackingPage';
 import { AdminSignup } from './pages/admin/AdminSignup';
 import { AdminBypass } from './pages/admin/AdminBypass';
 import CommandCenter from './pages/CommandCenter';
@@ -169,6 +170,9 @@ const App: React.FC = () => {
               <Route path="/drive/signup" element={<DriverSignupAI />} />
               <Route path="/driver/hub" element={<DriverHub />} />
               <Route path="/driver/dashboard" element={<DriverHub />} />
+
+              {/* Payment & Order Tracking */}
+              <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
