@@ -1,146 +1,175 @@
-
-import React, { useState, useEffect } from 'react';
-import { Menu, X, UserCircle, User, Settings } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, X, User, Settings, ChevronDown, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { authService } from '../services/authService';
 
-// Placeholder logo URL
 const LOGO_URL = "/trinibuild-logo.png";
+
+interface DropdownItem { name: string; path: string; icon: React.ElementType; description: string; badge?: string; badgeColor?: string; }
+interface NavGroup { label: string; items: DropdownItem[]; }
+
+const SERVICE_GROUPS: NavGroup[] = [
+  { label: 'Shop & Sell', items: [
+    { name: 'Business Directory', path: '/directory', icon: Store, description: 'Find local businesses' },
+    { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart, description: 'Buy & sell anything' },
+    { name: 'Create Store', path: '/create-store', icon: Sparkles, description: 'Free online store', badge: 'Free', badgeColor: 'bg-green-500' },
+    { name: 'Store Templates', path: '/templates', icon: Star, description: '15+ premium designs' },
+  ]},
+  { label: 'Digital & Gaming', items: [
+    { name: 'Game Pass & Streaming', path: '/digital', icon: Gamepad2, description: 'PS Plus, Xbox, Netflix', badge: 'New', badgeColor: 'bg-purple-500' },
+    { name: 'Gift Cards', path: '/gift-cards', icon: Gift, description: 'Steam, iTunes, Google Play' },
+  ]},
+  { label: 'Services', items: [
+    { name: 'Rides & Delivery', path: '/rides', icon: Car, description: 'Book rides across T&T' },
+    { name: 'Jobs', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
+    { name: 'Real Estate', path: '/real-estate', icon: Building2, description: 'Buy, rent, sell property' },
+    { name: 'Events & Tickets', path: '/tickets', icon: Ticket, description: 'Fetes, concerts, shows' },
+  ]},
+  { label: 'AI Tools', items: [
+    { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
+    { name: 'AI Product Lister', path: '/products/ai-add', icon: Sparkles, description: 'Photo → listing in 10s' },
+    { name: 'VAT Tax Dashboard', path: '/tax-dashboard', icon: DollarSign, description: 'BIR-ready tax reports' },
+  ]},
+];
+
+const MOBILE_LINKS = [
+  { name: 'Directory', path: '/directory', icon: Store },
+  { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
+  { name: 'Digital', path: '/digital', icon: Gamepad2 },
+  { name: 'Rides', path: '/rides', icon: Car },
+  { name: 'Jobs', path: '/jobs', icon: Briefcase },
+  { name: 'Events', path: '/tickets', icon: Ticket },
+  { name: 'Real Estate', path: '/real-estate', icon: Building2 },
+  { name: 'AI Docs', path: '/documents', icon: FileText },
+  { name: 'AI Lister', path: '/products/ai-add', icon: Sparkles },
+  { name: 'Tax Tools', path: '/tax-dashboard', icon: DollarSign },
+  { name: 'Gift Cards', path: '/gift-cards', icon: Gift },
+  { name: 'Templates', path: '/templates', icon: Star },
+  { name: 'Pricing', path: '/pricing', icon: DollarSign },
+  { name: 'Blog', path: '/blog', icon: Mail },
+  { name: 'Earn', path: '/earn', icon: Gift },
+];
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
-
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const isHome = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const h = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
   }, []);
 
-  // Check if user is admin
   useEffect(() => {
-    const checkAdmin = async () => {
+    (async () => {
       const user = await authService.getCurrentUser();
       setIsLoggedIn(!!user);
-      if (user && (user.role === 'admin' || user.role === 'super_admin')) {
-        setIsAdmin(true);
-      }
-    };
-    checkAdmin();
+      if (user && (user.role === 'admin' || user.role === 'super_admin')) setIsAdmin(true);
+    })();
   }, [location]);
 
-  const navLinks = [
-    { name: 'Directory', path: '/directory' },
-    { name: 'Market', path: '/classifieds' },
-    { name: 'Go (Rides)', path: '/solutions/rides' },
-    { name: 'Pay & Deals', path: '/deals' },
-    { name: 'Jobs', path: '/solutions/jobs' },
-    { name: 'Living', path: '/solutions/living' },
-    { name: 'E-Tick', path: '/solutions/tickets' },
-    { name: 'Blog', path: '/blog' },
-  ];
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setServicesOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
 
-  const isActive = (path: string) => location.pathname === path;
+  useEffect(() => { setIsOpen(false); setServicesOpen(false); }, [location.pathname]);
 
   const isTransparent = isHome && !scrolled;
-
-  const navClasses = `fixed top-0 w-full z-50 transition-all duration-300 ${isTransparent
-    ? 'bg-transparent text-white pt-4'
-    : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md py-2'
-    }`;
-
-  const linkClasses = (path: string) => `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isTransparent
-    ? 'text-white/90 hover:text-white hover:bg-white/10'
-    : isActive(path)
-      ? 'text-trini-red bg-red-50'
-      : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
-    }`;
+  const lc = (path: string) => `px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${isTransparent ? 'text-white/90 hover:bg-white/10' : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'}`;
 
   return (
-    <nav className={navClasses}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isTransparent ? 'bg-transparent text-white pt-3' : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md py-1'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
-          <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center group">
-              <div className={`transition-all duration-300 p-1 rounded ${isTransparent ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
-                <img
-                  src={LOGO_URL}
-                  alt="TriniBuild"
-                  className="h-10 w-auto object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-xl text-trini-red">TriniBuild</span>';
-                  }}
-                />
-              </div>
+          <Link to="/" className="flex-shrink-0">
+            <div className={`transition-all p-1 rounded ${isTransparent ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
+              <img src={LOGO_URL} alt="TriniBuild" className="h-9 w-auto object-contain"
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-xl text-trini-red">TriniBuild</span>'; }} />
+            </div>
+          </Link>
+
+          {/* Desktop */}
+          <div className="hidden lg:flex lg:items-center lg:gap-1">
+            <Link to="/directory" className={lc('/directory')}>Directory</Link>
+            <Link to="/classifieds" className={lc('/classifieds')}>Market</Link>
+            <Link to="/digital" className={`${lc('/digital')} flex items-center gap-1`}>
+              Digital <span className="text-[10px] font-black bg-purple-500 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
             </Link>
-          </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex md:items-center md:space-x-1 lg:space-x-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={linkClasses(link.path)}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <Link to="/earn" className={linkClasses('/earn')}>Earn</Link>
+            {/* Mega Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button onClick={() => setServicesOpen(!servicesOpen)} className={`${lc('')} flex items-center gap-1`}>
+                Services <ChevronDown size={14} className={`transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {servicesOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[680px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                  <div className="grid grid-cols-2 gap-0">
+                    {SERVICE_GROUPS.map(group => (
+                      <div key={group.label} className="p-4 border-b border-r border-gray-50 last:border-r-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">{group.label}</p>
+                        <div className="space-y-1">
+                          {group.items.map(item => {
+                            const Icon = item.icon;
+                            return (
+                              <Link key={item.path} to={item.path} onClick={() => setServicesOpen(false)}
+                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors group">
+                                <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-trini-red/10 flex items-center justify-center flex-shrink-0">
+                                  <Icon size={18} className="text-gray-500 group-hover:text-trini-red" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-gray-900">{item.name}</span>
+                                    {item.badge && <span className={`text-[9px] font-black text-white px-1.5 py-0.5 rounded-full leading-none ${item.badgeColor}`}>{item.badge}</span>}
+                                  </div>
+                                  <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-100">
+                    <Link to="/pricing" onClick={() => setServicesOpen(false)} className="text-sm font-bold text-trini-red hover:underline">View Pricing →</Link>
+                    <Link to="/features" onClick={() => setServicesOpen(false)} className="text-sm font-bold text-gray-600 hover:text-gray-900">All Features</Link>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Admin Command Center Link - Only visible to admins */}
+            <Link to="/pricing" className={lc('/pricing')}>Pricing</Link>
+            <Link to="/blog" className={lc('/blog')}>Blog</Link>
+
             {isAdmin && (
-              <Link
-                to="/admin/command-center"
-                className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-bold transition-colors ${isTransparent ? 'bg-purple-500/80 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
-              >
-                <Settings className="h-4 w-4" /> Admin
+              <Link to="/admin/command-center" className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${isTransparent ? 'bg-purple-500/80 text-white' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+                <Settings size={14} /> Admin
               </Link>
             )}
 
-            {/* Real Estate Specific Link */}
-            {location.pathname.startsWith('/real-estate') && (
-              <Link to="/real-estate/agent" className={`ml-2 px-3 py-2 rounded-md text-sm font-bold transition-colors ${isTransparent ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>
-                Agent Hub
-              </Link>
-            )}
+            <div className={`h-6 w-px mx-1 opacity-30 ${isTransparent ? 'bg-white' : 'bg-gray-300'}`} />
 
-            <div className={`h-6 w-px mx-2 opacity-50 ${isTransparent ? 'bg-white' : 'bg-gray-300'}`}></div>
-
-            {/* Profile Link */}
-            <Link to="/profile" className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${isTransparent ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}>
-              <User className="h-4 w-4" /> <span className="hidden lg:inline">My Profile</span>
+            <Link to="/profile" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${isTransparent ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              <User size={16} />
             </Link>
-
-            <Link to="/create-store" className={`ml-2 px-4 py-2 rounded-md text-sm font-bold shadow-lg transition-transform transform hover:-translate-y-0.5 ${isTransparent
-              ? 'bg-white text-trini-black hover:bg-gray-100'
-              : 'bg-trini-black text-white hover:bg-gray-800'
-              }`}>
-              Start Selling
+            <Link to="/create-store" className={`ml-1 px-4 py-2 rounded-lg text-sm font-black shadow-lg transition-all hover:-translate-y-0.5 ${isTransparent ? 'bg-white text-gray-900' : 'bg-trini-red text-white hover:bg-red-700'}`}>
+              Start Free
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className={`inline-flex items-center justify-center p-2 rounded-md focus:outline-none ${isTransparent ? 'text-white hover:bg-white/20' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'
-                }`}
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {/* Mobile */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Link to="/profile" className={`p-2 rounded-full ${isTransparent ? 'text-white' : 'text-gray-600'}`}><User size={20} /></Link>
+            <button onClick={() => setIsOpen(!isOpen)} className={`p-2 rounded-lg ${isTransparent ? 'text-white hover:bg-white/20' : 'text-gray-500 hover:bg-gray-100'}`}>
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
@@ -148,42 +177,36 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-xl absolute top-full w-full border-t border-gray-100">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${isActive(link.path)
-                  ? 'text-trini-red bg-red-50'
-                  : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
-                  }`}
-              >
-                {link.name}
+        <div className="lg:hidden bg-white shadow-2xl absolute top-full w-full border-t border-gray-100 max-h-[85vh] overflow-y-auto">
+          <div className="px-4 py-4">
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <Link to="/create-store" onClick={() => setIsOpen(false)} className="bg-trini-red text-white rounded-xl px-4 py-3 font-black text-sm text-center">Create Store</Link>
+              <Link to="/digital" onClick={() => setIsOpen(false)} className="bg-purple-600 text-white rounded-xl px-4 py-3 font-black text-sm text-center flex items-center justify-center gap-1">
+                <Gamepad2 size={16} /> Digital
               </Link>
-            ))}
-            <Link to="/profile" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-gray-800 bg-gray-50">
-              <div className="flex items-center"><User className="h-4 w-4 mr-2" /> My Profile</div>
-            </Link>
-            <Link to="/earn" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-purple-700 bg-purple-50">
-              Start Earning
-            </Link>
-            {location.pathname.startsWith('/real-estate') && (
-              <Link to="/real-estate/agent" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-bold text-blue-700 bg-blue-50 mt-1">
-                Agent Hub
-              </Link>
-            )}
-            {/* Admin Command Center - Mobile */}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {MOBILE_LINKS.map(link => {
+                const Icon = link.icon;
+                const active = location.pathname === link.path;
+                return (
+                  <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl text-center ${active ? 'bg-red-50 text-trini-red' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}>
+                    <Icon size={20} />
+                    <span className="text-[11px] font-bold leading-tight">{link.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
             {isAdmin && (
-              <Link to="/admin/command-center" onClick={() => setIsOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold text-white bg-purple-600 mt-1">
-                <Settings className="h-4 w-4" /> Admin Command Center
+              <Link to="/admin/command-center" onClick={() => setIsOpen(false)} className="flex items-center gap-2 mt-4 px-4 py-3 rounded-xl bg-purple-600 text-white font-bold text-sm">
+                <Settings size={16} /> Admin Command Center
               </Link>
             )}
-            <div className="border-t border-gray-100 my-2"></div>
-            <Link to="/create-store" onClick={() => setIsOpen(false)} className="block w-full mt-4 bg-trini-black text-white px-4 py-3 rounded-md text-base font-medium text-center">
-              Create Store
-            </Link>
+            <div className="border-t border-gray-100 mt-4 pt-4 grid grid-cols-2 gap-2">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm">Log In</Link>
+              <Link to="/signup" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm">Sign Up</Link>
+            </div>
           </div>
         </div>
       )}
