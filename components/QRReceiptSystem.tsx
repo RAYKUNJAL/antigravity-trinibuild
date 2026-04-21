@@ -17,7 +17,6 @@ import {
     Package, MapPin, Clock, CheckCircle, XCircle, Truck,
     AlertCircle, Phone, Copy, Check, Camera, Scan
 } from 'lucide-react';
-import QRCode from 'qrcode';
 import { supabase } from '../services/supabaseClient';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -59,15 +58,8 @@ interface ReceiptData extends Order {
 export const generateOrderQR = async (orderId: string): Promise<string> => {
     try {
         const trackingUrl = `${window.location.origin}/track/${orderId}`;
-        const qrCodeDataUrl = await QRCode.toDataURL(trackingUrl, {
-            width: 300,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        });
-        return qrCodeDataUrl;
+        // Use Google Charts API — no npm dependency needed
+        return `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(trackingUrl)}&choe=UTF-8`;
     } catch (error) {
         console.error('QR generation failed:', error);
         return '';
