@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { CODCheckout } from '../components/CODCheckout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Search, X, Star, MessageCircle, MapPin,
@@ -1066,12 +1067,17 @@ export const Storefront: React.FC = () => {
           />
         )}
 
-        {/* Checkout view */}
+        {/* Checkout view — full COD system with TriniRides */}
         {view === 'checkout' && (
-          <CheckoutFlow
+          <CODCheckout
             items={cartItems}
             store={store}
-            onComplete={orderId => { setConfirmedOrderId(orderId); setCartItems([]); setView('confirmed'); window.scrollTo(0, 0); }}
+            onComplete={(orderId, method) => {
+              setConfirmedOrderId(orderId);
+              setCartItems([]);
+              setView('confirmed');
+              window.scrollTo(0, 0);
+            }}
             onBack={() => setView('grid')}
           />
         )}
