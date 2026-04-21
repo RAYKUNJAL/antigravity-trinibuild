@@ -1,808 +1,1090 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ShoppingCart, Search, Menu, X, Star, MessageCircle, Phone, Mail, MapPin, Facebook, Instagram, Twitter, Plus, Minus, Trash2, ChevronRight, Banknote, CreditCard, Clock, Gift, Calendar, Truck, AlertCircle, CheckCircle, Lock } from 'lucide-react';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { useParams } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ShoppingCart, Search, X, Star, MessageCircle, MapPin,
+  Plus, Minus, Trash2, ChevronRight, ChevronLeft, Truck,
+  CheckCircle, ArrowLeft, SlidersHorizontal, Heart, Share2,
+  Package, Clock, Shield
+} from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { storeService, Store } from '../services/storeService';
 import { orderService, CreateOrderData } from '../services/orderService';
-import { SocialContactWidget } from '../components/SocialContactWidget';
-import { ChatWidget } from '../components/ChatWidget';
 
-export const Storefront: React.FC = () => {
-  const { id } = useParams();
-  const [storeData, setStoreData] = useState<Store | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface CartItem {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  variant?: string;
+}
 
-  // Checkout State
-  const [checkoutStep, setCheckoutStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Success
-  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+interface Product {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+  category?: string;
+  description?: string;
+  stock?: number;
+  rating?: number;
+  reviews?: number;
+}
 
-  // Form State
-  const [shippingDetails, setShippingDetails] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    city: '',
-    notes: ''
-  });
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-  const [phoneOtp, setPhoneOtp] = useState('');
-  const [showOtpInput, setShowOtpInput] = useState(false);
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+const ProductSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="aspect-square bg-gray-100 rounded-lg mb-3" />
+    <div className="h-4 bg-gray-100 rounded mb-2 w-3/4" />
+    <div className="h-4 bg-gray-100 rounded w-1/3" />
+  </div>
+);
 
-  const [deliveryOption, setDeliveryOption] = useState<'standard' | 'express' | 'pickup'>('standard');
-  const [scheduleOption, setScheduleOption] = useState<'now' | 'later' | 'hold'>('now');
-  const [selectedDate, setSelectedDate] = useState('');
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+const StorefrontNav: React.FC<{
+  store: Store;
+  cartCount: number;
+  onCartOpen: () => void;
+  searchQuery: string;
+  onSearch: (q: string) => void;
+  view: 'grid' | 'product';
+  onBack: () => void;
+}> = ({ store, cartCount, onCartOpen, searchQuery, onSearch, view, onBack }) => (
+  <div className="sticky top-0 inset-x-0 z-40">
+    {/* Announcement bar */}
+    <div
+      className="text-white text-xs py-2 px-4 text-center font-semibold tracking-widest"
+      style={{ background: '#E61E2B' }}
+    >
+      🇹🇹 FREE DELIVERY on orders over TT$200 · Pay with Cash, Linx, or Card
+    </div>
 
-  const [cart, setCart] = useState<any[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bank_transfer' | 'card' | 'paypal'>('cod');
+    {/* Main nav */}
+    <header
+      className="bg-white border-b"
+      style={{ borderColor: '#f0f0f0', boxShadow: '0 1px 0 rgba(0,0,0,0.06)' }}
+    >
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
 
-  useEffect(() => {
-    const fetchStore = async () => {
-      if (!id) {
-        const activeStore = localStorage.getItem('trinibuild_active_store');
-        if (activeStore) {
-          setStoreData(JSON.parse(activeStore));
-          setIsLoading(false);
-          return;
-        }
-        setError("No store ID provided.");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const data = await storeService.getStoreById(id);
-        setStoreData(data);
-      } catch (err) {
-        console.error("Failed to load store:", err);
-        setError("Store not found.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStore();
-  }, [id]);
-
-  // Aggregate cart items
-  const cartItems = useMemo(() => {
-    const items: Record<number, any> = {};
-    cart.forEach(product => {
-      if (items[product.id]) {
-        items[product.id].quantity += 1;
-      } else {
-        items[product.id] = { ...product, quantity: 1 };
-      }
-    });
-    return Object.values(items);
-  }, [cart]);
-
-  const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
-  const cartCount = cart.length;
-  const loyaltyPoints = Math.floor(cartTotal / 10);
-
-  const handleWhatsAppClick = (productName?: string) => {
-    if (!storeData) return;
-    const text = productName
-      ? `Hi, I'm interested in ordering ${productName} from your store.`
-      : `Hi, I have a question about your store.`;
-    const url = `https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  };
-
-  const verifyPhone = () => {
-    // Mock phone verification
-    if (shippingDetails.phone.length < 7) {
-      alert("Please enter a valid phone number.");
-      return;
-    }
-    setShowOtpInput(true);
-    // Simulate sending OTP
-    setTimeout(() => alert(`Your OTP is 1234`), 1000);
-  };
-
-  const confirmOtp = () => {
-    if (phoneOtp === '1234') {
-      setIsPhoneVerified(true);
-      setShowOtpInput(false);
-    } else {
-      alert("Invalid OTP");
-    }
-  };
-
-  const handlePlaceOrder = async () => {
-    if (!storeData) return;
-    setIsProcessingOrder(true);
-
-    try {
-      // Prepare Order Data
-      const orderData: CreateOrderData = {
-        storeId: storeData.id,
-        items: cartItems.map((item: any) => ({
-          productId: item.id.toString(),
-          quantity: item.quantity,
-          price: item.price,
-          name: item.name
-        })),
-        shippingAddress: {
-          street: shippingDetails.address,
-          city: shippingDetails.city,
-          phone: shippingDetails.phone,
-          name: shippingDetails.name
-        },
-        paymentMethod: 'cod', // Updated to match CreateOrderData type
-        deliveryOption: deliveryOption,
-        deliverySlot: scheduleOption === 'later' ? selectedDate : undefined,
-        holdUntil: scheduleOption === 'hold' ? selectedDate : undefined,
-        notes: shippingDetails.notes
-      };
-
-      // Call API
-      const response = await orderService.createOrder(orderData);
-      setOrderId(response.order_number || 'ORD-' + Math.floor(Math.random() * 10000));
-      setCheckoutStep(4); // Success Step
-
-    } catch (err) {
-      console.error("Order failed:", err);
-      // Fallback for demo if API fails
-      setOrderId('ORD-' + Math.floor(Math.random() * 10000));
-      setCheckoutStep(4);
-    } finally {
-      setIsProcessingOrder(false);
-    }
-  };
-
-  const openWhatsAppOrder = () => {
-    if (!storeData) return;
-
-    let message = `🆕 *NEW ORDER #${orderId}*\n`;
-    message += `--------------------------------\n`;
-    message += `👤 *Customer:* ${shippingDetails.name}\n`;
-    message += `📞 *Phone:* ${shippingDetails.phone} ${isPhoneVerified ? '✅ Verified' : ''}\n`;
-    message += `📍 *Address:* ${shippingDetails.address}, ${shippingDetails.city}\n`;
-    message += `--------------------------------\n`;
-
-    cartItems.forEach((item: any) => {
-      message += `• ${item.quantity}x ${item.name} ($${item.price * item.quantity})\n`;
-    });
-
-    message += `\n💰 *Total: TT$${cartTotal}*\n`;
-    message += `🚚 *Delivery:* ${deliveryOption.toUpperCase()}\n`;
-
-    if (scheduleOption === 'later') message += `📅 *Scheduled For:* ${selectedDate}\n`;
-    if (scheduleOption === 'hold') message += `📦 *Hold Until:* ${selectedDate}\n`;
-
-    message += `💵 *Payment:* Cash on Delivery (COD)\n`;
-    if (shippingDetails.notes) message += `📝 *Notes:* ${shippingDetails.notes}\n`;
-
-    const url = `https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-
-    // Clear cart and close
-    setCart([]);
-    setIsCartOpen(false);
-    setCheckoutStep(1);
-  };
-
-  const addToCart = (product: any) => {
-    setCart([...cart, product]);
-    setIsCartOpen(true);
-  };
-
-  const removeFromCart = (productId: number) => {
-    const index = cart.findIndex(p => p.id === productId);
-    if (index > -1) {
-      const newCart = [...cart];
-      newCart.splice(index, 1);
-      setCart(newCart);
-    }
-  };
-
-  const clearCartItem = (productId: number) => {
-    setCart(cart.filter(p => p.id !== productId));
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-trini-red"></div>
-      </div>
-    );
-  }
-
-  if (error || !storeData) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Store Not Found</h2>
-        <p className="text-gray-600 mb-6">{error || "The store you are looking for doesn't exist."}</p>
-        <a href="/directory" className="bg-trini-red text-white px-6 py-3 rounded-full font-bold hover:bg-red-700 transition-colors">
-          Browse Directory
-        </a>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white font-sans relative">
-
-      {/* Fast Loading Top Bar */}
-      <div className="bg-trini-red text-white text-xs py-2 px-4 text-center font-bold tracking-wide">
-        GRAND OPENING SALE! ORDER VIA WHATSAPP FOR FAST DELIVERY 🚚
-      </div>
-
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo Area */}
-            <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full overflow-hidden border border-gray-200 mr-3">
-                <img src={storeData.logo} alt={storeData.name} className="h-full w-full object-cover" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">{storeData.name}</h1>
+        {/* Left: back / logo */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {view === 'product' ? (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              {store.logo && (
+                <img src={store.logo} alt={store.name} className="h-8 w-8 rounded-full object-cover border border-gray-200" />
+              )}
+              <span className="font-black text-gray-900 text-lg hidden sm:block" style={{ fontFamily: 'system-ui' }}>
+                {store.name}
+              </span>
             </div>
+          )}
+        </div>
 
-            {/* Search Bar (Hidden on small mobile) */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  aria-label="Search"
-                  className="w-full p-2 rounded border border-gray-300 text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-gray-600">
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
+        {/* Centre: search */}
+        <div className="flex-1 max-w-md hidden md:flex">
+          <div className="relative w-full">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search products…"
+              value={searchQuery}
+              onChange={e => onSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 transition-all"
+              style={{ '--tw-ring-color': '#E61E2B' } as React.CSSProperties}
+            />
           </div>
         </div>
 
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 py-2 px-4 shadow-lg">
-            <input
-              type="text"
-              placeholder="Search..."
-              aria-label="Search"
-              className="w-full p-2 mb-3 rounded border border-gray-300 text-sm"
-            />
-            <button onClick={() => handleWhatsAppClick()} className="w-full flex items-center justify-center py-2 bg-green-500 text-white rounded-md font-bold mb-2">
-              <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp Us
+        {/* Right: cart */}
+        <div className="flex items-center gap-3">
+          {store.whatsapp && (
+            <a
+              href={`https://wa.me/${store.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-700 transition-colors"
+            >
+              <MessageCircle size={15} /> WhatsApp
+            </a>
+          )}
+          <button
+            onClick={onCartOpen}
+            className="relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-white transition-transform active:scale-95"
+            style={{ background: '#E61E2B' }}
+          >
+            <ShoppingCart size={16} />
+            <span className="hidden sm:inline">Cart</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </nav>
+    </header>
+  </div>
+);
+
+// ─── Refinement Sidebar ───────────────────────────────────────────────────────
+const RefinementList: React.FC<{
+  categories: string[];
+  selected: string;
+  onSelect: (c: string) => void;
+  sortBy: string;
+  onSort: (s: string) => void;
+  priceMax: number;
+  onPriceMax: (p: number) => void;
+}> = ({ categories, selected, onSelect, sortBy, onSort, priceMax, onPriceMax }) => (
+  <aside className="w-full lg:w-56 xl:w-64 flex-shrink-0">
+    {/* Mobile: horizontal scroll */}
+    <div className="lg:hidden flex gap-2 overflow-x-auto pb-2 mb-4">
+      {['All', ...categories].map(cat => (
+        <button
+          key={cat}
+          onClick={() => onSelect(cat === 'All' ? '' : cat)}
+          className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all"
+          style={
+            (cat === 'All' ? selected === '' : selected === cat)
+              ? { background: '#E61E2B', color: '#fff', borderColor: '#E61E2B' }
+              : { background: '#fff', color: '#374151', borderColor: '#e5e7eb' }
+          }
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+
+    {/* Desktop: sticky sidebar */}
+    <div className="hidden lg:block sticky top-24 space-y-6">
+      <div>
+        <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Categories</h3>
+        <ul className="space-y-1">
+          {['All', ...categories].map(cat => {
+            const active = cat === 'All' ? selected === '' : selected === cat;
+            return (
+              <li key={cat}>
+                <button
+                  onClick={() => onSelect(cat === 'All' ? '' : cat)}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                  style={active
+                    ? { background: '#FEF2F2', color: '#E61E2B', fontWeight: 700 }
+                    : { color: '#374151' }
+                  }
+                >
+                  {cat}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div>
+        <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Sort by</h3>
+        <select
+          value={sortBy}
+          onChange={e => onSort(e.target.value)}
+          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none"
+        >
+          <option value="newest">Newest First</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="popular">Most Popular</option>
+        </select>
+      </div>
+
+      {priceMax > 0 && (
+        <div>
+          <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">
+            Max Price: TT${priceMax}
+          </h3>
+          <input
+            type="range"
+            min={0}
+            max={priceMax * 2}
+            value={priceMax}
+            onChange={e => onPriceMax(Number(e.target.value))}
+            className="w-full accent-red-600"
+          />
+        </div>
+      )}
+    </div>
+  </aside>
+);
+
+// ─── Product Card ─────────────────────────────────────────────────────────────
+const ProductCard: React.FC<{
+  product: Product;
+  onAddToCart: (p: Product) => void;
+  onClick: (p: Product) => void;
+}> = ({ product, onAddToCart, onClick }) => {
+  const [added, setAdded] = useState(false);
+  const [liked, setLiked] = useState(false);
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.2 }}
+      className="group cursor-pointer"
+      onClick={() => onClick(product)}
+    >
+      {/* Image */}
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-50 mb-3">
+        <img
+          src={product.image || `https://placehold.co/400x400/f3f4f6/9ca3af?text=${encodeURIComponent(product.name)}`}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+        {/* Wishlist */}
+        <button
+          onClick={e => { e.stopPropagation(); setLiked(!liked); }}
+          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm transition-transform active:scale-90"
+        >
+          <Heart size={14} fill={liked ? '#E61E2B' : 'none'} color={liked ? '#E61E2B' : '#9ca3af'} />
+        </button>
+        {/* Quick add */}
+        <div className="absolute bottom-2 inset-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={handleAdd}
+            className="w-full py-2 rounded-lg text-xs font-black text-white transition-all active:scale-95"
+            style={{ background: added ? '#16a34a' : '#E61E2B' }}
+          >
+            {added ? '✓ Added' : '+ Add to Cart'}
+          </button>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="px-0.5">
+        {product.category && (
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{product.category}</p>
+        )}
+        <h3 className="text-sm font-bold text-gray-900 leading-snug mb-1 line-clamp-2">{product.name}</h3>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-black" style={{ color: '#E61E2B' }}>TT${product.price.toFixed(2)}</p>
+          {product.rating && (
+            <span className="flex items-center gap-0.5 text-xs text-gray-500">
+              <Star size={10} fill="#FFD700" color="#FFD700" />
+              {product.rating.toFixed(1)}
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── Product Detail (openfront 3-column layout) ───────────────────────────────
+const ProductDetail: React.FC<{
+  product: Product;
+  store: Store;
+  onAddToCart: (p: Product, qty: number) => void;
+  onBack: () => void;
+}> = ({ product, store, onAddToCart, onBack }) => {
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    onAddToCart(product, qty);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col lg:flex-row lg:items-start gap-8"
+    >
+      {/* LEFT — product info (desktop sticky) */}
+      <div className="hidden lg:flex flex-col lg:sticky lg:top-32 lg:max-w-[280px] w-full gap-6">
+        <div>
+          {product.category && (
+            <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#E61E2B' }}>
+              {product.category}
+            </span>
+          )}
+          <h1 className="text-2xl font-black text-gray-900 mt-1 leading-tight">{product.name}</h1>
+          {product.rating && (
+            <div className="flex items-center gap-1.5 mt-2">
+              {[1,2,3,4,5].map(i => (
+                <Star key={i} size={13} fill={i <= Math.round(product.rating!) ? '#FFD700' : '#e5e7eb'} color={i <= Math.round(product.rating!) ? '#FFD700' : '#e5e7eb'} />
+              ))}
+              <span className="text-xs text-gray-500 ml-1">({product.reviews || 0} reviews)</span>
+            </div>
+          )}
+        </div>
+        {product.description && (
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Description</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
+          </div>
+        )}
+        <div className="space-y-2">
+          {[
+            [Truck, 'Free delivery over TT$200'],
+            [Shield, '7-day return policy'],
+            [Clock, 'Same-day pickup available'],
+          ].map(([Icon, text], i) => (
+            <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
+              <Icon size={13} className="text-gray-400 flex-shrink-0" />
+              {text as string}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CENTRE — image */}
+      <div className="flex-1 min-w-0">
+        <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50">
+          <img
+            src={product.image || `https://placehold.co/800x800/f3f4f6/9ca3af?text=${encodeURIComponent(product.name)}`}
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {/* Mobile info below image */}
+        <div className="lg:hidden mt-6 space-y-4">
+          {product.category && (
+            <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#E61E2B' }}>
+              {product.category}
+            </span>
+          )}
+          <h1 className="text-2xl font-black text-gray-900">{product.name}</h1>
+          {product.description && (
+            <p className="text-sm text-gray-600 leading-relaxed">{product.description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT — actions (desktop sticky) */}
+      <div className="hidden lg:flex flex-col lg:sticky lg:top-32 lg:max-w-[280px] w-full gap-5">
+        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} store={store} />
+      </div>
+
+      {/* Mobile actions */}
+      <div className="lg:hidden w-full">
+        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} store={store} />
+      </div>
+    </motion.div>
+  );
+};
+
+const ActionPanel: React.FC<{
+  product: Product;
+  qty: number;
+  setQty: (q: number) => void;
+  added: boolean;
+  onAdd: () => void;
+  store: Store;
+}> = ({ product, qty, setQty, added, onAdd, store }) => (
+  <div className="space-y-4">
+    <div className="flex items-baseline justify-between">
+      <span className="text-3xl font-black" style={{ color: '#E61E2B' }}>
+        TT${(product.price * qty).toFixed(2)}
+      </span>
+      {qty > 1 && (
+        <span className="text-sm text-gray-400">TT${product.price.toFixed(2)} each</span>
+      )}
+    </div>
+
+    {/* Quantity */}
+    <div>
+      <label className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2 block">Quantity</label>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setQty(Math.max(1, qty - 1))}
+          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <Minus size={14} />
+        </button>
+        <span className="w-8 text-center font-bold text-lg">{qty}</span>
+        <button
+          onClick={() => setQty(qty + 1)}
+          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+    </div>
+
+    {/* Add to cart */}
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={onAdd}
+      className="w-full py-3.5 rounded-xl font-black text-white transition-colors"
+      style={{ background: added ? '#16a34a' : '#E61E2B' }}
+    >
+      {added ? '✓ Added to Cart' : 'Add to Cart'}
+    </motion.button>
+
+    {/* WhatsApp order */}
+    {store.whatsapp && (
+      <a
+        href={`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(`Hi, I'd like to order ${qty}x ${product.name} (TT$${(product.price * qty).toFixed(2)}) from ${store.name}`)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-green-500 text-green-600 font-black text-sm hover:bg-green-50 transition-colors"
+      >
+        <MessageCircle size={16} /> Order via WhatsApp
+      </a>
+    )}
+
+    {/* Trust badges */}
+    <div className="flex items-center justify-center gap-4 pt-2 border-t border-gray-100">
+      {[['🔒','Secure'],['📦','Fast Ship'],['↩️','Easy Return']].map(([e, l]) => (
+        <div key={l} className="flex flex-col items-center gap-0.5">
+          <span className="text-base">{e}</span>
+          <span className="text-xs text-gray-400 font-semibold">{l}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// ─── Cart Drawer (openfront slide-out pattern) ────────────────────────────────
+const CartDrawer: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  items: CartItem[];
+  onUpdateQty: (id: string | number, qty: number) => void;
+  onRemove: (id: string | number) => void;
+  onCheckout: () => void;
+  store: Store;
+}> = ({ isOpen, onClose, items, onUpdateQty, onRemove, onCheckout, store }) => {
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const freeDelivery = subtotal >= 200;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed inset-y-0 right-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h2 className="text-lg font-black text-gray-900">
+                Your Cart {items.length > 0 && <span className="text-gray-400 font-semibold">({items.length})</span>}
+              </h2>
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Items */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center gap-4">
+                  <ShoppingCart size={48} className="text-gray-200" />
+                  <p className="text-gray-500 font-semibold">Your cart is empty</p>
+                  <button onClick={onClose} className="text-sm font-black" style={{ color: '#E61E2B' }}>
+                    Continue Shopping →
+                  </button>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  {items.map(item => (
+                    <li key={`${item.id}-${item.variant}`} className="flex gap-4">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                        <p className="text-sm font-black mt-0.5" style={{ color: '#E61E2B' }}>
+                          TT${(item.price * item.quantity).toFixed(2)}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => onUpdateQty(item.id, Math.max(0, item.quantity - 1))}
+                            className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+                          >
+                            <Minus size={11} />
+                          </button>
+                          <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => onUpdateQty(item.id, item.quantity + 1)}
+                            className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
+                          >
+                            <Plus size={11} />
+                          </button>
+                          <button
+                            onClick={() => onRemove(item.id)}
+                            className="ml-auto text-gray-300 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Summary */}
+            {items.length > 0 && (
+              <div className="border-t border-gray-100 px-6 py-5 space-y-4">
+                {!freeDelivery && (
+                  <div className="bg-amber-50 rounded-lg px-3 py-2.5">
+                    <p className="text-xs text-amber-700 font-semibold">
+                      Add TT${(200 - subtotal).toFixed(2)} more for free delivery!
+                    </p>
+                    <div className="mt-1.5 h-1.5 bg-amber-200 rounded-full">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all"
+                        style={{ width: `${Math.min(100, (subtotal / 200) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Subtotal</span>
+                  <span className="font-black text-lg">TT${subtotal.toFixed(2)}</span>
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={onCheckout}
+                  className="w-full py-3.5 rounded-xl font-black text-white flex items-center justify-center gap-2"
+                  style={{ background: '#E61E2B' }}
+                >
+                  Proceed to Checkout <ChevronRight size={16} />
+                </motion.button>
+              </div>
+            )}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ─── Checkout (stepwise, openfront pattern) ───────────────────────────────────
+const CheckoutFlow: React.FC<{
+  items: CartItem[];
+  store: Store;
+  onComplete: (orderId: string) => void;
+  onBack: () => void;
+}> = ({ items, store, onComplete, onBack }) => {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [submitting, setSubmitting] = useState(false);
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const delivery = subtotal >= 200 ? 0 : 30;
+  const total = subtotal + delivery;
+
+  const [form, setForm] = useState({
+    name: '', phone: '', address: '', city: '', notes: '',
+    payment: 'cod' as 'cod' | 'bank_transfer',
+    delivery: 'standard' as 'standard' | 'express' | 'pickup',
+  });
+
+  const steps = ['Details', 'Delivery', 'Review'];
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const orderData: CreateOrderData = {
+        storeId: store.id!,
+        items: items.map(i => ({ productId: i.id, quantity: i.quantity, price: i.price })),
+        customerName: form.name,
+        customerPhone: form.phone,
+        deliveryAddress: `${form.address}, ${form.city}`,
+        notes: form.notes,
+        totalAmount: total,
+        paymentMethod: form.payment,
+        deliveryMethod: form.delivery,
+      };
+      const order = await orderService.createOrder(orderData);
+      onComplete(order.id || 'TRN-' + Date.now());
+    } catch {
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      {/* Step indicator */}
+      <div className="flex items-center gap-2 mb-8">
+        {steps.map((s, i) => (
+          <React.Fragment key={s}>
+            <div className="flex items-center gap-2">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+                style={step > i + 1
+                  ? { background: '#16a34a', color: '#fff' }
+                  : step === i + 1
+                  ? { background: '#E61E2B', color: '#fff' }
+                  : { background: '#f3f4f6', color: '#9ca3af' }
+                }
+              >
+                {step > i + 1 ? '✓' : i + 1}
+              </div>
+              <span className={`text-sm font-bold ${step === i + 1 ? 'text-gray-900' : 'text-gray-400'}`}>{s}</span>
+            </div>
+            {i < steps.length - 1 && <div className="flex-1 h-px bg-gray-200" />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+        {/* Form */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+          {step === 1 && (
+            <>
+              <h2 className="text-lg font-black">Your Details</h2>
+              {[
+                ['name', 'Full Name', 'text'],
+                ['phone', 'Phone Number (WhatsApp)', 'tel'],
+                ['address', 'Delivery Address', 'text'],
+                ['city', 'City / Area', 'text'],
+              ].map(([field, label, type]) => (
+                <div key={field}>
+                  <label className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1.5 block">{label}</label>
+                  <input
+                    type={type}
+                    value={(form as any)[field]}
+                    onChange={e => setForm({ ...form, [field]: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1.5 block">Order Notes (optional)</label>
+                <textarea
+                  rows={2}
+                  value={form.notes}
+                  onChange={e => setForm({ ...form, notes: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all resize-none"
+                  placeholder="Any special instructions?"
+                />
+              </div>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <h2 className="text-lg font-black">Delivery &amp; Payment</h2>
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3 block">Delivery Method</label>
+                <div className="space-y-2">
+                  {[
+                    ['standard', 'Standard Delivery', '2–4 days · TT$30 (free over $200)', delivery === 0 && form.delivery === 'standard' ? 'FREE' : `TT$30`],
+                    ['express', 'Express Delivery', 'Next day · TT$60', 'TT$60'],
+                    ['pickup', 'Store Pickup', 'Ready in 2 hours · Free', 'FREE'],
+                  ].map(([val, title, sub, price]) => (
+                    <label key={val} className="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors"
+                      style={form.delivery === val ? { borderColor: '#E61E2B', background: '#FEF2F2' } : { borderColor: '#e5e7eb' }}>
+                      <input type="radio" name="delivery" value={val} checked={form.delivery === val as any} onChange={() => setForm({ ...form, delivery: val as any })} className="accent-red-600" />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold">{title}</p>
+                        <p className="text-xs text-gray-500">{sub}</p>
+                      </div>
+                      <span className="text-sm font-black" style={{ color: '#E61E2B' }}>{price}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3 block">Payment Method</label>
+                <div className="space-y-2">
+                  {[
+                    ['cod', 'Cash on Delivery', 'Pay when your order arrives'],
+                    ['bank_transfer', 'Bank Transfer / Linx', 'We\'ll send you payment details'],
+                  ].map(([val, title, sub]) => (
+                    <label key={val} className="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors"
+                      style={form.payment === val ? { borderColor: '#E61E2B', background: '#FEF2F2' } : { borderColor: '#e5e7eb' }}>
+                      <input type="radio" name="payment" value={val} checked={form.payment === val as any} onChange={() => setForm({ ...form, payment: val as any })} className="accent-red-600" />
+                      <div>
+                        <p className="text-sm font-bold">{title}</p>
+                        <p className="text-xs text-gray-500">{sub}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <h2 className="text-lg font-black">Review Your Order</h2>
+              <div className="space-y-3">
+                {items.map(item => (
+                  <div key={item.id} className="flex items-center gap-3 py-3 border-b border-gray-50">
+                    <img src={item.image} alt={item.name} className="w-12 h-12 rounded-lg object-cover bg-gray-50" />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold line-clamp-1">{item.name}</p>
+                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="text-sm font-black">TT${(item.price * item.quantity).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-gray-600">Delivering to</span><span className="font-semibold text-right max-w-[180px]">{form.address}, {form.city}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Phone</span><span className="font-semibold">{form.phone}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Payment</span><span className="font-semibold capitalize">{form.payment.replace('_', ' ')}</span></div>
+              </div>
+            </>
+          )}
+
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => step > 1 ? setStep((step - 1) as 1 | 2 | 3) : onBack()}
+              className="px-5 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              {step === 1 ? '← Back to Store' : '← Back'}
             </button>
-            <div className="space-y-2 text-sm text-gray-600">
-              <p className="flex items-center"><Phone className="h-3 w-3 mr-2" /> {storeData.whatsapp}</p>
-              <p className="flex items-center"><MapPin className="h-3 w-3 mr-2" /> {storeData.location}</p>
+            {step < 3 ? (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setStep((step + 1) as 2 | 3)}
+                className="flex-1 py-3 rounded-xl font-black text-white"
+                style={{ background: '#E61E2B' }}
+              >
+                Continue →
+              </motion.button>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl font-black text-white disabled:opacity-60"
+                style={{ background: submitting ? '#9ca3af' : '#E61E2B' }}
+              >
+                {submitting ? 'Placing Order…' : 'Place Order'}
+              </motion.button>
+            )}
+          </div>
+        </div>
+
+        {/* Order summary sidebar */}
+        <div className="bg-gray-50 rounded-2xl p-6 h-fit sticky top-24">
+          <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 mb-4">Order Summary</h3>
+          <div className="space-y-2 text-sm mb-4">
+            <div className="flex justify-between"><span className="text-gray-600">Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} items)</span><span className="font-semibold">TT${subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-600">Delivery</span><span className={`font-semibold ${delivery === 0 ? 'text-green-600' : ''}`}>{delivery === 0 ? 'FREE' : `TT$${delivery}`}</span></div>
+            <div className="h-px bg-gray-200 my-2" />
+            <div className="flex justify-between text-base"><span className="font-black">Total</span><span className="font-black" style={{ color: '#E61E2B' }}>TT${total.toFixed(2)}</span></div>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-gray-500 border-t border-gray-200 pt-4">
+            <Shield size={12} className="flex-shrink-0" />
+            Secure order processed by {store.name}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Order Confirmed ──────────────────────────────────────────────────────────
+const OrderConfirmed: React.FC<{ orderId: string; store: Store; onContinue: () => void }> = ({ orderId, store, onContinue }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="max-w-md mx-auto px-4 py-16 text-center"
+  >
+    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+      <CheckCircle size={40} className="text-green-600" />
+    </div>
+    <h1 className="text-2xl font-black text-gray-900 mb-2">Order Confirmed!</h1>
+    <p className="text-gray-500 mb-1">Order ID: <span className="font-bold text-gray-700">{orderId}</span></p>
+    <p className="text-sm text-gray-500 mb-8">
+      {store.whatsapp
+        ? `${store.name} will contact you on WhatsApp to confirm delivery.`
+        : `${store.name} will contact you shortly to confirm your order.`}
+    </p>
+    {store.whatsapp && (
+      <a
+        href={`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(`Hi, I just placed order ${orderId}`)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl border-2 border-green-500 text-green-600 font-black mb-3"
+      >
+        <MessageCircle size={16} /> Chat with {store.name}
+      </a>
+    )}
+    <button
+      onClick={onContinue}
+      className="w-full py-3.5 rounded-xl font-black text-white"
+      style={{ background: '#E61E2B' }}
+    >
+      Continue Shopping
+    </button>
+  </motion.div>
+);
+
+// ─── Main Storefront ──────────────────────────────────────────────────────────
+export const Storefront: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [store, setStore] = useState<Store | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Navigation state
+  const [view, setView] = useState<'grid' | 'product' | 'checkout' | 'confirmed'>('grid');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [confirmedOrderId, setConfirmedOrderId] = useState('');
+
+  // Refinement state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [priceMax, setPriceMax] = useState(0);
+
+  // Cart state
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (id) {
+          const data = await storeService.getStoreById(id);
+          setStore(data);
+          const maxP = Math.max(...(data.products || []).map((p: any) => p.price || 0));
+          setPriceMax(maxP || 0);
+        } else {
+          const active = localStorage.getItem('trinibuild_active_store');
+          if (active) {
+            const data = JSON.parse(active);
+            setStore(data);
+            const maxP = Math.max(...(data.products || []).map((p: any) => p.price || 0));
+            setPriceMax(maxP || 0);
+          } else {
+            setError('No store found.');
+          }
+        }
+      } catch {
+        setError('Store not found.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
+
+  const products: Product[] = useMemo(() => store?.products || [], [store]);
+
+  const categories = useMemo(() =>
+    [...new Set(products.map(p => p.category).filter(Boolean))] as string[],
+    [products]
+  );
+
+  const filtered = useMemo(() => {
+    let list = products;
+    if (searchQuery) list = list.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (selectedCategory) list = list.filter(p => p.category === selectedCategory);
+    if (priceMax > 0) list = list.filter(p => p.price <= priceMax);
+    switch (sortBy) {
+      case 'price_asc': return [...list].sort((a, b) => a.price - b.price);
+      case 'price_desc': return [...list].sort((a, b) => b.price - a.price);
+      case 'popular': return [...list].sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
+      default: return list;
+    }
+  }, [products, searchQuery, selectedCategory, sortBy, priceMax]);
+
+  const cartCount = cartItems.reduce((s, i) => s + i.quantity, 0);
+
+  const addToCart = useCallback((product: Product, qty = 1) => {
+    setCartItems(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + qty } : i);
+      return [...prev, { id: product.id, name: product.name, price: product.price, image: product.image, quantity: qty }];
+    });
+  }, []);
+
+  const updateQty = useCallback((id: string | number, qty: number) => {
+    setCartItems(prev => qty === 0 ? prev.filter(i => i.id !== id) : prev.map(i => i.id === id ? { ...i, quantity: qty } : i));
+  }, []);
+
+  const removeItem = useCallback((id: string | number) => {
+    setCartItems(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="space-y-4 w-48">
+        {[1,2,3].map(i => <div key={i} className="h-3 bg-gray-100 rounded animate-pulse" style={{ width: `${80 - i * 15}%` }} />)}
+      </div>
+    </div>
+  );
+
+  if (error || !store) return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center p-8">
+      <Package size={48} className="text-gray-200 mb-4" />
+      <h2 className="text-xl font-black text-gray-900 mb-2">Store Not Found</h2>
+      <p className="text-gray-500 mb-6">{error}</p>
+      <button onClick={() => navigate('/directory')} className="px-6 py-3 rounded-xl font-black text-white" style={{ background: '#E61E2B' }}>
+        Browse Directory
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-white">
+      <StorefrontNav
+        store={store}
+        cartCount={cartCount}
+        onCartOpen={() => setCartOpen(true)}
+        searchQuery={searchQuery}
+        onSearch={setSearchQuery}
+        view={view === 'product' ? 'product' : 'grid'}
+        onBack={() => { setView('grid'); setSelectedProduct(null); }}
+      />
+
+      <CartDrawer
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        items={cartItems}
+        onUpdateQty={updateQty}
+        onRemove={removeItem}
+        onCheckout={() => { setCartOpen(false); setView('checkout'); }}
+        store={store}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Store hero (grid view only) */}
+        {view === 'grid' && (
+          <div
+            className="rounded-2xl mt-6 mb-8 px-8 py-12 relative overflow-hidden"
+            style={{ background: `linear-gradient(135deg, #1a0000 0%, #3d0000 50%, #E61E2B 100%)` }}
+          >
+            {store.banner && (
+              <img src={store.banner} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+            )}
+            <div className="relative z-10">
+              {store.logo && <img src={store.logo} alt={store.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white/20 mb-4" />}
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-2">{store.name}</h1>
+              {store.description && <p className="text-white/70 max-w-lg text-sm leading-relaxed mb-4">{store.description}</p>}
+              {store.location && (
+                <p className="flex items-center gap-1.5 text-white/50 text-xs">
+                  <MapPin size={12} /> {store.location}
+                </p>
+              )}
             </div>
           </div>
         )}
-      </header>
 
-      {/* Cart Sidebar / Checkout Modal */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}></div>
-          <div className="absolute inset-y-0 right-0 max-w-full flex">
-            <div className="w-screen max-w-md transform transition-transform bg-white shadow-xl flex flex-col h-full animate-in slide-in-from-right">
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-6 sm:px-6 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">
-                  {checkoutStep === 1 ? 'Shopping Cart' : checkoutStep === 2 ? 'Delivery Options' : checkoutStep === 3 ? 'Payment' : 'Order Confirmed'}
+        {/* Product grid view */}
+        {view === 'grid' && (
+          <div className="flex flex-col lg:flex-row gap-8 pb-16">
+            <RefinementList
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+              sortBy={sortBy}
+              onSort={setSortBy}
+              priceMax={priceMax}
+              onPriceMax={setPriceMax}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-black text-gray-900">
+                  {selectedCategory || 'All Products'}
+                  <span className="ml-2 text-sm font-semibold text-gray-400">({filtered.length})</span>
                 </h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-gray-400 hover:text-gray-500" aria-label="Close Cart">
-                  <X className="h-6 w-6" />
-                </button>
+                {/* Mobile sort */}
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                  className="lg:hidden text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="price_asc">Price ↑</option>
+                  <option value="price_desc">Price ↓</option>
+                  <option value="popular">Popular</option>
+                </select>
               </div>
-
-              {/* Content Area */}
-              <div className="flex-1 py-6 overflow-y-auto px-4 sm:px-6">
-
-                {/* STEP 1: CART & DETAILS */}
-                {checkoutStep === 1 && (
-                  <>
-                    {cartItems.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                        <ShoppingCart className="h-16 w-16 text-gray-200" />
-                        <p className="text-gray-500 text-lg">Your cart is empty</p>
-                        <button onClick={() => setIsCartOpen(false)} className="text-trini-red font-bold hover:underline">Start Shopping</button>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {/* Cart Items */}
-                        <ul className="-my-6 divide-y divide-gray-200 mb-6">
-                          {cartItems.map((item: any) => (
-                            <li key={item.id} className="py-6 flex">
-                              <div className="flex-shrink-0 w-20 h-20 border border-gray-200 rounded-md overflow-hidden">
-                                <img src={item.image} alt={item.name} className="w-full h-full object-center object-contain" />
-                              </div>
-                              <div className="ml-4 flex-1 flex flex-col">
-                                <div>
-                                  <div className="flex justify-between text-base font-medium text-gray-900">
-                                    <h3>{item.name}</h3>
-                                    <p className="ml-4">TT${item.price * item.quantity}</p>
-                                  </div>
-                                </div>
-                                <div className="flex-1 flex items-end justify-between text-sm">
-                                  <div className="flex items-center border border-gray-300 rounded-md">
-                                    <button onClick={() => removeFromCart(item.id)} className="p-1 px-2 hover:bg-gray-100 text-gray-600" aria-label="Decrease Quantity"><Minus className="h-3 w-3" /></button>
-                                    <span className="px-2 font-medium">{item.quantity}</span>
-                                    <button onClick={() => addToCart(item)} className="p-1 px-2 hover:bg-gray-100 text-gray-600" aria-label="Increase Quantity"><Plus className="h-3 w-3" /></button>
-                                  </div>
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {/* Customer Details Form */}
-                        <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                          <h3 className="font-bold text-gray-900">Shipping Details</h3>
-                          <input
-                            type="text" placeholder="Full Name"
-                            aria-label="Full Name"
-                            className="w-full p-2 border rounded text-sm"
-                            value={shippingDetails.name}
-                            onChange={e => setShippingDetails({ ...shippingDetails, name: e.target.value })}
-                          />
-                          <div className="flex gap-2">
-                            <input
-                              type="tel" placeholder="Phone Number"
-                              aria-label="Phone Number"
-                              className="w-full p-2 border rounded text-sm"
-                              value={shippingDetails.phone}
-                              onChange={e => setShippingDetails({ ...shippingDetails, phone: e.target.value })}
-                            />
-                            {!isPhoneVerified && (
-                              <button onClick={verifyPhone} className="bg-gray-900 text-white px-3 py-2 rounded text-xs font-bold whitespace-nowrap">
-                                Verify
-                              </button>
-                            )}
-                          </div>
-                          {showOtpInput && (
-                            <div className="flex gap-2 animate-in fade-in">
-                              <input
-                                type="text" placeholder="Enter OTP (1234)"
-                                aria-label="OTP"
-                                className="w-full p-2 border rounded text-sm"
-                                value={phoneOtp}
-                                onChange={e => setPhoneOtp(e.target.value)}
-                              />
-                              <button onClick={confirmOtp} className="bg-green-600 text-white px-3 py-2 rounded text-xs font-bold">
-                                Confirm
-                              </button>
-                            </div>
-                          )}
-                          {isPhoneVerified && <div className="text-green-600 text-xs font-bold flex items-center"><CheckCircle className="h-3 w-3 mr-1" /> Phone Verified</div>}
-
-                          <input
-                            type="text" placeholder="Street Address"
-                            aria-label="Street Address"
-                            className="w-full p-2 border rounded text-sm"
-                            value={shippingDetails.address}
-                            onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })}
-                          />
-                          <input
-                            type="text" placeholder="City / Area"
-                            aria-label="City"
-                            className="w-full p-2 border rounded text-sm"
-                            value={shippingDetails.city}
-                            onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* STEP 2: SCHEDULE & DELIVERY */}
-                {checkoutStep === 2 && (
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Delivery Method</label>
-                      <div className="grid grid-cols-1 gap-3">
-                        <button
-                          onClick={() => setDeliveryOption('standard')}
-                          className={`flex items-center p-3 border rounded-lg ${deliveryOption === 'standard' ? 'border-trini-red bg-red-50' : 'border-gray-200'}`}
-                        >
-                          <Truck className="h-5 w-5 text-gray-500 mr-3" />
-                          <div className="text-left">
-                            <p className="font-bold text-sm text-gray-900">Standard Delivery</p>
-                            <p className="text-xs text-gray-500">2-3 Days • TT$30.00</p>
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => setDeliveryOption('express')}
-                          className={`flex items-center p-3 border rounded-lg ${deliveryOption === 'express' ? 'border-trini-red bg-red-50' : 'border-gray-200'}`}
-                        >
-                          <Truck className="h-5 w-5 text-trini-red mr-3" />
-                          <div className="text-left">
-                            <p className="font-bold text-sm text-gray-900">Express Delivery</p>
-                            <p className="text-xs text-gray-500">Same Day / Next Day • TT$50.00</p>
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => setDeliveryOption('pickup')}
-                          className={`flex items-center p-3 border rounded-lg ${deliveryOption === 'pickup' ? 'border-trini-red bg-red-50' : 'border-gray-200'}`}
-                        >
-                          <MapPin className="h-5 w-5 text-gray-500 mr-3" />
-                          <div className="text-left">
-                            <p className="font-bold text-sm text-gray-900">Store Pickup</p>
-                            <p className="text-xs text-gray-500">Free • Ready in 2 hours</p>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">When do you want it?</label>
-                      <div className="space-y-3">
-                        <button
-                          onClick={() => setScheduleOption('now')}
-                          className={`w-full flex items-center p-3 border rounded-lg ${scheduleOption === 'now' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
-                        >
-                          <Clock className="h-5 w-5 text-blue-500 mr-3" />
-                          <span className="font-medium text-sm">As soon as possible</span>
-                        </button>
-
-                        <button
-                          onClick={() => setScheduleOption('later')}
-                          className={`w-full flex items-center p-3 border rounded-lg ${scheduleOption === 'later' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
-                        >
-                          <Calendar className="h-5 w-5 text-blue-500 mr-3" />
-                          <span className="font-medium text-sm">Schedule for Later</span>
-                        </button>
-
-                        {scheduleOption === 'later' && (
-                          <input
-                            type="date"
-                            aria-label="Select Delivery Date"
-                            className="w-full p-2 border rounded text-sm ml-8 w-[calc(100%-2rem)]"
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                          />
-                        )}
-
-                        <button
-                          onClick={() => setScheduleOption('hold')}
-                          className={`w-full flex items-center p-3 border rounded-lg ${scheduleOption === 'hold' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
-                        >
-                          <Lock className="h-5 w-5 text-blue-500 mr-3" />
-                          <div className="text-left">
-                            <p className="font-medium text-sm">Hold Package (Vacation Mode)</p>
-                            <p className="text-xs text-gray-500">We'll hold it at our hub until you're back.</p>
-                          </div>
-                        </button>
-
-                        {scheduleOption === 'hold' && (
-                          <div className="ml-8">
-                            <p className="text-xs text-gray-500 mb-1">Hold until:</p>
-                            <input
-                              type="date"
-                              aria-label="Select Hold Date"
-                              className="w-full p-2 border rounded text-sm"
-                              onChange={(e) => setSelectedDate(e.target.value)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* STEP 3: PAYMENT */}
-                {checkoutStep === 3 && (
-                  <div className="space-y-6">
-                    {/* PayPal Script Provider would wrap the app in a real scenario, but we can wrap the button here for isolation */}
-
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => setPaymentMethod('cod')}
-                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}
-                      >
-                        <div className="flex items-center">
-                          <Banknote className="h-6 w-6 text-green-600 mr-3" />
-                          <div className="text-left">
-                            <p className="font-bold text-gray-900">Cash on Delivery</p>
-                            <p className="text-xs text-gray-500">Pay with Cash or Linx upon delivery</p>
-                          </div>
-                        </div>
-                        {paymentMethod === 'cod' && <CheckCircle className="h-5 w-5 text-green-600" />}
-                      </button>
-
-                      <button
-                        onClick={() => setPaymentMethod('paypal')}
-                        className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
-                      >
-                        <div className="flex items-center">
-                          {/* PayPal Logo SVG */}
-                          <svg className="h-6 w-6 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20.0575 7.82624C19.9338 7.35249 19.4675 4.84874 16.8975 3.50624C15.3975 2.71874 13.065 2.62499 13.065 2.62499H7.06876C6.63376 2.62499 6.26251 2.94374 6.19126 3.37124L4.54126 13.8412L4.03876 17.0362C3.99376 17.3137 4.20751 17.5612 4.48876 17.5612H8.02126C8.39626 17.5612 8.71876 17.2837 8.77501 16.9125L9.36376 13.1737C9.42001 12.8025 9.74251 12.525 10.1175 12.525H11.9138C15.3038 12.525 17.9813 11.1562 18.7763 8.35124C18.8438 8.13374 18.8888 7.91624 18.9113 7.70999C20.0575 7.82624 20.0575 7.82624 20.0575 7.82624Z" fill="#003087" />
-                            <path d="M18.7762 8.35123C17.9812 11.1562 15.3037 12.525 11.9137 12.525H10.1175C9.7425 12.525 9.41999 12.8025 9.36374 13.1737L8.03624 21.585C7.99124 21.8625 8.20499 22.11 8.48624 22.11H12.0037C12.3787 22.11 12.7012 21.8325 12.7575 21.4612L13.1775 18.7987L13.2337 18.4612C13.29 18.09 13.6125 17.8125 13.9875 17.8125H14.73C17.67 17.8125 19.995 16.6237 20.685 14.19C20.955 13.2337 20.94 12.3562 20.7 11.5837C20.6962 11.5837 20.6925 11.5837 20.6887 11.5837C20.6887 11.5837 18.7762 8.35123 18.7762 8.35123Z" fill="#003087" />
-                            <path d="M9.36373 13.1737L8.77498 16.9125C8.71873 17.2837 8.39623 17.5612 8.02123 17.5612H4.48873C4.20748 17.5612 3.99373 17.3137 4.03873 17.0362L4.54123 13.8412L6.19123 3.37125C6.26248 2.94375 6.63373 2.625 7.06873 2.625H13.065C13.065 2.625 15.3975 2.71875 16.8975 3.50625C17.3737 3.7575 17.7862 4.08375 18.1237 4.47375C18.2737 4.64625 18.4087 4.83 18.5287 5.02125C18.6337 5.18625 18.7275 5.35875 18.8062 5.53875C18.9337 5.82375 19.0312 6.12 19.0987 6.4275C19.1062 6.4575 19.1137 6.49125 19.1212 6.52125C19.2412 7.09125 19.2412 7.69125 19.0987 8.28375C19.0837 8.3475 19.065 8.4075 19.0462 8.47125C19.0462 8.47125 19.0425 8.475 19.0425 8.47875C18.2475 11.2837 15.57 12.6525 12.18 12.6525H10.1175C9.74248 12.6525 9.41998 12.93 9.36373 13.3012V13.1737Z" fill="#009cde" />
-                            <path d="M18.1237 4.47374C17.7862 4.08374 17.3737 3.75749 16.8975 3.50624C15.3975 2.71874 13.065 2.62499 13.065 2.62499H7.06873C6.63373 2.62499 6.26248 2.94374 6.19123 3.37124L4.54123 13.8412L4.03873 17.0362C3.99373 17.3137 4.20748 17.5612 4.48873 17.5612H8.02123C8.39623 17.5612 8.71873 17.2837 8.77498 16.9125L9.36373 13.1737C9.42001 12.8025 9.74251 12.525 10.1175 12.525H11.9138C15.3038 12.525 17.9813 11.1562 18.7763 8.35124C18.8438 8.13374 18.8888 7.91624 18.9113 7.70999C19.035 7.23749 19.1025 6.75374 19.0987 6.42749C19.0312 6.12 18.9337 5.82374 18.8062 5.53874C18.7275 5.35874 18.6337 5.18624 18.5287 5.02124C18.4087 4.83 18.2737 4.64624 18.1237 4.47374Z" fill="#003087" />
-                          </svg>
-                          <div className="text-left">
-                            <p className="font-bold text-gray-900">PayPal</p>
-                            <p className="text-xs text-gray-500">Pay securely with your PayPal account</p>
-                          </div>
-                        </div>
-                        {paymentMethod === 'paypal' && <CheckCircle className="h-5 w-5 text-blue-600" />}
-                      </button>
-
-                      <button disabled className="w-full flex items-center justify-between p-4 border rounded-xl border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed relative overflow-hidden">
-                        <div className="flex items-center">
-                          <CreditCard className="h-6 w-6 text-gray-400 mr-3" />
-                          <div className="text-left">
-                            <p className="font-bold text-gray-900">Credit / Debit Card</p>
-                            <p className="text-xs text-gray-500">WiPay / Stripe</p>
-                          </div>
-                        </div>
-                        <span className="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase">Coming Soon</span>
-                      </button>
-
-                      <button disabled className="w-full flex items-center justify-between p-4 border rounded-xl border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed">
-                        <div className="flex items-center">
-                          <div className="h-6 w-6 bg-red-100 rounded-full flex items-center justify-center mr-3 text-[10px] font-bold text-red-800">RB</div>
-                          <div className="text-left">
-                            <p className="font-bold text-gray-900">Republic Bank Transfer</p>
-                            <p className="text-xs text-gray-500">Direct Deposit</p>
-                          </div>
-                        </div>
-                        <span className="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase">Coming Soon</span>
-                      </button>
-                    </div>
-
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-500">Subtotal</span>
-                        <span className="font-medium">TT${cartTotal.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-500">Delivery</span>
-                        <span className="font-medium">
-                          {deliveryOption === 'pickup' ? 'Free' : deliveryOption === 'express' ? 'TT$50.00' : 'TT$30.00'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-lg font-bold mt-4">
-                        <span>Total</span>
-                        <span>TT${(cartTotal + (deliveryOption === 'pickup' ? 0 : deliveryOption === 'express' ? 50 : 30)).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* STEP 4: SUCCESS */}
-                {checkoutStep === 4 && (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in duration-300">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-10 w-10 text-green-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Order Placed!</h2>
-                      <p className="text-gray-500 mt-2">Order #{orderId}</p>
-                    </div>
-                    <p className="text-sm text-gray-600 max-w-xs mx-auto">
-                      Your order has been securely recorded. Please click below to send the confirmation to the vendor via WhatsApp to start processing.
-                    </p>
-                    <button
-                      onClick={openWhatsAppOrder}
-                      className="bg-green-500 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-green-600 transition-transform hover:scale-105 flex items-center"
+              {filtered.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                  <Search size={40} className="mx-auto mb-3 opacity-30" />
+                  <p className="font-semibold">No products found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {filtered.map((product, i) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
                     >
-                      <MessageCircle className="h-5 w-5 mr-2" /> Track on WhatsApp
-                    </button>
-                  </div>
-                )}
-
-              </div>
-
-              {/* Footer Actions */}
-              {cartItems.length > 0 && checkoutStep < 4 && (
-                <div className="border-t border-gray-200 py-6 px-4 sm:px-6 bg-gray-50">
-                  {checkoutStep === 1 && (
-                    <button
-                      onClick={() => {
-                        if (!shippingDetails.name || !shippingDetails.phone || !shippingDetails.address) {
-                          alert("Please fill in all shipping details.");
-                          return;
-                        }
-                        setCheckoutStep(2);
-                      }}
-                      className="w-full flex justify-center items-center px-6 py-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-trini-red hover:bg-red-700 transition-colors"
-                    >
-                      Next: Delivery Options
-                    </button>
-                  )}
-                  {checkoutStep === 2 && (
-                    <div className="flex gap-3">
-                      <button onClick={() => setCheckoutStep(1)} className="px-4 py-3 border border-gray-300 rounded-md font-bold text-gray-700">Back</button>
-                      <button
-                        onClick={() => setCheckoutStep(3)}
-                        className="flex-1 flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-trini-red hover:bg-red-700 transition-colors"
-                      >
-                        Next: Payment
-                      </button>
-                    </div>
-                  )}
-                  {checkoutStep === 3 && (
-                    <div className="flex gap-3 w-full">
-                      <button onClick={() => setCheckoutStep(2)} className="px-4 py-3 border border-gray-300 rounded-md font-bold text-gray-700">Back</button>
-
-                      {paymentMethod === 'paypal' ? (
-                        <div className="flex-1 z-0 relative">
-                          <PayPalScriptProvider options={{ clientId: "sb", currency: "USD", intent: "capture" }}>
-                            <PayPalButtons
-                              style={{ layout: "horizontal", height: 48, tagline: false }}
-                              createOrder={(data, actions) => {
-                                // Convert TT to USD roughly for demo (divide by 6.7) or just pass value if account supports it
-                                // For now passing the raw value assuming the sandbox account is set to USD but we treat it as generic units
-                                const total = (cartTotal + (deliveryOption === 'pickup' ? 0 : deliveryOption === 'express' ? 50 : 30)).toFixed(2);
-                                return actions.order.create({
-                                  intent: "CAPTURE",
-                                  purchase_units: [
-                                    {
-                                      amount: {
-                                        currency_code: "USD",
-                                        value: total,
-                                      },
-                                      description: `Order from ${storeData?.name}`
-                                    },
-                                  ],
-                                });
-                              }}
-                              onApprove={async (data, actions) => {
-                                if (actions.order) {
-                                  await actions.order.capture();
-                                  handlePlaceOrder();
-                                }
-                              }}
-                              onError={(err) => {
-                                console.error("PayPal Error:", err);
-                                alert("PayPal payment failed. Please try again or use Cash on Delivery.");
-                              }}
-                            />
-                          </PayPalScriptProvider>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={handlePlaceOrder}
-                          disabled={isProcessingOrder}
-                          className="flex-1 flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50"
-                        >
-                          {isProcessingOrder ? 'Processing...' : 'Place Order'}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                      <ProductCard
+                        product={product}
+                        onAddToCart={p => { addToCart(p); setCartOpen(true); }}
+                        onClick={p => { setSelectedProduct(p); setView('product'); window.scrollTo(0, 0); }}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Hero Banner */}
-      <div className="relative h-64 md:h-80 bg-gray-900">
-        <img src={storeData.banner} alt="Banner" className="w-full h-full object-cover opacity-60" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">{storeData.name}</h2>
-          <p className="text-lg text-gray-200 max-w-2xl mb-6 font-light">{storeData.description}</p>
-          <div className="flex gap-3">
-            <button className="bg-white text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors">
-              Shop Now
-            </button>
-            <button className="bg-trini-teal text-white px-6 py-2 rounded-full font-bold hover:bg-teal-700 transition-colors">
-              About Us
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* Product detail view */}
+        {view === 'product' && selectedProduct && (
+          <ProductDetail
+            product={selectedProduct}
+            store={store}
+            onAddToCart={(p, qty) => { addToCart(p, qty); setCartOpen(true); }}
+            onBack={() => { setView('grid'); setSelectedProduct(null); }}
+          />
+        )}
 
-      {/* Product Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
-        <div className="flex justify-between items-end mb-8">
-          <h3 className="text-2xl font-bold text-gray-900">Featured Products</h3>
-          <span className="text-sm text-gray-500">Showing {storeData.products.length} items</span>
-        </div>
+        {/* Checkout view */}
+        {view === 'checkout' && (
+          <CheckoutFlow
+            items={cartItems}
+            store={store}
+            onComplete={orderId => { setConfirmedOrderId(orderId); setCartItems([]); setView('confirmed'); window.scrollTo(0, 0); }}
+            onBack={() => setView('grid')}
+          />
+        )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {storeData.products.map((product) => (
-            <div key={product.id} className="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300">
-              <div className="aspect-[4/3] relative overflow-hidden bg-white p-4 flex items-center justify-center">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold shadow-sm border border-gray-100">
-                  {product.category}
-                </div>
-              </div>
-              <div className="p-4 bg-gray-50/50 border-t border-gray-100">
-                <h4 className="text-gray-900 font-bold mb-1 truncate text-sm">{product.name}</h4>
-                <div className="flex items-center mb-3">
-                  <span className="text-trini-red font-bold">TT${product.price}</span>
-                  <div className="flex ml-auto">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className={`h-3 w-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
-                    ))}
-                  </div>
-                </div>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center"
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Confirmed view */}
+        {view === 'confirmed' && (
+          <OrderConfirmed
+            orderId={confirmedOrderId}
+            store={store}
+            onContinue={() => setView('grid')}
+          />
+        )}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 pt-12 pb-8 mb-20 md:mb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Contact Us</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center"><MapPin className="h-4 w-4 mr-2 text-gray-400" /> {storeData.location}</li>
-                <li className="flex items-center"><Phone className="h-4 w-4 mr-2 text-gray-400" /> {storeData.whatsapp}</li>
-                <li className="flex items-center"><Mail className="h-4 w-4 mr-2 text-gray-400" /> {storeData.email}</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Opening Hours</h4>
-              <p className="text-sm text-gray-600">{storeData.hours}</p>
-              <p className="text-sm text-gray-600 mt-2">Sunday: Closed</p>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Follow Us</h4>
-              <div className="flex space-x-4">
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-600 transition-colors" aria-label="Facebook"><Facebook className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-pink-600 transition-colors" aria-label="Instagram"><Instagram className="h-5 w-5" /></button>
-                <button className="bg-white p-2 rounded-full shadow-sm hover:text-blue-400 transition-colors" aria-label="Twitter"><Twitter className="h-5 w-5" /></button>
-              </div>
-            </div>
-          </div>
-          <div className="text-center text-xs text-gray-400 border-t border-gray-200 pt-8">
-            <p>Powered by TriniBuild E-Commerce Engine</p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Sticky Bottom Bar for Cart (Mobile) */}
-      {cartItems.length > 0 && !isCartOpen && (
-        <div className="fixed bottom-4 left-4 right-4 md:hidden z-40">
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="w-full bg-trini-black text-white p-4 rounded-lg shadow-2xl flex items-center justify-between"
-          >
-            <div className="flex items-center">
-              <div className="bg-trini-red w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-3">
-                {cartCount}
-              </div>
-              <span className="font-medium">View Cart</span>
-            </div>
-            <div className="font-bold flex items-center">
-              TT${cartTotal} <ChevronRight className="h-5 w-5 ml-2" />
-            </div>
-          </button>
-        </div>
-      )}
-
-      {/* Floating WhatsApp Button (Desktop/Non-Cart mode) */}
-      {/* AI Assistant Widget */}
-      <ChatWidget mode="vendor" vendorContext={{ name: storeData.name }} />
-
     </div>
   );
 };
