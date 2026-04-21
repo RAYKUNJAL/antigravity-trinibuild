@@ -88,6 +88,7 @@ import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard'
 import { LoginPage } from './pages/LoginPage';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
 import { QRScanner, OrderTracking } from './components/QRReceiptSystem';
+import { DigitalServicesHub } from './pages/DigitalServicesHub';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -196,6 +197,10 @@ const App: React.FC = () => {
               <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
               <Route path="/documents" element={<AIDocumentAssistant />} />
               <Route path="/ai-documents" element={<AIDocumentAssistant />} />
+              <Route path="/digital" element={<DigitalServicesHub />} />
+              <Route path="/digital-services" element={<DigitalServicesHub />} />
+              <Route path="/game-pass" element={<DigitalServicesHub />} />
+              <Route path="/gift-cards" element={<DigitalServicesHub />} />
               <Route path="/scan" element={<QRScanner onScan={(id) => { window.location.href = `/cod-tracking/${id}`; }} />} />
 
               <Route path="/jobs" element={<Jobs />} />
