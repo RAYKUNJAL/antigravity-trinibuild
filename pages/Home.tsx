@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, Ticket, UserCheck, Clock, FileText, Store, Building2, Users, Sparkles } from 'lucide-react';
+import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, Ticket, UserCheck, Clock, FileText, Store, Building2, Users, Sparkles, DollarSign, MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAdConfig, AdConfig } from '../services/adService';
 import { AdSpot } from '../components/AdSpot';

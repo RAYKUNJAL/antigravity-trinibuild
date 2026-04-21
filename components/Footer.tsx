@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail, MapPin, Youtube } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LOGO_URL = "/trinibuild-logo.png";
