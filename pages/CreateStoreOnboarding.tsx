@@ -371,13 +371,75 @@ const Step2Template: React.FC<{ data: OnboardingData; setData: React.Dispatch<Re
             className={`
               cursor-pointer rounded-2xl border-2 overflow-hidden transition-all
               ${data.selectedTemplate?.id === template.id
-                ? 'border-[#E61E2B] shadow-2xl'
-                : 'border-gray-200 hover:border-gray-300'}
+                ? 'border-[#E61E2B] shadow-2xl ring-4 ring-red-100'
+                : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'}
             `}
           >
-            {/* Template Preview */}
-            <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <Store size={64} className="text-gray-400" />
+            {/* Template Preview with Category-Based Design */}
+            <div className="h-48 relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+              {/* Category-based visual preview */}
+              {template.category === 'Food & Beverage' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="grid grid-cols-2 gap-4 p-6">
+                    <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl">🍽️</div>
+                    <div className="w-20 h-20 rounded-lg bg-white shadow-md flex items-center justify-center">Menu</div>
+                    <div className="w-20 h-20 rounded-lg bg-white shadow-md flex items-center justify-center">Order</div>
+                    <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white">✓</div>
+                  </div>
+                </div>
+              )}
+              {template.category === 'Retail' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="grid grid-cols-3 gap-2 p-4">
+                    {[1,2,3,4,5,6].map((i) => (
+                      <div key={i} className="w-16 h-16 rounded bg-white shadow-md p-2">
+                        <div className="w-full h-8 bg-gray-200 rounded mb-1"></div>
+                        <div className="w-full h-3 bg-gray-300 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {template.category === 'Services' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="space-y-3 p-6">
+                    <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-purple-500"></div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-blue-500"></div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {template.category === 'Automotive' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-6xl">🚗</div>
+                </div>
+              )}
+              {template.category === 'General' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Store size={64} className="text-gray-400" />
+                </div>
+              )}
+              {template.category === 'Enterprise' && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="grid grid-cols-3 gap-2 p-4">
+                    <div className="w-12 h-12 rounded bg-blue-600"></div>
+                    <div className="w-12 h-12 rounded bg-blue-600"></div>
+                    <div className="w-12 h-12 rounded bg-blue-600"></div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Selected Checkmark */}
+              {data.selectedTemplate?.id === template.id && (
+                <div className="absolute top-3 right-3 w-10 h-10 bg-[#E61E2B] rounded-full flex items-center justify-center shadow-lg">
+                  <Check size={24} className="text-white" />
+                </div>
+              )}
             </div>
 
             {/* Template Info */}

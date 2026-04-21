@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { SocialLoginButtons } from '../components/SocialLoginButtons';
 import { supabase } from '../services/supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
@@ -66,11 +65,6 @@ export const LoginPage: React.FC = () => {
             <p className="text-lg text-gray-600">
               Sign in to continue to TriniBuild
             </p>
-          </div>
-
-          {/* Social Login Buttons */}
-          <div className="mb-8">
-            <SocialLoginButtons />
           </div>
 
           {/* Error Message */}
