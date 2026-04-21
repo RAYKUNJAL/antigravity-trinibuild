@@ -5,12 +5,13 @@ import {
     FileText, Layout, Menu, ShoppingBag, Tag, Star, MessageSquare, Truck,
     CreditCard, Bell, BarChart3, Save, Eye, Plus, Edit2, Trash2,
     Search, Filter, DollarSign, Upload, RefreshCw, AlertCircle, Check, X,
-    MapPin, Phone, Globe, Clock, Loader2, ArrowUpRight, ArrowDownRight
+    MapPin, Phone, Globe, Clock, Loader2, ArrowUpRight, ArrowDownRight, QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import { storeService } from '../services/storeService';
 import type { Store as StoreType, Product, Order } from '../types';
+import { MerchantReservationDashboard } from '../components/ReservationSystem';
 
 // ============================================
 // TYPES
@@ -56,6 +57,7 @@ export const StoreBuilder: React.FC = () => {
         { id: 'dashboard', name: 'Dashboard', icon: <BarChart3 className="h-5 w-5" />, description: 'Overview & Analytics' },
         { id: 'products', name: 'Products', icon: <Package className="h-5 w-5" />, description: 'Manage inventory' },
         { id: 'orders', name: 'Orders', icon: <ShoppingBag className="h-5 w-5" />, description: 'Manage orders' },
+        { id: 'reservations', name: 'Reservations', icon: <QrCode className="h-5 w-5" />, description: 'QR Pickup calendar' },
         { id: 'customers', name: 'Customers', icon: <Users className="h-5 w-5" />, description: 'Customer management' },
         { id: 'design', name: 'Design', icon: <Palette className="h-5 w-5" />, description: 'Customize appearance' },
         { id: 'marketing', name: 'Marketing', icon: <TrendingUp className="h-5 w-5" />, description: 'Promotions & SEO' },
@@ -158,6 +160,17 @@ export const StoreBuilder: React.FC = () => {
             case 'dashboard': return <DashboardTab stats={stats} orders={orders} products={products} store={store} />;
             case 'products': return <ProductsTab storeId={store.id} products={products} onRefresh={loadStoreData} />;
             case 'orders': return <OrdersTab orders={orders} />;
+            case 'reservations': return (
+                <div className="p-6">
+                    <div className="mb-6">
+                        <h2 className="text-xl font-black text-gray-900 mb-1">Pickup Reservations</h2>
+                        <p className="text-sm text-gray-500">
+                            Manage QR pickup requests, approve time slots, scan QR codes at pickup — inventory and tax records update automatically.
+                        </p>
+                    </div>
+                    <MerchantReservationDashboard storeId={store.id} storeName={store.name} />
+                </div>
+            );
             case 'customers': return <CustomersTab orders={orders} />;
             case 'design': return <DesignTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;
             case 'marketing': return <MarketingTab store={store} onUpdate={(updates) => setStore({ ...store, ...updates })} />;

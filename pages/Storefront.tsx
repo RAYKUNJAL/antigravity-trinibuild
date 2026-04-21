@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CODCheckout } from '../components/CODCheckout';
+import { ReservationFlow, QRReceipt, ReservationPremiumGate } from '../components/ReservationSystem';
+import type { ReservationData } from '../components/ReservationSystem';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart, Search, X, Star, MessageCircle, MapPin,
@@ -300,7 +302,9 @@ const ProductDetail: React.FC<{
   store: Store;
   onAddToCart: (p: Product, qty: number) => void;
   onBack: () => void;
-}> = ({ product, store, onAddToCart, onBack }) => {
+  onReserve: (product: Product) => void;
+  isPaid: boolean;
+}> = ({ product, store, onAddToCart, onBack, onReserve, isPaid }) => {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -379,12 +383,12 @@ const ProductDetail: React.FC<{
 
       {/* RIGHT — actions (desktop sticky) */}
       <div className="hidden lg:flex flex-col lg:sticky lg:top-32 lg:max-w-[280px] w-full gap-5">
-        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} store={store} />
+        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} onReserve={() => onReserve(product)} store={store} isPaid={isPaid} />
       </div>
 
       {/* Mobile actions */}
       <div className="lg:hidden w-full">
-        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} store={store} />
+        <ActionPanel product={product} qty={qty} setQty={setQty} added={added} onAdd={handleAdd} onReserve={() => onReserve(product)} store={store} isPaid={isPaid} />
       </div>
     </motion.div>
   );
@@ -396,8 +400,10 @@ const ActionPanel: React.FC<{
   setQty: (q: number) => void;
   added: boolean;
   onAdd: () => void;
+  onReserve: () => void;
   store: Store;
-}> = ({ product, qty, setQty, added, onAdd, store }) => (
+  isPaid?: boolean;
+}> = ({ product, qty, setQty, added, onAdd, onReserve, store, isPaid }) => (
   <div className="space-y-4">
     <div className="flex items-baseline justify-between">
       <span className="text-3xl font-black" style={{ color: '#E61E2B' }}>
@@ -436,6 +442,17 @@ const ActionPanel: React.FC<{
       style={{ background: added ? '#16a34a' : '#E61E2B' }}
     >
       {added ? '✓ Added to Cart' : 'Add to Cart'}
+    </motion.button>
+
+    {/* Reserve for Pickup — QR system */}
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={onReserve}
+      className="w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 border-2 transition-colors"
+      style={{ borderColor: '#000', color: '#000', background: '#fff' }}
+    >
+      📅 Reserve for Pickup
+      {!isPaid && <span className="text-xs bg-yellow-400 text-black px-1.5 py-0.5 rounded-full font-black">PRO</span>}
     </motion.button>
 
     {/* WhatsApp order */}
@@ -581,6 +598,18 @@ const CartDrawer: React.FC<{
                 >
                   Proceed to Checkout <ChevronRight size={16} />
                 </motion.button>
+                {/* Reserve from cart — shows for COD-first stores */}
+                <div className="text-center">
+                  <p className="text-xs text-gray-400 font-semibold">or</p>
+                </div>
+                <button
+                  onClick={() => { onClose(); }}
+                  className="w-full py-3 rounded-xl font-bold text-sm border-2 flex items-center justify-center gap-2"
+                  style={{ borderColor: '#000', color: '#000' }}
+                  title="Go to a product page to reserve it for pickup with a QR code"
+                >
+                  📅 Reserve Item for Pickup (QR)
+                </button>
               </div>
             )}
           </motion.div>
@@ -856,9 +885,11 @@ export const Storefront: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Navigation state
-  const [view, setView] = useState<'grid' | 'product' | 'checkout' | 'confirmed'>('grid');
+  const [view, setView] = useState<'grid' | 'product' | 'checkout' | 'confirmed' | 'reserve' | 'receipt'>('grid');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [confirmedOrderId, setConfirmedOrderId] = useState('');
+  const [completedReservation, setCompletedReservation] = useState<ReservationData | null>(null);
+  const [reserveFromCart, setReserveFromCart] = useState<boolean>(false);
 
   // Refinement state
   const [searchQuery, setSearchQuery] = useState('');
@@ -919,6 +950,7 @@ export const Storefront: React.FC = () => {
   }, [products, searchQuery, selectedCategory, sortBy, priceMax]);
 
   const cartCount = cartItems.reduce((s, i) => s + i.quantity, 0);
+  const isPaid = store?.plan_tier === 'pro' || store?.plan_tier === 'premium' || store?.plan_tier === 'business';
 
   const addToCart = useCallback((product: Product, qty = 1) => {
     setCartItems(prev => {
@@ -1064,7 +1096,72 @@ export const Storefront: React.FC = () => {
             store={store}
             onAddToCart={(p, qty) => { addToCart(p, qty); setCartOpen(true); }}
             onBack={() => { setView('grid'); setSelectedProduct(null); }}
+            onReserve={(p) => {
+              setSelectedProduct(p);
+              setView('reserve');
+              window.scrollTo(0, 0);
+            }}
+            isPaid={isPaid}
           />
+        )}
+
+        {/* Reserve for Pickup — customer reservation flow */}
+        {view === 'reserve' && selectedProduct && (
+          isPaid ? (
+            <ReservationFlow
+              items={[{
+                id: String(selectedProduct.id),
+                name: selectedProduct.name,
+                qty: 1,
+                price: selectedProduct.price,
+                image: selectedProduct.image,
+              }]}
+              store={{
+                id: store.id!,
+                name: store.name,
+                whatsapp: store.whatsapp,
+                logo: store.logo,
+                location: store.location,
+              }}
+              paymentMethod="cod"
+              onComplete={(reservation) => {
+                setCompletedReservation(reservation);
+                setView('receipt');
+                window.scrollTo(0, 0);
+              }}
+              onBack={() => setView('product')}
+            />
+          ) : (
+            <div className="max-w-xl mx-auto px-4 py-8">
+              <ReservationPremiumGate
+                onUpgrade={() => window.open('/pricing', '_blank')}
+                planPrice="TT$99/mo"
+              />
+              <button
+                onClick={() => setView('product')}
+                className="mt-4 w-full py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50"
+              >
+                ← Back to Product
+              </button>
+            </div>
+          )
+        )}
+
+        {/* QR Receipt view — after successful reservation */}
+        {view === 'receipt' && completedReservation && (
+          <div className="max-w-sm mx-auto px-4 py-8">
+            <QRReceipt
+              reservation={completedReservation}
+              onClose={() => { setView('grid'); setSelectedProduct(null); }}
+            />
+            <button
+              onClick={() => { setView('grid'); setSelectedProduct(null); }}
+              className="mt-4 w-full py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2"
+              style={{ background: '#E61E2B' }}
+            >
+              Continue Shopping
+            </button>
+          </div>
         )}
 
         {/* Checkout view — full COD system with TriniRides */}

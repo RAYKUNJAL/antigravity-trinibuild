@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import {
     Store, ShoppingBag, Package, Truck, Clock, Shield, Star, TrendingUp,
     Phone, Mail, MessageCircle, MapPin, ChevronRight, Check, Zap, Award,
-    Users, DollarSign, BarChart3, Globe, Heart, Gift, Tag, ArrowRight
+    Users, DollarSign, BarChart3, Globe, Heart, Gift, Tag, ArrowRight, Copy, QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -228,6 +228,150 @@ export const StoreServicesLanding: React.FC = () => {
                                 title="Marketing Tools"
                                 description="Promo codes, flash sales, loyalty points, email campaigns. Everything to grow your sales."
                             />
+                        </div>
+                    </div>
+                </section>
+
+                {/* QR Pickup Reservations — PRO Feature Sales Block */}
+                <section className="py-20 bg-black overflow-hidden relative">
+                    {/* Background glow */}
+                    <div className="absolute inset-0 pointer-events-none" style={{
+                        background: 'radial-gradient(ellipse at 60% 50%, rgba(230,30,43,0.18) 0%, transparent 70%)'
+                    }} />
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            {/* Left — copy */}
+                            <div>
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6"
+                                    style={{ background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(255,215,0,0.4)' }}>
+                                    <span style={{ color: '#FFD700' }} className="text-xs font-black uppercase tracking-widest">Pro Feature</span>
+                                </div>
+                                <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+                                    QR Pickup<br />
+                                    <span style={{ color: '#FFD700' }}>Reservations</span>
+                                </h2>
+                                <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+                                    Customers reserve items online, pick a time window, and get a QR digital receipt.
+                                    You approve on a calendar, scan the QR at pickup — inventory and taxes update automatically.
+                                    <span className="text-white font-bold"> No more no-shows. No more lost orders.</span>
+                                </p>
+
+                                {/* How it works steps */}
+                                <div className="space-y-4 mb-8">
+                                    {[
+                                        { n: '1', title: 'Customer reserves online', desc: 'Picks items + pickup window (today, tomorrow, or any day this week)', color: '#E61E2B' },
+                                        { n: '2', title: 'You approve on your calendar', desc: 'Get notified on WhatsApp, approve or adjust with one tap', color: '#FFD700' },
+                                        { n: '3', title: 'Customer gets a QR receipt', desc: 'Branded digital receipt with a scannable QR code and 6-digit fallback code', color: '#16a34a' },
+                                        { n: '4', title: 'Scan → inventory + tax auto-update', desc: 'One scan completes the sale, deducts stock, and logs to your tax dashboard', color: '#2563eb' },
+                                    ].map(({ n, title, desc, color }) => (
+                                        <div key={n} className="flex gap-4 items-start">
+                                            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm"
+                                                style={{ background: color, color: color === '#FFD700' ? '#000' : '#fff' }}>
+                                                {n}
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-bold text-sm">{title}</p>
+                                                <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Apps that work together callout */}
+                                <div className="rounded-2xl p-4 mb-8" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Works with your full TriniBuild stack</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { label: '🚗 TriniRides', desc: 'Book delivery from reservation' },
+                                            { label: '📊 Tax Dashboard', desc: 'Every pickup auto-logged' },
+                                            { label: '📦 Inventory', desc: 'Stock deducted on scan' },
+                                            { label: '💬 WhatsApp', desc: 'Customer + store notified' },
+                                            { label: '💵 COD', desc: 'Cash verified at pickup' },
+                                            { label: '🗓️ Calendar', desc: 'Pickup slots managed' },
+                                        ].map(({ label, desc }) => (
+                                            <div key={label} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg"
+                                                style={{ background: 'rgba(255,255,255,0.07)', color: '#d1d5db' }}>
+                                                <span className="font-bold">{label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => navigate('/create-store')}
+                                    className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-black text-base transition-transform hover:scale-105"
+                                    style={{ background: 'linear-gradient(135deg, #FFD700, #fbbf24)' }}
+                                >
+                                    Get QR Reservations — TT$99/mo <ChevronRight className="h-5 w-5" />
+                                </button>
+                                <p className="text-xs text-gray-600 mt-3">Includes all Pro features · Cancel anytime</p>
+                            </div>
+
+                            {/* Right — visual mockup of QR receipt + calendar */}
+                            <div className="relative flex flex-col items-center gap-4">
+                                {/* QR Receipt card mockup */}
+                                <div className="w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl border-2" style={{ borderColor: '#E61E2B', background: '#111' }}>
+                                    {/* Receipt header */}
+                                    <div className="p-5 text-center" style={{ background: 'linear-gradient(135deg, #1a0000, #E61E2B)' }}>
+                                        <p className="text-white font-black text-sm mb-1">Mama's Roti Shop</p>
+                                        <p className="text-white/60 text-xs">Pickup Reservation</p>
+                                        <div className="inline-flex mt-2 px-3 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.3)', color: '#86efac', border: '1px solid rgba(34,197,94,0.4)' }}>
+                                            ● APPROVED
+                                        </div>
+                                    </div>
+                                    {/* QR placeholder */}
+                                    <div className="p-6 flex flex-col items-center gap-4">
+                                        <div className="w-36 h-36 rounded-2xl border-4 flex items-center justify-center" style={{ borderColor: '#E61E2B', background: '#fff' }}>
+                                            <div className="grid grid-cols-5 gap-0.5">
+                                                {Array.from({ length: 25 }).map((_, i) => (
+                                                    <div key={i} className="w-5 h-5 rounded-sm" style={{
+                                                        background: [0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,6,12,18,7,8,11,13,16,17][i] % 3 === 0 ? '#000' : '#fff'
+                                                    }} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="w-full flex items-center justify-between bg-gray-900 rounded-xl px-4 py-2.5">
+                                            <div>
+                                                <p className="text-gray-500 text-xs">Pickup ID</p>
+                                                <p className="text-white font-black font-mono text-sm">A3F7K2</p>
+                                            </div>
+                                            <div className="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center">
+                                                <Copy className="h-3 w-3 text-gray-400" />
+                                            </div>
+                                        </div>
+                                        <div className="w-full space-y-1.5 text-xs text-gray-400">
+                                            <div className="flex justify-between"><span>2× Chicken Curry Roti</span><span className="text-white font-bold">TT$70</span></div>
+                                            <div className="flex justify-between"><span>1× Doubles</span><span className="text-white font-bold">TT$12</span></div>
+                                            <div className="flex justify-between font-bold text-sm border-t border-gray-800 pt-1.5 mt-2"><span className="text-white">Total</span><span style={{ color: '#E61E2B' }}>TT$82</span></div>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                            <Clock className="h-3 w-3" /><span>Pickup: Today · 10am–12pm</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Calendar pill */}
+                                <div className="w-full max-w-xs rounded-2xl p-4 flex items-center gap-3" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#16a34a' }}>
+                                        <Check className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-white font-bold text-sm">Marcus J. · 2 items</p>
+                                        <p className="text-gray-500 text-xs">Pickup today 10am–12pm</p>
+                                    </div>
+                                    <span className="text-xs font-black px-2 py-1 rounded-lg" style={{ background: '#16a34a', color: '#fff' }}>Scan QR</span>
+                                </div>
+
+                                {/* Stats row */}
+                                <div className="w-full max-w-xs grid grid-cols-3 gap-2">
+                                    {[['65%', 'Fewer no-shows'], ['2min', 'Avg pickup time'], ['100%', 'Auto tax logged']].map(([v, l]) => (
+                                        <div key={l} className="rounded-xl p-3 text-center" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+                                            <p className="font-black text-sm" style={{ color: '#FFD700' }}>{v}</p>
+                                            <p className="text-gray-500 text-xs mt-0.5">{l}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
