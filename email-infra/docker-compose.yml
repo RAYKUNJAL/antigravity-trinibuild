@@ -1,0 +1,119 @@
+# TriniBuild Email Infrastructure
+# Self-hosted email service using Postal + Listmonk
+# No AWS dependency — own all the data
+
+# ═══════════════════════════════════════════════════════════════
+# DEPLOYMENT GUIDE
+# ═══════════════════════════════════════════════════════════════
+#
+# Prerequisites:
+#   - VPS with clean IP (Hetzner recommended, $20/mo)
+#   - Ubuntu 22.04 or 24.04
+#   - Domain: mail.trinibuild.com
+#   - 2GB+ RAM, 40GB+ SSD
+#
+# Step 1: DNS Records (add to trinibuild.com DNS)
+#   A    mail.trinibuild.com    → [VPS_IP]
+#   MX   trinibuild.com        → mail.trinibuild.com (priority 10)
+#   TXT  trinibuild.com        → "v=spf1 ip4:[VPS_IP] include:_spf.trinibuild.com ~all"
+#   TXT  default._domainkey    → [DKIM public key from Postal]
+#   TXT  _dmarc.trinibuild.com → "v=DMARC1; p=quarantine; rua=mailto:dmarc@trinibuild.com"
+#
+# Step 2: Deploy with Docker Compose
+#   ssh root@[VPS_IP]
+#   git clone [this-repo]
+#   cd email-infra
+#   docker-compose up -d
+#
+# Step 3: Configure Postal
+#   Visit https://mail.trinibuild.com
+#   Create organization: TriniBuild
+#   Add domain: trinibuild.com
+#   Copy DKIM key → add to DNS
+#
+# Step 4: Configure Listmonk
+#   Visit https://mail.trinibuild.com:9000
+#   Login with admin/admin (change immediately)
+#   Set SMTP to localhost:25 (Postal relay)
+#   Import subscriber lists
+#
+# Step 5: IP Warmup (CRITICAL)
+#   Week 1: Send max 50 emails/day
+#   Week 2: Send max 200 emails/day
+#   Week 3: Send max 1,000 emails/day
+#   Week 4: Send max 5,000 emails/day
+#   Month 2+: Scale to full volume
+#   Monitor: mail-tester.com score after each batch
+#
+# ═══════════════════════════════════════════════════════════════
+
+version: '3.8'
+
+services:
+  # ─── Postal: SMTP + Email Delivery ───────────────────────────
+  postal:
+    image: ghcr.io/postalserver/postal:3
+    container_name: trinibuild-postal
+    restart: always
+    ports:
+      - "25:25"      # SMTP
+      - "443:443"    # HTTPS web UI
+      - "587:587"    # Submission
+    volumes:
+      - postal-config:/config
+      - postal-storage:/storage
+    environment:
+      - POSTAL_DOMAIN=mail.trinibuild.com
+      - POSTAL_WEB_PROTOCOL=https
+    depends_on:
+      - postal-db
+      - postal-redis
+
+  postal-db:
+    image: mariadb:11
+    container_name: trinibuild-postal-db
+    restart: always
+    volumes:
+      - postal-db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${POSTAL_DB_PASSWORD:-changeme_postal_2026}
+      MYSQL_DATABASE: postal
+
+  postal-redis:
+    image: redis:7-alpine
+    container_name: trinibuild-postal-redis
+    restart: always
+
+  # ─── Listmonk: Newsletter + Campaign Management ─────────────
+  listmonk:
+    image: listmonk/listmonk:latest
+    container_name: trinibuild-listmonk
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - listmonk-uploads:/listmonk/uploads
+    environment:
+      - TZ=America/Port_of_Spain
+    depends_on:
+      - listmonk-db
+    command: >
+      sh -c "./listmonk --install --idempotent --yes && ./listmonk"
+
+  listmonk-db:
+    image: postgres:16-alpine
+    container_name: trinibuild-listmonk-db
+    restart: always
+    volumes:
+      - listmonk-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: ${LISTMONK_DB_PASSWORD:-changeme_listmonk_2026}
+      POSTGRES_DB: listmonk
+
+volumes:
+  postal-config:
+  postal-storage:
+  postal-db-data:
+  listmonk-uploads:
+  listmonk-db-data:
