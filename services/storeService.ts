@@ -212,6 +212,31 @@ export const storeService = {
             }
         }
 
+        // AUTO-ADD TO DIRECTORY: Every new store gets listed
+        if (data) {
+            try {
+                await supabase.from('directory_businesses').upsert({
+                    name: data.name,
+                    slug: data.slug,
+                    description: data.description || `${data.name} on TriniBuild`,
+                    category: data.category || 'General',
+                    address: data.location || '',
+                    phone: data.whatsapp || '',
+                    website: `https://trinibuild.com/store/${data.slug}`,
+                    is_verified: true,
+                    is_claimed: true,
+                    source: 'trinibuild_store',
+                    store_id: data.id,
+                    owner_id: user.id,
+                    status: 'active',
+                    logo_url: data.logo_url,
+                    created_at: new Date().toISOString()
+                }, { onConflict: 'store_id' });
+            } catch (dirError) {
+                console.warn('Directory auto-add failed (non-blocking):', dirError);
+            }
+        }
+
         return data as Store;
     },
 

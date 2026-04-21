@@ -369,14 +369,21 @@ export const Home: React.FC = () => {
                         Let AI write your Job Letters, Proof of Income, and Visa Letters in seconds. Stop waiting in lines and get approved faster.
                      </p>
                      <div className="flex flex-col sm:flex-row gap-4">
+                        <Link
+                           to="/documents"
+                           className="px-8 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-50 transition-all hover:scale-105 flex items-center justify-center"
+                        >
+                           Generate Documents Now <ArrowRight className="ml-2 h-5 w-5" />
+                        </Link>
                         <button
                            onClick={() => {
                               const event = new CustomEvent('open-chat', { detail: { mode: 'paperwork_assistant' } });
                               window.dispatchEvent(event);
                            }}
-                           className="px-8 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg shadow-lg hover:bg-indigo-50 transition-all hover:scale-105 flex items-center justify-center"
+                           className="px-8 py-4 bg-indigo-800/50 text-white rounded-full font-bold text-lg border border-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center"
                         >
-                           Chat with your business expert <ArrowRight className="ml-2 h-5 w-5" />
+                           <MessageCircle className="mr-2 h-5 w-5" />
+                           Chat with AI Expert
                         </button>
                      </div>
                   </div>
@@ -406,12 +413,98 @@ export const Home: React.FC = () => {
                                  <Check className="h-5 w-5 text-green-500 mt-0.5" />
                                  <p className="text-sm text-gray-600">Contractor Agreements</p>
                               </div>
+                              <div className="flex items-start gap-3">
+                                 <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                                 <p className="text-sm text-gray-600">VAT Registration Docs</p>
+                              </div>
                            </div>
                         </div>
                      </div>
                   </div>
                </div>
             </section >
+
+            {/* VAT Tax Tracker + AI Product Lister Showcase */}
+            <section className="py-20 bg-white">
+               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="text-center mb-16">
+                     <h2 className="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">
+                        Tools No Other T&T Platform Has
+                     </h2>
+                     <p className="text-xl text-gray-500 max-w-3xl mx-auto">
+                        Built specifically for how Trinidad businesses actually operate. No foreign platform understands we market like we do.
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     {/* VAT Tax Tracker */}
+                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 border-2 border-green-100">
+                        <div className="bg-green-500 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                           <DollarSign className="h-7 w-7 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">VAT Tax Tracker</h3>
+                        <p className="text-gray-600 mb-6">
+                           Automatically calculate your 12.5% VAT on every sale. Generate BIR-ready quarterly reports. 
+                           Track your tax obligations in real-time so you never miss a filing deadline.
+                        </p>
+                        <div className="space-y-3 mb-6">
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-green-500" />
+                              <span className="text-sm text-gray-700 font-medium">Auto-calculate 12.5% VAT per sale</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-green-500" />
+                              <span className="text-sm text-gray-700 font-medium">BIR quarterly report generation</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-green-500" />
+                              <span className="text-sm text-gray-700 font-medium">Filing deadline reminders</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-green-500" />
+                              <span className="text-sm text-gray-700 font-medium">Input vs output tax tracking</span>
+                           </div>
+                        </div>
+                        <Link to="/pricing" className="inline-flex items-center text-green-700 font-bold hover:text-green-800">
+                           Included in all paid plans <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                     </div>
+
+                     {/* AI Product Lister */}
+                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 border-2 border-blue-100">
+                        <div className="bg-blue-500 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
+                           <Sparkles className="h-7 w-7 text-white" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">AI Product Lister</h3>
+                        <p className="text-gray-600 mb-6">
+                           Take a photo of any product and AI creates the complete listing in seconds. No barcode needed. 
+                           No SKU needed. Perfect for Trinidad businesses that don't have fancy inventory systems.
+                        </p>
+                        <div className="space-y-3 mb-6">
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-blue-500" />
+                              <span className="text-sm text-gray-700 font-medium">Photo → complete listing in 10 seconds</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-blue-500" />
+                              <span className="text-sm text-gray-700 font-medium">Auto-generates name, description, price</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-blue-500" />
+                              <span className="text-sm text-gray-700 font-medium">AI creates SKU — no barcode needed</span>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <Check className="h-5 w-5 text-blue-500" />
+                              <span className="text-sm text-gray-700 font-medium">SEO-optimized for Trinidad search</span>
+                           </div>
+                        </div>
+                        <Link to="/products/ai-add" className="inline-flex items-center text-blue-700 font-bold hover:text-blue-800">
+                           Try AI Lister Now <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                     </div>
+                  </div>
+               </div>
+            </section>
 
             {/* Final CTA */}
             < section className="py-24 bg-gray-900 relative overflow-hidden" >

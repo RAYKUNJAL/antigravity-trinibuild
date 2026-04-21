@@ -86,6 +86,8 @@ import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
 import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard';
 import { LoginPage } from './pages/LoginPage';
+import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
+import { QRScanner, OrderTracking } from './components/QRReceiptSystem';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -192,6 +194,9 @@ const App: React.FC = () => {
               <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
+              <Route path="/documents" element={<AIDocumentAssistant />} />
+              <Route path="/ai-documents" element={<AIDocumentAssistant />} />
+              <Route path="/scan" element={<QRScanner onScan={(id) => { window.location.href = `/cod-tracking/${id}`; }} />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
