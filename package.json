@@ -19,6 +19,7 @@
     "@google-pay/button-react": "^3.2.1",
     "@google/genai": "^1.30.0",
     "@paypal/react-paypal-js": "^8.9.2",
+    "@rollup/rollup-linux-x64-gnu": "^4.60.2",
     "@sentry/react": "^8.0.0",
     "@supabase/supabase-js": "^2.86.0",
     "@types/react-leaflet": "^2.8.3",

@@ -106,7 +106,7 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
-              <span>&copy; {new Date().getFullYear()} TriniBuild. All rights reserved.</span>
+              <span>&copy; {new Date().getFullYear()} TriniBuild — A product of R&R Digital Solutions. All rights reserved.</span>
               <span className="hidden md:inline">•</span>
               <span>Trinidad & Tobago</span>
               <span className="hidden md:inline">•</span>

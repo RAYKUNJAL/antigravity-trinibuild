@@ -17,6 +17,7 @@ import {
     Clock, Lock, ChevronRight, MessageCircle
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { aiService } from '../services/ai';
 
 // Document types available
 const DOCUMENT_TYPES = [
@@ -115,31 +116,12 @@ export const AIDocumentAssistant: React.FC = () => {
         setGenerating(true);
 
         try {
-            // Call Anthropic API via Claude-in-Claude
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 1000,
-                    messages: [{
-                        role: 'user',
-                        content: `Generate a professional ${selectedDocType.title} for Trinidad & Tobago with these details:\n${JSON.stringify(formData, null, 2)}\n\nFormat it as a proper business document with date, letterhead style, and professional language. Use Trinidad & Tobago legal conventions. Include a signature line. Make it ready for submission to banks, embassies, or government offices.`
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            const content = data.content?.[0]?.text || 'Document generation failed. Please try again.';
-            setGeneratedDoc(content);
-
-            // Log document generation for analytics
-            await supabase.from('document_generations').insert({
-                document_type: selectedType,
-                user_id: (await supabase.auth.getUser()).data.user?.id,
-                created_at: new Date().toISOString()
-            }).catch(() => {}); // Non-blocking
-
+            const result = await aiService.generateDocument(
+                selectedDocType.id,
+                selectedDocType.title,
+                formData
+            );
+            setGeneratedDoc(result.content);
         } catch (error) {
             // Fallback: generate locally
             setGeneratedDoc(generateLocalDocument(selectedDocType.id, formData));

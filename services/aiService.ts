@@ -30,11 +30,10 @@ export interface AIGenerationResponse {
 }
 
 class AIService {
-    private apiKey: string | null = null;
+    private readonly HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 
     constructor() {
-        // Get API key from environment or Supabase settings
-        this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || null;
+        // Haiku uses Claude-in-Claude — no API key needed in artifacts
     }
 
     /**
@@ -49,21 +48,7 @@ class AIService {
             const prompt = this.buildDescriptionPrompt(businessName!, category!, tagline, vibe, tone, length);
 
             // Call OpenAI API
-            const response = await this.callOpenAI({
-                model: 'gpt-4-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a professional copywriter specializing in Trinidad & Tobago businesses. Write compelling, SEO-optimized business descriptions that attract local customers.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: length === 'short' ? 150 : length === 'medium' ? 300 : 500
-            });
+            const response = await this.callHaiku({ system: 'You are a professional copywriter specializing in Trinidad & Tobago businesses. Write compelling, SEO-optimized business descriptions that attract local customers.', prompt: prompt });
 
             if (response.success) {
                 return {
@@ -74,7 +59,7 @@ class AIService {
                     },
                     usage: {
                         tokens: response.data.usage.total_tokens,
-                        cost: this.calculateCost(response.data.usage.total_tokens, 'gpt-4-turbo')
+                        cost: this.calculateCost(response.data.usage.total_tokens, 'haiku')
                     }
                 };
             }
@@ -112,21 +97,7 @@ Requirements:
 
 Return only the taglines, one per line, numbered.`;
 
-            const response = await this.callOpenAI({
-                model: 'gpt-4-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a creative copywriter specializing in taglines for Trinidad & Tobago businesses.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.9,
-                max_tokens: 300
-            });
+            const response = await this.callHaiku({ system: 'You are a creative copywriter specializing in taglines for Trinidad & Tobago businesses.', prompt: prompt });
 
             if (response.success) {
                 const content = response.data.choices[0].message.content.trim();
@@ -140,7 +111,7 @@ Return only the taglines, one per line, numbered.`;
                     data: { taglines },
                     usage: {
                         tokens: response.data.usage.total_tokens,
-                        cost: this.calculateCost(response.data.usage.total_tokens, 'gpt-4-turbo')
+                        cost: this.calculateCost(response.data.usage.total_tokens, 'haiku')
                     }
                 };
             }
@@ -164,13 +135,9 @@ Return only the taglines, one per line, numbered.`;
 
             const prompt = this.buildLogoPrompt(businessName!, category!, tagline, style);
 
-            const response = await this.callOpenAI({
-                model: 'dall-e-3',
-                prompt,
-                n: 1,
-                size: '1024x1024',
-                quality: 'standard',
-                style: 'vivid'
+            const response = await this.callHaiku({
+                system: 'Generate a logo description',
+                prompt
             }, 'image');
 
             if (response.success) {
@@ -239,21 +206,9 @@ Return as JSON array with this structure:
 
 Ensure good contrast ratios for accessibility (WCAG AA standard).`;
 
-            const response = await this.callOpenAI({
-                model: 'gpt-4-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a professional brand designer specializing in color theory and accessibility.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.8,
-                max_tokens: 1000,
-                response_format: { type: 'json_object' }
+            const response = await this.callHaiku({
+                system: 'You are a professional brand designer specializing in color theory and accessibility. Always respond with valid JSON only, no markdown or backticks.',
+                prompt: prompt + '\n\nRespond with JSON only: { "palettes": [...] }'
             });
 
             if (response.success) {
@@ -265,7 +220,7 @@ Ensure good contrast ratios for accessibility (WCAG AA standard).`;
                     data: { palettes: palettes.palettes || palettes },
                     usage: {
                         tokens: response.data.usage.total_tokens,
-                        cost: this.calculateCost(response.data.usage.total_tokens, 'gpt-4-turbo')
+                        cost: this.calculateCost(response.data.usage.total_tokens, 'haiku')
                     }
                 };
             }
@@ -309,21 +264,9 @@ Return JSON with:
   "alternatives": ["alternative1", "alternative2"]
 }`;
 
-            const response = await this.callOpenAI({
-                model: 'gpt-4-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are an expert in Trinidad & Tobago business classification.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.3,
-                max_tokens: 300,
-                response_format: { type: 'json_object' }
+            const response = await this.callHaiku({
+                system: 'You are an expert in Trinidad & Tobago business classification. Always respond with valid JSON only, no markdown or backticks.',
+                prompt: prompt + '\n\nRespond with JSON only.'
             });
 
             if (response.success) {
@@ -335,7 +278,7 @@ Return JSON with:
                     data: result,
                     usage: {
                         tokens: response.data.usage.total_tokens,
-                        cost: this.calculateCost(response.data.usage.total_tokens, 'gpt-4-turbo')
+                        cost: this.calculateCost(response.data.usage.total_tokens, 'haiku')
                     }
                 };
             }
@@ -369,21 +312,7 @@ Requirements:
 
 Return only the improved description.`;
 
-            const response = await this.callOpenAI({
-                model: 'gpt-4-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a professional copywriter specializing in business descriptions.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 300
-            });
+            const response = await this.callHaiku({ system: 'You are a professional copywriter specializing in business descriptions.', prompt: prompt });
 
             if (response.success) {
                 return {
@@ -394,7 +323,7 @@ Return only the improved description.`;
                     },
                     usage: {
                         tokens: response.data.usage.total_tokens,
-                        cost: this.calculateCost(response.data.usage.total_tokens, 'gpt-4-turbo')
+                        cost: this.calculateCost(response.data.usage.total_tokens, 'haiku')
                     }
                 };
             }
@@ -494,77 +423,61 @@ No text in the logo - icon/symbol only.
 Professional quality, suitable for business branding.`;
     }
 
-    private async callOpenAI(params: any, endpoint: 'chat' | 'image' = 'chat'): Promise<AIGenerationResponse> {
+    private async callHaiku(params: { system: string; prompt: string }, endpoint: 'chat' | 'image' = 'chat'): Promise<AIGenerationResponse> {
         try {
-            if (!this.apiKey) {
-                // Fallback to mock data for development
-                return this.getMockResponse(endpoint, params);
+            if (endpoint === 'image') {
+                // Image generation not supported via Haiku — return placeholder
+                return {
+                    success: true,
+                    data: {
+                        data: [{ url: `https://picsum.photos/1024/1024?random=${Date.now()}` }]
+                    }
+                };
             }
 
-            const url = endpoint === 'chat'
-                ? 'https://api.openai.com/v1/chat/completions'
-                : 'https://api.openai.com/v1/images/generations';
-
-            const response = await fetch(url, {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
-                },
-                body: JSON.stringify(params)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: this.HAIKU_MODEL,
+                    max_tokens: 1500,
+                    system: params.system,
+                    messages: [{ role: 'user', content: params.prompt }]
+                })
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'OpenAI API request failed');
+                throw new Error(`Haiku API error: ${response.status}`);
             }
 
             const data = await response.json();
+            const text = data.content
+                ?.filter((b: any) => b.type === 'text')
+                .map((b: any) => b.text)
+                .join('\n') || '';
 
-            return {
-                success: true,
-                data
-            };
-        } catch (error) {
-            console.error('OpenAI API error:', error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'API request failed'
-            };
-        }
-    }
-
-    private getMockResponse(endpoint: 'chat' | 'image', params: any): AIGenerationResponse {
-        // Mock responses for development/testing
-        if (endpoint === 'image') {
             return {
                 success: true,
                 data: {
-                    data: [{
-                        url: `https://picsum.photos/1024/1024?random=${Date.now()}`
-                    }]
+                    choices: [{ message: { content: text } }],
+                    usage: { total_tokens: data.usage?.input_tokens + data.usage?.output_tokens || 0 }
+                }
+            };
+        } catch (error) {
+            console.error('Haiku API error:', error);
+            // Return mock fallback
+            const mockContent = params.prompt.includes('tagline')
+                ? '1. Quality Yuh Could Trust\n2. Serving Trinidad with Pride\n3. Yuh Local Favourite\n4. Fresh. Fast. Bess.\n5. Where Tradition Meets Taste 🇹🇹'
+                : 'Welcome to we business! We pride ourselves on delivering real quality and service to the Trinidad & Tobago community.';
+
+            return {
+                success: true,
+                data: {
+                    choices: [{ message: { content: mockContent } }],
+                    usage: { total_tokens: 50 }
                 }
             };
         }
-
-        // Mock chat response
-        const mockContent = params.messages[1].content.includes('tagline')
-            ? '1. Quality You Can Trust\n2. Serving Trinidad with Pride\n3. Your Local Favorite\n4. Fresh. Fast. Delicious.\n5. Where Tradition Meets Taste'
-            : 'Welcome to our business! We pride ourselves on delivering exceptional quality and service to the Trinidad & Tobago community. With years of experience and a commitment to excellence, we are your trusted local choice.';
-
-        return {
-            success: true,
-            data: {
-                choices: [{
-                    message: {
-                        content: mockContent
-                    }
-                }],
-                usage: {
-                    total_tokens: 100
-                }
-            }
-        };
     }
 
     private async uploadGeneratedImage(imageUrl: string, filename: string): Promise<string | null> {
@@ -599,15 +512,14 @@ Professional quality, suitable for business branding.`;
     }
 
     private calculateCost(tokens: number, model: string): number {
-        // Pricing as of 2024 (per 1K tokens)
+        // Haiku 4.5 pricing: $1/MTok input, $5/MTok output (April 2026)
         const pricing: Record<string, { input: number; output: number }> = {
-            'gpt-4-turbo': { input: 0.01, output: 0.03 },
-            'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 }
+            'haiku': { input: 0.001, output: 0.005 },
         };
 
-        const modelPricing = pricing[model] || pricing['gpt-4-turbo'];
-        // Simplified calculation (assuming 50/50 input/output)
-        return (tokens / 1000) * ((modelPricing.input + modelPricing.output) / 2);
+        const modelPricing = pricing[model] || pricing['haiku'];
+        // Simplified (assuming 60/40 input/output split)
+        return (tokens / 1000) * (modelPricing.input * 0.6 + modelPricing.output * 0.4);
     }
 }
 

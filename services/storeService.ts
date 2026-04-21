@@ -163,8 +163,14 @@ export const storeService = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
-        // Auto-generate slug from name if not provided
-        const slug = storeData.slug || storeData.name?.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 1000);
+        // Auto-generate clean slug from name if not provided
+        const slug = storeData.slug || (storeData.name || 'store')
+            .toLowerCase()
+            .trim()
+            .replace(/['']/g, '')           // Remove apostrophes (Ray's → Rays)
+            .replace(/[^a-z0-9]+/g, '-')    // Replace non-alphanumeric with hyphens
+            .replace(/^-|-$/g, '')           // Trim leading/trailing hyphens
+            + '-' + Math.floor(Math.random() * 900 + 100); // 3-digit suffix for uniqueness
 
         const { data, error } = await supabase
             .from('stores')
@@ -392,5 +398,39 @@ export const storeService = {
             return [];
         }
         return data as Order[];
+    },
+
+    // Toggle branding on/off (paid plans only)
+    toggleBranding: async (storeId: string, showBranding: boolean): Promise<boolean> => {
+        const { error } = await supabase
+            .from('stores')
+            .update({ show_branding: showBranding })
+            .eq('id', storeId);
+
+        if (error) {
+            console.error('Error toggling branding:', error);
+            return false;
+        }
+        return true;
+    },
+
+    // Get store by short slug (for /s/shortslug routes)
+    getStoreByShortSlug: async (shortSlug: string): Promise<Store | null> => {
+        const { data, error } = await supabase
+            .from('stores')
+            .select(`
+                *,
+                products (*),
+                logo:logos(*),
+                theme:themes(*)
+            `)
+            .eq('short_slug', shortSlug)
+            .single();
+
+        if (error) {
+            console.error('Error fetching store by short slug:', error);
+            return null;
+        }
+        return data as Store;
     }
 };

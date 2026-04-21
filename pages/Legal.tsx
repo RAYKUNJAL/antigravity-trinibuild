@@ -13,10 +13,11 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
           <>
             <h1>TriniBuild Terms of Service</h1>
             <p className="text-gray-500">Last Updated: November 25, 2025</p>
+            <p className="text-gray-500 text-sm">TriniBuild is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
 
             <h3>1. Platform Nature</h3>
             <p>
-              TriniBuild is a digital platform providing marketplace, service, job, ride-share, ticketing, and business-document tools.
+              TriniBuild, operated by R&R Digital Solutions, is a digital platform providing marketplace, service, job, ride-share, ticketing, and business-document tools.
               TriniBuild does not employ, supervise, or control users.
             </p>
 
@@ -47,6 +48,7 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
           <>
             <h1>TriniBuild Privacy Policy</h1>
             <p className="text-gray-500">Last Updated: November 25, 2025</p>
+            <p className="text-gray-500 text-sm">TriniBuild is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
 
             <h3>1. Data Collected</h3>
             <p>
@@ -176,9 +178,9 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
           <p>
-            &copy; {new Date().getFullYear()} TriniBuild. All rights reserved.
+            &copy; {new Date().getFullYear()} TriniBuild — A product of R&R Digital Solutions. All rights reserved.
             <br />
-            Use of this site constitutes acceptance of our <a href="/#/terms" className="text-trini-red hover:underline">Terms</a> and <a href="/#/privacy" className="text-trini-red hover:underline">Privacy Policy</a>.
+            Use of this site constitutes acceptance of our <a href="/terms" className="text-trini-red hover:underline">Terms</a> and <a href="/privacy" className="text-trini-red hover:underline">Privacy Policy</a>.
           </p>
         </div>
       </div>

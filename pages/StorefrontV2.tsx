@@ -5,6 +5,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
+import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import type { Store, Product } from '../types';
 
 // Lazy load heavy components
@@ -38,6 +39,7 @@ export const StorefrontV2: React.FC = () => {
         notes: ''
     });
     const [processing, setProcessing] = useState(false);
+    const [isShareOpen, setIsShareOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
 
     // Discount State
@@ -386,18 +388,27 @@ export const StorefrontV2: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Cart Button */}
-                            <button
-                                onClick={() => setIsCartOpen(true)}
-                                className="relative p-2 text-gray-700 hover:text-trini-red transition-colors"
-                            >
-                                <ShoppingCart className="h-6 w-6" />
-                                {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-trini-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
-                                        {cartCount}
-                                    </span>
-                                )}
-                            </button>
+                            {/* Share & Cart Buttons */}
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setIsShareOpen(true)}
+                                    className="p-2 text-gray-700 hover:text-trini-red transition-colors"
+                                    title="Share this store"
+                                >
+                                    <Share2 className="h-5 w-5" />
+                                </button>
+                                <button
+                                    onClick={() => setIsCartOpen(true)}
+                                    className="relative p-2 text-gray-700 hover:text-trini-red transition-colors"
+                                >
+                                    <ShoppingCart className="h-6 w-6" />
+                                    {cartCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-trini-red text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-bounce">
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Mobile Search */}
@@ -547,6 +558,39 @@ export const StorefrontV2: React.FC = () => {
                         </div>
                     )}
                 </main>
+
+                {/* Share & QR Section */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <StoreQRSection
+                        storeName={store.name}
+                        slug={store.slug}
+                        shortSlug={(store as any).short_slug}
+                        logoUrl={store.logo_url}
+                    />
+                </section>
+
+                {/* TriniBuild Branding — shown on free plans */}
+                {((store as any).show_branding !== false) && (
+                    <div className="text-center py-6 border-t border-gray-100">
+                        <TriniBuildBadge variant="light" />
+                        <p className="text-[10px] text-gray-300 mt-2">
+                            A product of R&R Digital Solutions
+                        </p>
+                    </div>
+                )}
+
+                {/* Share Modal */}
+                <StoreShareModal
+                    isOpen={isShareOpen}
+                    onClose={() => setIsShareOpen(false)}
+                    storeName={store.name}
+                    slug={store.slug}
+                    shortSlug={(store as any).short_slug}
+                    logoUrl={store.logo_url}
+                    description={store.description}
+                    showBranding={(store as any).show_branding}
+                    planTier={store.plan_tier}
+                />
 
                 {/* Cart Sidebar */}
                 {isCartOpen && (

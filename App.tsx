@@ -15,6 +15,7 @@ import MerchantTaxDashboard from './components/MerchantTaxDashboard';
 import AdminFinancialDashboard from './components/AdminFinancialDashboard';
 import { Dashboard } from './pages/Dashboard';
 import { Storefront } from './pages/Storefront';
+import { ShortSlugRedirect } from './components/ShortSlugRedirect';
 // AdminDashboard removed; external redirect will be used
 import { Settings } from './pages/Settings';
 import { StoreBotSettings } from './pages/StoreBotSettings';
@@ -261,6 +262,9 @@ const App: React.FC = () => {
               <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
               <Route path="/legal/all" element={<AllLegalDocuments />} />
             </Route>
+
+            {/* Short Slug Redirect */}
+            <Route path="/s/:shortSlug" element={<ShortSlugRedirect />} />
 
             {/* Storefront Routes - Using V2 as primary */}
             <Route path="/store/:slug" element={<StorefrontV2 />} />
