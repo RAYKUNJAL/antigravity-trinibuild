@@ -1,603 +1,655 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { TRINIDAD_TEMPLATES, StoreTemplate } from '../services/templateService';
-import { Sparkles, Store, TrendingUp, Zap } from 'lucide-react';
+import { ArrowRight, X, Globe } from 'lucide-react';
 
-const TemplatePreview: React.FC<{ template: StoreTemplate }> = ({ template }) => {
-  const id = template.id;
+// ─── Mini site previews: pure React/CSS, no images needed ────────────────────
 
-  // Food & Beverage previews
-  if (id === 'roti_shop_pro' || id === 'doubles_breakfast_pro') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#FFF8F0"/>
-        {/* Hero banner */}
-        <rect width="320" height="70" fill="#C41E3A"/>
-        <rect x="20" y="16" width="140" height="10" rx="5" fill="rgba(255,255,255,0.9)"/>
-        <rect x="20" y="32" width="90" height="7" rx="3" fill="rgba(255,255,255,0.6)"/>
-        <rect x="20" y="48" width="60" height="14" rx="7" fill="#FFD700"/>
-        {/* Food image placeholder */}
-        <circle cx="270" cy="35" r="30" fill="rgba(255,255,255,0.15)"/>
-        <text x="270" y="42" textAnchor="middle" fontSize="24">🍽️</text>
-        {/* Menu cards */}
-        <rect x="12" y="80" width="88" height="62" rx="8" fill="white" filter="url(#shadow)"/>
-        <rect x="12" y="80" width="88" height="30" rx="8" fill="#E61E2B"/>
-        <text x="56" y="100" textAnchor="middle" fontSize="16">🥙</text>
-        <rect x="20" y="118" width="70" height="6" rx="3" fill="#333"/>
-        <rect x="28" y="130" width="52" height="5" rx="2" fill="#999"/>
-
-        <rect x="116" y="80" width="88" height="62" rx="8" fill="white"/>
-        <rect x="116" y="80" width="88" height="30" rx="8" fill="#FF6B35"/>
-        <text x="160" y="100" textAnchor="middle" fontSize="16">🥘</text>
-        <rect x="124" y="118" width="70" height="6" rx="3" fill="#333"/>
-        <rect x="132" y="130" width="52" height="5" rx="2" fill="#999"/>
-
-        <rect x="220" y="80" width="88" height="62" rx="8" fill="white"/>
-        <rect x="220" y="80" width="88" height="30" rx="8" fill="#2D9E6B"/>
-        <text x="264" y="100" textAnchor="middle" fontSize="16">☕</text>
-        <rect x="228" y="118" width="70" height="6" rx="3" fill="#333"/>
-        <rect x="236" y="130" width="52" height="5" rx="2" fill="#999"/>
-
-        {/* Reviews row */}
-        <rect x="12" y="154" width="296" height="36" rx="8" fill="white"/>
-        <text x="24" y="174" fontSize="12">⭐⭐⭐⭐⭐</text>
-        <rect x="130" y="165" width="120" height="6" rx="3" fill="#e5e7eb"/>
-        <rect x="130" y="177" width="80" height="5" rx="2" fill="#e5e7eb"/>
-        <defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.1"/></filter></defs>
-      </svg>
-    );
-  }
-
-  if (id === 'restaurant_premium') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#1a0a00"/>
-        {/* Dark luxury restaurant hero */}
-        <rect width="320" height="90" fill="url(#restaurantGrad)"/>
-        <rect x="80" y="20" width="160" height="12" rx="6" fill="rgba(255,215,0,0.9)"/>
-        <rect x="100" y="38" width="120" height="7" rx="3" fill="rgba(255,255,255,0.7)"/>
-        <rect x="110" y="54" width="100" height="16" rx="8" fill="#FFD700"/>
-        <rect x="118" y="58" width="84" height="8" rx="4" fill="#1a0a00"/>
-        {/* Menu grid */}
-        <rect x="12" y="100" width="72" height="52" rx="6" fill="#2d1a0a"/>
-        <text x="48" y="134" textAnchor="middle" fontSize="28">🥩</text>
-        <rect x="92" y="100" width="72" height="52" rx="6" fill="#2d1a0a"/>
-        <text x="128" y="134" textAnchor="middle" fontSize="28">🦞</text>
-        <rect x="172" y="100" width="72" height="52" rx="6" fill="#2d1a0a"/>
-        <text x="208" y="134" textAnchor="middle" fontSize="28">🍷</text>
-        <rect x="252" y="100" width="56" height="52" rx="6" fill="#2d1a0a"/>
-        <text x="280" y="134" textAnchor="middle" fontSize="20">🎂</text>
-        {/* Reservation bar */}
-        <rect x="12" y="162" width="296" height="30" rx="8" fill="#FFD700"/>
-        <rect x="24" y="171" width="80" height="12" rx="6" fill="#1a0a00"/>
-        <rect x="140" y="171" width="60" height="12" rx="6" fill="#1a0a00"/>
-        <rect x="240" y="168" width="56" height="18" rx="9" fill="#E61E2B"/>
-        <rect x="248" y="172" width="40" height="10" rx="5" fill="white"/>
-        <defs><linearGradient id="restaurantGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3d1a00"/><stop offset="100%" stopColor="#1a0a00"/></linearGradient></defs>
-      </svg>
-    );
-  }
-
-  // Retail previews
-  if (id === 'clothing_store_pro') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#fdf2f8"/>
-        {/* Fashion hero */}
-        <rect width="320" height="60" fill="#1a1a2e"/>
-        <rect x="20" y="14" width="120" height="10" rx="5" fill="white"/>
-        <rect x="20" y="30" width="80" height="7" rx="3" fill="rgba(255,255,255,0.6)"/>
-        <rect x="20" y="44" width="50" height="12" rx="6" fill="#E61E2B"/>
-        {/* Nav icons */}
-        <circle cx="270" cy="30" r="10" fill="rgba(255,255,255,0.1)"/>
-        <circle cx="292" cy="30" r="10" fill="rgba(255,255,255,0.1)"/>
-        {/* Product grid */}
-        <rect x="12" y="72" width="90" height="110" rx="8" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
-        <rect x="12" y="72" width="90" height="68" rx="8" fill="#f3e8ff"/>
-        <text x="57" y="116" textAnchor="middle" fontSize="32">👗</text>
-        <rect x="20" y="148" width="70" height="7" rx="3" fill="#1a1a2e"/>
-        <rect x="20" y="160" width="40" height="7" rx="3" fill="#E61E2B"/>
-        <rect x="20" y="172" width="55" height="6" rx="3" fill="#9ca3af"/>
-
-        <rect x="115" y="72" width="90" height="110" rx="8" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
-        <rect x="115" y="72" width="90" height="68" rx="8" fill="#fef3c7"/>
-        <text x="160" y="116" textAnchor="middle" fontSize="32">👟</text>
-        <rect x="123" y="148" width="70" height="7" rx="3" fill="#1a1a2e"/>
-        <rect x="123" y="160" width="40" height="7" rx="3" fill="#E61E2B"/>
-
-        <rect x="218" y="72" width="90" height="110" rx="8" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
-        <rect x="218" y="72" width="90" height="68" rx="8" fill="#dcfce7"/>
-        <text x="263" y="116" textAnchor="middle" fontSize="32">👜</text>
-        <rect x="226" y="148" width="70" height="7" rx="3" fill="#1a1a2e"/>
-        <rect x="226" y="160" width="40" height="7" rx="3" fill="#E61E2B"/>
-      </svg>
-    );
-  }
-
-  if (id === 'pharmacy_health') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#f0fdf4"/>
-        <rect width="320" height="56" fill="#16a34a"/>
-        {/* Cross symbol */}
-        <rect x="20" y="20" width="16" height="16" rx="3" fill="white"/>
-        <rect x="24" y="17" width="8" height="22" rx="2" fill="#16a34a"/>
-        <rect x="17" y="24" width="22" height="8" rx="2" fill="#16a34a"/>
-        <rect x="44" y="18" width="120" height="10" rx="5" fill="white"/>
-        <rect x="44" y="32" width="80" height="7" rx="3" fill="rgba(255,255,255,0.7)"/>
-        <rect x="240" y="18" width="68" height="20" rx="10" fill="white"/>
-        <rect x="252" y="22" width="44" height="12" rx="6" fill="#16a34a"/>
-        {/* Categories */}
-        {[0,1,2,3].map(i => (
-          <g key={i}>
-            <rect x={12 + i*78} y="68" width="70" height="50" rx="8" fill="white" stroke="#bbf7d0" strokeWidth="1.5"/>
-            <text x={47 + i*78} y="100" textAnchor="middle" fontSize="22">{['💊','🩺','🧴','🌿'][i]}</text>
-            <rect x={20 + i*78} y="108" width="54" height="6" rx="3" fill="#e5e7eb"/>
-          </g>
+const P_basic_storefront = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#f8f7f4', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#1a1a1a', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 13 }}>MyShop TT</span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <span style={{ opacity: 0.6, fontSize: 10 }}>Products</span>
+        <span style={{ opacity: 0.6, fontSize: 10 }}>About</span>
+        <div style={{ background: '#E61E2B', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Cart 0</div>
+      </div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#E61E2B,#b01520)', color: '#fff', padding: '20px 14px' }}>
+      <div style={{ fontSize: 17, fontWeight: 900, lineHeight: 1.1 }}>Your Store, Your Rules</div>
+      <div style={{ opacity: 0.8, fontSize: 10, marginTop: 4 }}>Everything Trinidad needs, online.</div>
+      <div style={{ marginTop: 10, display: 'flex', gap: 6 }}>
+        <div style={{ background: '#fff', color: '#E61E2B', borderRadius: 20, padding: '4px 12px', fontWeight: 800, fontSize: 9 }}>Shop Now</div>
+        <div style={{ border: '1px solid rgba(255,255,255,0.5)', borderRadius: 20, padding: '4px 12px', fontSize: 9 }}>Learn More</div>
+      </div>
+    </div>
+    <div style={{ padding: '10px 14px' }}>
+      <div style={{ fontSize: 9, fontWeight: 700, marginBottom: 8, color: '#888', letterSpacing: 1 }}>FEATURED PRODUCTS</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
+        {[['#e8f4fd','#2563eb'],['#fef3f2','#E61E2B'],['#f0fdf4','#16a34a']].map(([bg, ac], i) => (
+          <div key={i} style={{ background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            <div style={{ background: bg, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 22, height: 22, background: ac, borderRadius: 6, opacity: 0.5 }} />
+            </div>
+            <div style={{ padding: '5px 6px' }}>
+              <div style={{ height: 6, background: '#e5e7eb', borderRadius: 3, marginBottom: 3 }} />
+              <div style={{ height: 5, background: '#f3f4f6', borderRadius: 3, width: '60%', marginBottom: 4 }} />
+              <div style={{ height: 14, background: ac, borderRadius: 4, opacity: 0.85 }} />
+            </div>
+          </div>
         ))}
-        {/* Product list */}
-        {[0,1,2].map(i => (
-          <rect key={i} x="12" y={128+i*22} width="296" height="18" rx="6" fill="white" stroke="#bbf7d0" strokeWidth="1"/>
-        ))}
-        <rect x="20" y="132" width="100" height="6" rx="3" fill="#374151"/>
-        <rect x="270" y="132" width="30" height="6" rx="3" fill="#16a34a"/>
-        <rect x="20" y="154" width="80" height="6" rx="3" fill="#374151"/>
-        <rect x="270" y="154" width="30" height="6" rx="3" fill="#16a34a"/>
-        <rect x="20" y="176" width="120" height="6" rx="3" fill="#374151"/>
-        <rect x="270" y="176" width="30" height="6" rx="3" fill="#16a34a"/>
-      </svg>
-    );
-  }
+      </div>
+    </div>
+  </div>
+);
 
-  if (id === 'electronics_tech') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#0f172a"/>
-        <rect width="320" height="52" fill="#1e293b"/>
-        <rect x="12" y="16" width="80" height="10" rx="5" fill="#3b82f6"/>
-        <rect x="110" y="18" width="50" height="7" rx="3" fill="#94a3b8"/>
-        <rect x="170" y="18" width="50" height="7" rx="3" fill="#94a3b8"/>
-        <rect x="230" y="18" width="50" height="7" rx="3" fill="#94a3b8"/>
-        <rect x="12" y="32" width="130" height="7" rx="3" fill="#475569"/>
-        {/* Hero product */}
-        <rect x="12" y="62" width="200" height="80" rx="8" fill="#1e293b"/>
-        <text x="112" y="110" textAnchor="middle" fontSize="40">💻</text>
-        <rect x="220" y="62" width="88" height="38" rx="8" fill="#1e293b"/>
-        <text x="264" y="88" textAnchor="middle" fontSize="24">📱</text>
-        <rect x="220" y="104" width="88" height="38" rx="8" fill="#1e293b"/>
-        <text x="264" y="130" textAnchor="middle" fontSize="24">🖥️</text>
-        {/* Specs bar */}
-        <rect x="12" y="150" width="200" height="12" rx="6" fill="#3b82f6"/>
-        <rect x="220" y="150" width="88" height="12" rx="6" fill="#1e293b"/>
-        {/* Price + cart */}
-        <rect x="12" y="170" width="80" height="20" rx="10" fill="#3b82f6"/>
-        <rect x="100" y="170" width="112" height="20" rx="10" fill="#1e293b"/>
-        <rect x="220" y="170" width="88" height="20" rx="10" fill="#1e293b"/>
-      </svg>
-    );
-  }
-
-  if (id === 'hardware_home') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#fefce8"/>
-        <rect width="320" height="54" fill="#92400e"/>
-        <rect x="12" y="16" width="140" height="10" rx="5" fill="white"/>
-        <rect x="12" y="32" width="100" height="7" rx="3" fill="rgba(255,255,255,0.7)"/>
-        <rect x="240" y="16" width="68" height="22" rx="11" fill="#FFD700"/>
-        <rect x="252" y="21" width="44" height="12" rx="6" fill="#92400e"/>
-        {/* Category icons */}
-        {['🔧','🪚','🔩','🏠','💡','🎨'].map((emoji, i) => (
-          <g key={i}>
-            <rect x={12 + (i%3)*104} y={68 + Math.floor(i/3)*66} width="96" height="56" rx="8" fill="white" stroke="#fde68a" strokeWidth="1.5"/>
-            <text x={60 + (i%3)*104} y={100 + Math.floor(i/3)*66} textAnchor="middle" fontSize="24">{emoji}</text>
-            <rect x={20 + (i%3)*104} y={110 + Math.floor(i/3)*66} width="72" height="6" rx="3" fill="#e5e7eb"/>
-          </g>
-        ))}
-      </svg>
-    );
-  }
-
-  if (id === 'bakery_desserts') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#fff7ed"/>
-        {/* Pink hero */}
-        <rect width="320" height="64" fill="url(#bakeryGrad)"/>
-        <rect x="60" y="14" width="200" height="12" rx="6" fill="white"/>
-        <rect x="90" y="30" width="140" height="7" rx="3" fill="rgba(255,255,255,0.8)"/>
-        <rect x="115" y="44" width="90" height="14" rx="7" fill="#FFD700"/>
-        {/* Showcase items */}
-        {['🍰','🧁','🍩','🍪'].map((e, i) => (
-          <g key={i}>
-            <rect x={12 + i*76} y="78" width="68" height="80" rx="10" fill="white" stroke="#fce7f3" strokeWidth="1.5"/>
-            <rect x={12 + i*76} y="78" width="68" height="48" rx="10" fill="#fdf2f8"/>
-            <text x={46 + i*76} y="112" textAnchor="middle" fontSize="28">{e}</text>
-            <rect x={20 + i*76} y="134" width="52" height="6" rx="3" fill="#374151"/>
-            <rect x={20 + i*76} y="144" width="34" height="6" rx="3" fill="#db2777"/>
-            <rect x={20 + i*76} y="154" width="52" height="10" rx="5" fill="#fce7f3"/>
-          </g>
-        ))}
-        <defs><linearGradient id="bakeryGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#db2777"/><stop offset="100%" stopColor="#9333ea"/></linearGradient></defs>
-      </svg>
-    );
-  }
-
-  // Services previews
-  if (id === 'salon_barber_pro') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#1a1a1a"/>
-        <rect width="320" height="60" fill="#111"/>
-        <rect x="20" y="16" width="110" height="10" rx="5" fill="#FFD700"/>
-        <rect x="20" y="32" width="80" height="7" rx="3" fill="#6b7280"/>
-        <rect x="230" y="18" width="78" height="24" rx="12" fill="#E61E2B"/>
-        <rect x="246" y="23" width="46" height="14" rx="7" fill="white"/>
-        {/* Services list */}
-        {['✂️ Haircut', '💈 Fade', '🪒 Shave', '💆 Treatment'].map((s, i) => (
-          <rect key={i} x="12" y={70 + i*28} width="180" height="22" rx="6" fill="#262626"/>
-        ))}
-        <text x="28" y="86" fontSize="11" fill="white">✂️  Haircut</text>
-        <text x="28" y="114" fontSize="11" fill="white">💈  Fade & Lineup</text>
-        <text x="28" y="142" fontSize="11" fill="white">🪒  Hot Shave</text>
-        <text x="28" y="170" fontSize="11" fill="white">💆  Scalp Treatment</text>
-        {/* Booking panel */}
-        <rect x="200" y="70" width="108" height="120" rx="10" fill="#262626"/>
-        <rect x="208" y="78" width="92" height="10" rx="5" fill="#FFD700"/>
-        <rect x="208" y="96" width="92" height="24" rx="6" fill="#1a1a1a"/>
-        <rect x="208" y="126" width="44" height="20" rx="5" fill="#333"/>
-        <rect x="256" y="126" width="44" height="20" rx="5" fill="#333"/>
-        <rect x="208" y="154" width="92" height="28" rx="14" fill="#E61E2B"/>
-        <rect x="228" y="162" width="52" height="12" rx="6" fill="white"/>
-      </svg>
-    );
-  }
-
-  if (id === 'auto_parts') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#111827"/>
-        <rect width="320" height="58" fill="#1f2937"/>
-        <rect x="12" y="16" width="120" height="10" rx="5" fill="#f97316"/>
-        <rect x="12" y="32" width="90" height="7" rx="3" fill="#6b7280"/>
-        <rect x="220" y="16" width="88" height="26" rx="6" fill="#f97316"/>
-        <rect x="228" y="22" width="72" height="14" rx="7" fill="#111827"/>
-        {/* Car hero */}
-        <rect x="12" y="68" width="296" height="72" rx="8" fill="#1f2937"/>
-        <text x="160" y="116" textAnchor="middle" fontSize="48">🚗</text>
-        {/* Parts grid */}
-        {['🔧','⚙️','🛞','🔋'].map((e, i) => (
-          <g key={i}>
-            <rect x={12 + i*76} y="150" width="68" height="40" rx="6" fill="#1f2937"/>
-            <text x={46 + i*76} y="177" textAnchor="middle" fontSize="20">{e}</text>
-          </g>
-        ))}
-      </svg>
-    );
-  }
-
-  if (id === 'gym_fitness') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#0a0a0a"/>
-        <rect width="320" height="64" fill="url(#gymGrad)"/>
-        <rect x="20" y="16" width="130" height="12" rx="6" fill="white"/>
-        <rect x="20" y="34" width="90" height="7" rx="3" fill="rgba(255,255,255,0.7)"/>
-        <rect x="20" y="48" width="70" height="12" rx="6" fill="#FFD700"/>
-        <text x="270" y="44" textAnchor="middle" fontSize="32">💪</text>
-        {/* Stats row */}
-        {['3 Plans','24/7 Access','50+ Classes','Free Trial'].map((s, i) => (
-          <g key={i}>
-            <rect x={12+i*76} y="74" width="68" height="40" rx="6" fill="#1a1a1a"/>
-            <rect x={20+i*76} y="82" width="52" height="8" rx="4" fill="#ef4444"/>
-            <rect x={20+i*76} y="96" width="40" height="6" rx="3" fill="#374151"/>
-          </g>
-        ))}
-        {/* Membership cards */}
-        <rect x="12" y="124" width="92" height="64" rx="10" fill="#1a1a1a" stroke="#374151" strokeWidth="1"/>
-        <rect x="116" y="124" width="92" height="64" rx="10" fill="#E61E2B"/>
-        <rect x="220" y="124" width="88" height="64" rx="10" fill="#FFD700"/>
-        <rect x="22" y="136" width="72" height="8" rx="4" fill="#374151"/>
-        <rect x="126" y="136" width="72" height="8" rx="4" fill="rgba(255,255,255,0.9)"/>
-        <rect x="230" y="136" width="68" height="8" rx="4" fill="#1a1a1a"/>
-        <rect x="22" y="152" width="50" height="16" rx="8" fill="#374151"/>
-        <rect x="126" y="152" width="50" height="16" rx="8" fill="rgba(255,255,255,0.9)"/>
-        <rect x="230" y="152" width="50" height="16" rx="8" fill="#1a1a1a"/>
-        <defs><linearGradient id="gymGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#7f1d1d"/><stop offset="100%" stopColor="#1a1a1a"/></linearGradient></defs>
-      </svg>
-    );
-  }
-
-  if (id === 'jewelry_luxury') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#0c0c0c"/>
-        <rect width="320" height="56" fill="#0c0c0c" stroke="#FFD700" strokeWidth="0"/>
-        <rect x="100" y="12" width="120" height="12" rx="6" fill="#FFD700"/>
-        <rect x="110" y="30" width="100" height="7" rx="3" fill="#6b7280"/>
-        <rect x="130" y="44" width="60" height="10" rx="5" fill="none" stroke="#FFD700" strokeWidth="1"/>
-        {/* Product showcase */}
-        {['💍','📿','⌚'].map((e, i) => (
-          <g key={i}>
-            <rect x={12 + i*102} y="66" width="94" height="94" rx="10" fill="#1a1708"/>
-            <rect x={12 + i*102} y="66" width="94" height="94" rx="10" fill="none" stroke="#FFD700" strokeWidth="0.5"/>
-            <text x={59 + i*102} y="120" textAnchor="middle" fontSize="36">{e}</text>
-            <rect x={22 + i*102} y="148" width="74" height="6" rx="3" fill="#FFD700"/>
-          </g>
-        ))}
-        {/* Bottom bar */}
-        <rect x="12" y="170" width="296" height="22" rx="6" fill="#1a1708" stroke="#FFD700" strokeWidth="0.5"/>
-        <rect x="24" y="177" width="120" height="8" rx="4" fill="#374151"/>
-        <rect x="230" y="175" width="66" height="12" rx="6" fill="#FFD700"/>
-      </svg>
-    );
-  }
-
-  if (id === 'multi_location_enterprise') {
-    return (
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-        <rect width="320" height="200" fill="#f8fafc"/>
-        <rect width="320" height="54" fill="#0f172a"/>
-        <rect x="12" y="14" width="100" height="10" rx="5" fill="#3b82f6"/>
-        <rect x="12" y="30" width="70" height="7" rx="3" fill="#475569"/>
-        <rect x="220" y="14" width="88" height="26" rx="13" fill="#3b82f6"/>
-        <rect x="232" y="19" width="64" height="16" rx="8" fill="white"/>
-        {/* Metrics row */}
-        {['12\nLocations','$2.4M\nRevenue','98%\nSatisfied','4.8★\nRating'].map((s, i) => (
-          <g key={i}>
-            <rect x={12+i*76} y="64" width="68" height="48" rx="8" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
-            <rect x={20+i*76} y="72" width="30" height="10" rx="5" fill="#3b82f6"/>
-            <rect x={20+i*76} y="88" width="50" height="6" rx="3" fill="#e2e8f0"/>
-            <rect x={20+i*76} y="100" width="40" height="5" rx="2" fill="#e2e8f0"/>
-          </g>
-        ))}
-        {/* Location map */}
-        <rect x="12" y="122" width="180" height="68" rx="8" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
-        <rect x="12" y="122" width="180" height="68" rx="8" fill="#eff6ff"/>
-        <circle cx="60" cy="156" r="8" fill="#E61E2B"/>
-        <circle cx="120" cy="148" r="8" fill="#E61E2B"/>
-        <circle cx="160" cy="165" r="8" fill="#E61E2B"/>
-        <circle cx="90" cy="172" r="6" fill="#3b82f6"/>
-        {/* Side panel */}
-        <rect x="200" y="122" width="108" height="68" rx="8" fill="white" stroke="#e2e8f0" strokeWidth="1"/>
-        <rect x="208" y="130" width="92" height="8" rx="4" fill="#e2e8f0"/>
-        <rect x="208" y="144" width="92" height="8" rx="4" fill="#e2e8f0"/>
-        <rect x="208" y="158" width="92" height="8" rx="4" fill="#e2e8f0"/>
-        <rect x="208" y="172" width="92" height="12" rx="6" fill="#3b82f6"/>
-      </svg>
-    );
-  }
-
-  // Default / Basic storefront
-  return (
-    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      <rect width="320" height="200" fill="#f9fafb"/>
-      <rect width="320" height="56" fill="#E61E2B"/>
-      <rect x="20" y="16" width="130" height="10" rx="5" fill="white"/>
-      <rect x="20" y="32" width="90" height="7" rx="3" fill="rgba(255,255,255,0.7)"/>
-      <rect x="230" y="16" width="78" height="24" rx="12" fill="white"/>
-      <rect x="242" y="21" width="54" height="14" rx="7" fill="#E61E2B"/>
-      {/* Product grid */}
-      {[0,1,2,3,4,5].map(i => (
-        <g key={i}>
-          <rect x={12+(i%3)*102} y={68+Math.floor(i/3)*66} width="94" height="56" rx="8" fill="white" stroke="#e5e7eb" strokeWidth="1"/>
-          <rect x={12+(i%3)*102} y={68+Math.floor(i/3)*66} width="94" height="34" rx="8" fill="#f3f4f6"/>
-          <rect x={20+(i%3)*102} y={110+Math.floor(i/3)*66} width="60" height="6" rx="3" fill="#374151"/>
-          <rect x={20+(i%3)*102} y={120+Math.floor(i/3)*66} width="40" height="5" rx="2" fill="#9ca3af"/>
-        </g>
+const P_roti_shop_pro = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fffbf5', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#7c2d12', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div>
+        <div style={{ fontWeight: 900, fontSize: 12 }}>Mama's Roti Shop</div>
+        <div style={{ opacity: 0.6, fontSize: 9 }}>Open now · Chaguanas</div>
+      </div>
+      <div style={{ background: '#FFD700', color: '#7c2d12', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>Order Now</div>
+    </div>
+    <div style={{ background: 'linear-gradient(160deg,#9a3412,#7c2d12)', padding: '16px 14px', color: '#fff', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.2 }}>Fresh Roti &amp; Curry Daily</div>
+        <div style={{ opacity: 0.75, fontSize: 9, marginTop: 4 }}>Doubles · Buss-up-shut · Dhal Puri</div>
+        <div style={{ marginTop: 8, background: '#FFD700', color: '#7c2d12', borderRadius: 20, padding: '4px 14px', fontWeight: 800, fontSize: 9, display: 'inline-block' }}>See Menu</div>
+      </div>
+      <div style={{ width: 48, height: 48, background: 'rgba(255,255,255,0.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🍛</div>
+    </div>
+    <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+      {[['Chicken Curry Roti','$35'],['Dhal Puri','$28'],['Doubles','$12'],['Shark & Bake','$45']].map(([n, p], i) => (
+        <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '7px 9px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+          <div style={{ height: 4, background: i % 2 === 0 ? '#fed7aa' : '#fde68a', borderRadius: 3, marginBottom: 5 }} />
+          <div style={{ fontWeight: 700, fontSize: 10, color: '#1a1a1a' }}>{n}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+            <span style={{ color: '#9a3412', fontWeight: 800, fontSize: 11 }}>TT{p}</span>
+            <div style={{ background: '#9a3412', color: '#fff', borderRadius: 10, padding: '2px 7px', fontSize: 8 }}>Add</div>
+          </div>
+        </div>
       ))}
-    </svg>
-  );
+    </div>
+  </div>
+);
+
+const P_restaurant_premium = () => (
+  <div style={{ fontFamily: 'Georgia, serif', background: '#0c0a07', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,215,0,0.15)' }}>
+      <span style={{ color: '#FFD700', fontWeight: 700, fontStyle: 'italic', fontSize: 14 }}>Saveur</span>
+      <div style={{ display: 'flex', gap: 10, opacity: 0.5, fontFamily: 'system-ui', fontSize: 9 }}>
+        <span>Menu</span><span>Reserve</span><span>About</span>
+      </div>
+    </div>
+    <div style={{ textAlign: 'center', padding: '16px 14px 10px' }}>
+      <div style={{ color: '#FFD700', fontSize: 8, letterSpacing: 4, fontFamily: 'system-ui', fontWeight: 600, marginBottom: 6 }}>PORT OF SPAIN · FINE DINING</div>
+      <div style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.1, fontStyle: 'italic' }}>An Unforgettable<br />Culinary Journey</div>
+      <div style={{ marginTop: 10, display: 'inline-flex', gap: 6 }}>
+        <div style={{ background: '#FFD700', color: '#0c0a07', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontWeight: 800, fontSize: 9 }}>Reserve Table</div>
+        <div style={{ border: '1px solid rgba(255,215,0,0.4)', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontSize: 9 }}>View Menu</div>
+      </div>
+    </div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, padding: '0 14px' }}>
+      {[['#1a1208','Pan-Seared Snapper','$189'],['#0f1a0a','Jerk Lamb Rack','$215'],['#1a1218','Passion Fruit Soufflé','$95']].map(([bg, n, p], i) => (
+        <div key={i} style={{ background: bg, borderRadius: 6, border: '1px solid rgba(255,215,0,0.1)', padding: '6px' }}>
+          <div style={{ height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, background: 'rgba(255,215,0,0.04)', borderRadius: 4, marginBottom: 5 }}>
+            {['🐟','🥩','🍮'][i]}
+          </div>
+          <div style={{ fontSize: 8, fontStyle: 'italic', opacity: 0.8, lineHeight: 1.3 }}>{n}</div>
+          <div style={{ color: '#FFD700', fontSize: 9, fontFamily: 'system-ui', fontWeight: 700, marginTop: 2 }}>TT{p}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ margin: '8px 14px 0', background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: 6, padding: '6px 10px', display: 'flex', justifyContent: 'space-between', fontFamily: 'system-ui' }}>
+      <span style={{ fontSize: 9, opacity: 0.6 }}>Tue–Sun  6pm–11pm</span>
+      <span style={{ fontSize: 9, color: '#FFD700' }}>Michelin Recognised</span>
+    </div>
+  </div>
+);
+
+const P_clothing_store_pro = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fafaf8', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#fff', padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #1a1a1a' }}>
+      <span style={{ fontWeight: 900, fontSize: 14, letterSpacing: 2 }}>ISLE MODE</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 700 }}>
+        <span>WOMEN</span><span>MEN</span><span>SALE</span>
+      </div>
+    </div>
+    <div style={{ background: '#1a1a1a', color: '#fff', padding: '18px 14px', display: 'flex', gap: 10 }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 9, letterSpacing: 3, opacity: 0.4, marginBottom: 4 }}>NEW ARRIVALS</div>
+        <div style={{ fontSize: 20, lineHeight: 1, fontWeight: 900 }}>TRINI SUMMER<br />COLLECTION</div>
+        <div style={{ marginTop: 8, display: 'flex', gap: 5 }}>
+          <div style={{ background: '#E61E2B', color: '#fff', padding: '3px 10px', borderRadius: 2, fontSize: 9, fontWeight: 800 }}>SHOP NOW</div>
+          <div style={{ border: '1px solid rgba(255,255,255,0.25)', padding: '3px 10px', borderRadius: 2, fontSize: 9 }}>LOOKBOOK</div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, width: 64 }}>
+        {['#c7d2fe','#fce7f3','#d1fae5','#fff7ed'].map((c, i) => (
+          <div key={i} style={{ background: c, borderRadius: 4, height: 30 }} />
+        ))}
+      </div>
+    </div>
+    <div style={{ padding: '10px 14px', display: 'flex', gap: 6 }}>
+      {[['MAXI DRESS','$299','#fce7f3'],['LINEN SET','$349','#d1fae5'],['BEACH BAG','$199','#fff7ed']].map(([n, p, bg], i) => (
+        <div key={i} style={{ flex: 1, background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: bg, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 22, height: 30, background: 'rgba(0,0,0,0.1)', borderRadius: 4 }} />
+          </div>
+          <div style={{ padding: '5px 5px' }}>
+            <div style={{ fontSize: 8, letterSpacing: 1, fontWeight: 700 }}>{n}</div>
+            <div style={{ color: '#E61E2B', fontSize: 9, fontWeight: 800 }}>TT{p}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_salon_barber_pro = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#111', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #222' }}>
+      <div>
+        <div style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1 }}>FADE KINGS</div>
+        <div style={{ opacity: 0.4, fontSize: 8 }}>San Fernando · Est. 2015</div>
+      </div>
+      <div style={{ background: '#FFD700', color: '#111', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>BOOK NOW</div>
+    </div>
+    <div style={{ padding: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.2 }}>Precision Cuts.<br />Fresh Always.</div>
+        <div style={{ opacity: 0.4, fontSize: 9, marginTop: 4 }}>Walk-ins welcome</div>
+        <div style={{ marginTop: 10, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {['Mon–Sat','8am–8pm'].map((t, i) => (
+            <div key={i} style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 3, padding: '3px 7px', fontSize: 8 }}>{t}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {[['Fade & Lineup','$80'],['Hot Towel Shave','$60'],['Wash & Style','$90'],["Kid's Cut",'$50']].map(([s, p]) => (
+          <div key={s} style={{ background: '#1a1a1a', borderRadius: 4, padding: '5px 8px', display: 'flex', justifyContent: 'space-between', borderLeft: '2px solid #FFD700' }}>
+            <span style={{ fontSize: 9 }}>{s}</span>
+            <span style={{ color: '#FFD700', fontWeight: 800, fontSize: 9 }}>TT{p}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div style={{ margin: '0 14px', background: '#E61E2B', borderRadius: 6, padding: '7px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontSize: 9, fontWeight: 700 }}>Next slot: Today 2:30pm</span>
+      <div style={{ background: '#fff', color: '#E61E2B', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>Book</div>
+    </div>
+  </div>
+);
+
+const P_electronics_tech = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#030712', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ background: '#0d1117', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #21262d' }}>
+      <span style={{ fontWeight: 800, fontSize: 13, color: '#60a5fa' }}>TechHub TT</span>
+      <div style={{ background: '#3b82f6', borderRadius: 4, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>All Products</div>
+    </div>
+    <div style={{ padding: '12px 14px', background: 'linear-gradient(160deg,#0d1b40,#030712)' }}>
+      <div style={{ fontSize: 9, color: '#60a5fa', letterSpacing: 2, marginBottom: 4, fontWeight: 600 }}>NEW ARRIVALS</div>
+      <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.15 }}>Latest Tech,<br />Trinidad Price.</div>
+      <div style={{ marginTop: 8, display: 'flex', gap: 5 }}>
+        <div style={{ background: '#3b82f6', borderRadius: 4, padding: '4px 12px', fontSize: 9, fontWeight: 700 }}>Shop Deals</div>
+        <div style={{ border: '1px solid #21262d', borderRadius: 4, padding: '4px 12px', fontSize: 9 }}>Compare</div>
+      </div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['💻','MacBook M3','$8,999'],['📱','iPhone 16','$6,499'],['🎮','PS5','$4,999']].map(([e, n, p]) => (
+        <div key={n} style={{ background: '#0d1117', border: '1px solid #21262d', borderRadius: 6, padding: '7px 5px', textAlign: 'center' }}>
+          <div style={{ fontSize: 16 }}>{e}</div>
+          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 3 }}>{n}</div>
+          <div style={{ color: '#60a5fa', fontSize: 9, fontWeight: 800, marginTop: 2 }}>TT{p}</div>
+          <div style={{ background: '#1d4ed8', borderRadius: 3, padding: '2px 4px', marginTop: 4, fontSize: 8 }}>Buy</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_pharmacy_health = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#f0fdf4', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#166534', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 12 }}>+ CarePlus Pharmacy</span>
+      <div style={{ background: '#16a34a', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Order Online</div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#166534,#15803d)', color: '#fff', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.2 }}>Your Health,<br />Our Priority</div>
+        <div style={{ opacity: 0.7, fontSize: 9, marginTop: 3 }}>Prescription · OTC · Wellness</div>
+      </div>
+      <div style={{ background: '#fff', color: '#166534', borderRadius: 20, padding: '5px 12px', fontSize: 9, fontWeight: 800 }}>Upload Rx</div>
+    </div>
+    <div style={{ padding: '8px 14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5, marginBottom: 7 }}>
+        {[['💊','Meds'],['🩺','Consult'],['🧴','Skincare'],['🌿','Natural']].map(([e, l]) => (
+          <div key={l} style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: 6, padding: '6px 4px', textAlign: 'center' }}>
+            <div style={{ fontSize: 13 }}>{e}</div>
+            <div style={{ fontSize: 8, fontWeight: 700, color: '#166534', marginTop: 2 }}>{l}</div>
+          </div>
+        ))}
+      </div>
+      {[['Metformin 500mg','$45/mo'],['Vitamin D3 2000IU','$38']].map(([n, p]) => (
+        <div key={n} style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: 6, padding: '6px 10px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 9, fontWeight: 700 }}>{n}</span>
+          <span style={{ color: '#16a34a', fontWeight: 800, fontSize: 9 }}>TT{p}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_bakery_desserts = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fff0f6', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: 'linear-gradient(90deg,#be185d,#7c3aed)', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 12 }}>Sweet Trini Bakes</span>
+      <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '3px 10px', fontSize: 9 }}>Order Custom</div>
+    </div>
+    <div style={{ background: 'linear-gradient(160deg,#fdf2f8,#ede9fe)', padding: '14px', textAlign: 'center' }}>
+      <div style={{ fontSize: 15, fontWeight: 900, color: '#831843', lineHeight: 1.2 }}>Baked with Love,<br />Made in Trinidad</div>
+      <div style={{ opacity: 0.55, fontSize: 9, marginTop: 3 }}>Custom cakes · Pastries · Catering</div>
+      <div style={{ marginTop: 8, display: 'flex', gap: 5, justifyContent: 'center' }}>
+        <div style={{ background: '#be185d', color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Order Now</div>
+        <div style={{ border: '1px solid #be185d', color: '#be185d', borderRadius: 20, padding: '4px 12px', fontSize: 9 }}>Gallery</div>
+      </div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
+      {[['🎂','Custom Cake','$380+','#fce7f3'],['🧁','Cupcakes','$8 ea','#ede9fe'],['🍩','Donuts','$6 ea','#fef3c7'],['🥐','Pastries','$12','#dcfce7']].map(([e, n, p, bg]) => (
+        <div key={n} style={{ background: bg, borderRadius: 8, padding: '7px 4px', textAlign: 'center' }}>
+          <div style={{ fontSize: 16 }}>{e}</div>
+          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 2, color: '#1a1a1a' }}>{n}</div>
+          <div style={{ fontSize: 8, color: '#be185d', fontWeight: 800, marginTop: 1 }}>TT{p}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_auto_parts = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#0f0f0f', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ background: '#1a1a1a', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f97316' }}>
+      <span style={{ fontWeight: 900, fontSize: 14, letterSpacing: 1 }}>AUTO KING TT</span>
+      <div style={{ background: '#f97316', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Find My Part</div>
+    </div>
+    <div style={{ background: 'linear-gradient(160deg,#1c0a00,#0f0f0f)', padding: '14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ color: '#f97316', fontSize: 9, letterSpacing: 2, fontWeight: 700, marginBottom: 4 }}>PARTS & ACCESSORIES</div>
+        <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.1 }}>OEM & AFTERMARKET PARTS</div>
+        <div style={{ marginTop: 8, background: '#f97316', display: 'inline-flex', borderRadius: 3, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Search Parts</div>
+      </div>
+      <div style={{ fontSize: 36 }}>🚗</div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['🔧','Engine','$450+'],['🛞','Tyres','$299+'],['🔋','Battery','$380+'],['💡','Electrical','$120+'],['🪝','Body Parts','$200+'],['⚙️','Gearbox','$600+']].map(([e, n, p]) => (
+        <div key={n} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 5, padding: '6px 4px', textAlign: 'center' }}>
+          <div style={{ fontSize: 13 }}>{e}</div>
+          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 2 }}>{n}</div>
+          <div style={{ color: '#f97316', fontSize: 8, marginTop: 1 }}>{p}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_hardware_home = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fafaf9', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#78350f', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 12, letterSpacing: 0.5 }}>BUILD RIGHT HARDWARE</span>
+      <div style={{ background: '#FFD700', color: '#78350f', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>Get Quote</div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#92400e,#78350f)', color: '#fff', padding: '14px' }}>
+      <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.2 }}>Everything You Need<br />to Build & Fix</div>
+      <div style={{ opacity: 0.7, fontSize: 9, marginTop: 3 }}>Tools · Lumber · Paint · Plumbing</div>
+      <div style={{ marginTop: 8, background: '#FFD700', color: '#78350f', display: 'inline-flex', borderRadius: 3, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Shop All</div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['🔨','Tools'],['🪚','Lumber'],['🪣','Paint'],['💡','Electrical'],['🚰','Plumbing'],['🏠','Roofing']].map(([e, n]) => (
+        <div key={n} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '7px 4px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: 14 }}>{e}</div>
+          <div style={{ fontSize: 8, fontWeight: 700, color: '#374151', marginTop: 3 }}>{n}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_gym_fitness = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#000', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ background: '#111', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #E61E2B' }}>
+      <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1 }}>IRON TRINI GYM</span>
+      <div style={{ background: '#E61E2B', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Join Now</div>
+    </div>
+    <div style={{ background: 'linear-gradient(160deg,#3b0000,#000)', padding: '16px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 18, lineHeight: 1, color: '#E61E2B', fontWeight: 900 }}>TRAIN HARD.</div>
+        <div style={{ fontSize: 18, lineHeight: 1, fontWeight: 900 }}>STAY TRINI.</div>
+        <div style={{ opacity: 0.45, fontSize: 9, marginTop: 4 }}>24/7 Access · 50+ Classes · Expert Coaches</div>
+        <div style={{ marginTop: 8, background: '#E61E2B', display: 'inline-flex', borderRadius: 3, padding: '4px 14px', fontSize: 9, fontWeight: 800 }}>Start Free Trial</div>
+      </div>
+      <div style={{ fontSize: 32 }}>💪</div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['Basic','$299/mo','#1a1a1a','#666'],['Pro','$499/mo','#1a0000','#E61E2B'],['Elite','$799/mo','#1a1500','#FFD700']].map(([tier, price, bg, ac]) => (
+        <div key={tier} style={{ background: bg, border: `1px solid ${ac}`, borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, letterSpacing: 1, fontWeight: 700 }}>{tier}</div>
+          <div style={{ color: ac, fontSize: 9, fontWeight: 800, marginTop: 2 }}>TT{price}</div>
+          <div style={{ background: ac, borderRadius: 3, padding: '2px', marginTop: 4, fontSize: 8, fontWeight: 700, color: ac === '#FFD700' ? '#000' : '#fff' }}>Select</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_jewelry_luxury = () => (
+  <div style={{ fontFamily: 'Georgia, serif', background: '#080806', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,215,0,0.2)' }}>
+      <span style={{ fontStyle: 'italic', fontSize: 15, color: '#FFD700', letterSpacing: 1 }}>Aurum T&T</span>
+      <div style={{ display: 'flex', gap: 10, opacity: 0.45, fontFamily: 'system-ui', fontSize: 9 }}>
+        <span>Collections</span><span>Bespoke</span>
+      </div>
+    </div>
+    <div style={{ textAlign: 'center', padding: '14px 14px 10px', borderBottom: '1px solid rgba(255,215,0,0.1)' }}>
+      <div style={{ color: '#FFD700', fontSize: 8, letterSpacing: 4, fontFamily: 'system-ui', fontWeight: 600, marginBottom: 6 }}>FINE JEWELLERY · PORT OF SPAIN</div>
+      <div style={{ fontSize: 16, fontStyle: 'italic', lineHeight: 1.2 }}>Crafted for<br />the Caribbean Soul</div>
+      <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center' }}>
+        <div style={{ border: '1px solid #FFD700', color: '#FFD700', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontSize: 9 }}>Browse</div>
+        <div style={{ background: '#FFD700', color: '#080806', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontWeight: 700, fontSize: 9 }}>Book Consult</div>
+      </div>
+    </div>
+    <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['💍','Rings','From $1,200'],['📿','Necklaces','From $800'],['⌚','Watches','From $2,500']].map(([e, n, p]) => (
+        <div key={n} style={{ background: '#110f08', border: '1px solid rgba(255,215,0,0.15)', borderRadius: 6, padding: '10px 5px', textAlign: 'center' }}>
+          <div style={{ fontSize: 18 }}>{e}</div>
+          <div style={{ fontSize: 9, fontStyle: 'italic', marginTop: 4 }}>{n}</div>
+          <div style={{ color: '#FFD700', fontFamily: 'system-ui', fontSize: 8, marginTop: 2 }}>{p}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_doubles_breakfast_pro = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fffbeb', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#d97706', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 900, fontSize: 12 }}>Raj's Doubles</span>
+      <div style={{ background: '#fff', color: '#d97706', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>WhatsApp Order</div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#fff', padding: '14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.2 }}>Best Doubles in T&T</div>
+        <div style={{ opacity: 0.85, fontSize: 9, marginTop: 3 }}>Open 5am–2pm daily · Cash & Linx</div>
+        <div style={{ marginTop: 8, background: '#fff', display: 'inline-flex', color: '#d97706', borderRadius: 20, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>See Menu</div>
+      </div>
+      <div style={{ fontSize: 32 }}>🫓</div>
+    </div>
+    <div style={{ padding: '8px 14px' }}>
+      <div style={{ fontSize: 9, fontWeight: 700, color: '#92400e', marginBottom: 6, letterSpacing: 1 }}>TODAY'S MENU</div>
+      {[["Slight",'$7'],['Medium','$7'],['Extra Pepper','$7'],['With Cheese','$9'],['Pholorie (6pcs)','$15']].map(([n, p]) => (
+        <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid #fde68a', fontSize: 9 }}>
+          <span style={{ color: '#78350f', fontWeight: 600 }}>{n}</span>
+          <span style={{ color: '#d97706', fontWeight: 800 }}>TT{p}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_multi_location_enterprise = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#f8fafc', height: '100%', overflow: 'hidden', fontSize: 11 }}>
+    <div style={{ background: '#0f172a', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 13 }}>Enterprise Suite</span>
+      <div style={{ display: 'flex', gap: 5 }}>
+        <div style={{ background: '#1e293b', borderRadius: 4, padding: '3px 8px', fontSize: 8, color: '#fff' }}>Analytics</div>
+        <div style={{ background: '#3b82f6', borderRadius: 4, padding: '3px 8px', fontSize: 8, color: '#fff' }}>+ Location</div>
+      </div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
+      {[['12','Locations','#dbeafe'],['$2.4M','Revenue','#dcfce7'],['98%','Satisfied','#fef9c3'],['4.8★','Rating','#fce7f3']].map(([v, l, bg]) => (
+        <div key={l} style={{ background: bg, borderRadius: 6, padding: '7px 4px', textAlign: 'center' }}>
+          <div style={{ fontWeight: 900, fontSize: 11, color: '#0f172a' }}>{v}</div>
+          <div style={{ fontSize: 7, color: '#64748b', marginTop: 1 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ padding: '0 14px 8px', display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 6 }}>
+      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px' }}>
+        <div style={{ fontSize: 8, fontWeight: 700, color: '#64748b', marginBottom: 5 }}>LOCATIONS MAP</div>
+        <div style={{ background: '#eff6ff', borderRadius: 6, height: 64, position: 'relative' }}>
+          {[[25,40],[55,25],[75,50],[40,65],[60,70]].map(([x, y], i) => (
+            <div key={i} style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: 8, height: 8, background: '#E61E2B', borderRadius: '50%', border: '2px solid #fff', transform: 'translate(-50%,-50%)' }} />
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {['Port of Spain','San Fernando','Chaguanas','Tobago'].map(loc => (
+          <div key={loc} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 5, padding: '4px 7px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 8, color: '#0f172a', fontWeight: 600 }}>{loc}</span>
+            <div style={{ width: 6, height: 6, background: '#22c55e', borderRadius: '50%' }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// Map of id → component
+const PREVIEWS: Record<string, React.FC> = {
+  basic_storefront:        P_basic_storefront,
+  roti_shop_pro:           P_roti_shop_pro,
+  doubles_breakfast_pro:   P_doubles_breakfast_pro,
+  restaurant_premium:      P_restaurant_premium,
+  clothing_store_pro:      P_clothing_store_pro,
+  salon_barber_pro:        P_salon_barber_pro,
+  electronics_tech:        P_electronics_tech,
+  pharmacy_health:         P_pharmacy_health,
+  bakery_desserts:         P_bakery_desserts,
+  auto_parts:              P_auto_parts,
+  hardware_home:           P_hardware_home,
+  gym_fitness:             P_gym_fitness,
+  jewelry_luxury:          P_jewelry_luxury,
+  multi_location_enterprise: P_multi_location_enterprise,
 };
+
+// ─── Main Gallery ─────────────────────────────────────────────────────────────
 
 interface TemplateGalleryProps {
   onSelectTemplate?: (template: StoreTemplate) => void;
 }
 
 export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTemplate }) => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  const [preview, setPreview] = useState<StoreTemplate | null>(null);
 
   const categories = [
-    { id: 'all', name: 'All Templates', icon: Store },
-    { id: 'Food & Beverage', name: 'Food & Drinks', icon: Sparkles },
-    { id: 'Retail', name: 'Retail Shops', icon: TrendingUp },
-    { id: 'Services', name: 'Services', icon: Zap },
+    { id: 'all', name: 'All' },
+    { id: 'Food & Beverage', name: 'Food & Drinks' },
+    { id: 'Retail', name: 'Retail' },
+    { id: 'Services', name: 'Services' },
+    { id: 'Automotive', name: 'Automotive' },
+    { id: 'Enterprise', name: 'Enterprise' },
   ];
 
-  const filteredTemplates = selectedCategory === 'all' 
-    ? TRINIDAD_TEMPLATES 
+  const filtered = selectedCategory === 'all'
+    ? TRINIDAD_TEMPLATES
     : TRINIDAD_TEMPLATES.filter(t => t.category === selectedCategory);
 
-  const getTierBadge = (tier: 'free' | 'pro' | 'premium') => {
-    const styles = {
-      free: 'bg-gray-100 text-gray-700 border-gray-300',
-      pro: 'bg-gradient-to-r from-[#E61E2B] to-[#C41E3A] text-white border-[#E61E2B]',
-      premium: 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-black border-[#FFD700]'
-    };
-    
-    const labels = {
-      free: 'FREE',
-      pro: 'PRO',
-      premium: 'PREMIUM'
-    };
+  const tierConfig: Record<string, { bg: string; color: string; label: string }> = {
+    free:    { bg: '#e5e7eb', color: '#374151', label: 'FREE' },
+    pro:     { bg: '#E61E2B', color: '#fff',    label: 'PRO' },
+    premium: { bg: '#FFD700', color: '#000',    label: 'PREMIUM' },
+  };
 
-    return (
-      <span className={`px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full border-2 ${styles[tier]}`}>
-        {labels[tier]}
-      </span>
-    );
+  const handleUse = (template: StoreTemplate) => {
+    onSelectTemplate?.(template);
+    navigate(`/create-store?template=${template.id}`);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-[#E61E2B] to-[#C41E3A] text-white py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl md:text-6xl font-black mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Trinidad Store Templates
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl">
-              Professional, conversion-optimized templates for Trinidad businesses. 
-              Launch your store in minutes.
-            </p>
-          </motion.div>
+    <div style={{ minHeight: '100vh', background: '#080808', fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+
+      {/* Hero */}
+      <div style={{ padding: '60px 24px 44px', textAlign: 'center', background: 'radial-gradient(ellipse at 50% 0%,rgba(230,30,43,0.12) 0%,transparent 70%)' }}>
+        <div style={{ fontSize: 10, letterSpacing: 6, color: '#E61E2B', fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>TriniBuild · Store Templates</div>
+        <h1 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, lineHeight: 1.05, margin: '0 0 14px', letterSpacing: '-0.02em' }}>
+          Pick your store.<br />
+          <span style={{ color: '#E61E2B' }}>Launch in minutes.</span>
+        </h1>
+        <p style={{ color: '#6b7280', fontSize: 14, maxWidth: 440, margin: '0 auto 32px', lineHeight: 1.6 }}>
+          {TRINIDAD_TEMPLATES.length} professionally designed templates built for Trinidad &amp; Tobago businesses.
+        </p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              style={{
+                background: selectedCategory === cat.id ? '#E61E2B' : 'transparent',
+                color: selectedCategory === cat.id ? '#fff' : '#6b7280',
+                border: `1px solid ${selectedCategory === cat.id ? '#E61E2B' : '#2a2a2a'}`,
+                borderRadius: 24, padding: '7px 20px', fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >{cat.name}</button>
+          ))}
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex gap-3 overflow-x-auto">
-            {categories.map((category, index) => {
-              const Icon = category.icon;
-              const isActive = selectedCategory === category.id;
-              
-              return (
-                <motion.button
-                  key={category.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`
-                    px-6 py-3 rounded-full font-bold text-sm whitespace-nowrap
-                    flex items-center gap-2 transition-all
-                    ${isActive 
-                      ? 'bg-[#E61E2B] text-white shadow-lg' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }
-                  `}
+      {/* Grid */}
+      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '8px 24px 64px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+          {filtered.map((template, i) => {
+            const Preview = PREVIEWS[template.id] || (() => (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', opacity: 0.3 }}>
+                <Globe size={40} />
+              </div>
+            ));
+            const tier = tierConfig[template.tier] || tierConfig.free;
+
+            return (
+              <motion.div
+                key={template.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
+                style={{ background: '#111', borderRadius: 14, overflow: 'hidden', border: '1px solid #1f1f1f', display: 'flex', flexDirection: 'column' }}
+                whileHover={{ y: -5, boxShadow: '0 16px 48px rgba(230,30,43,0.15)', borderColor: '#E61E2B' } as any}
+              >
+                {/* Preview thumbnail — click to expand */}
+                <div
+                  onClick={() => setPreview(template)}
+                  style={{ height: 210, overflow: 'hidden', position: 'relative', cursor: 'zoom-in', flexShrink: 0 }}
                 >
-                  <Icon size={18} />
-                  {category.name}
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Templates Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredTemplates.map((template, index) => (
-            <motion.div
-              key={template.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8 }}
-              onMouseEnter={() => setHoveredTemplate(template.id)}
-              onMouseLeave={() => setHoveredTemplate(null)}
-              className="group relative"
-            >
-              {/* Template Card */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border-2 border-gray-100 hover:border-[#E61E2B]">
-                {/* Real Template Preview */}
-                <div className="relative h-56 overflow-hidden bg-gray-900">
-                  <TemplatePreview template={template} />
-                  
-                  {/* Tier Badge Overlay */}
-                  <div className="absolute top-4 right-4">
-                    {getTierBadge(template.tier)}
+                  {/* Scale down the full preview to fit the card */}
+                  <div style={{ transform: 'scale(0.82)', transformOrigin: 'top left', width: '122%', height: '122%', pointerEvents: 'none' }}>
+                    <div style={{ height: 256 }}>
+                      <Preview />
+                    </div>
                   </div>
-
-                  {/* Hover Overlay */}
+                  {/* Tier badge */}
+                  <div style={{ position: 'absolute', top: 10, left: 10, background: tier.bg, color: tier.color, borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 900, letterSpacing: 0.5 }}>
+                    {tier.label}
+                  </div>
+                  {/* Hover overlay */}
                   <motion.div
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: hoveredTemplate === template.id ? 1 : 0 }}
-                    className="absolute inset-0 bg-black/50 flex items-center justify-center"
+                    whileHover={{ opacity: 1 }}
+                    style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onSelectTemplate?.(template)}
-                      className="px-6 py-3 bg-white text-[#E61E2B] font-black rounded-full hover:bg-[#E61E2B] hover:text-white transition-colors"
-                    >
-                      Use This Template
-                    </motion.button>
+                    <div style={{ background: '#fff', color: '#000', borderRadius: 24, padding: '8px 20px', fontWeight: 700, fontSize: 12 }}>
+                      Preview Full Size
+                    </div>
                   </motion.div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-xl font-black text-gray-900 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
-                        {template.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 font-semibold">
-                        {template.category}
-                      </p>
-                    </div>
+                {/* Info */}
+                <div style={{ padding: '16px 18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontWeight: 800, fontSize: 15 }}>{template.name}</div>
+                    <div style={{ color: '#6b7280', fontSize: 11, marginTop: 2 }}>{template.category}</div>
                   </div>
-
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {template.description}
+                  <p style={{ color: '#9ca3af', fontSize: 11, lineHeight: 1.5, marginBottom: 12, flex: 1 }}>
+                    {(template.description || '').slice(0, 85)}{(template.description || '').length > 85 ? '…' : ''}
                   </p>
-
-                  {/* Features Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {template.features.slice(0, 3).map((feature, i) => (
-                      <span 
-                        key={i}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded"
-                      >
-                        {feature}
-                      </span>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 }}>
+                    {(template.features || []).slice(0, 3).map((f: string) => (
+                      <div key={f} style={{ background: '#1a1a1a', color: '#9ca3af', borderRadius: 4, padding: '3px 8px', fontSize: 9 }}>{f}</div>
                     ))}
                   </div>
-
-                  {/* CRO Badge */}
-                  <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                    <Zap size={14} className="text-[#FFD700]" />
-                    <span className="text-xs font-bold text-gray-600">
-                      {template.mobile_first ? 'Mobile-First' : 'Desktop-First'} • 
-                      {template.load_time_target}s Load Time
-                    </span>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleUse(template)}
+                    style={{
+                      width: '100%', background: '#E61E2B', color: '#fff', border: 'none',
+                      borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    }}
+                  >
+                    Use This Template <ArrowRight size={14} />
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Full-size preview modal */}
+      <AnimatePresence>
+        {preview && (() => {
+          const ModalPreview = PREVIEWS[preview.id] || (() => <div style={{ background: '#111', height: '100%' }} />);
+          const tier = tierConfig[preview.tier] || tierConfig.free;
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPreview(null)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            >
+              <motion.div
+                initial={{ scale: 0.92, y: 32 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.92, y: 32 }}
+                onClick={e => e.stopPropagation()}
+                style={{ background: '#111', borderRadius: 20, overflow: 'hidden', border: '1px solid #2a2a2a', width: '100%', maxWidth: 460, boxShadow: '0 40px 100px rgba(230,30,43,0.25)' }}
+              >
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #1f1f1f', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16 }}>{preview.name}</div>
+                    <div style={{ color: '#6b7280', fontSize: 11, marginTop: 2 }}>{preview.category} · <span style={{ color: tier.bg === '#e5e7eb' ? '#9ca3af' : tier.bg }}>{tier.label}</span></div>
+                  </div>
+                  <button onClick={() => setPreview(null)} style={{ background: '#1a1a1a', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
+                    <X size={15} />
+                  </button>
+                </div>
+                {/* Preview at full scale */}
+                <div style={{ height: 340, overflow: 'hidden' }}>
+                  <ModalPreview />
+                </div>
+                <div style={{ padding: '16px 20px', display: 'flex', gap: 10 }}>
+                  <button onClick={() => setPreview(null)} style={{ flex: 1, background: '#1a1a1a', color: '#9ca3af', border: '1px solid #2a2a2a', borderRadius: 10, padding: '11px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    Back
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => { handleUse(preview); setPreview(null); }}
+                    style={{ flex: 2, background: '#E61E2B', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  >
+                    Use This Template <ArrowRight size={14} />
+                  </motion.button>
+                </div>
+              </motion.div>
             </motion.div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredTemplates.length === 0 && (
-          <div className="text-center py-20">
-            <Store size={64} className="mx-auto mb-4 text-gray-300" />
-            <h3 className="text-2xl font-black text-gray-400 mb-2">No templates found</h3>
-            <p className="text-gray-500">Try selecting a different category</p>
-          </div>
-        )}
-      </div>
-
-      {/* Bottom CTA */}
-      <div className="bg-gradient-to-r from-[#E61E2B] to-[#C41E3A] text-white py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Can't Find What You Need?
-          </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Upgrade to Premium for custom template design tailored to your brand.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-white text-[#E61E2B] font-black rounded-full text-lg hover:bg-gray-100 transition-colors"
-          >
-            Get Custom Template - $299
-          </motion.button>
-        </div>
-      </div>
+          );
+        })()}
+      </AnimatePresence>
     </div>
   );
 };
