@@ -49,6 +49,7 @@ export const StoreBuilder: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [authChecked, setAuthChecked] = useState(false);
 
     // Tab definitions
     const tabs: BuilderTab[] = [
@@ -68,9 +69,18 @@ export const StoreBuilder: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
+            // Check authentication first
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                setAuthChecked(true);
+                navigate('/login?redirect=/store-builder');
+                return;
+            }
+            setAuthChecked(true);
+
             const myStore = await storeService.getMyStore();
             if (!myStore) {
-                setError('No store found. Please create a store first.');
+                setError('no-store'); // Special error code for no store
                 setLoading(false);
                 return;
             }
@@ -100,9 +110,10 @@ export const StoreBuilder: React.FC = () => {
             });
         } catch (err: any) {
             console.error('Error loading store:', err);
+            setAuthChecked(true);
             const errorMessage = err?.message || 'Failed to load store data';
-            if (errorMessage.includes('JWT')) {
-                setError('Session expired. Please log in again.');
+            if (errorMessage.includes('JWT') || errorMessage.includes('auth')) {
+                navigate('/login?redirect=/store-builder');
             } else if (errorMessage.includes('network')) {
                 setError('Network error. Please check your connection and try again.');
             } else {
@@ -111,7 +122,7 @@ export const StoreBuilder: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         loadStoreData();
@@ -138,9 +149,10 @@ export const StoreBuilder: React.FC = () => {
     };
 
     const renderTabContent = () => {
-        if (loading) return <LoadingState />;
+        if (loading || !authChecked) return <LoadingState />;
+        if (error === 'no-store') return <NoStoreOnboarding />;
         if (error) return <ErrorState message={error} onRetry={loadStoreData} />;
-        if (!store) return <NoStoreState />;
+        if (!store) return <NoStoreOnboarding />;
 
         switch (activeTab) {
             case 'dashboard': return <DashboardTab stats={stats} orders={orders} products={products} store={store} />;

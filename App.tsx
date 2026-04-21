@@ -1,3 +1,4 @@
+import { CreateStoreOnboarding } from './pages/CreateStoreOnboarding';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -127,7 +128,8 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
-              <Route path="/create-store" element={<SimpleStoreCreator />} />
+              <Route path="/create-store" element={<CreateStoreOnboarding />} />
+              <Route path="/create-store-simple" element={<SimpleStoreCreator />} />
               <Route path="/create-store-v2" element={<StoreCreatorV2 />} />
               <Route path="/create-store-v1" element={<StoreCreator />} />
               <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
