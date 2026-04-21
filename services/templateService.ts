@@ -1143,24 +1143,6 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
     ],
     businessTypes: ['All - Enterprise'],
     tier: 'premium',
-  {
-    id: 'multi_location_enterprise',
-    name: 'Multi-Location Enterprise',
-    category: 'Enterprise',
-    description: 'For chains and franchises. Multiple locations, centralized inventory, staff management.',
-    thumbnail: '/templates/enterprise.jpg',
-    features: [
-      'Multiple store pages',
-      'Centralized inventory',
-      'Location finder',
-      'Franchise info',
-      'Corporate branding',
-      'Staff dashboard',
-      'Analytics integration',
-      'Custom integrations'
-    ],
-    businessTypes: ['All - Enterprise'],
-    tier: 'premium',
     theme: {
       primary_color: '#0066CC',
       secondary_color: '#FFD700',
