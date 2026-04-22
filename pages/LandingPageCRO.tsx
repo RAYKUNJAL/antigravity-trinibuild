@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ga4Analytics } from '../services/ga4AnalyticsService';
+import { facebookPixel } from '../services/facebookPixelService';
+import { abTesting } from '../services/abTestingService';
 
 /**
  * LandingPageCRO.tsx
@@ -224,14 +227,47 @@ export const LandingPageCRO: React.FC = () => {
   const navigate = useNavigate();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [emailInput, setEmailInput] = useState('');
+  const [variant, setVariant] = useState('control');
 
-  const handleStartFree = () => {
+  // Initialize analytics and tracking
+  useEffect(() => {
+    // Get user's A/B test variant
+    const userVariant = abTesting.getUserVariant();
+    setVariant(userVariant);
+
+    // Track page view
+    ga4Analytics.trackPageView(userVariant);
+    facebookPixel.trackPageView();
+
+    // Track scroll depth
+    let maxScroll = 0;
+    const handleScroll = () => {
+      const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      if (scrollPercent > maxScroll) {
+        maxScroll = scrollPercent;
+        if (maxScroll % 25 === 0) {
+          ga4Analytics.trackScrollDepth(Math.round(maxScroll));
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleStartFree = (source: string = 'hero') => {
+    // Track signup start
+    ga4Analytics.trackSignupStart('Start My Free Store', source);
+    facebookPixel.trackSignupStart(source);
+
+    // Navigate to store creator
     navigate('/create-store');
   };
 
   const handleEmailCTA = () => {
     if (emailInput) {
-      // TODO: Send to waitlist/email capture service
+      ga4Analytics.trackFormComplete('email_cta_form', true);
+      facebookPixel.trackCustom('LeadCapture', { email: emailInput });
       navigate('/create-store');
     }
   };
