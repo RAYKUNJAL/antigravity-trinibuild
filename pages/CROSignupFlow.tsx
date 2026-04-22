@@ -180,7 +180,7 @@ export const CROSignupFlow: React.FC = () => {
 
             // Redirect based on user type
             const redirects: Record<string, string> = {
-                seller: '/store/builder?welcome=true',
+                seller: '/create-store?welcome=true',
                 driver: '/driver/onboarding',
                 customer: '/marketplace?new=true',
                 promoter: '/promoter/dashboard?setup=true'
