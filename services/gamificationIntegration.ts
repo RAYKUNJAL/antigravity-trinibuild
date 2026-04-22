@@ -4,8 +4,8 @@
  * Use throughout app to reward user actions
  */
 
-import { useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth'; // Your existing auth hook
+import { useEffect, useCallback, useState } from 'react';
+import { supabase } from './supabaseClient';
 import { gamificationEngine } from '../services/gamificationEngineV2';
 
 // ============================================================================
@@ -72,8 +72,15 @@ const POINTS_MAP: Record<GamificationAction, number> = {
 // ============================================================================
 
 export function useGamification() {
-  const { user } = useAuth();
-  const userId = user?.id;
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
 
   const awardPoints = useCallback(
     async (action: GamificationAction, customPoints?: number) => {
@@ -155,14 +162,13 @@ export function useGamification() {
 // ============================================================================
 
 export function useGamificationInit() {
-  const { user } = useAuth();
-  const { recordLogin } = useGamification();
-  const userId = user?.id;
-
   useEffect(() => {
-    if (!userId) return;
-
     const initializeGamification = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) return;
+
+      const userId = user.id;
+
       try {
         await gamificationEngine.initializeLoyalty(userId);
       } catch (error: any) {
@@ -171,11 +177,15 @@ export function useGamificationInit() {
         }
       }
 
-      await recordLogin();
+      try {
+        await gamificationEngine.updateLoginStreak(userId);
+      } catch (error) {
+        console.error('Error updating login streak:', error);
+      }
     };
 
     initializeGamification();
-  }, [userId, recordLogin]);
+  }, []);
 }
 
 // ============================================================================

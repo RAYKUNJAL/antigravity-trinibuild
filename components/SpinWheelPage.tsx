@@ -1,16 +1,24 @@
 /**
- * Wrapper component for SpinWheel that gets userId from auth context
+ * Wrapper component for SpinWheel that gets userId from Supabase auth
  * Handles the userId injection automatically
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SpinWheelComponent } from './SpinWheelComponent';
-import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../services/supabaseClient';
 
 export const SpinWheelPage: React.FC = () => {
-  const { user } = useAuth();
+  const [userId, setUserId] = useState<string | null>(null);
 
-  if (!user?.id) {
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
+
+  if (!userId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-gray-600">Loading...</p>
@@ -18,7 +26,7 @@ export const SpinWheelPage: React.FC = () => {
     );
   }
 
-  return <SpinWheelComponent userId={user.id} />;
+  return <SpinWheelComponent userId={userId} />;
 };
 
 export default SpinWheelPage;
