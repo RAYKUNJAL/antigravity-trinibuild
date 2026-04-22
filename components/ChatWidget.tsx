@@ -63,17 +63,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
   }, [messages, mode, vendorContext]);
 
   const initializeDefaultMessage = () => {
+    // Get T&T time greeting (UTC-4, no DST)
+    const ttHour = (new Date().getUTCHours() - 4 + 24) % 24;
+    const greeting = ttHour < 12 ? 'Good morning' : ttHour < 17 ? 'Good afternoon' : ttHour < 22 ? 'Good evening' : 'Good night';
+    
     const initialMessage = mode === 'platform'
-      ? "🇹🇹 Wah goin on! I'm your TriniBuild AI Concierge. I can help you:\n\n• **Find jobs or services** in T&T\n• **List your business** for free\n• **Navigate the platform**\n• **Get paperwork done** (visa letters, job offers)\n• **Find a ride** anywhere in Trinidad\n\nWhat would you like to do today?"
+      ? `🇹🇹 ${greeting}! I'm yuh TriniBuild AI Concierge. I know everything about Trinidad & Tobago — business, banking, visa, legal, you name it. I could help yuh:\n\n• **Open a free online store** with COD\n• **Generate documents** — job letters, visa letters, proof of income\n• **Answer T&T business questions** — banking, BIR, NIS, VAT\n• **Find services & professionals** across T&T\n• **Get a ride** anywhere in Trinidad\n\nWhat yuh need help with today?`
       : mode === 'real_estate'
-        ? "🏠 Looking for your dream home in Trinidad? I'm your Real Estate Concierge! I can help find rentals, properties for sale, or connect you with verified agents."
+        ? `🏠 ${greeting}! I'm yuh TriniBuild Real Estate Concierge. I know every area in T&T — from Westmoorings to Tobago, pricing, mortgage rates, the works. Looking to buy, rent, or sell?`
         : mode === 'service_expert'
-          ? "🔧 Need a pro? I can recommend vetted plumbers, electricians, mechanics, and more across T&T. Who you looking for?"
+          ? `🔧 ${greeting}! Need a professional? I know the rates for every trade in T&T — plumbers, electricians, AC techs, painters, mechanics. Who yuh looking for?`
           : mode === 'rides'
-            ? "🚗 Where yuh heading? I can help you find a safe ride anywhere in Trinidad & Tobago."
+            ? `🚗 ${greeting}! Where yuh heading? I know every road, maxi route, and shortcut in Trinidad & Tobago. Leh meh help yuh get there.`
             : mode === 'paperwork_assistant'
-              ? "📄 Need official documents? I can help generate visa support letters, job offer letters, and proof of income - all professional and ready for submission."
-              : `Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about our products or services!`;
+              ? `📄 ${greeting}! I'm yuh TriniBuild Document Assistant. I could generate job letters, visa support letters, proof of income, contractor agreements — all formatted for T&T banks, embassies, and government offices. What document yuh need?`
+              : `${greeting}! Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about we products or services!`;
 
     setMessages([{ id: '1', text: initialMessage, sender: 'ai' }]);
   };
