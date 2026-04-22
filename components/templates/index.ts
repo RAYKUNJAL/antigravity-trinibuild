@@ -2,6 +2,7 @@
  * PREMIUM STORE TEMPLATES
  * 
  * High-end, professional store templates for TriniBuild merchants
+ * - Openfront-style 3-Column Layout (proven e-commerce architecture)
  * - Fashion & Luxury Brands
  * - Restaurants & Fine Dining
  * - Beauty, Spa & Wellness
@@ -20,13 +21,34 @@ export { PremiumFashionTemplate } from './PremiumFashionTemplate';
 export { PremiumRestaurantTemplate } from './PremiumRestaurantTemplate';
 export { PremiumBeautyTemplate } from './PremiumBeautyTemplate';
 export { PremiumEcommerceTemplate } from './PremiumEcommerceTemplate';
+export { Premium3ColumnTemplate } from './Premium3ColumnTemplate';
 
 import { PremiumFashionTemplate } from './PremiumFashionTemplate';
 import { PremiumRestaurantTemplate } from './PremiumRestaurantTemplate';
 import { PremiumBeautyTemplate } from './PremiumBeautyTemplate';
 import { PremiumEcommerceTemplate } from './PremiumEcommerceTemplate';
+import { Premium3ColumnTemplate } from './Premium3ColumnTemplate';
 
 export const PREMIUM_STORE_TEMPLATES = [
+  {
+    id: 'premium-3-column',
+    name: 'Professional 3-Column',
+    description: 'Proven 3-column Openfront-style layout. Sticky sidebars for product info and actions.',
+    category: 'Professional',
+    component: Premium3ColumnTemplate,
+    preview: '📱',
+    features: [
+      'Sticky product info sidebar',
+      'Large product image gallery',
+      'Sticky actions sidebar',
+      'Product details accordion',
+      'Related products section',
+      'Mobile-optimized stacked layout'
+    ],
+    tier: 'premium',
+    businessTypes: ['All Types', 'Fashion', 'Electronics', 'General Retail'],
+    isDefault: true
+  },
   {
     id: 'premium-fashion',
     name: 'Premium Fashion',
