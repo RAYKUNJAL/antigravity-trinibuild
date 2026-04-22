@@ -198,16 +198,21 @@ Current user is browsing TriniBuild.`;
               </div>
               <div>
                 <h3 className="font-bold text-sm">
-                  {mode === 'platform' ? 'AI Concierge' :
-                    mode === 'real_estate' ? 'Property Assistant' :
-                      mode === 'service_expert' ? 'Service Expert' :
-                        mode === 'rides' ? 'Ride Assistant' :
-                          mode === 'paperwork_assistant' ? 'Paperwork & Visa Help' :
-                            'Store Assistant'}
+                  {mode === 'platform' ? 'TriniBot 🇹🇹' :
+                    mode === 'real_estate' ? 'TriniBot • Property' :
+                      mode === 'service_expert' ? 'TriniBot • Services' :
+                        mode === 'rides' ? 'TriniBot • Rides' :
+                          mode === 'paperwork_assistant' ? 'TriniBot • Documents' :
+                            `${botSettings?.bot_name || 'Store Assistant'}`}
                 </h3>
                 <span className="flex items-center text-[10px] opacity-80">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></span>
-                  Online • TriniBuild AI
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                  {mode === 'platform' ? 'Online • Ask me anything about T&T' :
+                    mode === 'real_estate' ? 'Online • Property expert for T&T' :
+                      mode === 'service_expert' ? 'Online • Find any pro in T&T' :
+                        mode === 'rides' ? 'Online • I know every road' :
+                          mode === 'paperwork_assistant' ? 'Online • Visa, banking & legal help' :
+                            `Online • ${vendorContext?.name || 'Ready to help'}`}
                 </span>
               </div>
             </div>
@@ -256,7 +261,7 @@ Current user is browsing TriniBuild.`;
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type a message..."
+                placeholder="Ask meh anything..."
                 className="flex-grow bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-trini-red/20 focus:bg-white transition-all outline-none"
               />
               <button
@@ -269,7 +274,7 @@ Current user is browsing TriniBuild.`;
               </button>
             </div>
             <div className="text-center mt-2">
-              <span className="text-[10px] text-gray-400">Powered by TriniBuild AI</span>
+              <span className="text-[10px] text-gray-400">TriniBot by R&R Digital Solutions 🇹🇹</span>
             </div>
           </div>
         </div>
