@@ -90,6 +90,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
 import { QRScanner, OrderTracking } from './components/QRReceiptSystem';
 import { DigitalServicesHub } from './pages/DigitalServicesHub';
+import { LandingPageCRO } from './pages/LandingPageCRO';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -123,6 +124,7 @@ const App: React.FC = () => {
             {/* Home Page has its own layout (hero goes under navbar) */}
             <Route path="/" element={<Home />} />
             <Route path="/welcome" element={<WelcomeScreen />} />
+            <Route path="/landing" element={<LandingPageCRO />} />
 
             {/* Pages with padding */}
             <Route element={<PageLayout />}>
