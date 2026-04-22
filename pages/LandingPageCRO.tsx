@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
   Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
-  WhatsApp, MessageSquare, AlertCircle, ChevronDown
+  MessageCircle, MessageSquare, AlertCircle, ChevronDown
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -679,7 +679,7 @@ export const LandingPageCRO: React.FC = () => {
                   href="https://wa.me/1868-YOUR-NUMBER?text=I%20have%20questions%20about%20TriniBuild"
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
                 >
-                  <WhatsApp className="w-5 h-5" />
+                  <MessageCircle className="w-5 h-5" />
                   Chat on WhatsApp
                 </a>
                 <button
