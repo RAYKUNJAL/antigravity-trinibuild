@@ -26,8 +26,8 @@ export const TicketsMonitor: React.FC = () => {
             const nowStr = now.toISOString();
 
             // Fetch Live/Upcoming Events
-            const { count: liveCount } = await supabase.from('events').select('id', { count: 'exact' }).lte('event_date', nowStr); // Just an example, realistically need filtering by duration
-            const { count: upcomingCount } = await supabase.from('events').select('id', { count: 'exact' }).gt('event_date', nowStr);
+            const { count: liveCount } = await supabase.from('events').select('id', { count: 'exact' }).lte('date', nowStr); // Just an example, realistically need filtering by duration
+            const { count: upcomingCount } = await supabase.from('events').select('id', { count: 'exact' }).gt('date', nowStr);
 
             // Fetch Tickets Stats
             const { data: allTickets } = await supabase.from('tickets').select('price, event_id');

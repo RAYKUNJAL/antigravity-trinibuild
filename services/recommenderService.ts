@@ -390,8 +390,8 @@ const getEventRecommendations = async (
     const { data, error } = await supabase
         .from('events')
         .select('*')
-        .gte('event_date', new Date().toISOString())
-        .order('event_date', { ascending: true })
+        .gte('date', new Date().toISOString())
+        .order('date', { ascending: true })
         .limit(limit);
 
     if (error || !data) return [];
@@ -400,7 +400,7 @@ const getEventRecommendations = async (
         id: event.id,
         type: 'events' as RecommendationType,
         title: event.title,
-        subtitle: new Date(event.event_date).toLocaleDateString('en-TT', {
+        subtitle: new Date(event.date).toLocaleDateString('en-TT', {
             weekday: 'short',
             month: 'short',
             day: 'numeric'
@@ -408,11 +408,11 @@ const getEventRecommendations = async (
         image: event.image_url,
         price: event.ticket_price,
         price_label: event.ticket_price ? `$${event.ticket_price}` : 'Free',
-        location: event.venue,
+        location: event.venue_name,
         url: `/events/${event.id}`,
         reason: 'Upcoming event near you',
         score: 70,
-        metadata: { event_date: event.event_date, category: event.category }
+        metadata: { event_date: event.date, category: event.category }
     }));
 };
 

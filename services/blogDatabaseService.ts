@@ -440,10 +440,10 @@ export const getBlogStats = async (): Promise<{
 
     return {
         total_blogs: blogs.length,
-        published: blogs.filter(b => b.status === 'published').length,
-        drafts: blogs.filter(b => b.status === 'draft').length,
-        scheduled: blogs.filter(b => b.status === 'scheduled').length,
-        total_views: blogs.reduce((sum, b) => sum + (b.view_count || 0), 0),
+        published: blogs.filter(b => b.published === true).length,
+        drafts: blogs.filter(b => b.published === false).length,
+        scheduled: 0, // Not available in current schema
+        total_views: blogs.reduce((sum, b) => sum + (b.views || 0), 0),
         locations_covered: uniqueLocations.size
     };
 };

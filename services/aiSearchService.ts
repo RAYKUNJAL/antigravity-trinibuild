@@ -340,12 +340,12 @@ const searchEvents = async (intent: SearchIntent, limit = 5): Promise<SearchResu
     let query = supabase
         .from('events')
         .select('*')
-        .gte('event_date', new Date().toISOString())
-        .order('event_date', { ascending: true })
+        .gte('date', new Date().toISOString())
+        .order('date', { ascending: true })
         .limit(limit);
 
     if (intent.location) {
-        query = query.ilike('venue', `%${intent.location.name}%`);
+        query = query.ilike('venue_name', `%${intent.location.name}%`);
     }
 
     const { data, error } = await query;
@@ -356,15 +356,15 @@ const searchEvents = async (intent: SearchIntent, limit = 5): Promise<SearchResu
         id: event.id,
         type: 'events' as SearchVertical,
         title: event.title,
-        subtitle: new Date(event.event_date).toLocaleDateString('en-TT', { weekday: 'long', month: 'short', day: 'numeric' }),
+        subtitle: new Date(event.date).toLocaleDateString('en-TT', { weekday: 'long', month: 'short', day: 'numeric' }),
         description: event.description?.substring(0, 150) + '...',
         image: event.image_url,
         price: event.ticket_price,
         price_label: event.ticket_price ? `$${event.ticket_price} per ticket` : 'Free Entry',
-        location: event.venue,
+        location: event.venue_name,
         url: `/events/${event.id}`,
         relevance_score: calculateRelevance(event.title + ' ' + event.description, intent.keywords),
-        metadata: { event_date: event.event_date, category: event.category }
+        metadata: { event_date: event.date, category: event.category }
     }));
 };
 

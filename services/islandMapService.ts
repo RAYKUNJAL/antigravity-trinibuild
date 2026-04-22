@@ -319,9 +319,9 @@ class IslandMapService {
         if (types.includes('event')) {
             const { data: events } = await supabase
                 .from('events')
-                .select('id, title, venue, event_date')
-                .ilike('venue', `%${region.name}%`)
-                .gte('event_date', new Date().toISOString())
+                .select('id, title, venue_name, date')
+                .ilike('venue_name', `%${region.name}%`)
+                .gte('date', new Date().toISOString())
                 .limit(50);
 
             if (events) {
@@ -331,7 +331,7 @@ class IslandMapService {
                         type: 'event',
                         position: this.jitterPosition(region.center),
                         title: e.title,
-                        subtitle: new Date(e.event_date).toLocaleDateString(),
+                        subtitle: new Date(e.date).toLocaleDateString(),
                         icon: 'ticket',
                         color: '#8B5CF6',
                         url: `/tickets/${e.id}`

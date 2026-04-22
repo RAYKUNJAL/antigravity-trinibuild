@@ -6,13 +6,14 @@ interface Event {
     id: string;
     title: string;
     description: string;
-    event_date: string;
-    event_time: string;
+    date: string;
+    time: string;
     location: string;
     category: string;
     image_url?: string;
     price?: number;
-    organizer_name: string;
+    organizer_name?: string;
+    venue_name?: string;
     attendees_count?: number;
     max_attendees?: number;
 }
@@ -45,7 +46,7 @@ export const Events: React.FC = () => {
             const { data, error } = await supabase
                 .from('events')
                 .select('*')
-                .order('event_date', { ascending: true });
+                .order('date', { ascending: true });
 
             if (error) throw error;
             setEvents(data || []);

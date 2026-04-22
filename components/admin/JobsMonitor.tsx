@@ -33,8 +33,8 @@ export const JobsMonitor: React.FC = () => {
                 { count: appCount },
                 { data: allJobs }
             ] = await Promise.all([
-                supabase.from('jobs').select('salary_min, salary_max, title', { count: 'exact' }).eq('status', 'open'),
-                supabase.from('jobs').select('id', { count: 'exact' }).gte('created_at', todayStr),
+                supabase.from('jobs').select('salary_min, salary_max, title', { count: 'exact' }).eq('is_active', true),
+                supabase.from('jobs').select('id', { count: 'exact' }).gte('posted_at', todayStr),
                 supabase.from('job_applications').select('id', { count: 'exact' }),
                 supabase.from('jobs').select('title') // Minimal fetch for aggregation
             ]);

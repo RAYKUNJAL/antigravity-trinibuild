@@ -87,7 +87,7 @@ const CommandCenter: React.FC = () => {
                     if (res.error) console.error('Error fetching users:', res.error);
                     return res;
                 }),
-                supabase.from('jobs').select('id, status', { count: 'exact' }).then(res => {
+                supabase.from('jobs').select('id, is_active', { count: 'exact' }).then(res => {
                     if (res.error) console.error('Error fetching jobs:', res.error);
                     return res;
                 }),
@@ -95,7 +95,7 @@ const CommandCenter: React.FC = () => {
                     if (res.error) console.error('Error fetching properties:', res.error);
                     return res;
                 }),
-                supabase.from('events').select('id, event_date', { count: 'exact' }).then(res => {
+                supabase.from('events').select('id, date', { count: 'exact' }).then(res => {
                     if (res.error) console.error('Error fetching events:', res.error);
                     return res;
                 })
@@ -109,7 +109,7 @@ const CommandCenter: React.FC = () => {
                 },
                 jobs: {
                     total: jobsData.count || 0,
-                    open: jobsData.data?.filter(j => j.status === 'open').length || 0
+                    open: jobsData.data?.filter(j => j.is_active === true).length || 0
                 },
                 properties: {
                     total: propertiesData.count || 0,
@@ -117,7 +117,7 @@ const CommandCenter: React.FC = () => {
                 },
                 events: {
                     total: eventsData.count || 0,
-                    upcoming: eventsData.data?.filter(e => new Date(e.event_date) > new Date()).length || 0
+                    upcoming: eventsData.data?.filter(e => new Date(e.date) > new Date()).length || 0
                 },
                 revenue: { total: 0, today: 0 }
             });
