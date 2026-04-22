@@ -122,7 +122,7 @@ const App: React.FC = () => {
         <main className="flex-grow">
           <Routes>
             {/* Home Page has its own layout (hero goes under navbar) */}
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<LandingPageCRO />} />
             <Route path="/welcome" element={<WelcomeScreen />} />
             <Route path="/landing" element={<LandingPageCRO />} />
 
