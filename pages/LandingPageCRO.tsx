@@ -325,7 +325,7 @@ export const LandingPageCRO: React.FC = () => {
                 Cash on Delivery
               </span>
               {' — No Credit Card'}
-            </h1>
+            </motion.h1>
 
             {/* Subheadline */}
             <motion.p
