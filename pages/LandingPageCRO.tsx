@@ -324,7 +324,7 @@ export const LandingPageCRO: React.FC = () => {
               <span className="bg-gradient-to-r from-trini-red to-orange-500 bg-clip-text text-transparent">
                 Cash on Delivery
               </span>
-              {' — No Credit Card
+              {' — No Credit Card'}
             </h1>
 
             {/* Subheadline */}
