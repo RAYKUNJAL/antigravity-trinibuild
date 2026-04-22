@@ -30,10 +30,11 @@ export interface AIGenerationResponse {
 }
 
 class AIService {
-    private readonly HAIKU_MODEL = 'claude-haiku-4-5-20251001';
+    private readonly MODEL = 'gpt-4o-mini';
+    private readonly apiKey: string;
 
     constructor() {
-        // Haiku uses Claude-in-Claude — no API key needed in artifacts
+        this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
     }
 
     /**
@@ -426,46 +427,48 @@ Professional quality, suitable for business branding.`;
     private async callHaiku(params: { system: string; prompt: string }, endpoint: 'chat' | 'image' = 'chat'): Promise<AIGenerationResponse> {
         try {
             if (endpoint === 'image') {
-                // Image generation not supported via Haiku — return placeholder
                 return {
                     success: true,
-                    data: {
-                        data: [{ url: `https://picsum.photos/1024/1024?random=${Date.now()}` }]
-                    }
+                    data: { data: [{ url: `https://picsum.photos/1024/1024?random=${Date.now()}` }] }
                 };
             }
 
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
+            if (!this.apiKey) {
+                throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
+            }
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.apiKey}`
+                },
                 body: JSON.stringify({
-                    model: this.HAIKU_MODEL,
+                    model: this.MODEL,
+                    messages: [
+                        { role: 'system', content: params.system },
+                        { role: 'user', content: params.prompt }
+                    ],
                     max_tokens: 1500,
-                    system: params.system,
-                    messages: [{ role: 'user', content: params.prompt }]
+                    temperature: 0.7
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`Haiku API error: ${response.status}`);
+                throw new Error(`OpenAI API error: ${response.status}`);
             }
 
             const data = await response.json();
-            const text = data.content
-                ?.filter((b: any) => b.type === 'text')
-                .map((b: any) => b.text)
-                .join('\n') || '';
 
             return {
                 success: true,
                 data: {
-                    choices: [{ message: { content: text } }],
-                    usage: { total_tokens: data.usage?.input_tokens + data.usage?.output_tokens || 0 }
+                    choices: [{ message: { content: data.choices?.[0]?.message?.content || '' } }],
+                    usage: { total_tokens: data.usage?.total_tokens || 0 }
                 }
             };
         } catch (error) {
-            console.error('Haiku API error:', error);
-            // Return mock fallback
+            console.error('GPT-4o mini error:', error);
             const mockContent = params.prompt.includes('tagline')
                 ? '1. Quality Yuh Could Trust\n2. Serving Trinidad with Pride\n3. Yuh Local Favourite\n4. Fresh. Fast. Bess.\n5. Where Tradition Meets Taste 🇹🇹'
                 : 'Welcome to we business! We pride ourselves on delivering real quality and service to the Trinidad & Tobago community.';
