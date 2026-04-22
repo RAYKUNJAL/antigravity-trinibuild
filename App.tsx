@@ -91,6 +91,9 @@ import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
 import { QRScanner, OrderTracking } from './components/QRReceiptSystem';
 import { DigitalServicesHub } from './pages/DigitalServicesHub';
 import { LandingPageCRO } from './pages/LandingPageCRO';
+import { SpinWheelPage } from './components/SpinWheelPage';
+import { LoyaltyPage } from './components/LoyaltyPage';
+import { useGamificationInit } from './services/gamificationIntegration';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -113,6 +116,10 @@ const LocationLogger = () => {
 
 const App: React.FC = () => {
   console.log('App Component Rendering');
+  
+  // Initialize gamification on app load
+  useGamificationInit();
+  
   return (
     <Router>
       <ScrollToTop />
@@ -205,6 +212,11 @@ const App: React.FC = () => {
               <Route path="/game-pass" element={<DigitalServicesHub />} />
               <Route path="/gift-cards" element={<DigitalServicesHub />} />
               <Route path="/scan" element={<QRScanner onScan={(id) => { window.location.href = `/cod-tracking/${id}`; }} />} />
+
+              {/* 🎰 GAMIFICATION ROUTES */}
+              <Route path="/spin-wheel" element={<ProtectedRoute><SpinWheelPage /></ProtectedRoute>} />
+              <Route path="/loyalty" element={<ProtectedRoute><LoyaltyPage /></ProtectedRoute>} />
+              <Route path="/my-rewards" element={<ProtectedRoute><LoyaltyPage /></ProtectedRoute>} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
