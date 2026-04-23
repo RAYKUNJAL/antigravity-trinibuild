@@ -94,6 +94,9 @@ import { LandingPageCRO } from './pages/LandingPageCRO';
 import { SpinWheelPage } from './components/SpinWheelPage';
 import { LoyaltyPage } from './components/LoyaltyPage';
 import { useGamificationInit } from './services/gamificationIntegration';
+import { BecomeSellerPage } from './pages/BecomeSellerPage';
+import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
+import { GamePassProPage } from './pages/GamePassProPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -217,6 +220,18 @@ const App: React.FC = () => {
               <Route path="/spin-wheel" element={<ProtectedRoute><SpinWheelPage /></ProtectedRoute>} />
               <Route path="/loyalty" element={<ProtectedRoute><LoyaltyPage /></ProtectedRoute>} />
               <Route path="/my-rewards" element={<ProtectedRoute><LoyaltyPage /></ProtectedRoute>} />
+
+              {/* 🛍️ MERCHANT & SELLER ROUTES */}
+              <Route path="/become-seller" element={<BecomeSellerPage />} />
+              <Route path="/seller-signup" element={<BecomeSellerPage />} />
+              
+              {/* 📧 EMAIL MARKETING */}
+              <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
+              <Route path="/marketing/email" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
+              
+              {/* 🎮 GAME PASS */}
+              <Route path="/game-pass-pro" element={<GamePassProPage />} />
+              <Route path="/gaming/gamepass" element={<GamePassProPage />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
