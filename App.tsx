@@ -102,6 +102,9 @@ import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
 import { ProStoreFeaturesPage } from './pages/ProStoreFeaturesPage';
 import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
 import { HelpSupportPage } from './pages/HelpSupportPage';
+import { ReferralProgramPage } from './pages/ReferralProgramPage';
+import { AffiliateEarningsDashboard } from './pages/AffiliateEarningsDashboard';
+import { SellerOnboardingPage } from './pages/SellerOnboardingPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -249,6 +252,17 @@ const App: React.FC = () => {
               <Route path="/stories" element={<SuccessStoriesPage />} />
               <Route path="/help" element={<HelpSupportPage />} />
               <Route path="/support" element={<HelpSupportPage />} />
+
+              {/* 💼 REFERRAL & AFFILIATE */}
+              <Route path="/referral" element={<ReferralProgramPage />} />
+              <Route path="/affiliate" element={<ReferralProgramPage />} />
+              <Route path="/earn" element={<ReferralProgramPage />} />
+              <Route path="/affiliate/earnings" element={<ProtectedRoute><AffiliateEarningsDashboard /></ProtectedRoute>} />
+              <Route path="/referral/dashboard" element={<ProtectedRoute><AffiliateEarningsDashboard /></ProtectedRoute>} />
+
+              {/* 🚀 SELLER ONBOARDING */}
+              <Route path="/seller-onboarding" element={<SellerOnboardingPage />} />
+              <Route path="/get-started" element={<SellerOnboardingPage />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
