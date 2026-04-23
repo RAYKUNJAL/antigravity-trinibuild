@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Settings, ChevronDown, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { simpleAuthService } from '../services/simpleAuthService';
 
 const LOGO_URL = "/trinibuild-logo.png";
 
@@ -54,11 +55,23 @@ export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const isHome = location.pathname === '/';
+
+  const handleLogout = async () => {
+    await simpleAuthService.logout();
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setUserMenuOpen(false);
+    navigate('/');
+  };
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20);
@@ -69,8 +82,11 @@ export const Navbar: React.FC = () => {
   useEffect(() => {
     (async () => {
       const user = await authService.getCurrentUser();
-      setIsLoggedIn(!!user);
-      if (user && (user.role === 'admin' || user.role === 'super_admin')) setIsAdmin(true);
+      const simpleUser = simpleAuthService.getCurrentUser();
+      const finalUser = user || simpleUser;
+      setCurrentUser(finalUser);
+      setIsLoggedIn(!!finalUser);
+      if (finalUser && (finalUser.role === 'admin' || finalUser.role === 'super_admin')) setIsAdmin(true);
     })();
   }, [location]);
 
@@ -157,12 +173,53 @@ export const Navbar: React.FC = () => {
 
             <div className={`h-6 w-px mx-1 opacity-30 ${isTransparent ? 'bg-white' : 'bg-gray-300'}`} />
 
-            <Link to="/profile" className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${isTransparent ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-              <User size={16} />
-            </Link>
-            <Link to="/create-store" className={`ml-1 px-4 py-2 rounded-lg text-sm font-black shadow-lg transition-all hover:-translate-y-0.5 ${isTransparent ? 'bg-white text-gray-900' : 'bg-trini-red text-white hover:bg-red-700'}`}>
-              Start Free
-            </Link>
+            {isLoggedIn && currentUser ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${isTransparent ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                >
+                  <User size={16} />
+                  <ChevronDown size={14} />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">{currentUser.name}</p>
+                      <p className="text-xs text-gray-500">{currentUser.email}</p>
+                    </div>
+                    <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                      <User size={16} />
+                      My Profile
+                    </Link>
+                    <Link to="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                      <Store size={16} />
+                      My Store
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className={lc('/login')}>Log In</Link>
+                <Link to="/signup" className={`ml-1 px-4 py-2 rounded-lg text-sm font-black shadow-lg transition-all hover:-translate-y-0.5 ${isTransparent ? 'bg-white text-gray-900' : 'bg-trini-red text-white hover:bg-red-700'}`}>
+                  Sign Up
+                </Link>
+              </>
+            )}
+
+            {!isLoggedIn && (
+              <Link to="/create-store" className={`ml-1 px-4 py-2 rounded-lg text-sm font-black shadow-lg transition-all hover:-translate-y-0.5 ${isTransparent ? 'bg-white text-gray-900' : 'bg-trini-red text-white hover:bg-red-700'}`}>
+                Start Free
+              </Link>
+            )}
           </div>
 
           {/* Mobile */}
@@ -204,8 +261,24 @@ export const Navbar: React.FC = () => {
               </Link>
             )}
             <div className="border-t border-gray-100 mt-4 pt-4 grid grid-cols-2 gap-2">
-              <Link to="/login" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm">Log In</Link>
-              <Link to="/signup" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm">Sign Up</Link>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/profile" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm flex items-center justify-center gap-1">
+                    <User size={16} /> Profile
+                  </Link>
+                  <button
+                    onClick={() => { handleLogout(); setIsOpen(false); }}
+                    className="text-center py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm flex items-center justify-center gap-1"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm">Log In</Link>
+                  <Link to="/signup" onClick={() => setIsOpen(false)} className="text-center py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm">Sign Up</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
