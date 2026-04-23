@@ -750,10 +750,10 @@ export const ProductListingTool: React.FC = () => {
             stores={stores}
             selectedListings={selectedListings}
             onSelect={(id) => {
-              const new Set = new Set(selectedListings);
-              if (new Set.has(id)) new Set.delete(id);
-              else new Set.add(id);
-              setSelectedListings(new Set);
+              const newSet = new Set(selectedListings);
+              if (newSet.has(id)) newSet.delete(id);
+              else newSet.add(id);
+              setSelectedListings(newSet);
             }}
             onPublish={publishListing}
             onUnpublish={unpublishListing}
@@ -768,10 +768,10 @@ export const ProductListingTool: React.FC = () => {
             stores={stores}
             selectedListings={selectedListings}
             onSelect={(id) => {
-              const new Set = new Set(selectedListings);
-              if (new Set.has(id)) new Set.delete(id);
-              else new Set.add(id);
-              setSelectedListings(new Set);
+              const newSet = new Set(selectedListings);
+              if (newSet.has(id)) newSet.delete(id);
+              else newSet.add(id);
+              setSelectedListings(newSet);
             }}
             onPublish={publishListing}
             onUnpublish={unpublishListing}
