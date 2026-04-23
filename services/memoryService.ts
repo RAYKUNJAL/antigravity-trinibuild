@@ -64,15 +64,14 @@ export class MemoryService {
    */
   static async initialize(): Promise<{ success: boolean; error?: string }> {
     try {
-      // Create tables if they don't exist (would be done via migration)
-      // This is a sanity check
-      const { data: tables, error } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public');
+      // Verify memory system is accessible by checking if we can access agent_memory table
+      // This avoids querying information_schema which requires special permissions
+      const { error } = await supabase
+        .from('agent_memory')
+        .select('agent_id', { count: 'exact', head: true });
 
-      if (error) {
-        console.warn('Could not verify schema:', error.message);
+      if (error && error.code !== 'PGRST116') {
+        console.warn('Memory system may not be fully initialized:', error.message);
       }
 
       return { success: true };
