@@ -97,6 +97,9 @@ import { useGamificationInit } from './services/gamificationIntegration';
 import { BecomeSellerPage } from './pages/BecomeSellerPage';
 import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
 import { GamePassProPage } from './pages/GamePassProPage';
+import { MerchantDashboard } from './pages/MerchantDashboard';
+import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
+import { ProStoreFeaturesPage } from './pages/ProStoreFeaturesPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -224,6 +227,12 @@ const App: React.FC = () => {
               {/* 🛍️ MERCHANT & SELLER ROUTES */}
               <Route path="/become-seller" element={<BecomeSellerPage />} />
               <Route path="/seller-signup" element={<BecomeSellerPage />} />
+              <Route path="/merchant-dashboard" element={<ProtectedRoute><MerchantDashboard /></ProtectedRoute>} />
+              <Route path="/seller-dashboard" element={<ProtectedRoute><MerchantDashboard /></ProtectedRoute>} />
+              <Route path="/vendors" element={<VendorDirectoryPage />} />
+              <Route path="/vendor-directory" element={<VendorDirectoryPage />} />
+              <Route path="/pro-features" element={<ProStoreFeaturesPage />} />
+              <Route path="/store-features" element={<ProStoreFeaturesPage />} />
               
               {/* 📧 EMAIL MARKETING */}
               <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
