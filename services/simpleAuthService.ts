@@ -14,11 +14,13 @@ export interface SimpleUser {
 
 export const simpleAuthService = {
   /**
-   * Sign up new user
+   * Sign up new user - NO database writes, pure Supabase Auth
    */
   signup: async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
     try {
-      // 1. Create auth user
+      console.log('🔐 [simpleAuthService] signup START:', { email, name });
+      
+      // 1. Create auth user only - NO DATABASE WRITES
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -30,10 +32,18 @@ export const simpleAuthService = {
         }
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('User creation failed');
+      console.log('🔐 [simpleAuthService] signUp response:', { authError, userCreated: !!authData.user });
 
-      // 2. Store in localStorage immediately (don't wait for profile)
+      if (authError) {
+        console.error('🔴 [simpleAuthService] Supabase error:', authError.message);
+        throw authError;
+      }
+      
+      if (!authData.user) {
+        throw new Error('No user returned from signup');
+      }
+
+      // 2. Store in localStorage (synchronous, no DB)
       const user: SimpleUser = {
         id: authData.user.id,
         email: authData.user.email || email,
@@ -43,11 +53,13 @@ export const simpleAuthService = {
 
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('authToken', authData.session?.access_token || '');
-
+      
+      console.log('✅ [simpleAuthService] signup SUCCESS');
       return { success: true, user };
     } catch (err: any) {
-      console.error('Signup error:', err);
-      return { success: false, error: err.message };
+      const errorMsg = err?.message || String(err) || 'Unknown signup error';
+      console.error('❌ [simpleAuthService] signup FAILED:', errorMsg, err);
+      return { success: false, error: errorMsg };
     }
   },
 
