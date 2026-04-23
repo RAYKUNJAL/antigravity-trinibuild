@@ -64,6 +64,7 @@ import { UserProfile } from './pages/UserProfile';
 import { Classifieds } from './pages/Classifieds';
 import { AffiliateProgram } from './pages/AffiliateProgram';
 import { CROSignupFlow } from './pages/CROSignupFlow';
+import { SignupPageSimple } from './pages/SignupPageSimple';
 import { SmartOnboarding } from './pages/SmartOnboarding';
 
 // Landing Pages (NLP Optimized)
@@ -189,7 +190,7 @@ const App: React.FC = () => {
               <Route path="/tickets/onboarding" element={<PromoterOnboarding />} />
 
               {/* Core Flows */}
-              <Route path="/signup" element={<CROSignupFlow />} />
+              <Route path="/signup" element={<SignupPageSimple />} />
               <Route path="/get-started" element={<SmartOnboarding />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
