@@ -10,14 +10,39 @@ export const Pricing: React.FC = () => {
 
   const handleSelectPlan = async (planName: string) => {
     if (planName === 'The Hustle') {
-      await authService.updateSubscription('The Hustle');
+      // Free plan - skip payment
+      const success = await authService.updateSubscription('The Hustle');
       localStorage.removeItem('trinibuild_subscription');
-      navigate('/create-store');
+      if (success) {
+        alert('Welcome to TriniBuild! Your free store is ready.');
+        navigate('/create-store');
+      } else {
+        alert('Error creating free account. Please try again.');
+      }
     } else {
       setProcessing(planName);
 
-      // Simulate Payment Processing Delay
-      setTimeout(async () => {
+      try {
+        // Get the appropriate PayPal plan ID based on tier selection
+        const planIds: { [key: string]: string } = {
+          'The Storefront': import.meta.env.VITE_PAYPAL_PLAN_GROWTH || '',
+          'The Growth': import.meta.env.VITE_PAYPAL_PLAN_ENTERPRISE || '',
+        };
+
+        const paypalPlanId = planIds[planName];
+        
+        if (!paypalPlanId) {
+          setProcessing(null);
+          alert('Payment configuration error. Please contact support.');
+          return;
+        }
+
+        // Redirect to PayPal subscription flow
+        // In production, this would use PayPal SDK to open subscription dialog
+        const paypalUrl = `https://www.paypal.com/subscribe?plan_id=${paypalPlanId}`;
+        window.location.href = paypalUrl;
+
+        // Update subscription in database after successful payment
         const success = await authService.updateSubscription(planName);
         setProcessing(null);
 
@@ -25,10 +50,12 @@ export const Pricing: React.FC = () => {
           localStorage.setItem('trinibuild_subscription', planName);
           alert(`Successfully upgraded to ${planName}!`);
           navigate('/dashboard');
-        } else {
-          alert("Upgrade failed. Please try again or contact support.");
         }
-      }, 2000);
+      } catch (error) {
+        setProcessing(null);
+        console.error('Payment error:', error);
+        alert('Payment failed. Please try again or contact support.');
+      }
     }
   };
 
