@@ -91,12 +91,12 @@ export const Navbar: React.FC = () => {
   }, [location]);
 
   useEffect(() => {
-    const h = (e: MouseEvent) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setServicesOpen(false); };
+    const h = (e: MouseEvent) => { if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false); };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  useEffect(() => { setIsOpen(false); setServicesOpen(false); }, [location.pathname]);
+  useEffect(() => { setIsOpen(false); setServicesOpen(false); setUserMenuOpen(false); }, [location.pathname]);
 
   const isTransparent = isHome && !scrolled;
   const lc = (path: string) => `px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${isTransparent ? 'text-white/90 hover:bg-white/10' : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'}`;
@@ -185,8 +185,8 @@ export const Navbar: React.FC = () => {
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900">{currentUser.name}</p>
-                      <p className="text-xs text-gray-500">{currentUser.email}</p>
+                      <p className="text-sm font-semibold text-gray-900">{currentUser?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500">{currentUser?.email || 'No email'}</p>
                     </div>
                     <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                       <User size={16} />
