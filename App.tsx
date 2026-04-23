@@ -105,6 +105,7 @@ import { HelpSupportPage } from './pages/HelpSupportPage';
 import { ReferralProgramPage } from './pages/ReferralProgramPage';
 import { AffiliateEarningsDashboard } from './pages/AffiliateEarningsDashboard';
 import { SellerOnboardingPage } from './pages/SellerOnboardingPage';
+import { PartnershipPage } from './pages/PartnershipPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -263,6 +264,11 @@ const App: React.FC = () => {
               {/* 🚀 SELLER ONBOARDING */}
               <Route path="/seller-onboarding" element={<SellerOnboardingPage />} />
               <Route path="/get-started" element={<SellerOnboardingPage />} />
+
+              {/* 🤝 PARTNERSHIPS */}
+              <Route path="/partnerships" element={<PartnershipPage />} />
+              <Route path="/partners" element={<PartnershipPage />} />
+              <Route path="/integrations" element={<PartnershipPage />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
