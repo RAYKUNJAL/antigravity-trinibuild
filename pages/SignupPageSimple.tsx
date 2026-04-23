@@ -31,12 +31,16 @@ export const SignupPageSimple: React.FC = () => {
       return;
     }
 
+    console.log('🔐 Starting signup:', { email, name: fullName });
     const result = await simpleAuthService.signup(email, password, fullName);
+    console.log('📝 Signup result:', result);
     setLoading(false);
 
     if (result.success) {
+      console.log('✅ Signup successful, redirecting to:', redirect);
       navigate(redirect);
     } else {
+      console.error('❌ Signup failed:', result.error);
       setError(result.error || 'Signup failed');
     }
   };
