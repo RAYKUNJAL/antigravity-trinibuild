@@ -9,6 +9,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showTestHelp, setShowTestHelp] = useState(false);
   const navigate = useNavigate();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -16,17 +17,50 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        // Handle specific error cases
+        let errorMessage = error.message;
+        
+        // If it's a schema error, it might be an email confirmation issue
+        if (errorMessage.includes('schema') || errorMessage.includes('Database error')) {
+          errorMessage = 'Email verification pending. Check your inbox for the confirmation link. If you don\'t see it, check spam folder.';
+          setShowTestHelp(true);
+        } else if (errorMessage.includes('Invalid login credentials')) {
+          errorMessage = 'Email or password is incorrect. Please try again.';
+        } else if (errorMessage.includes('Email not confirmed')) {
+          errorMessage = 'Please verify your email first. Check your inbox for confirmation link.';
+          setShowTestHelp(true);
+        }
+        
+        setError(errorMessage);
+        setLoading(false);
+      } else if (data.user) {
+        // Success - store user in localStorage for faster loading
+        try {
+          localStorage.setItem('user', JSON.stringify({
+            id: data.user.id,
+            email: data.user.email,
+            firstName: data.user.user_metadata?.full_name?.split(' ')[0] || '',
+            lastName: data.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+            role: data.user.user_metadata?.role || 'user'
+          }));
+        } catch (e) {
+          console.warn('Could not save to localStorage:', e);
+        }
+        
+        // Redirect to dashboard
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      console.error('Login exception:', err);
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      // Success - redirect to dashboard
-      navigate('/dashboard');
     }
   };
 
@@ -75,6 +109,11 @@ export const LoginPage: React.FC = () => {
               className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg"
             >
               <p className="font-semibold text-sm">{error}</p>
+              {showTestHelp && (
+                <p className="text-xs mt-2 text-red-600">
+                  💡 Tip: Check your email (including spam folder) for a verification link. Click it to confirm your email, then try logging in again.
+                </p>
+              )}
             </motion.div>
           )}
 
