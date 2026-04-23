@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { authService } from '../services/authService';
 import { simpleAuthService } from '../services/simpleAuthService';
 
 const LOGO_URL = "/trinibuild-logo.png";
@@ -80,14 +79,10 @@ export const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const user = await authService.getCurrentUser();
-      const simpleUser = simpleAuthService.getCurrentUser();
-      const finalUser = user || simpleUser;
-      setCurrentUser(finalUser);
-      setIsLoggedIn(!!finalUser);
-      if (finalUser && (finalUser.role === 'admin' || finalUser.role === 'super_admin')) setIsAdmin(true);
-    })();
+    const simpleUser = simpleAuthService.getCurrentUser();
+    setCurrentUser(simpleUser);
+    setIsLoggedIn(!!simpleUser);
+    if (simpleUser && (simpleUser.role === 'admin' || simpleUser.role === 'super_admin')) setIsAdmin(true);
   }, [location]);
 
   useEffect(() => {
