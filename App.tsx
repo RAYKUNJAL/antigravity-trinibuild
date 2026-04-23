@@ -100,6 +100,8 @@ import { GamePassProPage } from './pages/GamePassProPage';
 import { MerchantDashboard } from './pages/MerchantDashboard';
 import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
 import { ProStoreFeaturesPage } from './pages/ProStoreFeaturesPage';
+import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
+import { HelpSupportPage } from './pages/HelpSupportPage';
 
 
 // Layout wrapper for pages that require top padding (everything except Home)
@@ -241,6 +243,12 @@ const App: React.FC = () => {
               {/* 🎮 GAME PASS */}
               <Route path="/game-pass-pro" element={<GamePassProPage />} />
               <Route path="/gaming/gamepass" element={<GamePassProPage />} />
+
+              {/* 📚 SUCCESS & HELP */}
+              <Route path="/success-stories" element={<SuccessStoriesPage />} />
+              <Route path="/stories" element={<SuccessStoriesPage />} />
+              <Route path="/help" element={<HelpSupportPage />} />
+              <Route path="/support" element={<HelpSupportPage />} />
 
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/work/profile" element={<JobProfile />} />
