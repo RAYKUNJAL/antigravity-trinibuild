@@ -102,7 +102,14 @@ export const CreateStoreOnboarding: React.FC = () => {
         return;
       }
 
-      // Create store in database
+      // Build a base slug, append short timestamp suffix to avoid collisions across merchants
+      const baseSlug = data.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
+      // Create store in database.
+      // Only use columns that actually exist on the stores table.
+      // Template selection and AI/productCount prefs are stored inside theme_config
+      // (jsonb) so we don't need new columns.
       const { data: store, error: storeError } = await supabase
         .from('stores')
         .insert([
@@ -110,21 +117,21 @@ export const CreateStoreOnboarding: React.FC = () => {
             owner_id: user.id,
             name: data.storeName,
             description: data.storeDescription,
-            slug: data.storeName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            slug: uniqueSlug,
             category: data.businessCategory,
             phone: data.phone,
             location: data.location,
             whatsapp: data.phone,
-            template_id: data.selectedTemplate?.id,
             theme_config: {
               primary_color: data.primaryColor,
-              ...data.selectedTemplate?.theme
+              template_id: data.selectedTemplate?.id,
+              template_theme: data.selectedTemplate?.theme,
+              onboarding_prefs: {
+                useAI: data.useAI,
+                productCount: data.productCount
+              }
             },
-            is_active: true,
-            settings: {
-              useAI: data.useAI,
-              productCount: data.productCount
-            }
+            status: 'active'
           }
         ])
         .select()
@@ -150,18 +157,26 @@ export const CreateStoreOnboarding: React.FC = () => {
   // AI Product Generation (placeholder - you can integrate Claude API)
   const generateAIProducts = async (storeId: string, category: string, count: number) => {
     // TODO: Call Claude API to generate realistic products
-    // For now, insert placeholder products
-    const sampleProducts = Array.from({ length: count }, (_, i) => ({
-      store_id: storeId,
-      name: `Sample Product ${i + 1}`,
-      description: `A great ${category} product`,
-      base_price: Math.floor(Math.random() * 200) + 20,
-      stock: Math.floor(Math.random() * 50) + 10,
-      category: category,
-      status: 'active'
-    }));
+    // For now, insert placeholder products. `slug` is NOT NULL on products.
+    const runId = Date.now().toString(36);
+    const sampleProducts = Array.from({ length: count }, (_, i) => {
+      const name = `Sample Product ${i + 1}`;
+      return {
+        store_id: storeId,
+        name,
+        slug: `sample-product-${i + 1}-${runId}`,
+        description: `A great ${category} product`,
+        base_price: Math.floor(Math.random() * 200) + 20,
+        stock: Math.floor(Math.random() * 50) + 10,
+        category: category,
+        status: 'active'
+      };
+    });
 
-    await supabase.from('products').insert(sampleProducts);
+    const { error } = await supabase.from('products').insert(sampleProducts);
+    if (error) {
+      console.error('generateAIProducts insert error:', error);
+    }
   };
 
   // Render current step
