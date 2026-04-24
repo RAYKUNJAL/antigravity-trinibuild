@@ -450,6 +450,63 @@ async function callGPT(
     };
 }
 
+/**
+ * Multimodal GPT-4o-mini call. Accepts an image URL (publicly reachable) plus
+ * a text prompt; the model sees the image and replies with text. Used by the
+ * AI product lister: photo in → name/description/price/tags JSON out.
+ *
+ * The model is instructed to reply with strict JSON. We parse it here and
+ * throw if the response is malformed so callers can fall back gracefully.
+ */
+async function callGPTVisionJSON(
+    imageUrl: string,
+    userPrompt: string,
+    systemPrompt: string,
+): Promise<any> {
+    if (!OPENAI_API_KEY) {
+        throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+            model: GPT_MODEL,
+            response_format: { type: 'json_object' },
+            messages: [
+                { role: 'system', content: systemPrompt },
+                {
+                    role: 'user',
+                    content: [
+                        { type: 'text', text: userPrompt },
+                        { type: 'image_url', image_url: { url: imageUrl, detail: 'low' } },
+                    ],
+                },
+            ],
+            max_tokens: 800,
+            temperature: 0.5,
+        }),
+    });
+
+    if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(`OpenAI vision error ${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from vision model');
+
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        throw new Error('Model did not return valid JSON: ' + text.slice(0, 200));
+    }
+}
+
 // ─── Dynamic Store Bot Prompt Builder ────────────────────────────────────────
 
 function buildStorePrompt(storeData: any): string {
@@ -683,5 +740,72 @@ export const aiService = {
                 ? `1. ${storeName} — Real quality, real value\n2. ${storeName} — Trini to de bone\n3. ${storeName} — Where quality meets community`
                 : `${storeName} — your ${category} destination in Trinidad & Tobago. Powered by TriniBuild.`;
         }
+    },
+
+    /**
+     * Photo → full product listing. Uses GPT-4o-mini vision mode.
+     * Caller uploads the image to Supabase Storage first and passes the
+     * public URL here. Returns a structured object ready to save to the
+     * `products` table.
+     *
+     * Merchant can (and should) edit every field before committing.
+     */
+    async generateProductFromImage(
+        imageUrl: string,
+        hints?: { storeName?: string; storeCategory?: string; merchantNote?: string },
+    ): Promise<{
+        name: string;
+        description: string;
+        suggested_price_ttd: number;
+        category: string;
+        tags: string[];
+        confidence: 'high' | 'medium' | 'low';
+    }> {
+        const systemPrompt = `You are a Trinidad & Tobago product listing expert. When shown a product photo, produce a clean, honest, locally-relevant listing for a small business selling on TriniBuild (a T&T ecommerce platform).
+
+Write for Trinidad buyers: reference local context naturally when relevant (parang, Carnival, back to school, hurricane season, rainy season), use TTD pricing, and be honest about what you can actually see in the photo vs. what you're guessing.
+
+Always respond with a single strict JSON object matching this exact shape and no other keys:
+{
+  "name": string — clear, specific, 3-8 words (not "Sample Product"),
+  "description": string — 2-3 short paragraphs (~80-120 words total), warm professional tone, mention a Trinidad-relevant angle if natural, no marketing fluff,
+  "suggested_price_ttd": number — realistic TT dollar price for this item new in T&T retail; if unsure pick the low end of a reasonable range,
+  "category": string — ONE of: "food", "retail", "fashion", "electronics", "home", "beauty", "health", "services", "automotive", "books", "toys", "sports", "art", "other",
+  "tags": string[] — 3-6 short lowercase search keywords a T&T buyer would type,
+  "confidence": "high" | "medium" | "low" — how confident you are the photo is clear enough to accurately describe the product
+}`;
+
+        const userPrompt = [
+            'Look at this product photo and create a listing for a Trinidad merchant to sell it.',
+            hints?.storeName ? `Seller's store name: ${hints.storeName}` : null,
+            hints?.storeCategory ? `Store's general category: ${hints.storeCategory}` : null,
+            hints?.merchantNote ? `Merchant's note about the item: ${hints.merchantNote}` : null,
+            'Respond with JSON only. No markdown, no prose outside the JSON.',
+        ].filter(Boolean).join('\n');
+
+        const raw = await callGPTVisionJSON(imageUrl, userPrompt, systemPrompt);
+
+        const name = String(raw?.name || '').trim();
+        const description = String(raw?.description || '').trim();
+        const price = Number(raw?.suggested_price_ttd);
+        const category = String(raw?.category || 'other').trim().toLowerCase();
+        const tagsRaw = Array.isArray(raw?.tags) ? raw.tags : [];
+        const tags = tagsRaw
+            .map((t: any) => String(t).trim().toLowerCase())
+            .filter((t: string) => t.length > 0 && t.length < 40)
+            .slice(0, 6);
+        const confidence = ['high', 'medium', 'low'].includes(raw?.confidence) ? raw.confidence : 'medium';
+
+        if (!name) throw new Error('AI did not return a product name');
+        if (!description) throw new Error('AI did not return a description');
+
+        return {
+            name,
+            description,
+            suggested_price_ttd: Number.isFinite(price) && price >= 0 ? price : 0,
+            category,
+            tags,
+            confidence,
+        };
     }
 };

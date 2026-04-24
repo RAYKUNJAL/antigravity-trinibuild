@@ -1,57 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AIProductListing } from '../components/AIProductListing';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '../services/supabaseClient';
 
+/**
+ * /products/ai-add — route-level wrapper.
+ *
+ * Accepts ?storeId=... so the merchant dashboard can deep-link here and skip
+ * the "find your store" resolve step in the component. If no storeId is
+ * given, the component itself resolves the user's most recently-created store.
+ *
+ * If the user isn't logged in, we bounce them to /login first.
+ */
 export const AIProductListingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const storeIdParam = params.get('storeId') || undefined;
+
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
+        navigate('/login?redirect=/products/ai-add');
+        return;
+      }
+      setCheckingAuth(false);
+    })();
+  }, [navigate]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Checking your account…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-[#E61E2B] font-semibold transition-colors"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-[#E61E2B] font-semibold transition-colors"
             >
-              <ArrowLeft size={20} />
-              Back to Dashboard
+              <ArrowLeft size={18} /> Back
             </motion.button>
-            <div className="h-6 w-px bg-gray-300" />
-            <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: 'Inter, sans-serif' }}>
-              AI Product Listing
-            </h1>
+            <div className="h-5 w-px bg-gray-300" />
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#E61E2B]" />
+              <h1 className="text-xl sm:text-2xl font-black text-gray-900">AI Product Lister</h1>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
         >
-          {/* Info Banner */}
-          <div className="bg-gradient-to-r from-[#E61E2B] to-[#C41E3A] rounded-2xl p-8 text-white mb-8">
-            <h2 className="text-3xl font-black mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-              📸 Take a Photo, AI Does the Rest
-            </h2>
-            <p className="text-lg text-white/90">
-              Snap a picture of your product and our AI will generate a complete listing with 
-              title, description, price suggestions, and tags. Perfect for Trinidad merchants!
-            </p>
-          </div>
-
-          {/* AI Product Listing Component */}
-          <AIProductListing />
+          <AIProductListing storeId={storeIdParam} />
         </motion.div>
       </div>
     </div>
   );
 };
+
+export default AIProductListingPage;

@@ -1,542 +1,455 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Camera, 
-  Upload, 
-  Sparkles, 
-  Check, 
-  Edit, 
-  DollarSign,
-  Package,
-  Tag,
-  Loader2,
-  ArrowRight,
-  Wand2,
-  RefreshCw
+import {
+  Camera, Upload, Sparkles, Check, Loader2, RefreshCw, AlertCircle,
+  X, Image as ImageIcon, ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { aiService } from '../services/ai';
+import { storeService } from '../services/storeService';
+
+/**
+ * AIProductListing
+ *
+ * Merchant takes/uploads a product photo → GPT-4o-mini vision generates
+ * name/description/price/category/tags → merchant edits anything they want →
+ * saves directly to their store's products.
+ *
+ * No mock data. No fake delays. The previous version had a `setTimeout(3000)`
+ * and a local JS object with "Sample Product" names. This one actually calls
+ * the vision model.
+ *
+ * Props are optional so the route-level page can mount it without knowing the
+ * current store yet — we resolve that from the session.
+ */
+
+type Step = 'upload' | 'processing' | 'review' | 'saved';
 
 interface AIProductListingProps {
-  storeId: string;
-  onComplete: (product: GeneratedProduct) => void;
-  tier: 'free' | 'pro' | 'premium';
+  /** Store id to save the product into. If omitted we look up the logged-in user's first store. */
+  storeId?: string;
+  /** Called after a successful save. Receives the inserted product row. */
+  onComplete?: (product: any) => void;
 }
 
-interface GeneratedProduct {
+interface Draft {
   name: string;
   description: string;
-  price: number;
-  currency: string;
+  price: string; // kept as string for controlled input
   category: string;
-  tags: string[];
-  sku?: string;
-  barcode?: string;
+  tags: string;  // comma-separated string for easy editing
   imageUrl: string;
-  seoTitle: string;
-  seoDescription: string;
-  suggested_keywords: string[];
+  confidence: 'high' | 'medium' | 'low';
 }
 
+const CATEGORY_OPTIONS = [
+  'food', 'retail', 'fashion', 'electronics', 'home',
+  'beauty', 'health', 'services', 'automotive', 'books',
+  'toys', 'sports', 'art', 'other',
+];
+
 export const AIProductListing: React.FC<AIProductListingProps> = ({
-  storeId,
+  storeId: propStoreId,
   onComplete,
-  tier
 }) => {
-  const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'complete'>('upload');
+  const [step, setStep] = useState<Step>('upload');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [generatedProduct, setGeneratedProduct] = useState<GeneratedProduct | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [resolvedStoreId, setResolvedStoreId] = useState<string | null>(propStoreId ?? null);
+  const [resolvedStoreName, setResolvedStoreName] = useState<string | null>(null);
+  const [resolvedStoreCategory, setResolvedStoreCategory] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Check tier limits
-  const canUseAI = tier !== 'free';
-  const monthlyLimit = tier === 'pro' ? 25 : tier === 'premium' ? Infinity : 0;
+  // Resolve the merchant's store once on mount if we weren't given one
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (propStoreId) {
+        // Fetch store name/category for better AI hints
+        const { data } = await supabase
+          .from('stores')
+          .select('id, name, category')
+          .eq('id', propStoreId)
+          .single();
+        if (!cancelled && data) {
+          setResolvedStoreName(data.name);
+          setResolvedStoreCategory(data.category);
+        }
+        return;
+      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: stores } = await supabase
+        .from('stores')
+        .select('id, name, category')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (cancelled) return;
+      if (stores && stores.length) {
+        setResolvedStoreId(stores[0].id);
+        setResolvedStoreName(stores[0].name);
+        setResolvedStoreCategory(stores[0].category);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [propStoreId]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-      setError(null);
-    }
-  };
-
-  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-      setError(null);
-    }
-  };
-
-  const generateProductListing = async () => {
-    if (!imageFile || !canUseAI) return;
-
-    setIsProcessing(true);
-    setStep('processing');
+  const pickFile = (file: File | null) => {
     setError(null);
-
-    try {
-      // 1. Upload image to Supabase Storage
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${storeId}/${Date.now()}.${fileExt}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, imageFile);
-
-      if (uploadError) throw uploadError;
-
-      // 2. Get public URL
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
-      // 3. Call AI to analyze image and generate listing
-      // In production, this would call your Gemini/Claude API
-      // For now, using mock data with realistic generation
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate AI processing
-
-      const aiGenerated: GeneratedProduct = await generateProductFromImage(
-        urlData.publicUrl,
-        imageFile.name
-      );
-
-      setGeneratedProduct(aiGenerated);
-      setStep('review');
-    } catch (err) {
-      console.error('Error generating product:', err);
-      setError('Failed to generate product listing. Please try again.');
-      setStep('upload');
-    } finally {
-      setIsProcessing(false);
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file.');
+      return;
     }
+    if (file.size > 8 * 1024 * 1024) {
+      setError('Image is too large (max 8 MB). Try a smaller photo.');
+      return;
+    }
+    setImageFile(file);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(URL.createObjectURL(file));
   };
 
-  const handleEditField = (field: keyof GeneratedProduct, value: any) => {
-    if (generatedProduct) {
-      setGeneratedProduct({
-        ...generatedProduct,
-        [field]: value
+  const handleGenerate = async () => {
+    if (!imageFile) return;
+    if (!resolvedStoreId) {
+      setError('We could not find a store on your account. Create a store first, then come back.');
+      return;
+    }
+    setError(null);
+    setStep('processing');
+
+    try {
+      // 1. Upload the photo to the product-images bucket
+      const ext = (imageFile.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${resolvedStoreId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('product-images')
+        .upload(path, imageFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: imageFile.type,
+        });
+      if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
+
+      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+
+      // 2. Ask GPT-4o-mini vision to describe the product
+      const ai = await aiService.generateProductFromImage(publicUrl, {
+        storeName: resolvedStoreName ?? undefined,
+        storeCategory: resolvedStoreCategory ?? undefined,
       });
+
+      setDraft({
+        name: ai.name,
+        description: ai.description,
+        price: String(ai.suggested_price_ttd || ''),
+        category: CATEGORY_OPTIONS.includes(ai.category) ? ai.category : 'other',
+        tags: ai.tags.join(', '),
+        imageUrl: publicUrl,
+        confidence: ai.confidence,
+      });
+      setStep('review');
+    } catch (err: any) {
+      console.error('AI lister error:', err);
+      setError(err?.message || 'Something went wrong generating the listing.');
+      setStep('upload');
     }
   };
 
-  const handleSaveProduct = async () => {
-    if (!generatedProduct) return;
-
+  const handleSave = async () => {
+    if (!draft || !resolvedStoreId) return;
+    setError(null);
+    setSaving(true);
     try {
-      // Save to database
-      const { data, error } = await supabase
-        .from('products')
-        .insert({
-          store_id: storeId,
-          name: generatedProduct.name,
-          description: generatedProduct.description,
-          price: generatedProduct.price,
-          currency: generatedProduct.currency,
-          category: generatedProduct.category,
-          image_url: generatedProduct.imageUrl,
-          sku: generatedProduct.sku || generateSKU(generatedProduct.name),
-          barcode: generatedProduct.barcode,
-          tags: generatedProduct.tags,
-          seo_title: generatedProduct.seoTitle,
-          seo_description: generatedProduct.seoDescription,
-          ai_generated: true
-        })
-        .select()
-        .single();
+      const priceNum = Number(draft.price);
+      const tagList = draft.tags.split(',').map(t => t.trim()).filter(Boolean);
 
-      if (error) throw error;
+      // Use storeService.addProduct so all the column-mapping stays in one place.
+      const product = await storeService.addProduct(resolvedStoreId, {
+        name: draft.name,
+        description: draft.description,
+        base_price: Number.isFinite(priceNum) && priceNum > 0 ? priceNum : 0,
+        stock: 1, // merchant can edit from the inventory list after save
+        category: draft.category,
+        image_url: draft.imageUrl,
+        status: 'active',
+      } as any);
 
-      setStep('complete');
-      setTimeout(() => {
-        onComplete(generatedProduct);
-      }, 2000);
-    } catch (err) {
-      console.error('Error saving product:', err);
-      setError('Failed to save product. Please try again.');
+      // Also stamp tags directly (addProduct doesn't currently pass tags)
+      if (product?.id && tagList.length > 0) {
+        await supabase.from('products').update({ tags: tagList }).eq('id', product.id);
+      }
+
+      setStep('saved');
+      if (onComplete && product) onComplete(product);
+    } catch (err: any) {
+      console.error('Save failed:', err);
+      setError(err?.message || 'Could not save the product. Try again?');
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (!canUseAI) {
-    return (
-      <div className="p-8 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-trini-red to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Sparkles className="w-8 h-8 text-white" />
-        </div>
-        <h3 className="text-xl font-black text-gray-900 mb-2">
-          AI Product Listing
-        </h3>
-        <p className="text-gray-600 mb-6">
-          Take a photo → AI generates complete product listing instantly
-        </p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => window.location.href = '/pricing'}
-          className="px-8 py-3 bg-trini-red text-white rounded-lg font-bold hover:bg-red-700 inline-flex items-center gap-2"
-        >
-          <Wand2 className="w-5 h-5" />
-          Upgrade to Pro for AI Listings
-        </motion.button>
-        <p className="text-sm text-gray-500 mt-4">
-          Pro: 25 AI listings/month • Premium: Unlimited
-        </p>
-      </div>
-    );
-  }
+  const reset = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    setImageFile(null);
+    setDraft(null);
+    setError(null);
+    setStep('upload');
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      
+    <div className="max-w-3xl mx-auto">
+      {/* Store context banner */}
+      {resolvedStoreName && (
+        <div className="mb-4 text-sm text-gray-600">
+          Saving to <span className="font-bold text-gray-900">{resolvedStoreName}</span>
+        </div>
+      )}
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+          className="mb-4 flex items-start gap-3 rounded-xl bg-red-50 border border-red-200 p-4"
+        >
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-red-700">{error}</div>
+        </motion.div>
+      )}
+
       <AnimatePresence mode="wait">
-        
-        {/* STEP 1: UPLOAD */}
+        {/* ───────── UPLOAD STEP ───────── */}
         {step === 'upload' && (
           <motion.div
             key="upload"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm"
           >
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-trini-red to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 mb-2">
-                AI Product Listing
-              </h2>
-              <p className="text-gray-600">
-                Take a photo or upload an image - AI does the rest!
-              </p>
-              {tier === 'pro' && (
-                <p className="text-sm text-gray-500 mt-2">
-                  {monthlyLimit - 0} AI listings remaining this month
-                </p>
-              )}
-            </div>
+            <h2 className="text-xl font-black text-gray-900 mb-2">Snap or upload a product photo</h2>
+            <p className="text-gray-600 text-sm mb-6">
+              Our AI will write the listing — name, description, price suggestion, category, and tags.
+              You can edit everything before saving.
+            </p>
 
-            {/* Image Preview */}
-            {imagePreview && (
-              <div className="relative rounded-xl overflow-hidden bg-gray-100">
-                <img
-                  src={imagePreview}
-                  alt="Product preview"
-                  className="w-full h-64 object-contain"
-                />
+            {imagePreview ? (
+              <div className="space-y-4">
+                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50">
+                  <img src={imagePreview} alt="product preview" className="w-full max-h-96 object-contain" />
+                  <button
+                    onClick={reset}
+                    className="absolute top-3 right-3 rounded-full bg-black/70 hover:bg-black text-white w-9 h-9 flex items-center justify-center"
+                    aria-label="Remove image"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleGenerate}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#E61E2B] hover:bg-[#C41E3A] text-white font-bold transition-colors disabled:opacity-50"
+                    disabled={!resolvedStoreId}
+                  >
+                    <Sparkles className="w-5 h-5" /> Generate listing with AI
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-3 rounded-xl border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold"
+                  >
+                    Change photo
+                  </button>
+                </div>
+                {!resolvedStoreId && (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    You need to create a store first before you can save AI-generated products.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => {
-                    setImageFile(null);
-                    setImagePreview(null);
-                  }}
-                  className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-lg hover:bg-black/70"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#E61E2B] hover:bg-red-50 transition-colors"
                 >
-                  ✕
+                  <Camera className="w-8 h-8 text-gray-500" />
+                  <span className="text-sm font-semibold text-gray-700">Take photo</span>
+                  <span className="text-xs text-gray-500">Use your camera</span>
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#E61E2B] hover:bg-red-50 transition-colors"
+                >
+                  <Upload className="w-8 h-8 text-gray-500" />
+                  <span className="text-sm font-semibold text-gray-700">Upload file</span>
+                  <span className="text-xs text-gray-500">JPG / PNG, up to 8 MB</span>
                 </button>
               </div>
             )}
 
-            {/* Upload Options */}
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleCameraCapture}
-                className="hidden"
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => cameraInputRef.current?.click()}
-                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-trini-red hover:bg-red-50 transition-colors"
-              >
-                <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-bold text-gray-700">Take Photo</p>
-              </motion.button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => fileInputRef.current?.click()}
-                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-trini-red hover:bg-red-50 transition-colors"
-              >
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-bold text-gray-700">Upload Image</p>
-              </motion.button>
-            </div>
-
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            {imageFile && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={generateProductListing}
-                className="w-full px-6 py-4 bg-gradient-to-r from-trini-red to-red-700 text-white rounded-xl font-bold hover:from-red-700 hover:to-red-800 flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                Generate Product Listing with AI
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
-            )}
+            <input
+              ref={fileInputRef} type="file" accept="image/*" className="hidden"
+              onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            />
+            <input
+              ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
+              onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            />
           </motion.div>
         )}
 
-        {/* STEP 2: PROCESSING */}
+        {/* ───────── PROCESSING STEP ───────── */}
         {step === 'processing' && (
           <motion.div
             key="processing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-12 text-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm"
           >
-            <Loader2 className="w-16 h-16 text-trini-red animate-spin mx-auto mb-4" />
-            <h3 className="text-xl font-black text-gray-900 mb-2">
-              AI is analyzing your product...
-            </h3>
-            <p className="text-gray-600 mb-8">
-              Generating name, description, pricing, tags, and SEO
-            </p>
-            <div className="max-w-md mx-auto space-y-3">
-              {[
-                'Analyzing image',
-                'Identifying product type',
-                'Generating description',
-                'Suggesting price range',
-                'Creating SEO content'
-              ].map((task, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.5 }}
-                  className="flex items-center gap-3 text-sm text-gray-700"
-                >
-                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                  {task}
-                </motion.div>
-              ))}
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
+              <Loader2 className="w-8 h-8 text-[#E61E2B] animate-spin" />
             </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">Reading the photo…</h3>
+            <p className="text-sm text-gray-600">Usually takes 3–8 seconds.</p>
           </motion.div>
         )}
 
-        {/* STEP 3: REVIEW */}
-        {step === 'review' && generatedProduct && (
+        {/* ───────── REVIEW STEP ───────── */}
+        {step === 'review' && draft && (
           <motion.div
             key="review"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-5"
           >
-            <div className="text-center mb-6">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Check className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-1">
-                Product Listing Ready!
-              </h3>
-              <p className="text-gray-600">
-                Review and edit before saving
-              </p>
-            </div>
-
-            {/* Product Image */}
-            <div className="rounded-xl overflow-hidden">
-              <img
-                src={generatedProduct.imageUrl}
-                alt={generatedProduct.name}
-                className="w-full h-64 object-contain bg-gray-100"
-              />
-            </div>
-
-            {/* Editable Fields */}
-            <div className="space-y-4">
-              
-              {/* Name */}
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  value={generatedProduct.name}
-                  onChange={(e) => handleEditField('name', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={generatedProduct.description}
-                  onChange={(e) => handleEditField('description', e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
-                />
-              </div>
-
-              {/* Price & Category */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Price (TTD)
-                  </label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="number"
-                      value={generatedProduct.price}
-                      onChange={(e) => handleEditField('price', parseFloat(e.target.value))}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    value={generatedProduct.category}
-                    onChange={(e) => handleEditField('category', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Tags
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {generatedProduct.tags.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                    >
-                      {tag}
+                <h2 className="text-xl font-black text-gray-900">Review & edit</h2>
+                <p className="text-sm text-gray-600">
+                  Change anything that doesn't look right.
+                  {draft.confidence !== 'high' && (
+                    <span className="ml-1 text-amber-700">
+                      AI confidence: <span className="font-semibold">{draft.confidence}</span> — double-check the details.
                     </span>
-                  ))}
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={reset}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+              >
+                <RefreshCw className="w-4 h-4" /> Start over
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-[180px_1fr] gap-5">
+              {/* Image preview */}
+              <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-square">
+                <img src={draft.imageUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Fields */}
+              <div className="space-y-4">
+                <Field label="Product name">
+                  <input
+                    type="text" value={draft.name}
+                    onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E61E2B]"
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Price (TT$)">
+                    <input
+                      type="number" inputMode="decimal" min="0" step="0.01"
+                      value={draft.price}
+                      onChange={(e) => setDraft({ ...draft, price: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E61E2B]"
+                    />
+                  </Field>
+                  <Field label="Category">
+                    <select
+                      value={draft.category}
+                      onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E61E2B]"
+                    >
+                      {CATEGORY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </Field>
                 </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSaveProduct}
-                className="flex-1 px-6 py-3 bg-trini-red text-white rounded-lg font-bold hover:bg-red-700 flex items-center justify-center gap-2"
+            <Field label="Description">
+              <textarea
+                rows={5} value={draft.description}
+                onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E61E2B]"
+              />
+            </Field>
+
+            <Field label="Tags" hint="Comma-separated. Helps customers find this product in search.">
+              <input
+                type="text" value={draft.tags}
+                onChange={(e) => setDraft({ ...draft, tags: e.target.value })}
+                placeholder="e.g. unlocked, 256gb, apple"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E61E2B]"
+              />
+            </Field>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={handleSave}
+                disabled={saving || !draft.name.trim()}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#E61E2B] hover:bg-[#C41E3A] text-white font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Check className="w-5 h-5" />
-                Save Product
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={generateProductListing}
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-bold hover:border-gray-400 flex items-center gap-2"
-              >
-                <RefreshCw className="w-5 h-5" />
-                Regenerate
-              </motion.button>
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                {saving ? 'Saving…' : 'Add to my store'}
+              </button>
             </div>
           </motion.div>
         )}
 
-        {/* STEP 4: COMPLETE */}
-        {step === 'complete' && (
+        {/* ───────── SAVED STEP ───────── */}
+        {step === 'saved' && (
           <motion.div
-            key="complete"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="py-12 text-center"
+            key="saved"
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm"
           >
-            <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-10 h-10 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+              <Check className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-2xl font-black text-gray-900 mb-2">
-              Product Added Successfully!
-            </h3>
-            <p className="text-gray-600">
-              Your AI-generated product is now live
-            </p>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">Product added!</h3>
+            <p className="text-sm text-gray-600 mb-6">It's live in your store now.</p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={reset}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E61E2B] hover:bg-[#C41E3A] text-white font-semibold"
+              >
+                <ImageIcon className="w-4 h-4" /> Add another
+              </button>
+            </div>
           </motion.div>
         )}
-
       </AnimatePresence>
     </div>
   );
 };
 
-// Helper function to generate product from image (calls AI API)
-async function generateProductFromImage(
-  imageUrl: string,
-  fileName: string
-): Promise<GeneratedProduct> {
-  // In production, this calls your Gemini/Claude Vision API
-  // For now, returning realistic mock data
-  
-  // Simulate AI analysis
-  const productName = fileName
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[_-]/g, ' ')
-    .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({ label, hint, children }) => (
+  <div>
+    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">{label}</label>
+    {children}
+    {hint && <div className="text-xs text-gray-500 mt-1">{hint}</div>}
+  </div>
+);
 
-  return {
-    name: productName || 'Product',
-    description: `High-quality ${productName.toLowerCase()}. Perfect for everyday use. Made with premium materials and built to last. Features modern design that fits any style. Available now in Trinidad & Tobago.`,
-    price: 99.99,
-    currency: 'TTD',
-    category: 'General',
-    tags: ['new', 'trending', 'quality', 'trinidad'],
-    sku: generateSKU(productName),
-    imageUrl,
-    seoTitle: `Buy ${productName} in Trinidad - Best Prices | TriniBuild`,
-    seoDescription: `Shop ${productName} online in Trinidad & Tobago. Fast delivery, great prices, and excellent customer service. Order now!`,
-    suggested_keywords: [productName.toLowerCase(), 'trinidad', 'buy online', 'delivery']
-  };
-}
-
-// Generate SKU from product name
-function generateSKU(name: string): string {
-  const prefix = name
-    .split(' ')
-    .slice(0, 2)
-    .map(w => w.charAt(0).toUpperCase())
-    .join('');
-  const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `${prefix}-${randomNum}`;
-}
+export default AIProductListing;
