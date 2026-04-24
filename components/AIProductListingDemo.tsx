@@ -5,7 +5,6 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DEMO_SAMPLES, DemoSample } from '../data/demoSamples';
-import { supabase } from '../services/supabaseClient';
 
 /**
  * AIProductListingDemo — landing-page interactive demo.
@@ -13,29 +12,31 @@ import { supabase } from '../services/supabaseClient';
  * Design intent:
  *  - Above the fold, answers "does this actually work?" in under 6 seconds.
  *  - Click a sample → fake 2.5s skeleton → canned result (zero-cost, instant).
- *  - "Try your own photo" → real upload + real edge function call (rate-limited
- *    server-side to 5 per IP per 24h, with the OpenAI key kept server-side).
+ *  - "Sign up to try with your own products" → routes into /signup?next=/products/ai-add
+ *    where the authenticated AI lister runs with VITE_OPENAI_API_KEY. We used to
+ *    have an in-page anonymous "Try your own photo" button that hit a server-side
+ *    edge function, but the edge function's OPENAI_API_KEY secret is unset in the
+ *    dashboard — so the button returned 500 every time. Rather than leave a broken
+ *    scanner on a conversion page, we route own-photo intent into signup which both
+ *    fixes the brokenness AND is the action we want anyway.
  *  - Every result card ends with a single strong CTA: "Claim your free store".
  *  - No fake countdown timers, no fake "N people just signed up" tickers.
  *
  * GA4 events fired:
- *  - demo_started       : user clicked any demo entry point
- *  - demo_completed     : a result card appeared (sample OR real)
- *  - demo_own_photo     : a real AI call was attempted
- *  - cta_clicked        : user clicked "Claim your free store" from the result
+ *  - demo_started         : user clicked a sample tile
+ *  - demo_completed       : result card appeared
+ *  - demo_own_photo_cta   : user clicked the "Sign up to try with your own" CTA
+ *  - cta_clicked          : user clicked "Claim your free store" from the result
  *
  * Variant control:
  *  - Reads ?v=b from URL for an A/B variant of the headline + CTA copy.
  */
 
 type DemoResult = DemoSample['result'];
-type PhasePreview =
-  | { kind: 'illustration'; Component: DemoSample['Illustration'] }
-  | { kind: 'url'; url: string };
 type Phase =
   | { kind: 'idle' }
-  | { kind: 'loading'; source: 'sample' | 'own'; preview: PhasePreview }
-  | { kind: 'result'; source: 'sample' | 'own'; preview: PhasePreview; data: DemoResult; info?: string }
+  | { kind: 'loading'; source: 'sample'; imageUrl: string }
+  | { kind: 'result'; source: 'sample'; imageUrl: string; data: DemoResult; info?: string }
   | { kind: 'error'; message: string };
 
 // Tiny GA4 helper — no-op if gtag isn't present
@@ -45,9 +46,6 @@ const ga = (name: string, params?: Record<string, any>) => {
     if (typeof w.gtag === 'function') w.gtag('event', name, params || {});
   } catch { /* ignore */ }
 };
-
-const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://cdprbbyptjdntcrhmwxf.supabase.co';
-const EDGE_FN_URL = `${SUPABASE_URL}/functions/v1/generate-product-listing-demo`;
 
 const CATEGORY_LABEL: Record<string, string> = {
   food: 'Food',
@@ -69,7 +67,6 @@ const CATEGORY_LABEL: Record<string, string> = {
 export const AIProductListingDemo: React.FC = () => {
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
   const [variant, setVariant] = useState<'a' | 'b'>('a');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,82 +84,13 @@ export const AIProductListingDemo: React.FC = () => {
 
   const runSample = (sample: DemoSample) => {
     ga('demo_started', { source: 'sample', sample_id: sample.id });
-    const preview: PhasePreview = { kind: 'illustration', Component: sample.Illustration };
-    setPhase({ kind: 'loading', source: 'sample', preview });
+    setPhase({ kind: 'loading', source: 'sample', imageUrl: sample.imageUrl });
     // Deliberate pause — if it resolves instantly users don't register that
     // something happened. 2.5s is the sweet spot between "fake" and "too slow".
     setTimeout(() => {
-      setPhase({ kind: 'result', source: 'sample', preview, data: sample.result });
+      setPhase({ kind: 'result', source: 'sample', imageUrl: sample.imageUrl, data: sample.result });
       ga('demo_completed', { source: 'sample', sample_id: sample.id });
     }, 2500);
-  };
-
-  const runOwnPhoto = async (file: File) => {
-    ga('demo_started', { source: 'own' });
-    ga('demo_own_photo', {});
-    if (!file.type.startsWith('image/')) {
-      setPhase({ kind: 'error', message: 'Please choose an image file.' });
-      return;
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      setPhase({ kind: 'error', message: 'Image too large (max 8 MB).' });
-      return;
-    }
-
-    const objectPreview = URL.createObjectURL(file);
-    const localPreview: PhasePreview = { kind: 'url', url: objectPreview };
-    setPhase({ kind: 'loading', source: 'own', preview: localPreview });
-
-    try {
-      // 1. Upload to Supabase Storage so we have a public HTTPS URL for the AI
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `demo/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('product-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-      if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
-
-      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
-
-      // 2. Call the edge function
-      const { data: session } = await supabase.auth.getSession();
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      // Anon key works for public edge functions; attach any active session too
-      const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
-      if (anonKey) headers['apikey'] = anonKey;
-      if (session?.session?.access_token) headers['Authorization'] = `Bearer ${session.session.access_token}`;
-      else if (anonKey) headers['Authorization'] = `Bearer ${anonKey}`;
-
-      const res = await fetch(EDGE_FN_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ image_url: publicUrl }),
-      });
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(body?.error || 'Something went wrong. Please try again.');
-      }
-
-      setPhase({
-        kind: 'result',
-        source: 'own',
-        preview: { kind: 'url', url: publicUrl },
-        data: {
-          name: body.name,
-          description: body.description,
-          suggested_price_ttd: body.suggested_price_ttd,
-          category: body.category,
-          tags: body.tags || [],
-          confidence: body.confidence || 'medium',
-        },
-      });
-      ga('demo_completed', { source: 'own' });
-    } catch (err: any) {
-      console.error('demo own-photo error:', err);
-      setPhase({ kind: 'error', message: err?.message || 'Could not generate listing. Please try again.' });
-    }
   };
 
   const reset = () => setPhase({ kind: 'idle' });
@@ -201,25 +129,27 @@ export const AIProductListingDemo: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                {DEMO_SAMPLES.map(sample => {
-                  const Ill = sample.Illustration;
-                  return (
-                    <button
-                      key={sample.id}
-                      onClick={() => runSample(sample)}
-                      className="group relative rounded-xl overflow-hidden border-2 border-gray-200 hover:border-trini-red transition-colors aspect-square bg-gray-50"
-                    >
-                      <Ill className="w-full h-full transition-transform duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
-                      <div className="absolute bottom-2 left-3 right-3 text-white text-sm font-semibold text-left">
-                        {sample.label}
-                      </div>
-                      <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Sparkles className="w-3.5 h-3.5 text-trini-red" />
-                      </div>
-                    </button>
-                  );
-                })}
+                {DEMO_SAMPLES.map(sample => (
+                  <button
+                    key={sample.id}
+                    onClick={() => runSample(sample)}
+                    className="group relative rounded-xl overflow-hidden border-2 border-gray-200 hover:border-trini-red transition-colors aspect-square bg-gray-50"
+                  >
+                    <img
+                      src={sample.imageUrl}
+                      alt={sample.label}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2 left-3 right-3 text-white text-sm font-semibold text-left">
+                      {sample.label}
+                    </div>
+                    <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Sparkles className="w-3.5 h-3.5 text-trini-red" />
+                    </div>
+                  </button>
+                ))}
               </div>
 
               <div className="relative flex items-center justify-center py-3">
@@ -229,27 +159,17 @@ export const AIProductListingDemo: React.FC = () => {
               </div>
 
               <div className="flex justify-center">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
+                <a
+                  href="/signup?next=/products/ai-add"
+                  onClick={() => ga('demo_own_photo_cta', {})}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-trini-red hover:bg-red-50 text-gray-700 font-semibold transition-colors"
                 >
                   <Upload className="w-5 h-5" />
-                  Try with your own photo
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) runOwnPhoto(f);
-                    e.target.value = '';
-                  }}
-                />
+                  Sign up to try with your own products →
+                </a>
               </div>
               <p className="text-xs text-gray-400 text-center">
-                Your photo is uploaded to TriniBuild and analyzed by GPT-4o-mini. Up to 5 free tries per day.
+                Creating a free store unlocks the AI lister for your own photos — no limit.
               </p>
             </motion.div>
           )}
@@ -265,13 +185,13 @@ export const AIProductListingDemo: React.FC = () => {
             >
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                 <div className="grid md:grid-cols-[200px_1fr]">
-                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden flex items-center justify-center">
-                    <PreviewRenderer preview={phase.preview} />
+                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden">
+                    <img src={phase.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="p-5 space-y-3">
                     <div className="flex items-center gap-2 text-sm text-trini-red font-semibold">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      {phase.source === 'sample' ? 'Reading the photo…' : 'Reading your photo…'}
+                      Reading the photo…
                     </div>
                     <SkeletonLine widthPct={85} heightPx={20} />
                     <SkeletonLine widthPct={60} heightPx={14} />
@@ -302,14 +222,14 @@ export const AIProductListingDemo: React.FC = () => {
             >
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
                 <div className="grid md:grid-cols-[200px_1fr]">
-                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden flex items-center justify-center">
-                    <PreviewRenderer preview={phase.preview} />
+                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden">
+                    <img src={phase.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-3 text-xs font-semibold">
                       <CheckCircle2 className="w-4 h-4 text-green-600" />
                       <span className="text-green-700">
-                        {phase.source === 'sample' ? 'Sample listing generated' : 'Listing generated by AI'}
+                        Sample listing generated
                       </span>
                       {phase.data.confidence !== 'high' && (
                         <span className="ml-auto text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
@@ -417,16 +337,5 @@ const SkeletonLine: React.FC<{ widthPct?: number; heightPx?: number }> = ({ widt
 const SkeletonPill: React.FC = () => (
   <div className="rounded-full bg-gray-100 h-5 w-14 animate-pulse" />
 );
-
-// Renders either an inline SVG illustration (from samples) or an <img> with a
-// URL (from user-uploaded photos going through the real AI). Kept tiny so the
-// same visual slot works in both the loading skeleton and the result card.
-const PreviewRenderer: React.FC<{ preview: PhasePreview }> = ({ preview }) => {
-  if (preview.kind === 'illustration') {
-    const Ill = preview.Component;
-    return <Ill className="w-full h-full" />;
-  }
-  return <img src={preview.url} alt="" className="w-full h-full object-cover" />;
-};
 
 export default AIProductListingDemo;
