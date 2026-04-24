@@ -83,7 +83,7 @@ export const WelcomeScreen = () => {
             title: "Find Work. Hire Talent.",
             subtitle: "Connect with verified employers and skilled workers across Trinidad & Tobago.",
             cta: "Browse Jobs",
-            features: ["AI Resume Builder", "5,000+ Active Jobs", "Instant Apply"],
+            features: ["AI Resume Builder", "Verified Employers", "Instant Apply"],
             heroImage: "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80",
             colorName: "blue",
             bgClass: "bg-blue-600",

@@ -334,14 +334,13 @@ export const AIDocumentAssistant: React.FC = () => {
                         </motion.div>
                     )}
 
-                    {/* Trust Section */}
+                    {/* Honest positioning — document format standards */}
                     <div className="mt-16 text-center">
-                        <p className="text-sm text-gray-500 mb-4">Trusted by 5,000+ Trinidad & Tobago businesses</p>
-                        <div className="flex items-center justify-center gap-8 text-gray-400">
-                            <span className="text-xs font-bold">Republic Bank</span>
-                            <span className="text-xs font-bold">Scotiabank TT</span>
-                            <span className="text-xs font-bold">First Citizens</span>
-                            <span className="text-xs font-bold">US Embassy POS</span>
+                        <p className="text-sm text-gray-500 mb-4">Documents formatted to Trinidad & Tobago standards</p>
+                        <div className="flex items-center justify-center gap-8 text-gray-400 flex-wrap">
+                            <span className="text-xs font-bold">BIR-compatible exports</span>
+                            <span className="text-xs font-bold">T&T English formatting</span>
+                            <span className="text-xs font-bold">Print-ready PDFs</span>
                         </div>
                     </div>
                 </div>

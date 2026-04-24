@@ -90,10 +90,10 @@ export const BecomeSellerPage: React.FC = () => {
   ];
 
   const stats = [
-    { number: '5,000+', label: 'Active Sellers' },
-    { number: '50,000+', label: 'Products Listed' },
-    { number: 'TT$2.5M', label: 'Orders Processed' },
-    { number: '4.9/5', label: 'Average Rating' }
+    { number: 'Free', label: 'Forever, not a trial' },
+    { number: '0', label: 'Credit card required' },
+    { number: '2 min', label: 'To live store' },
+    { number: '🇹🇹', label: 'Built in Trinidad' }
   ];
 
   return (

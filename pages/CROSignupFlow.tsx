@@ -240,7 +240,7 @@ export const CROSignupFlow: React.FC = () => {
         <>
             <Helmet>
                 <title>Join TriniBuild - Start in 60 Seconds | Trinidad & Tobago</title>
-                <meta name="description" content="Join 10,000+ Trinidad & Tobago users. Start selling, driving, or shopping in under 60 seconds. No credit card required." />
+                <meta name="description" content="Start selling, driving, or shopping in Trinidad & Tobago in under 60 seconds. No credit card required. Built in T&T." />
             </Helmet>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -256,7 +256,7 @@ export const CROSignupFlow: React.FC = () => {
                                     <h1 className="text-lg font-bold text-gray-900">TriniBuild</h1>
                                     <div className="flex items-center space-x-2 text-xs text-gray-600">
                                         <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                        <span>4.9/5 from 10K+ users</span>
+                                        <span>Built in Trinidad & Tobago</span>
                                     </div>
                                 </div>
                             </div>
@@ -589,26 +589,24 @@ export const CROSignupFlow: React.FC = () => {
                             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-100">
                                 <h3 className="font-bold text-gray-900 mb-4 flex items-center">
                                     <Users className="h-5 w-5 mr-2 text-blue-600" />
-                                    Join 10,000+ Trinidad Users
+                                    Built for Trinidad merchants
                                 </h3>
-                                <div className="space-y-3">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="flex -space-x-2">
-                                            {[1, 2, 3, 4].map((i) => (
-                                                <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 border-2 border-white"></div>
-                                            ))}
-                                        </div>
-                                        <span className="text-sm text-gray-700">
-                                            <strong>127 people</strong> signed up today
-                                        </span>
+                                <div className="space-y-3 text-sm text-gray-700">
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-trini-red font-bold">✓</span>
+                                        <span>Free forever — your first 10 products, no time limit</span>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        {[1, 2, 3, 4, 5].map((i) => (
-                                            <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                                        ))}
-                                        <span className="text-sm text-gray-700">
-                                            <strong>4.9/5</strong> from 2,450 reviews
-                                        </span>
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-trini-red font-bold">✓</span>
+                                        <span>No credit card to sign up</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-trini-red font-bold">✓</span>
+                                        <span>Founding 100 merchants get 6 months Pro free</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-trini-red font-bold">✓</span>
+                                        <span>Direct WhatsApp to the founding team</span>
                                     </div>
                                 </div>
                             </div>

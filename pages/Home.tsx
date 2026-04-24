@@ -129,9 +129,9 @@ export const Home: React.FC = () => {
                      Your local digital business platform. Built for the Caribbean, by the Caribbean—<span className="text-trini-gold font-semibold">we own ting</span>, brought up to modern standards.
                   </p>
 
-                  {/* Social Proof - NEW */}
-                  <p className="text-lg text-green-400 font-bold mb-8 animate-pulse">
-                     ✅ Join 5,000+ Local Businesses Already Selling Online
+                  {/* Honest positioning — brand new, free, no gotchas */}
+                  <p className="text-lg text-green-400 font-bold mb-8">
+                     ✅ Free forever. No credit card. Launching in T&T.
                   </p>
 
                   {/* Dual Path Selection - NEW */}
@@ -147,16 +147,16 @@ export const Home: React.FC = () => {
                      </Link>
                   </div>
 
-                  {/* Trust Badges */}
-                  <div className="mt-8 flex items-center justify-center gap-6 text-white/60 text-sm font-medium">
+                  {/* Honest trust row — risk reversals, not invented numbers */}
+                  <div className="mt-8 flex items-center justify-center gap-6 text-white/60 text-sm font-medium flex-wrap">
                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5 text-green-400" /> 100% Verified Users
+                        <ShieldCheck className="h-5 w-5 text-green-400" /> Free forever
                      </div>
                      <div className="hidden md:flex items-center gap-2">
-                        <UserCheck className="h-5 w-5 text-blue-400" /> 5,000+ Active Trinis
+                        <UserCheck className="h-5 w-5 text-blue-400" /> No credit card
                      </div>
                      <div className="flex items-center gap-2">
-                        <Star className="h-5 w-5 text-yellow-400" /> 4.9/5 Average Rating
+                        <Star className="h-5 w-5 text-yellow-400" /> Built in Trinidad
                      </div>
                   </div>
                </div>
@@ -298,13 +298,13 @@ export const Home: React.FC = () => {
             <div className="bg-gray-900 py-4 overflow-hidden">
                <div className="flex whitespace-nowrap animate-marquee">
                   {[
-                     "John from Arima just hired a Plumber",
-                     "Sarah from POS bought a Honda Civic",
-                     "Mike from Chaguanas sold his iPhone",
-                     "Lisa from Tobago booked a Ride",
-                     "David from San Fernando got a Job Letter",
-                     "TriniBuild: 5,000+ Verified Users",
-                     "Secure Payments via Endcash",
+                     "Free online store with COD checkout",
+                     "AI product listing from a single photo",
+                     "Built in Trinidad & Tobago",
+                     "TriniRides · Jobs · Real Estate · Events",
+                     "Founding merchants get 6 months Pro free",
+                     "First 10 products free, forever",
+                     "Cancel anytime, no questions",
                   ].map((text, i) => (
                      <span key={i} className="text-gray-400 mx-8 font-mono text-sm flex items-center">
                         <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>

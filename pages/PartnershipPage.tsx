@@ -102,7 +102,7 @@ export const PartnershipPage: React.FC = () => {
             Partnerships & Integrations
           </motion.h1>
           <motion.p variants={item} className="text-xl text-red-100">
-            Connect with TriniBuild to reach 5,000+ Caribbean merchants and grow together
+            Build on TriniBuild to reach Caribbean merchants as we grow — starting in Trinidad & Tobago
           </motion.p>
         </div>
       </motion.section>
@@ -211,7 +211,7 @@ export const PartnershipPage: React.FC = () => {
               {
                 icon: Globe,
                 title: 'Caribbean Reach',
-                description: 'Access 5,000+ merchants across Trinidad & Tobago with expansion to 10+ Caribbean islands'
+                description: 'Reach Trinidad & Tobago merchants first, with planned expansion to 10+ Caribbean islands'
               },
               {
                 icon: Users,

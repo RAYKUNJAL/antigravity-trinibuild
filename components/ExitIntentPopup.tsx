@@ -103,10 +103,10 @@ export const ExitIntentPopup: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Social proof */}
+                        {/* Founding merchant framing */}
                         <div className="bg-gray-50 rounded-lg p-4 mb-6">
                             <p className="text-center text-sm text-gray-600">
-                                <span className="font-bold text-trini-red">5,000+ Trini vendors</span> already building their business on TriniBuild
+                                <span className="font-bold text-trini-red">Founding merchants</span> get 6 months Pro free + direct WhatsApp support
                             </p>
                         </div>
                     </div>

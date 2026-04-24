@@ -170,14 +170,14 @@ export const StoreServicesLanding: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Hero Image/Stats */}
+                            {/* Hero Risk-Reversal tiles (honest pre-launch) */}
                             <div className="hidden lg:block">
                                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
                                     <div className="grid grid-cols-2 gap-6">
-                                        <StatBox icon={<Store />} value="500+" label="Active Stores" />
-                                        <StatBox icon={<Users />} value="10K+" label="Happy Customers" />
-                                        <StatBox icon={<DollarSign />} value="TT$2M+" label="Sales Processed" />
-                                        <StatBox icon={<Star />} value="4.9/5" label="Store Rating" />
+                                        <StatBox icon={<Store />} value="Free" label="Forever, not a trial" />
+                                        <StatBox icon={<Users />} value="0" label="Credit card required" />
+                                        <StatBox icon={<DollarSign />} value="TT$0" label="To start selling" />
+                                        <StatBox icon={<Star />} value="🇹🇹" label="Built in Trinidad" />
                                     </div>
                                 </div>
                             </div>

@@ -25,43 +25,23 @@ import { abTesting } from '../services/abTestingService';
  * - Revenue-focused UX (funnels to TT$99-399/mo plans)
  */
 
-const STATS = [
-  { number: '5,000+', label: 'Businesses Online' },
-  { number: '50,000+', label: 'Products Listed' },
-  { number: 'TT$2.5M+', label: 'Orders Processed' },
-  { number: '4.9/5', label: 'Avg Rating' }
+const TRUST_POINTS = [
+  { number: 'Free', label: 'Forever, not a trial' },
+  { number: '0', label: 'Credit card required' },
+  { number: '2 min', label: 'From signup to live store' },
+  { number: '🇹🇹', label: 'Built in Trinidad' }
 ];
 
-const MERCHANT_EXAMPLES = [
-  {
-    name: 'Chaguanas Clothing Boutique',
-    owner: 'Keisha T.',
-    location: 'Chaguanas',
-    story: 'Started selling online in May. Now does TT$8,000/week with cash on delivery.',
-    image: '👗'
-  },
-  {
-    name: 'San Fernando Electronics',
-    owner: 'Marcus D.',
-    location: 'San Fernando',
-    story: 'Been WhatsApp selling for 2 years. TriniBuild helped him get 47 orders first month.',
-    image: '📱'
-  },
-  {
-    name: 'Port of Spain Home Business',
-    owner: 'Aisha M.',
-    location: 'Port of Spain',
-    story: 'Homemade items seller. COD + pickup option tripled her orders in 60 days.',
-    image: '🏠'
-  },
-  {
-    name: 'Tobago Mini Mart Online',
-    owner: 'Rodney S.',
-    location: 'Scarborough',
-    story: 'Local shop. Now delivering island-wide. TT$15,000/month additional revenue.',
-    image: '🛒'
-  }
-];
+const FOUNDING_OFFER = {
+  title: 'We\'re just getting started — and the first 100 merchants get something special',
+  bullet_points: [
+    'Free Pro plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
+    'Direct WhatsApp line to the founding team — you get heard, fast',
+    'Featured placement on the TriniBuild marketplace when it launches',
+    'Your feedback shapes what we build next'
+  ],
+  caveat: 'Why the offer? We\'re a brand-new Trinidad-built platform. We want founding merchants who help us get it right, and we want to reward them for being first.'
+};
 
 const HOW_IT_WORKS = [
   {
@@ -279,7 +259,7 @@ export const LandingPageCRO: React.FC = () => {
         <title>Free Online Store for Trinidad & Tobago | COD Selling Made Easy | TriniBuild</title>
         <meta
           name="description"
-          content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 10 free products, no credit card required. Join 5,000+ local businesses."
+          content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 10 free products, no credit card required. Built in T&T."
         />
         <meta
           name="keywords"
@@ -291,7 +271,7 @@ export const LandingPageCRO: React.FC = () => {
         <meta property="og:title" content="Free Online Store for Trinidad & Tobago - Start Selling with COD" />
         <meta
           property="og:description"
-          content="Join 5,000+ Trinidad businesses selling online. Free store, 10 products free, COD checkout. No credit card required."
+          content="Launching in T&T: a free online store builder with COD checkout. No credit card, 10 products free. Founding merchants get 6 months Pro free."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://trinibuild.com/landing" />
@@ -300,27 +280,23 @@ export const LandingPageCRO: React.FC = () => {
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Free Online Store for Trinidad - COD Selling" />
-        <meta name="twitter:description" content="Start your online store free. No credit card, no tech skills needed. 5,000+ businesses already selling." />
+        <meta name="twitter:description" content="Start your online store free. No credit card, no tech skills needed. Built for Trinidad merchants." />
 
-        {/* Schema - LocalBusiness + SoftwareApplication */}
+        {/* Schema - SoftwareApplication (no fake aggregateRating — FTC/Google penalty risk) */}
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'TriniBuild',
-            description: 'Free online store builder for Trinidad & Tobago businesses',
+            description: 'Free online store builder for Trinidad & Tobago businesses with cash on delivery support',
             url: 'https://trinibuild.com/',
             applicationCategory: 'ECommerce',
+            operatingSystem: 'Web',
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'TTD',
               description: 'Free online store with 10 products'
-            },
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: '4.9',
-              ratingCount: '5000'
             }
           })}
         </script>
@@ -371,7 +347,7 @@ export const LandingPageCRO: React.FC = () => {
               className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
             >
               Create your free online store in 5 minutes. Add products with AI. Accept COD, pickup, or online payment.
-              Join 5,000+ Trinidad & Tobago businesses already selling online.
+              Built in Trinidad & Tobago, launching to founding merchants now.
             </motion.p>
 
             {/* Trust Strip */}
@@ -434,40 +410,47 @@ export const LandingPageCRO: React.FC = () => {
         </section>
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* PROOF SECTION - Trust Building */}
+        {/* PROOF SECTION - Honest framing (no fake stats, no fake testimonials) */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                5,000+ Trinidad Businesses Already Selling
+                No gotchas. No credit card. No risk.
               </h2>
               <p className="text-lg text-gray-600">
-                From mini marts to home businesses, real merchants are using TriniBuild to reach customers online.
+                Made for Trinidad merchants who want to get online without paying to find out if it works for them.
               </p>
             </div>
 
-            {/* Stats Grid */}
+            {/* Trust points grid (risk reversals, not fake stats) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-              {STATS.map((stat, idx) => (
+              {TRUST_POINTS.map((point, idx) => (
                 <div key={idx} className="bg-white rounded-lg p-6 text-center shadow-sm">
-                  <div className="text-3xl sm:text-4xl font-bold text-trini-red mb-2">{stat.number}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-trini-red mb-2">{point.number}</div>
+                  <div className="text-sm text-gray-600">{point.label}</div>
                 </div>
               ))}
             </div>
 
-            {/* Merchant Stories */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {MERCHANT_EXAMPLES.map((merchant, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-                  <div className="text-4xl mb-4">{merchant.image}</div>
-                  <h3 className="font-bold text-gray-900 mb-1">{merchant.name}</h3>
-                  <p className="text-sm text-gray-500 mb-3">{merchant.owner} • {merchant.location}</p>
-                  <p className="text-gray-700 font-semibold">{merchant.story}</p>
-                </div>
-              ))}
+            {/* Founding merchant offer */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-8 sm:p-10">
+              <div className="inline-block px-3 py-1 bg-trini-red/20 text-trini-red rounded-full text-xs font-bold tracking-wide uppercase mb-4">
+                Founding Merchants · Limited to first 100
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">{FOUNDING_OFFER.title}</h3>
+              <ul className="space-y-3 mb-6">
+                {FOUNDING_OFFER.bullet_points.map((b, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>
+                    <span className="text-gray-200">{b}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm text-gray-400 italic border-t border-gray-700 pt-4">
+                {FOUNDING_OFFER.caveat}
+              </p>
             </div>
           </div>
         </section>
