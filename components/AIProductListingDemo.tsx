@@ -29,10 +29,13 @@ import { supabase } from '../services/supabaseClient';
  */
 
 type DemoResult = DemoSample['result'];
+type PhasePreview =
+  | { kind: 'illustration'; Component: DemoSample['Illustration'] }
+  | { kind: 'url'; url: string };
 type Phase =
   | { kind: 'idle' }
-  | { kind: 'loading'; source: 'sample' | 'own'; imageUrl: string }
-  | { kind: 'result'; source: 'sample' | 'own'; imageUrl: string; data: DemoResult; info?: string }
+  | { kind: 'loading'; source: 'sample' | 'own'; preview: PhasePreview }
+  | { kind: 'result'; source: 'sample' | 'own'; preview: PhasePreview; data: DemoResult; info?: string }
   | { kind: 'error'; message: string };
 
 // Tiny GA4 helper — no-op if gtag isn't present
@@ -84,11 +87,12 @@ export const AIProductListingDemo: React.FC = () => {
 
   const runSample = (sample: DemoSample) => {
     ga('demo_started', { source: 'sample', sample_id: sample.id });
-    setPhase({ kind: 'loading', source: 'sample', imageUrl: sample.imageUrl });
+    const preview: PhasePreview = { kind: 'illustration', Component: sample.Illustration };
+    setPhase({ kind: 'loading', source: 'sample', preview });
     // Deliberate pause — if it resolves instantly users don't register that
     // something happened. 2.5s is the sweet spot between "fake" and "too slow".
     setTimeout(() => {
-      setPhase({ kind: 'result', source: 'sample', imageUrl: sample.imageUrl, data: sample.result });
+      setPhase({ kind: 'result', source: 'sample', preview, data: sample.result });
       ga('demo_completed', { source: 'sample', sample_id: sample.id });
     }, 2500);
   };
@@ -106,7 +110,8 @@ export const AIProductListingDemo: React.FC = () => {
     }
 
     const objectPreview = URL.createObjectURL(file);
-    setPhase({ kind: 'loading', source: 'own', imageUrl: objectPreview });
+    const localPreview: PhasePreview = { kind: 'url', url: objectPreview };
+    setPhase({ kind: 'loading', source: 'own', preview: localPreview });
 
     try {
       // 1. Upload to Supabase Storage so we have a public HTTPS URL for the AI
@@ -143,7 +148,7 @@ export const AIProductListingDemo: React.FC = () => {
       setPhase({
         kind: 'result',
         source: 'own',
-        imageUrl: publicUrl,
+        preview: { kind: 'url', url: publicUrl },
         data: {
           name: body.name,
           description: body.description,
@@ -196,27 +201,25 @@ export const AIProductListingDemo: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                {DEMO_SAMPLES.map(sample => (
-                  <button
-                    key={sample.id}
-                    onClick={() => runSample(sample)}
-                    className="group relative rounded-xl overflow-hidden border-2 border-gray-200 hover:border-trini-red transition-colors aspect-square bg-gray-50"
-                  >
-                    <img
-                      src={sample.imageUrl}
-                      alt={sample.label}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                    <div className="absolute bottom-2 left-3 right-3 text-white text-sm font-semibold text-left">
-                      {sample.label}
-                    </div>
-                    <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Sparkles className="w-3.5 h-3.5 text-trini-red" />
-                    </div>
-                  </button>
-                ))}
+                {DEMO_SAMPLES.map(sample => {
+                  const Ill = sample.Illustration;
+                  return (
+                    <button
+                      key={sample.id}
+                      onClick={() => runSample(sample)}
+                      className="group relative rounded-xl overflow-hidden border-2 border-gray-200 hover:border-trini-red transition-colors aspect-square bg-gray-50"
+                    >
+                      <Ill className="w-full h-full transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-2 left-3 right-3 text-white text-sm font-semibold text-left">
+                        {sample.label}
+                      </div>
+                      <div className="absolute top-2 right-2 bg-white/90 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Sparkles className="w-3.5 h-3.5 text-trini-red" />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="relative flex items-center justify-center py-3">
@@ -262,8 +265,8 @@ export const AIProductListingDemo: React.FC = () => {
             >
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
                 <div className="grid md:grid-cols-[200px_1fr]">
-                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden">
-                    <img src={phase.imageUrl} alt="" className="w-full h-full object-cover" />
+                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden flex items-center justify-center">
+                    <PreviewRenderer preview={phase.preview} />
                   </div>
                   <div className="p-5 space-y-3">
                     <div className="flex items-center gap-2 text-sm text-trini-red font-semibold">
@@ -299,8 +302,8 @@ export const AIProductListingDemo: React.FC = () => {
             >
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
                 <div className="grid md:grid-cols-[200px_1fr]">
-                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden">
-                    <img src={phase.imageUrl} alt="" className="w-full h-full object-cover" />
+                  <div className="aspect-square md:aspect-auto bg-gray-100 overflow-hidden flex items-center justify-center">
+                    <PreviewRenderer preview={phase.preview} />
                   </div>
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-3 text-xs font-semibold">
@@ -414,5 +417,16 @@ const SkeletonLine: React.FC<{ widthPct?: number; heightPx?: number }> = ({ widt
 const SkeletonPill: React.FC = () => (
   <div className="rounded-full bg-gray-100 h-5 w-14 animate-pulse" />
 );
+
+// Renders either an inline SVG illustration (from samples) or an <img> with a
+// URL (from user-uploaded photos going through the real AI). Kept tiny so the
+// same visual slot works in both the loading skeleton and the result card.
+const PreviewRenderer: React.FC<{ preview: PhasePreview }> = ({ preview }) => {
+  if (preview.kind === 'illustration') {
+    const Ill = preview.Component;
+    return <Ill className="w-full h-full" />;
+  }
+  return <img src={preview.url} alt="" className="w-full h-full object-cover" />;
+};
 
 export default AIProductListingDemo;
