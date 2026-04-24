@@ -329,3 +329,8 @@
         grid-template-rows: 45% 55%;
     }
 }
+/* Shimmer animation for skeleton loaders (used by AIProductListingDemo) */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
