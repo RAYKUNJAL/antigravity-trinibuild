@@ -1,296 +1,281 @@
 import { supabase } from './supabaseClient';
 
+/**
+ * codService — aligned with the real `orders` table schema.
+ *
+ * Real orders columns (verified against information_schema):
+ *   id, store_id, customer_id, customer_name, customer_email, customer_phone,
+ *   customer_address, items (jsonb), subtotal, delivery_fee, total,
+ *   payment_method, payment_status, order_status, driver_id, driver_name,
+ *   driver_phone, notes, created_at, updated_at
+ *
+ * The previous version referenced columns that don't exist — `status`,
+ * `shipping_address`, `order_number`, `assigned_at`, `delivered_at`,
+ * `cancelled_at`, `cancellation_reason`, `estimated_delivery`, and tried to
+ * join `drivers` by id with fields that aren't on that table. Every call
+ * failed silently.
+ *
+ * The status ladder for a COD order is represented in two columns:
+ *   - order_status : 'pending' | 'confirmed' | 'assigned' | 'out_for_delivery'
+ *                     | 'delivered' | 'cancelled'
+ *   - payment_status: 'pending' | 'paid' | 'collected' | 'verified' | 'refunded'
+ *
+ * For richer timelines we consult `updated_at` on the orders row.  If we ever
+ * add an order_status_history table, buildTimeline() is the place to hook in.
+ */
+
+// ── Types ──────────────────────────────────────────────────────────────────
+
+export type CODStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'assigned'
+  | 'out_for_delivery'
+  | 'delivered'
+  | 'cancelled';
+
+export type CODPaymentStatus =
+  | 'pending'
+  | 'paid'
+  | 'collected'
+  | 'verified'
+  | 'refunded';
+
 export interface CODOrder {
   id: string;
-  order_number: string;
+  order_number: string; // derived from id — no real column
+  store_id: string;
   customer_name: string;
   customer_phone: string;
   customer_address: string;
   total_amount: number;
-  status: 'placed' | 'confirmed' | 'assigned' | 'out_for_delivery' | 'delivered' | 'cancelled';
-  payment_status: 'pending' | 'collected' | 'verified';
-  driver_id?: string;
-  driver_name?: string;
-  driver_phone?: string;
-  driver_lat?: number;
-  driver_lng?: number;
-  estimated_delivery?: string;
+  order_status: CODStatus;
+  payment_status: CODPaymentStatus;
+  driver_id?: string | null;
+  driver_name?: string | null;
+  driver_phone?: string | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CODTracking {
-  order: CODOrder;
-  timeline: Array<{
-    status: string;
-    timestamp: string;
-    note?: string;
-  }>;
-  driver?: {
-    id: string;
-    name: string;
-    phone: string;
-    rating: number;
-    current_location: {
-      lat: number;
-      lng: number;
-    };
-  };
+export interface CODTrackingTimelineEntry {
+  status: string;
+  timestamp: string;
+  note?: string;
 }
 
+export interface CODTracking {
+  order: CODOrder;
+  timeline: CODTrackingTimelineEntry[];
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+const displayOrderNumber = (id: string) =>
+  'TRN-' + id.replace(/-/g, '').slice(0, 8).toUpperCase();
+
+const toCODOrder = (row: any): CODOrder => ({
+  id: row.id,
+  order_number: displayOrderNumber(row.id),
+  store_id: row.store_id,
+  customer_name: row.customer_name || 'Customer',
+  customer_phone: row.customer_phone || '',
+  customer_address: row.customer_address || '',
+  total_amount: parseFloat(row.total ?? '0') || 0,
+  order_status: (row.order_status as CODStatus) || 'pending',
+  payment_status: (row.payment_status as CODPaymentStatus) || 'pending',
+  driver_id: row.driver_id ?? null,
+  driver_name: row.driver_name ?? null,
+  driver_phone: row.driver_phone ?? null,
+  notes: row.notes ?? null,
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+});
+
+const STATUS_ORDER: CODStatus[] = [
+  'pending',
+  'confirmed',
+  'assigned',
+  'out_for_delivery',
+  'delivered',
+];
+
+const statusReached = (current: CODStatus, target: CODStatus): boolean => {
+  if (current === 'cancelled') return target === 'pending' || target === 'cancelled';
+  return STATUS_ORDER.indexOf(current) >= STATUS_ORDER.indexOf(target);
+};
+
+// ── Service ────────────────────────────────────────────────────────────────
+
 class CODService {
-  /**
-   * Get COD order tracking details
-   */
+  /** Get COD order + derived delivery timeline. */
   async getOrderTracking(orderId: string): Promise<CODTracking | null> {
-    try {
-      // Get order details with driver info
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          driver:drivers(
-            id,
-            driver_name,
-            driver_phone,
-            driver_rating,
-            driver_lat,
-            driver_lng
-          )
-        `)
-        .eq('id', orderId)
-        .eq('payment_method', 'cod')
-        .single();
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .eq('payment_method', 'cod')
+      .single();
 
-      if (orderError) throw orderError;
-      if (!order) return null;
+    if (error || !data) return null;
 
-      // Build timeline from order status history
-      const timeline = this.buildTimeline(order);
-
-      return {
-        order: {
-          id: order.id,
-          order_number: order.order_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
-          customer_name: order.customer_name || order.shipping_address?.name || 'Customer',
-          customer_phone: order.customer_phone || order.shipping_address?.phone || '',
-          customer_address: this.formatAddress(order.shipping_address),
-          total_amount: parseFloat(order.total || 0),
-          status: order.status || 'placed',
-          payment_status: order.payment_status || 'pending',
-          driver_id: order.driver_id,
-          driver_name: order.driver?.[0]?.driver_name,
-          driver_phone: order.driver?.[0]?.driver_phone,
-          driver_lat: order.driver?.[0]?.driver_lat,
-          driver_lng: order.driver?.[0]?.driver_lng,
-          estimated_delivery: order.estimated_delivery,
-          created_at: order.created_at,
-          updated_at: order.updated_at,
-        },
-        timeline,
-        driver: order.driver?.[0] ? {
-          id: order.driver[0].id,
-          name: order.driver[0].driver_name,
-          phone: order.driver[0].driver_phone,
-          rating: parseFloat(order.driver[0].driver_rating || 0),
-          current_location: {
-            lat: parseFloat(order.driver[0].driver_lat || 0),
-            lng: parseFloat(order.driver[0].driver_lng || 0),
-          },
-        } : undefined,
-      };
-    } catch (error) {
-      console.error('Error fetching COD order tracking:', error);
-      throw error;
-    }
+    const order = toCODOrder(data);
+    return { order, timeline: this.buildTimeline(order) };
   }
 
-  /**
-   * Update order status
-   */
+  /** Update the order_status field. Merchant- or driver-initiated. */
   async updateOrderStatus(
     orderId: string,
-    status: CODOrder['status'],
-    note?: string
+    order_status: CODStatus,
+    _note?: string,
   ): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          status,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
+    const { error } = await supabase
+      .from('orders')
+      .update({ order_status, updated_at: new Date().toISOString() })
+      .eq('id', orderId);
 
-      if (error) throw error;
-
-      // Log status change
-      await this.logStatusChange(orderId, status, note);
-    } catch (error) {
+    if (error) {
       console.error('Error updating order status:', error);
       throw error;
     }
   }
 
-  /**
-   * Assign driver to COD order
-   */
-  async assignDriver(orderId: string, driverId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({
-          driver_id: driverId,
-          status: 'assigned',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
+  /** Assign a driver to the order and advance order_status to 'assigned'. */
+  async assignDriver(
+    orderId: string,
+    driverId: string,
+    driverName?: string,
+    driverPhone?: string,
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('orders')
+      .update({
+        driver_id: driverId,
+        driver_name: driverName ?? null,
+        driver_phone: driverPhone ?? null,
+        order_status: 'assigned',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
 
-      if (error) throw error;
-
-      await this.logStatusChange(orderId, 'assigned', `Driver assigned`);
-    } catch (error) {
+    if (error) {
       console.error('Error assigning driver:', error);
       throw error;
     }
   }
 
-  /**
-   * Mark cash as collected
-   */
+  /** Driver marks cash collected + order delivered. */
   async markCashCollected(orderId: string, driverId: string): Promise<void> {
-    try {
-      // Update order payment status
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({
-          payment_status: 'collected',
-          status: 'delivered',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
+    const { error: orderError } = await supabase
+      .from('orders')
+      .update({
+        payment_status: 'collected',
+        order_status: 'delivered',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
 
-      if (orderError) throw orderError;
+    if (orderError) throw orderError;
 
-      // Get order details for cash collection record
-      const { data: order } = await supabase
-        .from('orders')
-        .select('total, store_id')
-        .eq('id', orderId)
-        .single();
+    // Record the cash collection (if the driver_cash_collections table exists
+    // and has a matching schema). This is best-effort — don't fail the whole
+    // call if the optional ledger insert errors out.
+    const { data: order } = await supabase
+      .from('orders')
+      .select('total, store_id')
+      .eq('id', orderId)
+      .single();
 
-      if (order) {
-        // Create cash collection record
-        const { error: collectionError } = await supabase
-          .from('driver_cash_collections')
-          .insert({
-            driver_id: driverId,
-            order_id: orderId,
-            store_id: order.store_id,
-            amount: order.total,
-            status: 'collected',
-            collected_at: new Date().toISOString(),
-          });
-
-        if (collectionError) throw collectionError;
+    if (order) {
+      try {
+        await supabase.from('driver_cash_collections').insert({
+          driver_id: driverId,
+          order_id: orderId,
+          store_id: order.store_id,
+          amount: order.total,
+          status: 'collected',
+          collected_at: new Date().toISOString(),
+        });
+      } catch (ledgerErr) {
+        console.warn('driver_cash_collections insert failed (non-fatal):', ledgerErr);
       }
-
-      await this.logStatusChange(orderId, 'delivered', 'Cash collected by driver');
-    } catch (error) {
-      console.error('Error marking cash collected:', error);
-      throw error;
     }
   }
 
-  /**
-   * Get WhatsApp link for order notification
-   */
+  /** Cancel an order. */
+  async cancelOrder(orderId: string, reason?: string): Promise<void> {
+    const existingNotes = (
+      await supabase.from('orders').select('notes').eq('id', orderId).single()
+    ).data?.notes;
+
+    const combinedNotes = [existingNotes, reason ? `Cancelled: ${reason}` : null]
+      .filter(Boolean)
+      .join(' | ');
+
+    const { error } = await supabase
+      .from('orders')
+      .update({
+        order_status: 'cancelled',
+        notes: combinedNotes || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
+
+    if (error) throw error;
+  }
+
+  /** WhatsApp link for order notification. */
   getWhatsAppLink(phone: string, orderId: string, status: string): string {
     const message = encodeURIComponent(
-      `Hi! Your TriniBuild order ${orderId} is now ${status}. Track it here: ${window.location.origin}/cod-tracking/${orderId}`
+      `Hi! Your TriniBuild order ${displayOrderNumber(orderId)} is now ${status}. ` +
+        `Track it: ${window.location.origin}/cod-tracking/${orderId}`,
     );
-    // Remove + and spaces from phone number
     const cleanPhone = phone.replace(/[+ ]/g, '');
     return `https://wa.me/${cleanPhone}?text=${message}`;
   }
 
-  /**
-   * Build timeline from order data
-   */
-  private buildTimeline(order: any): Array<{ status: string; timestamp: string; note?: string }> {
-    const timeline: Array<{ status: string; timestamp: string; note?: string }> = [];
+  // ── Derived timeline ────────────────────────────────────────────────────
 
-    timeline.push({
+  private buildTimeline(order: CODOrder): CODTrackingTimelineEntry[] {
+    const tl: CODTrackingTimelineEntry[] = [];
+    const ts = order.updated_at || order.created_at;
+
+    tl.push({
       status: 'Order Placed',
       timestamp: order.created_at,
       note: 'Your COD order has been received',
     });
 
-    if (order.status === 'confirmed' || order.status === 'assigned' || 
-        order.status === 'out_for_delivery' || order.status === 'delivered') {
-      timeline.push({
-        status: 'Order Confirmed',
-        timestamp: order.confirmed_at || order.updated_at,
-        note: 'Merchant confirmed your order',
-      });
-    }
-
-    if (order.status === 'assigned' || order.status === 'out_for_delivery' || order.status === 'delivered') {
-      timeline.push({
-        status: 'Driver Assigned',
-        timestamp: order.assigned_at || order.updated_at,
-        note: `Driver ${order.driver?.[0]?.driver_name || ''} assigned`,
-      });
-    }
-
-    if (order.status === 'out_for_delivery' || order.status === 'delivered') {
-      timeline.push({
-        status: 'Out for Delivery',
-        timestamp: order.out_for_delivery_at || order.updated_at,
-        note: 'Your order is on the way',
-      });
-    }
-
-    if (order.status === 'delivered') {
-      timeline.push({
-        status: 'Delivered',
-        timestamp: order.delivered_at || order.updated_at,
-        note: 'Order delivered & cash collected',
-      });
-    }
-
-    if (order.status === 'cancelled') {
-      timeline.push({
+    if (order.order_status === 'cancelled') {
+      tl.push({
         status: 'Cancelled',
-        timestamp: order.cancelled_at || order.updated_at,
-        note: order.cancellation_reason || 'Order was cancelled',
+        timestamp: ts,
+        note: order.notes || 'Order was cancelled',
       });
+      return tl;
     }
 
-    return timeline;
-  }
+    if (statusReached(order.order_status, 'confirmed')) {
+      tl.push({ status: 'Order Confirmed', timestamp: ts, note: 'Merchant confirmed your order' });
+    }
+    if (statusReached(order.order_status, 'assigned')) {
+      tl.push({
+        status: 'Driver Assigned',
+        timestamp: ts,
+        note: order.driver_name ? `Driver ${order.driver_name} assigned` : 'Driver assigned',
+      });
+    }
+    if (statusReached(order.order_status, 'out_for_delivery')) {
+      tl.push({ status: 'Out for Delivery', timestamp: ts, note: 'Your order is on the way' });
+    }
+    if (statusReached(order.order_status, 'delivered')) {
+      tl.push({ status: 'Delivered', timestamp: ts, note: 'Order delivered & cash collected' });
+    }
 
-  /**
-   * Format shipping address
-   */
-  private formatAddress(address: any): string {
-    if (!address) return '';
-    const parts = [
-      address.street,
-      address.city,
-      address.state,
-      address.country,
-    ].filter(Boolean);
-    return parts.join(', ');
-  }
-
-  /**
-   * Log status change (internal)
-   */
-  private async logStatusChange(orderId: string, status: string, note?: string): Promise<void> {
-    // This could log to an order_history table if you create one
-    console.log(`Order ${orderId} status changed to ${status}`, note);
+    return tl;
   }
 }
 
 export const codService = new CODService();
+export default codService;

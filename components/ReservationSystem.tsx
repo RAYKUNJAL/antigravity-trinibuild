@@ -699,22 +699,41 @@ export const MerchantReservationDashboard: React.FC<MerchantReservationDashboard
     if (status === 'completed') {
       const res = reservations.find(r => r.id === id);
       if (res) {
-        // Deduct inventory
+        // Deduct inventory (RPC now exists after migration 'fix_reservations_rls_and_tax_and_stock_rpc')
         for (const item of res.items) {
           await supabase.rpc('decrement_product_stock', {
             p_product_id: String(item.id),
             p_qty: item.qty,
-          }).catch(() => {}); // non-blocking
+          }).catch((err) => {
+            console.warn('decrement_product_stock failed (non-fatal):', err);
+          });
+        }
 
-          // Tax record
-          await supabase.from('tax_records').insert({
-            store_id: storeId,
-            order_type: 'pickup_reservation',
-            order_ref: res.id,
-            amount: res.subtotal,
-            payment_method: res.payment_method,
-            recorded_at: new Date().toISOString(),
-          }).catch(() => {});
+        // Record a single per-transaction tax row for the whole reservation.
+        // Real table `merchant_tax_transactions` schema:
+        //   store_id, transaction_date, type (text), product_id, quantity,
+        //   unit_cost, selling_price, vat_amount, net_amount, gross_amount, notes
+        // We compute VAT at the Trinidad rate of 12.5% on the gross.
+        const gross = Number(res.subtotal) || 0;
+        const vat = Math.round(gross * 0.125 * 100) / 100;
+        const net = Math.round((gross - vat) * 100) / 100;
+        const totalQuantity = res.items.reduce((n, it) => n + (Number(it.qty) || 0), 0);
+
+        const { error: taxErr } = await supabase.from('merchant_tax_transactions').insert({
+          store_id: storeId,
+          transaction_date: new Date().toISOString(),
+          type: 'pickup_reservation',
+          quantity: totalQuantity || 1,
+          unit_cost: 0, // merchant can fill COGS later if they want
+          selling_price: gross,
+          vat_amount: vat,
+          net_amount: net,
+          gross_amount: gross,
+          notes: `Reservation ${res.id} · ${res.payment_method}`,
+        });
+
+        if (taxErr) {
+          console.warn('merchant_tax_transactions insert failed (non-fatal):', taxErr);
         }
       }
     }

@@ -490,15 +490,19 @@ const ProductModal: React.FC<{ storeId: string; product: Product | null; onClose
         e.preventDefault();
         setSaving(true);
         try {
+            // Only include columns that actually exist on public.products.
+            // The form gathers seo_title/seo_description for future use, but
+            // the current products table has no `seo` jsonb column, so we
+            // don't send it — sending it causes every save to fail with
+            // "column seo does not exist".
             const productData = {
                 name: form.name,
                 description: form.description,
-                base_price: form.price,
-                stock: form.stock,
+                base_price: Number(form.price) || 0,
+                stock: Number(form.stock) || 0,
                 category: form.category,
                 image_url: form.image_url,
                 status: form.status as 'active' | 'draft',
-                seo: { title: form.seo_title, description: form.seo_description }
             };
             if (product) {
                 await storeService.updateProduct(product.id, productData);
@@ -507,8 +511,9 @@ const ProductModal: React.FC<{ storeId: string; product: Product | null; onClose
             }
             onSave();
             onClose();
-        } catch (err) {
-            alert('Failed to save product');
+        } catch (err: any) {
+            console.error('Product save failed:', err);
+            alert('Failed to save product: ' + (err?.message || 'unknown error'));
         } finally {
             setSaving(false);
         }

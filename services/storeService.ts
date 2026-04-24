@@ -265,38 +265,52 @@ export const storeService = {
     // --- PRODUCT MANAGEMENT ---
 
     getProducts: async (storeId: string): Promise<Product[]> => {
+        // NOTE: public.product_variants doesn't exist in this DB, so no join.
+        // Frontend Product type has legacy fields (seo, gallery_images,
+        // category_ids, variants, specifications) — we default them so
+        // components that read them don't crash. Actual storage for these
+        // richer fields is a future migration.
         const { data, error } = await supabase
             .from('products')
-            .select('*, variants:product_variants(*)')
+            .select('*')
             .eq('store_id', storeId);
 
         if (error) {
             console.error('Error fetching products:', error);
             return [];
         }
-        // Map base_price to price for frontend compatibility
         return (data || []).map(p => ({
             ...p,
-            price: p.base_price || p.price || 0,
-            stock: p.stock || 0,
+            price: p.base_price ?? 0,
+            stock: p.stock ?? 0,
             status: p.status || 'active',
-            seo: p.seo || {},
-            variants: p.variants || [],
-            gallery_images: p.gallery_images || [],
-            category_ids: p.category_ids || [],
-            specifications: p.specifications || {}
+            seo: {},
+            variants: [],
+            gallery_images: Array.isArray(p.images) ? p.images : [],
+            category_ids: p.category ? [p.category] : [],
+            specifications: {},
         })) as Product[];
     },
 
     getProductById: async (productId: string): Promise<Product | null> => {
         const { data, error } = await supabase
             .from('products')
-            .select('*, variants:product_variants(*)')
+            .select('*')
             .eq('id', productId)
             .single();
 
         if (error) return null;
-        return data as Product;
+        return {
+            ...data,
+            price: data.base_price ?? 0,
+            stock: data.stock ?? 0,
+            status: data.status || 'active',
+            seo: {},
+            variants: [],
+            gallery_images: Array.isArray(data.images) ? data.images : [],
+            category_ids: data.category ? [data.category] : [],
+            specifications: {},
+        } as Product;
     },
 
     addProduct: async (storeId: string, productData: CreateProductData): Promise<Product | null> => {
@@ -326,9 +340,26 @@ export const storeService = {
     },
 
     updateProduct: async (productId: string, updates: Partial<Product>): Promise<Product | null> => {
+        // Real `products` columns only. The Product type has legacy fields
+        // (seo, variants, gallery_images, category_ids, specifications) that
+        // aren't real columns — sending them would throw "column X does not exist".
+        const ALLOWED_COLUMNS = new Set([
+            'name', 'slug', 'description', 'status', 'base_price',
+            'compare_at_price', 'cost', 'image_url', 'images', 'tags',
+            'category', 'stock',
+        ]);
+        const payload: Record<string, any> = {};
+        for (const [k, v] of Object.entries(updates)) {
+            if (ALLOWED_COLUMNS.has(k)) payload[k] = v;
+        }
+        // Map legacy frontend `price` onto `base_price` if that's what was passed
+        if ('price' in updates && !('base_price' in payload)) {
+            payload.base_price = (updates as any).price;
+        }
+
         const { data, error } = await supabase
             .from('products')
-            .update(updates)
+            .update(payload)
             .eq('id', productId)
             .select()
             .single();
