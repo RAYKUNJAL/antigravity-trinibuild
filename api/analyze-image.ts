@@ -29,60 +29,55 @@ export default async function handler(
       return res.status(400).json({ error: 'imageUrl is required' });
     }
 
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
+    const apiKey = process.env.VITE_OPENAI_API_KEY;
 
     if (!apiKey) {
-      console.error('VITE_GEMINI_API_KEY not found in environment');
+      console.error('VITE_OPENAI_API_KEY not found in environment');
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    console.log('Calling Gemini with image:', imageUrl);
+    console.log('Calling OpenAI with image:', imageUrl);
 
-    // First, fetch the image as base64
-    const imageResponse = await fetch(imageUrl);
-    const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: 'Analyze this product image and provide: 1) Product name/title, 2) Brief description (2-3 sentences), 3) Suggested category. Return as JSON with keys: title, description, category.'
-                },
-                {
-                  inline_data: {
-                    mime_type: 'image/jpeg',
-                    data: base64Image
-                  }
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Analyze this product image and provide: 1) Product name/title, 2) Brief description (2-3 sentences), 3) Suggested category. Return as JSON with keys: title, description, category.'
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl }
+              }
+            ]
+          }
+        ],
+        max_tokens: 300
+      })
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status, errorText);
       return res.status(response.status).json({
-        error: 'Gemini API error',
+        error: 'OpenAI API error',
         details: errorText
       });
     }
 
     const data = await response.json();
-    console.log('Gemini response:', data);
+    console.log('OpenAI response:', data);
 
-    const analysis = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+    const analysis = data.choices?.[0]?.message?.content || 'No response';
 
     return res.status(200).json({
       success: true,

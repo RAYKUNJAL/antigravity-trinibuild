@@ -91,8 +91,8 @@ export default function DebugUpload() {
       log(`✅ Public URL: ${publicUrl}`);
       setImageUrl(publicUrl);
 
-      // Step 4: Test Gemini API via backend proxy
-      log('🔄 Step 4: Testing Gemini API (via backend)...');
+      // Step 4: Test OpenAI API via backend proxy
+      log('🔄 Step 4: Testing OpenAI API (via backend)...');
 
       const response = await fetch('/api/analyze-image', {
         method: 'POST',
@@ -111,7 +111,7 @@ export default function DebugUpload() {
       }
 
       const aiData = await response.json();
-      log(`✅ Gemini response: ${aiData.analysis}`);
+      log(`✅ OpenAI response: ${aiData.analysis}`);
 
       log('🎉 ALL TESTS PASSED!');
 
