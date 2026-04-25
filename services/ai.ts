@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { generateOptimizedListing, type ProductListingOptimized } from './aiListingOptimizer';
 
 /**
  * TriniBuild AI Service v4 — GPT-4o mini
@@ -743,69 +744,29 @@ export const aiService = {
     },
 
     /**
-     * Photo → full product listing. Uses GPT-4o-mini vision mode.
-     * Caller uploads the image to Supabase Storage first and passes the
-     * public URL here. Returns a structured object ready to save to the
-     * `products` table.
-     *
-     * Merchant can (and should) edit every field before committing.
+     * Photo → full product listing. Uses eBay-class AI Listing Optimizer.
+     * 
+     * NEW SYSTEM (April 2026): Multi-stage pipeline based on deep research of
+     * eBay's "Magical Listing" AI, 3Dsellers, Frooition, and professional SEO guides.
+     * 
+     * Pipeline:
+     *   1. Visual Analysis (GPT-4o Vision) — identifies product, brand, model, attributes
+     *   2. Category Intelligence — deep categorization (Food > Snacks > Chips > Plantain)
+     *   3. Item Specifics — brand, size, color, material, condition (eBay's #1 ranking factor)
+     *   4. SEO Title — 80 chars, front-loaded keywords, NO fluff
+     *   5. High-Converting Description — benefit-focused, natural language, Trinidad-local
+     *   6. Smart Pricing — category + condition + brand analysis
+     *   7. Keywords & Tags — real buyer search patterns
+     * 
+     * Merchant uploads image → we return a production-ready listing → they review & publish.
+     * 
+     * This is NOT a toy. This is the system that powers merchant revenue.
      */
     async generateProductFromImage(
         imageUrl: string,
         hints?: { storeName?: string; storeCategory?: string; merchantNote?: string },
-    ): Promise<{
-        name: string;
-        description: string;
-        suggested_price_ttd: number;
-        category: string;
-        tags: string[];
-        confidence: 'high' | 'medium' | 'low';
-    }> {
-        const systemPrompt = `You are a Trinidad & Tobago product listing expert. When shown a product photo, produce a clean, honest, locally-relevant listing for a small business selling on TriniBuild (a T&T ecommerce platform).
-
-Write for Trinidad buyers: reference local context naturally when relevant (parang, Carnival, back to school, hurricane season, rainy season), use TTD pricing, and be honest about what you can actually see in the photo vs. what you're guessing.
-
-Always respond with a single strict JSON object matching this exact shape and no other keys:
-{
-  "name": string — clear, specific, 3-8 words (not "Sample Product"),
-  "description": string — 2-3 short paragraphs (~80-120 words total), warm professional tone, mention a Trinidad-relevant angle if natural, no marketing fluff,
-  "suggested_price_ttd": number — realistic TT dollar price for this item new in T&T retail; if unsure pick the low end of a reasonable range,
-  "category": string — ONE of: "food", "retail", "fashion", "electronics", "home", "beauty", "health", "services", "automotive", "books", "toys", "sports", "art", "other",
-  "tags": string[] — 3-6 short lowercase search keywords a T&T buyer would type,
-  "confidence": "high" | "medium" | "low" — how confident you are the photo is clear enough to accurately describe the product
-}`;
-
-        const userPrompt = [
-            'Look at this product photo and create a listing for a Trinidad merchant to sell it.',
-            hints?.storeName ? `Seller's store name: ${hints.storeName}` : null,
-            hints?.storeCategory ? `Store's general category: ${hints.storeCategory}` : null,
-            hints?.merchantNote ? `Merchant's note about the item: ${hints.merchantNote}` : null,
-            'Respond with JSON only. No markdown, no prose outside the JSON.',
-        ].filter(Boolean).join('\n');
-
-        const raw = await callGPTVisionJSON(imageUrl, userPrompt, systemPrompt);
-
-        const name = String(raw?.name || '').trim();
-        const description = String(raw?.description || '').trim();
-        const price = Number(raw?.suggested_price_ttd);
-        const category = String(raw?.category || 'other').trim().toLowerCase();
-        const tagsRaw = Array.isArray(raw?.tags) ? raw.tags : [];
-        const tags = tagsRaw
-            .map((t: any) => String(t).trim().toLowerCase())
-            .filter((t: string) => t.length > 0 && t.length < 40)
-            .slice(0, 6);
-        const confidence = ['high', 'medium', 'low'].includes(raw?.confidence) ? raw.confidence : 'medium';
-
-        if (!name) throw new Error('AI did not return a product name');
-        if (!description) throw new Error('AI did not return a description');
-
-        return {
-            name,
-            description,
-            suggested_price_ttd: Number.isFinite(price) && price >= 0 ? price : 0,
-            category,
-            tags,
-            confidence,
-        };
+    ): Promise<ProductListingOptimized> {
+        // Call the new eBay-class optimizer
+        return await generateOptimizedListing(imageUrl, hints);
     }
 };
