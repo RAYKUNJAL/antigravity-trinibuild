@@ -75,29 +75,10 @@ interface LLMResponse {
 
 /**
  * Intelligent model selection based on task type
+ * NOW USING GEMINI FOR EVERYTHING - it's faster, cheaper, and just as good
  */
 function selectModel(task: LLMRequest['task'], promptLength: number): ModelName {
-  // Simple tasks → fast & cheap
-  if (promptLength < 500 && task === 'analyze') {
-    return 'GEMINI';
-  }
-
-  // Creative copy → Grok
-  if (task === 'creative-copy') {
-    return 'GROK';
-  }
-
-  // Competitive research → DeepSeek
-  if (task === 'competitive-research') {
-    return 'DEEPSEEK';
-  }
-
-  // High-quality descriptions → Claude
-  if (task === 'optimize' || task === 'refine') {
-    return 'CLAUDE';
-  }
-
-  // Default: Gemini (fast & cheap)
+  // Gemini handles ALL tasks perfectly
   return 'GEMINI';
 }
 
