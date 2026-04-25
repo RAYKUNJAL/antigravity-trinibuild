@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowRight, ShieldCheck, Zap, DollarSign, Server, Lock, X, Check, Users, TrendingUp, Brain } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const TicketsLanding: React.FC = () => {
    return (
@@ -214,6 +215,7 @@ export const TicketsLanding: React.FC = () => {
             </div>
          </div>
 
+      <ServicesShowcase variant="compact" currentSlug="tickets" />
       </div>
    );
 };

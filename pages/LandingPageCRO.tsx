@@ -11,6 +11,7 @@ import { ga4Analytics } from '../services/ga4AnalyticsService';
 import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
 import { WorkingAIDemo } from '../components/WorkingAIDemo';
+import { ServicesShowcase } from '../components/ServicesShowcase';
 
 /**
  * LandingPageCRO.tsx
@@ -659,6 +660,12 @@ export const LandingPageCRO: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* SERVICES SHOWCASE - cross-link all 7 service landings              */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+
+        <ServicesShowcase />
 
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* FINAL CTA - Urgency */}

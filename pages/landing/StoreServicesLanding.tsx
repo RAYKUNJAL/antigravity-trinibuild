@@ -6,6 +6,7 @@ import {
     Users, DollarSign, BarChart3, Globe, Heart, Gift, Tag, ArrowRight, Copy, QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const StoreServicesLanding: React.FC = () => {
     const navigate = useNavigate();
@@ -629,6 +630,7 @@ export const StoreServicesLanding: React.FC = () => {
                     </div>
                 </section>
             </div>
+        <ServicesShowcase variant="compact" currentSlug="stores" />
         </>
     );
 };

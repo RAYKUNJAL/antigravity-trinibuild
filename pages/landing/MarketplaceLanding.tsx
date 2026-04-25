@@ -3,6 +3,7 @@ import React from 'react';
 import { Check, ArrowRight, Play, ShieldCheck, TrendingUp, ShoppingBag, Zap, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const MarketplaceLanding: React.FC = () => {
    return (
@@ -177,6 +178,7 @@ export const MarketplaceLanding: React.FC = () => {
             </Link>
             <p className="mt-4 text-xs text-gray-500 font-bold uppercase">No Credit Card Required • 10 Free Listings</p>
          </div>
+      <ServicesShowcase variant="compact" currentSlug="marketplace" />
       </div>
    );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, Home, MapPin, Search, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const LivingLanding: React.FC = () => {
    return (
@@ -174,6 +175,7 @@ export const LivingLanding: React.FC = () => {
                </div>
             </div>
          </div>
+      <ServicesShowcase variant="compact" currentSlug="living" />
       </div>
    );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, Car, Shield, Clock, DollarSign, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const RidesLanding: React.FC = () => {
    return (
@@ -138,6 +139,7 @@ export const RidesLanding: React.FC = () => {
                </div>
             </div>
          </div>
+      <ServicesShowcase variant="compact" currentSlug="rides" />
       </div>
    );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
     Phone, Mail, MessageCircle, MapPin, Star, Clock, Truck, Shield, Award,
@@ -326,6 +327,7 @@ export const FoodServicesLanding: React.FC = () => {
                     </div>
                 </section>
             </div>
+        <ServicesShowcase variant="compact" currentSlug="food" />
         </>
     );
 };

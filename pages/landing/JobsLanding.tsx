@@ -2,6 +2,7 @@ import React from 'react';
 import { Briefcase, Search, CheckCircle, Star, ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { ServicesShowcase } from '../../components/ServicesShowcase';
 
 export const JobsLanding: React.FC = () => {
    return (
@@ -165,6 +166,7 @@ export const JobsLanding: React.FC = () => {
                </div>
             </div>
          </div>
+      <ServicesShowcase variant="compact" currentSlug="jobs" />
       </div>
    );
 };
