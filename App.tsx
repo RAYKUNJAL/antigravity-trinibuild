@@ -1,18 +1,18 @@
-import { CreateStoreOnboarding } from './pages/CreateStoreOnboarding';
 import AIListingDashboard from './pages/AIListingDashboard';
 import DebugUpload from './src/pages/DebugUpload';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
-import { WelcomeScreen } from './components/WelcomeScreen';
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
 import { Directory } from './pages/Directory';
-import { StoreCreator } from './pages/StoreCreator';
-import { StoreCreatorV2 } from './pages/StoreCreatorV2';
-import SimpleStoreCreator from './components/SimpleStoreCreator';
+import { WelcomeScreen } from './components/WelcomeScreen';
+
+// NEW: Single store builder (replaces 5+ legacy creators)
+import StoreBuilderV3 from './pages/StoreBuilderV3';
+
 import MerchantTaxDashboard from './components/MerchantTaxDashboard';
 import AdminFinancialDashboard from './components/AdminFinancialDashboard';
 import { Dashboard } from './pages/Dashboard';
@@ -78,7 +78,7 @@ import { PromoterOnboarding } from './pages/PromoterOnboarding';
 import { LivingLanding } from './pages/landing/LivingLanding';
 import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
-import { StoreBuilder } from './pages/StoreBuilder';
+// StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
 import { StorefrontV2 } from './pages/StorefrontV2';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
@@ -156,10 +156,11 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
-              <Route path="/create-store" element={<CreateStoreOnboarding />} />
-              <Route path="/create-store-simple" element={<SimpleStoreCreator />} />
-              <Route path="/create-store-v2" element={<StoreCreatorV2 />} />
-              <Route path="/create-store-v1" element={<StoreCreator />} />
+              {/* All store creation routes use StoreBuilderV3 (single source of truth) */}
+              <Route path="/create-store" element={<StoreBuilderV3 />} />
+              <Route path="/create-store-simple" element={<Navigate to="/create-store" replace />} />
+              <Route path="/create-store-v2" element={<Navigate to="/create-store" replace />} />
+              <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />
               <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
               <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -182,7 +183,7 @@ const App: React.FC = () => {
               <Route path="/services/living" element={<LivingLanding />} />
 
               {/* Store Builder & Storefront */}
-              <Route path="/store-builder" element={<StoreBuilder />} />
+              <Route path="/store-builder" element={<StoreBuilderV3 />} />
               <Route path="/store/builder" element={<Navigate to="/store-builder" replace />} />
               <Route path="/store/:slug/v2" element={<Navigate to="/store/:slug" replace />} />
 
