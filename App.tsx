@@ -268,7 +268,9 @@ const App: React.FC = () => {
 
               {/* 🚀 SELLER ONBOARDING */}
               <Route path="/seller-onboarding" element={<SellerOnboardingPage />} />
-              <Route path="/get-started" element={<SellerOnboardingPage />} />
+              {/* Note: /get-started is mapped to SmartOnboarding above (line ~197).
+                  Removed duplicate route here — React Router first-match means this
+                  was unreachable dead code. SellerOnboardingPage is still at /seller-onboarding. */}
 
               {/* 🤝 PARTNERSHIPS */}
               <Route path="/partnerships" element={<PartnershipPage />} />

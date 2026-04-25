@@ -6,6 +6,7 @@ import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
+import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import type { Store, Product } from '../types';
 
 // Lazy load heavy components
@@ -293,6 +294,9 @@ export const StorefrontV2: React.FC = () => {
 
     return (
         <>
+            {/* Spin-wheel popup — self-gated on ?spin=1 URL flag set by StoreBuilderV3 */}
+            <SpinWheelPopup />
+
             {/* SEO Optimization */}
             <Helmet>
                 <title>{store.name} - Shop Online in Trinidad & Tobago | TriniBuild</title>
