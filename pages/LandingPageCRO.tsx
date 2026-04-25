@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { ga4Analytics } from '../services/ga4AnalyticsService';
 import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
-import { AIProductListingDemo } from '../components/AIProductListingDemo';
+import { WorkingAIDemo } from '../components/WorkingAIDemo';
 
 /**
  * LandingPageCRO.tsx
@@ -413,7 +413,7 @@ export const LandingPageCRO: React.FC = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
         {/* ════════════════════════════════════════════════════════════════ */}
-        <AIProductListingDemo />
+        <WorkingAIDemo />
 
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PROOF SECTION - Honest framing (no fake stats, no fake testimonials) */}
