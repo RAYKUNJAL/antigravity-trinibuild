@@ -91,46 +91,27 @@ export default function DebugUpload() {
       log(`✅ Public URL: ${publicUrl}`);
       setImageUrl(publicUrl);
 
-      // Step 4: Test OpenAI API
-      log('🔄 Step 4: Testing OpenAI API...');
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey) {
-        log('❌ VITE_OPENAI_API_KEY not found!');
-        throw new Error('API key missing');
-      }
+      // Step 4: Test Gemini API via backend proxy
+      log('🔄 Step 4: Testing Gemini API (via backend)...');
 
-      log(`✅ API key present: ${apiKey.substring(0, 10)}...`);
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('/api/analyze-image', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: 'What product is in this image?' },
-                { type: 'image_url', image_url: { url: publicUrl } }
-              ]
-            }
-          ],
-          max_tokens: 100
+          imageUrl: publicUrl
         })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        log(`❌ OpenAI error: ${response.status} - ${errorText}`);
-        throw new Error(`OpenAI API failed: ${response.status}`);
+        log(`❌ API error: ${response.status} - ${errorText}`);
+        throw new Error(`API failed: ${response.status}`);
       }
 
       const aiData = await response.json();
-      log(`✅ OpenAI response: ${aiData.choices[0].message.content}`);
+      log(`✅ Gemini response: ${aiData.analysis}`);
 
       log('🎉 ALL TESTS PASSED!');
 
