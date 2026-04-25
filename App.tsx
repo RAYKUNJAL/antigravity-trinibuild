@@ -1,4 +1,5 @@
 import { CreateStoreOnboarding } from './pages/CreateStoreOnboarding';
+import AIListingDashboard from './pages/AIListingDashboard';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -329,6 +330,9 @@ const App: React.FC = () => {
               <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
               <Route path="/legal/all" element={<AllLegalDocuments />} />
             </Route>
+
+            {/* AI Listing System */}
+            <Route path="/ai-listings" element={<AIListingDashboard />} />
 
             {/* Short Slug Redirect */}
             <Route path="/s/:shortSlug" element={<ShortSlugRedirect />} />
