@@ -71,21 +71,36 @@ class GamificationEngine {
 
   async initializeLoyalty(userId: string): Promise<UserLoyalty> {
     try {
+      // Idempotent: safe to call on every login. If row exists, returns it; otherwise creates with defaults.
       const { data, error } = await supabase
         .from('user_loyalty_points')
-        .insert({
-          user_id: userId,
-          total_points: 0,
-          available_points: 0,
-          tier: 'bronze',
-          lifetime_purchases: 0,
-          streak_count: 0,
-          last_activity: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            user_id: userId,
+            total_points: 0,
+            available_points: 0,
+            tier: 'bronze',
+            lifetime_purchases: 0,
+            streak_count: 0,
+            last_activity: new Date().toISOString(),
+          },
+          { onConflict: 'user_id', ignoreDuplicates: true }
+        )
         .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error && error.code !== '23505') throw error; // 23505 = unique violation, expected on duplicates
+
+      // If ignoreDuplicates returned null, fetch the existing row
+      if (!data) {
+        const { data: existing, error: fetchErr } = await supabase
+          .from('user_loyalty_points')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (fetchErr) throw fetchErr;
+        return existing;
+      }
       return data;
     } catch (error) {
       console.error('Loyalty init error:', error);
@@ -110,13 +125,16 @@ class GamificationEngine {
       // Update loyalty
       const { data, error } = await supabase
         .from('user_loyalty_points')
-        .upsert({
-          user_id: userId,
-          total_points: newTotal,
-          available_points: newTotal,
-          tier: this.calculateTier(newTotal),
-          last_activity: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            user_id: userId,
+            total_points: newTotal,
+            available_points: newTotal,
+            tier: this.calculateTier(newTotal),
+            last_activity: new Date().toISOString(),
+          },
+          { onConflict: 'user_id' }
+        )
         .select()
         .single();
 
@@ -241,9 +259,17 @@ class GamificationEngine {
 
       if (error) throw error;
 
-      // Award points bonus for big wins
-      if (result === 'big_win' || result === 'mega_win') {
-        await this.addPoints(userId, 50, 'Spin wheel bonus');
+      // Award points on EVERY spin (was only big/mega before — 70% of spins gave nothing)
+      const pointsMap = {
+        consolation: 10,
+        win: 25,
+        big_win: 75,
+        mega_win: 150,
+      };
+      try {
+        await this.addPoints(userId, pointsMap[result], `Spin wheel: ${result}`);
+      } catch (pointsErr) {
+        console.warn('Spin reward saved but points failed (non-blocking):', pointsErr);
       }
 
       return data;
@@ -335,13 +361,16 @@ class GamificationEngine {
 
       const { data, error } = await supabase
         .from('daily_streaks')
-        .upsert({
-          user_id: userId,
-          current_streak: newStreak,
-          longest_streak: longest,
-          last_login: new Date().toISOString(),
-          freeze_count: freezeCount,
-        })
+        .upsert(
+          {
+            user_id: userId,
+            current_streak: newStreak,
+            longest_streak: longest,
+            last_login: new Date().toISOString(),
+            freeze_count: freezeCount,
+          },
+          { onConflict: 'user_id' }
+        )
         .select()
         .single();
 

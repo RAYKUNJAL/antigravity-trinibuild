@@ -593,8 +593,16 @@ const StoreBuilderV3: React.FC = () => {
         });
       }
 
-      // Navigate to success / dashboard
-      navigate(`/store/${slug}?welcome=1`);
+      // Award gamification points + give them a free spin (non-blocking)
+      try {
+        const { MerchantGamification } = await import('../services/gamificationIntegration');
+        await MerchantGamification.recordStoreCreation(user.id);
+      } catch (gamiErr) {
+        console.warn('Gamification reward failed (non-blocking):', gamiErr);
+      }
+
+      // Navigate to success page; ?welcome=1 triggers the spin-wheel reward popup on storefront
+      navigate(`/store/${slug}?welcome=1&spin=1`);
     } catch (err: any) {
       console.error('Launch error:', err);
       setError(err?.message || 'Something went wrong. Please try again.');
