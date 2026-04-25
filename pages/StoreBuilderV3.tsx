@@ -553,18 +553,23 @@ const StoreBuilderV3: React.FC = () => {
         .replace(/^-|-$/g, '')
         .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 7);
 
-      // Insert store
+      // Insert store - matches actual stores table schema (owner_id, theme_config jsonb, color_scheme jsonb)
       const { data: store, error: storeError } = await supabase
         .from('stores')
         .insert({
-          user_id: user.id,
+          owner_id: user.id,  // RLS policy: auth.uid() = owner_id
           name: state.storeName.trim(),
           slug,
           tagline: state.tagline.trim() || null,
           description: state.description.trim() || null,
           category: state.businessType,
-          template_id: state.templateId,
-          primary_color: state.primaryColor,
+          theme_config: {
+            template_id: state.templateId,
+            business_type: state.businessType,
+          },
+          color_scheme: {
+            primary: state.primaryColor,
+          },
           phone: state.phone.trim() || null,
           whatsapp: state.whatsapp.trim() || null,
           status: 'active',
