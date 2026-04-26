@@ -9,7 +9,7 @@ export const Footer: React.FC = () => {
     <footer className="bg-gray-950 text-white">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8 lg:gap-6">
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
@@ -54,6 +54,22 @@ export const Footer: React.FC = () => {
               <li><Link to="/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">Jobs Board</Link></li>
               <li><Link to="/real-estate" className="text-sm text-gray-400 hover:text-white transition-colors">Real Estate</Link></li>
               <li><Link to="/tickets" className="text-sm text-gray-400 hover:text-white transition-colors">Events & Tickets</Link></li>
+            </ul>
+          </div>
+
+          {/* Solutions — CRO landing pages for cold traffic / SEO entry points.
+              Links to /services/* (the CRO landings), separate from /directory, /jobs, etc.
+              which are the actual product UIs. Both audiences are served. */}
+          <div>
+            <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Solutions</h3>
+            <ul className="space-y-2.5">
+              <li><Link to="/services/stores" className="text-sm text-gray-400 hover:text-white transition-colors">For Online Stores</Link></li>
+              <li><Link to="/services/food" className="text-sm text-gray-400 hover:text-white transition-colors">For Restaurants</Link></li>
+              <li><Link to="/services/marketplace" className="text-sm text-gray-400 hover:text-white transition-colors">For Marketplaces</Link></li>
+              <li><Link to="/services/rides" className="text-sm text-gray-400 hover:text-white transition-colors">For Drivers</Link></li>
+              <li><Link to="/services/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">For Job Seekers</Link></li>
+              <li><Link to="/services/tickets" className="text-sm text-gray-400 hover:text-white transition-colors">For Event Hosts</Link></li>
+              <li><Link to="/services/living" className="text-sm text-gray-400 hover:text-white transition-colors">For Real Estate</Link></li>
             </ul>
           </div>
 

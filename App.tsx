@@ -180,6 +180,7 @@ const App: React.FC = () => {
               <Route path="/services/marketplace" element={<MarketplaceLanding />} />
               <Route path="/services/rides" element={<RidesLanding />} />
               <Route path="/services/jobs" element={<JobsLanding />} />
+              <Route path="/services/tickets" element={<TicketsLanding />} />
               <Route path="/services/living" element={<LivingLanding />} />
 
               {/* Store Builder & Storefront */}
