@@ -33,6 +33,8 @@ const SERVICE_GROUPS: NavGroup[] = [
 ];
 
 const MOBILE_LINKS = [
+  { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
+  { name: 'My Rewards', path: '/loyalty', icon: Star },
   { name: 'Directory', path: '/directory', icon: Store },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
   { name: 'Digital', path: '/digital', icon: Gamepad2 },
@@ -190,6 +192,15 @@ export const Navbar: React.FC = () => {
                     <Link to="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                       <Store size={16} />
                       My Store
+                    </Link>
+                    <Link to="/loyalty" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                      <Star size={16} />
+                      My Rewards
+                    </Link>
+                    <Link to="/spin-wheel" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-bold text-trini-red hover:bg-red-50">
+                      <Gift size={16} />
+                      Spin to Win
+                      <span className="ml-auto text-[9px] bg-trini-red text-white px-1.5 py-0.5 rounded-full font-black">FREE</span>
                     </Link>
                     <button
                       onClick={handleLogout}

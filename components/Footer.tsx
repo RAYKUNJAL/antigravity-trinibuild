@@ -91,6 +91,7 @@ export const Footer: React.FC = () => {
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Business</h3>
             <ul className="space-y-2.5">
               <li><Link to="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Pricing & Plans</Link></li>
+              <li><Link to="/loyalty" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Rewards & Loyalty <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">EARN</span></Link></li>
               <li><Link to="/earn" className="text-sm text-gray-400 hover:text-white transition-colors">Earn With Us</Link></li>
               <li><Link to="/affiliate" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Program</Link></li>
               <li><Link to="/drive-with-us" className="text-sm text-gray-400 hover:text-white transition-colors">Drive With Us</Link></li>
