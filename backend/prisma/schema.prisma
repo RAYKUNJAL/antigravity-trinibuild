@@ -1,4 +1,4 @@
-// TriniBuild Prisma Schema - Minimal Version for Phase 1 & 2
+// TriniBuild Prisma Schema
 // SQLite-compatible (no arrays, JSON, or enums)
 
 generator client {
@@ -25,6 +25,7 @@ model User {
 
   // Verification
   phoneVerified     DateTime?
+  emailVerified     DateTime?
 
   // Status
   createdAt         DateTime  @default(now())
@@ -35,6 +36,9 @@ model User {
   orders            Order[]
   cart              Cart?
   payments          Payment[]
+  notifications     Notification[]
+  notificationEmails NotificationEmail[]
+  refunds           Refund[]
 }
 
 // ============================================
@@ -82,12 +86,22 @@ model Product {
 
   // Product Info
   name              String
+  title             String?   // alternate name field
   description       String?
+  brand             String?
   price             Float
+  discount          Float     @default(0) // discount percentage
+  rating            Float     @default(0) // average rating
+  views             Int       @default(0) // view count
   category          String    @default("general")
 
   // Media
   imageUrl          String?   // single main image URL
+
+  // Features
+  tags              String?   // comma-separated tags
+  isFeatured        Boolean   @default(false)
+  isFlashSale       Boolean   @default(false)
 
   // Inventory
   stock             Int       @default(0)
@@ -131,6 +145,8 @@ model CartItem {
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+
+  @@unique([cartId, productId])
 }
 
 // ============================================
@@ -164,6 +180,7 @@ model Order {
   paymentStatus     String    @default("PENDING") // PENDING, COMPLETED, FAILED
   paymentMethod     String    @default("COD") // COD, etc.
   notes             String?
+  cancelReason      String?   // reason for cancellation if cancelled
 
   // Timestamps
   createdAt         DateTime  @default(now())
@@ -182,8 +199,12 @@ model OrderItem {
   productId         String
   product           Product   @relation(fields: [productId], references: [id])
 
+  vendorId          String    // denormalize for quick access
   quantity          Int
+  price             Float
   priceAtPurchase   Float
+  subtotal          Float     @default(0) // quantity * price
+  status            String    @default("pending") // order item status
 
   createdAt         DateTime  @default(now())
 }
@@ -205,6 +226,11 @@ model Payment {
   method            String    @default("COD") // COD, CARD, TRANSFER, etc.
   status            String    @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
 
+  // External References
+  transactionId     String?   // external payment reference
+  paymentIntentId   String?   // stripe or other provider ID
+  failureMessage    String?   // error message if failed
+
   // COD-specific
   deliveredOn       DateTime?
   paidOn            DateTime?
@@ -213,6 +239,80 @@ model Payment {
   notes             String?
 
   // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type              String    // order_update, payment, etc.
+  title             String
+  message           String
+  read              Boolean   @default(false)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model NotificationEmail {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  email             String
+  subject           String
+  body              String
+  sent              Boolean   @default(false)
+  sentAt            DateTime?
+
+  createdAt         DateTime  @default(now())
+}
+
+// ============================================
+// REFUNDS
+// ============================================
+
+model Refund {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderId           String
+  amount            Float
+  reason            String
+  status            String    @default("pending") // pending, approved, rejected, completed
+  notes             String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// ============================================
+// PROFESSIONAL SERVICES
+// ============================================
+
+model TriniWorksProfessional {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+
+  title             String    // job title
+  category          String    // service category
+  description       String?
+  hourlyRate        Float?
+  bio               String?
+  profileImage      String?
+
+  isVerified        Boolean   @default(false)
+  rating            Float     @default(0)
+  reviews           Int       @default(0)
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }
