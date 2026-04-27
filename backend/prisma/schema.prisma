@@ -102,6 +102,8 @@ model Product {
   tags              String?   // comma-separated tags
   isFeatured        Boolean   @default(false)
   isFlashSale       Boolean   @default(false)
+  flashSaleEndDate  DateTime? // when flash sale ends
+  reviews           Int       @default(0) // number of reviews
 
   // Inventory
   stock             Int       @default(0)
@@ -181,6 +183,7 @@ model Order {
   paymentMethod     String    @default("COD") // COD, etc.
   notes             String?
   cancelReason      String?   // reason for cancellation if cancelled
+  canceledAt        DateTime? // when order was canceled
 
   // Timestamps
   createdAt         DateTime  @default(now())
@@ -223,12 +226,14 @@ model Payment {
 
   // Payment Info
   amount            Float
+  currency          String    @default("USD") // currency code
   method            String    @default("COD") // COD, CARD, TRANSFER, etc.
   status            String    @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
 
   // External References
   transactionId     String?   // external payment reference
   paymentIntentId   String?   // stripe or other provider ID
+  paymentId         String?   // alternate payment ID reference
   failureMessage    String?   // error message if failed
 
   // COD-specific
@@ -256,6 +261,8 @@ model Notification {
   title             String
   message           String
   read              Boolean   @default(false)
+  readAt            DateTime?
+  relatedOrderId    String?   // link to related order if applicable
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -285,6 +292,7 @@ model Refund {
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orderId           String
+  paymentId         String?   // link to payment being refunded
   amount            Float
   reason            String
   status            String    @default("pending") // pending, approved, rejected, completed
