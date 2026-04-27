@@ -67,11 +67,11 @@ export const AuthService = {
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET || 'secret', {
       expiresIn: process.env.JWT_EXPIRY || '7d'
-    });
+    } as any);
 
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'refresh_secret', {
       expiresIn: '30d'
-    });
+    } as any);
 
     return {
       user: {

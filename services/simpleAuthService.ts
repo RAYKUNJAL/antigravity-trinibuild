@@ -1,9 +1,7 @@
 /**
  * SimpleAuthService - Minimal, working auth without complexity
- * No triggers, no fancy features - just login/signup that works
+ * Uses backend Express.js API for authentication instead of Supabase
  */
-
-import { supabase } from './supabaseClient';
 
 export interface SimpleUser {
   id: string;
@@ -12,48 +10,60 @@ export interface SimpleUser {
   role: string;
 }
 
+const API_BASE_URL = '/api';
+
 export const simpleAuthService = {
   /**
-   * Sign up new user - NO database writes, pure Supabase Auth
+   * Sign up new user via backend API
    */
   signup: async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
     try {
       console.log('🔐 [simpleAuthService] signup START:', { email, name });
-      
-      // 1. Create auth user only - NO DATABASE WRITES
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-            role: 'user'
-          }
-        }
+
+      // Call backend registration endpoint
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName: name.split(' ')[0] || name,
+          lastName: name.split(' ').slice(1).join(' ') || '',
+          phone: ''
+        })
       });
 
-      console.log('🔐 [simpleAuthService] signUp response:', { authError, userCreated: !!authData.user });
+      console.log('🔐 [simpleAuthService] signup response status:', response.status);
 
-      if (authError) {
-        console.error('🔴 [simpleAuthService] Supabase error:', authError.message);
-        throw authError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMsg = errorData.error || `Signup failed with status ${response.status}`;
+        console.error('🔴 [simpleAuthService] Backend error:', errorMsg);
+        throw new Error(errorMsg);
       }
-      
-      if (!authData.user) {
+
+      const result = await response.json();
+
+      if (!result.data || !result.data.user) {
         throw new Error('No user returned from signup');
       }
 
-      // 2. Store in localStorage (synchronous, no DB)
+      const userData = result.data.user;
+
+      // Create user object
       const user: SimpleUser = {
-        id: authData.user.id,
-        email: authData.user.email || email,
+        id: userData.id,
+        email: userData.email || email,
         name: name || email.split('@')[0],
-        role: 'user'
+        role: userData.role || 'user'
       };
 
+      // Store in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', authData.session?.access_token || '');
-      
+      localStorage.setItem('authToken', result.data.token || '');
+
       console.log('✅ [simpleAuthService] signup SUCCESS');
       return { success: true, user };
     } catch (err: any) {
@@ -64,41 +74,53 @@ export const simpleAuthService = {
   },
 
   /**
-   * Login existing user
+   * Login existing user via backend API
    */
   login: async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      console.log('🔐 [simpleAuthService] login START:', { email });
+
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
       });
 
-      if (error) {
-        console.error('Login error from Supabase:', error);
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMsg = errorData.error || 'Login failed';
+        console.error('Login error from backend:', errorMsg);
+        throw new Error(errorMsg);
       }
 
-      if (!data.user) {
+      const result = await response.json();
+
+      if (!result.data || !result.data.user) {
         throw new Error('Login failed - no user returned');
       }
 
+      const userData = result.data.user;
+
       // Create user object
       const user: SimpleUser = {
-        id: data.user.id,
-        email: data.user.email || email,
-        name: data.user.user_metadata?.full_name || email.split('@')[0],
-        role: data.user.user_metadata?.role || 'user'
+        id: userData.id,
+        email: userData.email || email,
+        name: userData.firstName || email.split('@')[0],
+        role: userData.role || 'user'
       };
 
       // Store in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', data.session?.access_token || '');
+      localStorage.setItem('authToken', result.data.token || '');
 
+      console.log('✅ [simpleAuthService] login SUCCESS');
       return { success: true, user };
     } catch (err: any) {
       console.error('Login error:', err);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: err.message || 'Login failed. Please check your email and password.'
       };
     }
@@ -109,9 +131,9 @@ export const simpleAuthService = {
    */
   logout: async () => {
     try {
-      await supabase.auth.signOut();
       localStorage.removeItem('user');
       localStorage.removeItem('authToken');
+      console.log('✅ [simpleAuthService] logout SUCCESS');
       return { success: true };
     } catch (err: any) {
       console.error('Logout error:', err);

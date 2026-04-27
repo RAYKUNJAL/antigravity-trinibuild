@@ -537,9 +537,26 @@ const StoreBuilderV3: React.FC = () => {
     setError(null);
 
     try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
+      // Get current user - check localStorage first, then Supabase session
+      let user = null;
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          user = JSON.parse(storedUser);
+        } catch (e) {
+          console.warn('Invalid stored user:', e);
+        }
+      }
+
+      // If not in localStorage, try Supabase session
+      if (!user) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          user = session.user as any;
+        }
+      }
+
+      if (!user) {
         // Save draft and redirect to signup
         navigate('/signup?next=/create-store');
         return;

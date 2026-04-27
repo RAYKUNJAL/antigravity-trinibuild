@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { AuthService } from '../services/authService.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
@@ -6,7 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 const router = Router();
 
 // Register
-router.post('/register', authLimiter, asyncHandler(async (req, res) => {
+router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName, phone } = req.body;
 
   if (!email || !password || !firstName || !lastName) {
@@ -22,7 +22,7 @@ router.post('/register', authLimiter, asyncHandler(async (req, res) => {
 }));
 
 // Login
-router.post('/login', authLimiter, asyncHandler(async (req, res) => {
+router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -38,7 +38,7 @@ router.post('/login', authLimiter, asyncHandler(async (req, res) => {
 }));
 
 // Refresh Token
-router.post('/refresh', asyncHandler(async (req, res) => {
+router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
