@@ -1,5 +1,9 @@
 import AIListingDashboard from './pages/AIListingDashboard';
 import DebugUpload from './src/pages/DebugUpload';
+import CODDashboard from './pages/CODDashboard';
+import AffiliateDashboard from './pages/AffiliateDashboard';
+import DocumentCenter from './pages/DocumentCenter';
+import PricingPage from './pages/PricingPage';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -201,7 +205,7 @@ const App: React.FC = () => {
               <Route path="/admin" element={<AdminSignup />} />
               <Route path="/admin/bypass" element={<AdminBypass />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
-              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/pricing" element={<PricingPage />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
               <Route path="/earn" element={<Earn />} />
@@ -223,8 +227,9 @@ const App: React.FC = () => {
               <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
-              <Route path="/documents" element={<AIDocumentAssistant />} />
-              <Route path="/ai-documents" element={<AIDocumentAssistant />} />
+              <Route path="/documents" element={<DocumentCenter />} />
+              <Route path="/ai-documents" element={<DocumentCenter />} />
+              <Route path="/document-center" element={<DocumentCenter />} />
               <Route path="/digital" element={<DigitalServicesHub />} />
               <Route path="/digital-services" element={<DigitalServicesHub />} />
               <Route path="/game-pass" element={<DigitalServicesHub />} />
@@ -260,12 +265,17 @@ const App: React.FC = () => {
               <Route path="/help" element={<HelpSupportPage />} />
               <Route path="/support" element={<HelpSupportPage />} />
 
+              {/* 💰 COD MANAGEMENT */}
+              <Route path="/cod-dashboard" element={<ProtectedRoute><CODDashboard /></ProtectedRoute>} />
+              <Route path="/orders/cod" element={<ProtectedRoute><CODDashboard /></ProtectedRoute>} />
+
               {/* 💼 REFERRAL & AFFILIATE */}
               <Route path="/referral" element={<ReferralProgramPage />} />
-              <Route path="/affiliate" element={<ReferralProgramPage />} />
-              <Route path="/earn" element={<ReferralProgramPage />} />
-              <Route path="/affiliate/earnings" element={<ProtectedRoute><AffiliateEarningsDashboard /></ProtectedRoute>} />
-              <Route path="/referral/dashboard" element={<ProtectedRoute><AffiliateEarningsDashboard /></ProtectedRoute>} />
+              <Route path="/affiliate" element={<AffiliateDashboard />} />
+              <Route path="/earn" element={<AffiliateDashboard />} />
+              <Route path="/affiliate/dashboard" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
+              <Route path="/affiliate/earnings" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
+              <Route path="/referral/dashboard" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
 
               {/* 🚀 SELLER ONBOARDING */}
               <Route path="/seller-onboarding" element={<SellerOnboardingPage />} />
