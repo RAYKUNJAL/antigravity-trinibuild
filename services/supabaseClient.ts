@@ -5,23 +5,29 @@ import { createClient } from '@supabase/supabase-js';
 // For development, we'll use placeholders if they aren't present
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const fallbackSupabaseUrl = 'http://127.0.0.1:54321';
+const fallbackSupabaseAnonKey = 'missing-supabase-anon-key';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Missing Supabase environment variables!');
-    console.error('Please check your .env.local file and ensure:');
-    console.error('  - VITE_SUPABASE_URL is set');
-    console.error('  - VITE_SUPABASE_ANON_KEY is set');
+    console.warn('Missing Supabase environment variables; using local fallback client.');
+    console.warn('Please check your .env.local file and ensure:');
+    console.warn('  - VITE_SUPABASE_URL is set');
+    console.warn('  - VITE_SUPABASE_ANON_KEY is set');
 } else {
     console.log('✅ Supabase configuration loaded');
     console.log('📍 URL:', supabaseUrl);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        persistSession: true,
-        autoRefreshToken: true,
+export const supabase = createClient(
+    supabaseUrl || fallbackSupabaseUrl,
+    supabaseAnonKey || fallbackSupabaseAnonKey,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+        }
     }
-});
+);
 
 // Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
