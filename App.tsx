@@ -57,7 +57,7 @@ import {
   TrafficHub, AdsEngine, ContentAICenter, UserManagement,
   TrustSafety, FinancePayouts, SystemHealth, DeveloperTools,
   MarketplaceMonitor, JobsMonitor, RealEstateMonitor, RideshareFleet,
-  TicketsMonitor, ReportsAnalytics, VideoControlCenter
+  TicketsMonitor, ReportsAnalytics, VideoControlCenter, TeamCommandCenter
 } from './components/admin';
 import { MessagingCenter } from './pages/admin/MessagingCenter';
 import { Automations } from './pages/admin/Automations';
@@ -311,6 +311,7 @@ const App: React.FC = () => {
             {/* Admin Command Center Sub-Website - No ProtectedRoute to allow bypass */}
             <Route path="/admin/command-center" element={<AdminLayout />}>
               <Route index element={<CommandCenter />} />
+              <Route path="team" element={<TeamCommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
               <Route path="video-control" element={<VideoControlCenter />} />
@@ -329,6 +330,10 @@ const App: React.FC = () => {
               <Route path="automations" element={<Automations />} />
               <Route path="developer-tools" element={<DeveloperTools />} />
               <Route path="reports-and-analytics" element={<ReportsAnalytics />} />
+            </Route>
+
+            <Route path="/dashboard/team" element={<AdminLayout />}>
+              <Route index element={<TeamCommandCenter />} />
             </Route>
 
             <Route element={<PageLayout />}>

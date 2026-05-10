@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import { AdminSidebar } from '../components/admin';
+import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { authService } from '../services/authService';
 import { Bell, Search, User } from 'lucide-react';
 
@@ -43,10 +43,10 @@ export const AdminLayout: React.FC = () => {
             />
 
             {/* Main Content Area */}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
+            <div className="flex-1 min-w-0 flex flex-col transition-all duration-300">
 
                 {/* Top Header */}
-                <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 sticky top-0 z-10">
+                <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -82,7 +82,7 @@ export const AdminLayout: React.FC = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-6 overflow-auto">
+                <main className="flex-1 p-4 md:p-6 overflow-auto">
                     <Outlet />
                 </main>
             </div>
