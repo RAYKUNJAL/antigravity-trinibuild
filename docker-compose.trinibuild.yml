@@ -1,0 +1,18 @@
+services:
+  trinibuild-web:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+        VITE_GEMINI_API_KEY: ${VITE_GEMINI_API_KEY:-}
+        VITE_OPENAI_API_KEY: ${VITE_OPENAI_API_KEY:-}
+    image: trinibuild-web:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3010:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

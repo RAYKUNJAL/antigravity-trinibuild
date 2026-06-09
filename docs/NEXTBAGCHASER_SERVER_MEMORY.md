@@ -1,6 +1,6 @@
 # NextBagChaser Server Memory
 
-Last updated: 2026-05-10
+Last updated: 2026-06-09
 
 ## Infrastructure Direction
 
@@ -9,6 +9,7 @@ All NextBagChaser, TriniBuild, BidBinBuy, and related app operations are moving 
 The platform command center should be the primary operating surface:
 
 - Production dashboard: `https://nextbagchaser.com/dashboard/team`
+- TriniBuild production site target: `https://trinibuild.com`
 - Admin command center route: `/admin/command-center/team`
 - Agent memory, app registry, command runs, and handoffs live in self-hosted Supabase tables.
 - The website should use self-hosted Supabase environment variables, not hosted Supabase/Vercel defaults.
@@ -21,9 +22,11 @@ The platform command center should be the primary operating surface:
 - OS image: Ubuntu 24.04
 - Datacenter: `hil-dc1`
 - DNS: `nextbagchaser.com` resolves to `5.78.105.83`
+- Required DNS update: `trinibuild.com` and `www.trinibuild.com` should point to `5.78.105.83`.
 - HTTP/HTTPS: Caddy is responding on ports `80` and `443`
 - Coolify: port `8000` is open and redirects to `/login`
 - SSH: port `22` is open
+- Code-server: `https://code.nextbagchaser.com` accepts the provided password, but the workbench WebSocket currently fails with status `1006` because `wss://code.nextbagchaser.com/stable-...` returns `404`.
 
 Do not commit Hetzner API tokens, Coolify passwords, Supabase service role keys, root passwords, or SSH private keys to this repo.
 
@@ -76,8 +79,17 @@ After server access is available:
 5. Serve the built `dist` app through the existing Caddy/Coolify deployment.
 6. Verify `https://nextbagchaser.com/dashboard/team` renders after login.
 
+For the standalone TriniBuild web deployment:
+
+1. Ensure DNS for `trinibuild.com` and `www.trinibuild.com` points to `5.78.105.83`.
+2. Deploy this repo with `docker compose -f docker-compose.trinibuild.yml up -d --build`.
+3. Add the Caddy route from `deploy/hetzner/Caddyfile.trinibuild.example`.
+4. Verify `https://trinibuild.com` returns the app instead of `404`.
+
 ## Current Blockers
 
 - No SSH key is registered in the Hetzner project.
+- Codex SSH key is now registered in the Hetzner project as `codex-nextbagchaser`, but it is not accepted by the existing server until added to the server user's `authorized_keys`.
 - No Coolify login/API token is available in this repo/session.
 - No self-hosted Supabase anon/service keys are available in this repo/session.
+- Code-server cannot currently be used for terminal work until the WebSocket proxy is fixed.
