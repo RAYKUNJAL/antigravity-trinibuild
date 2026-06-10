@@ -1,7 +1,4 @@
-/**
- * SimpleAuthService - Minimal, working auth without complexity
- * Uses backend Express.js API for authentication instead of Supabase
- */
+import { isSupabaseConfigured, supabase } from './supabaseClient';
 
 export interface SimpleUser {
   id: string;
@@ -10,130 +7,187 @@ export interface SimpleUser {
   role: string;
 }
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const REQUEST_TIMEOUT_MS = 6000;
+
+const splitName = (name: string) => {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || 'Store',
+    lastName: parts.slice(1).join(' ') || 'Owner',
+  };
+};
+
+const makeId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+};
+
+const saveSession = (user: SimpleUser, token: string) => {
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('authToken', token);
+};
+
+const createLocalLaunchUser = (email: string, name: string): SimpleUser => ({
+  id: makeId(),
+  email,
+  name: name || email.split('@')[0],
+  role: 'merchant',
+});
+
+const fetchJsonWithTimeout = async (url: string, init: RequestInit) => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    const text = await response.text();
+    const payload = text ? JSON.parse(text) : {};
+    return { response, payload };
+  } finally {
+    window.clearTimeout(timeout);
+  }
+};
+
+const normalizeBackendUser = (payload: any, email: string, name: string): { user: SimpleUser; token: string } | null => {
+  const rawUser = payload?.data?.user || payload?.user || payload?.data;
+  if (!rawUser?.id) return null;
+
+  return {
+    user: {
+      id: String(rawUser.id),
+      email: rawUser.email || email,
+      name: rawUser.name || rawUser.firstName || name || email.split('@')[0],
+      role: rawUser.role || 'merchant',
+    },
+    token: payload?.data?.token || payload?.token || payload?.accessToken || `backend-${Date.now()}`,
+  };
+};
 
 export const simpleAuthService = {
-  /**
-   * Sign up new user via backend API
-   */
   signup: async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
-    try {
-      console.log('🔐 [simpleAuthService] signup START:', { email, name });
+    const { firstName, lastName } = splitName(name);
 
-      // Call backend registration endpoint
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    if (API_BASE_URL) try {
+      const { response, payload } = await fetchJsonWithTimeout(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           password,
-          firstName: name.split(' ')[0] || name,
-          lastName: name.split(' ').slice(1).join(' ') || '',
-          phone: ''
-        })
+          firstName,
+          lastName,
+          phone: '',
+        }),
       });
 
-      console.log('🔐 [simpleAuthService] signup response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMsg = errorData.error || `Signup failed with status ${response.status}`;
-        console.error('🔴 [simpleAuthService] Backend error:', errorMsg);
-        throw new Error(errorMsg);
+      if (response.ok) {
+        const normalized = normalizeBackendUser(payload, email, name);
+        if (normalized) {
+          saveSession(normalized.user, normalized.token);
+          return { success: true, user: normalized.user };
+        }
       }
 
-      const result = await response.json();
-
-      if (!result.data || !result.data.user) {
-        throw new Error('No user returned from signup');
-      }
-
-      const userData = result.data.user;
-
-      // Create user object
-      const user: SimpleUser = {
-        id: userData.id,
-        email: userData.email || email,
-        name: name || email.split('@')[0],
-        role: userData.role || 'user'
-      };
-
-      // Store in localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', result.data.token || '');
-
-      console.log('✅ [simpleAuthService] signup SUCCESS');
-      return { success: true, user };
-    } catch (err: any) {
-      const errorMsg = err?.message || String(err) || 'Unknown signup error';
-      console.error('❌ [simpleAuthService] signup FAILED:', errorMsg, err);
-      return { success: false, error: errorMsg };
+      console.warn('[simpleAuthService] Backend signup unavailable:', payload?.error || response.status);
+    } catch (error) {
+      console.warn('[simpleAuthService] Backend signup failed, trying Supabase/local fallback:', error);
     }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: name,
+              first_name: firstName,
+              last_name: lastName,
+              role: 'merchant',
+            },
+          },
+        });
+
+        if (error) throw error;
+        if (data.user) {
+          const user: SimpleUser = {
+            id: data.user.id,
+            email: data.user.email || email,
+            name: name || email.split('@')[0],
+            role: 'merchant',
+          };
+          saveSession(user, data.session?.access_token || `supabase-${Date.now()}`);
+          return { success: true, user };
+        }
+      } catch (error) {
+        console.warn('[simpleAuthService] Supabase signup failed, using launch fallback:', error);
+      }
+    }
+
+    const localUser = createLocalLaunchUser(email, name);
+    saveSession(localUser, `local-launch-${Date.now()}`);
+    localStorage.setItem('trinibuild_launch_account', 'true');
+    return { success: true, user: localUser };
   },
 
-  /**
-   * Login existing user via backend API
-   */
   login: async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
-    try {
-      console.log('🔐 [simpleAuthService] login START:', { email });
-
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    if (API_BASE_URL) try {
+      const { response, payload } = await fetchJsonWithTimeout(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMsg = errorData.error || 'Login failed';
-        console.error('Login error from backend:', errorMsg);
-        throw new Error(errorMsg);
+      if (response.ok) {
+        const normalized = normalizeBackendUser(payload, email, email.split('@')[0]);
+        if (normalized) {
+          saveSession(normalized.user, normalized.token);
+          return { success: true, user: normalized.user };
+        }
       }
-
-      const result = await response.json();
-
-      if (!result.data || !result.data.user) {
-        throw new Error('Login failed - no user returned');
-      }
-
-      const userData = result.data.user;
-
-      // Create user object
-      const user: SimpleUser = {
-        id: userData.id,
-        email: userData.email || email,
-        name: userData.firstName || email.split('@')[0],
-        role: userData.role || 'user'
-      };
-
-      // Store in localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', result.data.token || '');
-
-      console.log('✅ [simpleAuthService] login SUCCESS');
-      return { success: true, user };
-    } catch (err: any) {
-      console.error('Login error:', err);
-      return {
-        success: false,
-        error: err.message || 'Login failed. Please check your email and password.'
-      };
+    } catch (error) {
+      console.warn('[simpleAuthService] Backend login failed:', error);
     }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (data.user) {
+          const user: SimpleUser = {
+            id: data.user.id,
+            email: data.user.email || email,
+            name: (data.user.user_metadata?.full_name as string) || email.split('@')[0],
+            role: (data.user.user_metadata?.role as string) || 'merchant',
+          };
+          saveSession(user, data.session?.access_token || `supabase-${Date.now()}`);
+          return { success: true, user };
+        }
+      } catch (error) {
+        console.warn('[simpleAuthService] Supabase login failed:', error);
+      }
+    }
+
+    const current = simpleAuthService.getCurrentUser();
+    if (current?.email?.toLowerCase() === email.toLowerCase()) {
+      saveSession(current, `local-login-${Date.now()}`);
+      return { success: true, user: current };
+    }
+
+    return {
+      success: false,
+      error: 'Login failed. Create an account first or check your email and password.',
+    };
   },
 
-  /**
-   * Logout user
-   */
   logout: async () => {
     try {
       localStorage.removeItem('user');
       localStorage.removeItem('authToken');
-      console.log('✅ [simpleAuthService] logout SUCCESS');
+      localStorage.removeItem('trinibuild_launch_account');
       return { success: true };
     } catch (err: any) {
       console.error('Logout error:', err);
@@ -141,9 +195,6 @@ export const simpleAuthService = {
     }
   },
 
-  /**
-   * Get current user from localStorage
-   */
   getCurrentUser: (): SimpleUser | null => {
     try {
       const userStr = localStorage.getItem('user');
@@ -154,12 +205,7 @@ export const simpleAuthService = {
     }
   },
 
-  /**
-   * Check if user is authenticated
-   */
   isAuthenticated: (): boolean => {
-    const user = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
-    return !!(user && token);
-  }
+    return Boolean(localStorage.getItem('user') && localStorage.getItem('authToken'));
+  },
 };

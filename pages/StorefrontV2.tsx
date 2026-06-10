@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
-import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
@@ -11,6 +10,19 @@ import type { Store, Product } from '../types';
 
 // Lazy load heavy components
 const GooglePayButton = lazy(() => import('@google-pay/button-react'));
+const LOCAL_STORES_KEY = 'trinibuild_local_stores';
+
+const getLocalStoreBySlug = (slug?: string): (Store & { products?: Product[] }) | null => {
+    if (!slug) return null;
+
+    try {
+        const stores = JSON.parse(localStorage.getItem(LOCAL_STORES_KEY) || '{}');
+        return stores[slug] || null;
+    } catch (error) {
+        console.warn('Could not load local store:', error);
+        return null;
+    }
+};
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -52,6 +64,14 @@ export const StorefrontV2: React.FC = () => {
     useEffect(() => {
         const loadStore = async () => {
             if (!slug) return;
+
+            const localStore = getLocalStoreBySlug(slug);
+            if (localStore) {
+                setStore(localStore);
+                setProducts(localStore.products || []);
+                setLoading(false);
+                return;
+            }
 
             setLoading(true);
             try {
