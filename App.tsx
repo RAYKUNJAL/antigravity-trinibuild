@@ -208,7 +208,8 @@ const App: React.FC = () => {
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
-              <Route path="/earn" element={<Earn />} />
+              <Route path="/earn" element={<AffiliateDashboard />} />
+              <Route path="/marketplace" element={<MarketplaceLanding />} />
 
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
@@ -271,8 +272,6 @@ const App: React.FC = () => {
 
               {/* 💼 REFERRAL & AFFILIATE */}
               <Route path="/referral" element={<ReferralProgramPage />} />
-              <Route path="/affiliate" element={<AffiliateDashboard />} />
-              <Route path="/earn" element={<AffiliateDashboard />} />
               <Route path="/affiliate/dashboard" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
               <Route path="/affiliate/earnings" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
               <Route path="/referral/dashboard" element={<ProtectedRoute><AffiliateDashboard /></ProtectedRoute>} />
