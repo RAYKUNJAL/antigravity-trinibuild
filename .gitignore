@@ -51,4 +51,4 @@ __pycache__/
 *.py[cod]
 
 .env
-ai_server/.env
+ai_server/.envuploads/

@@ -1,0 +1,25 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: root
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /var/www/trinibuild
+            git pull origin main
+            npm install --ignore-scripts
+            npm run build
+            cd server && npm install --omit=dev && cd ..
+            pm2 restart trinibuild-api
+            echo "✅ Deployed $(git rev-parse --short HEAD)"
