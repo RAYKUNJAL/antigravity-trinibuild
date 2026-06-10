@@ -3,6 +3,8 @@ name: Deploy to Hetzner
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -26,6 +28,7 @@ jobs:
 
   deploy:
     needs: verify
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     env:
       HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
