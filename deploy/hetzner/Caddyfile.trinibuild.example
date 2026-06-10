@@ -1,0 +1,4 @@
+trinibuild.com, www.trinibuild.com {
+  encode gzip zstd
+  reverse_proxy 127.0.0.1:3010
+}

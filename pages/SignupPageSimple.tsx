@@ -12,7 +12,7 @@ export const SignupPageSimple: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const redirect = searchParams.get('redirect') || searchParams.get('next') || '/create-store';
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ export const SignupPageSimple: React.FC = () => {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl font-black text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join TriniBuild and start selling online</p>
+            <p className="text-gray-600">Create your store owner account and start selling online</p>
           </div>
 
           {/* Error Message */}

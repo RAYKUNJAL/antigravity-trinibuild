@@ -20,7 +20,8 @@ import {
     Code,
     BarChart3,
     ChevronRight,
-    LogOut
+    LogOut,
+    Bot
 } from 'lucide-react';
 
 // ============================================
@@ -29,6 +30,7 @@ import {
 
 export type AdminSection =
     | 'overview'
+    | 'team'
     | 'traffic_hub'
     | 'ads_engine'
     | 'seo_keyword_hub'
@@ -72,6 +74,7 @@ const sectionGroups: { title: string; sections: SectionConfig[] }[] = [
         title: 'Dashboard',
         sections: [
             { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" />, roles: ['super_admin', 'admin', 'store_admin', 'moderator', 'support_agent', 'finance_admin', 'developer'] },
+            { id: 'team', label: 'AI Team', icon: <Bot className="h-5 w-5" />, roles: ['super_admin', 'admin', 'developer'] },
         ]
     },
     {
@@ -125,7 +128,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     const canAccess = (roles: AdminRole[]) => roles.includes(userRole);
 
     return (
-        <aside className={`bg-gray-900 text-white flex flex-col h-screen sticky top-0 transition-all ${collapsed ? 'w-16' : 'w-64'}`}>
+        <aside className={`hidden md:flex bg-gray-900 text-white flex-col h-screen sticky top-0 transition-all ${collapsed ? 'w-16' : 'w-64'}`}>
             {/* Logo */}
             <div className="p-4 border-b border-gray-800">
                 <div className="flex items-center gap-3">

@@ -16,12 +16,12 @@
  */
 
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Store, Shirt, Utensils, Sparkles, ShoppingBag, Briefcase, MoreHorizontal,
   Check, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff, AlertCircle, Sparkle
 } from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { isSupabaseConfigured, supabase } from '../services/supabaseClient';
 import { SafeBoundary } from '../components/SafeBoundary';
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -40,6 +40,8 @@ interface Template {
   description: string;
   preview: string;
   bestFor: string[];
+  accent: string;
+  sections: string[];
   componentLoader: () => Promise<{ default: React.ComponentType<any> }>;
 }
 
@@ -57,6 +59,73 @@ interface StoreBuilderState {
 }
 
 const DRAFT_KEY = 'trinibuild_store_draft_v3';
+const DEMO_LISTING_KEY = 'trinibuild_demo_listing';
+const LOCAL_STORES_KEY = 'trinibuild_local_stores';
+
+const TEMPLATE_ALIASES: Record<string, string> = {
+  basic_storefront: 'professional',
+  roti_shop_pro: 'restaurant',
+  doubles_breakfast_pro: 'restaurant',
+  restaurant_premium: 'restaurant',
+  clothing_store_pro: 'fashion',
+  salon_barber_pro: 'beauty',
+  pharmacy_medical_pro: 'ecommerce',
+  electronics_tech_pro: 'ecommerce',
+  bakery_sweets_pro: 'restaurant',
+  auto_parts_pro: 'ecommerce',
+  hardware_home_pro: 'ecommerce',
+  gym_fitness_pro: 'professional',
+  jewelry_luxury_pro: 'fashion',
+  multi_location_enterprise: 'professional',
+  bin_store_daily_deals: 'bin-store',
+  liquidation_store: 'bin-store',
+};
+
+const BUSINESS_BY_TEMPLATE: Record<string, string> = {
+  professional: 'services',
+  fashion: 'fashion',
+  restaurant: 'food',
+  beauty: 'beauty',
+  ecommerce: 'retail',
+  'bin-store': 'liquidation',
+};
+
+const resolveTemplateId = (templateId: string | null) => {
+  if (!templateId) return '';
+  return TEMPLATE_ALIASES[templateId] || templateId;
+};
+
+const getScannerListing = () => {
+  try {
+    const raw = localStorage.getItem(DEMO_LISTING_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn('Could not load scanner listing:', error);
+    return null;
+  }
+};
+
+const makeStoreSlug = (storeName: string) => {
+  const base = storeName
+    .toLowerCase()
+    .trim()
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 50) || 'store';
+
+  return `${base}-${Math.random().toString(36).slice(2, 7)}`;
+};
+
+const saveLocalStore = (slug: string, store: any) => {
+  try {
+    const current = JSON.parse(localStorage.getItem(LOCAL_STORES_KEY) || '{}');
+    current[slug] = store;
+    localStorage.setItem(LOCAL_STORES_KEY, JSON.stringify(current));
+  } catch (error) {
+    console.warn('Could not save local store:', error);
+  }
+};
 
 // ─── Business Types ────────────────────────────────────────────────────
 
@@ -90,6 +159,13 @@ const BUSINESS_TYPES: BusinessType[] = [
     recommendedTemplate: 'ecommerce',
   },
   {
+    id: 'liquidation',
+    name: 'Bin Store & Liquidation',
+    icon: Store,
+    description: 'Daily drops, pallets, overstock deals',
+    recommendedTemplate: 'bin-store',
+  },
+  {
     id: 'services',
     name: 'Professional Services',
     icon: Briefcase,
@@ -114,6 +190,8 @@ const TEMPLATES: Template[] = [
     description: 'Clean, conversion-focused layout. Works for any business.',
     preview: '🏢',
     bestFor: ['All Types', 'Most Versatile'],
+    accent: '#1F2937',
+    sections: ['Hero CTA', 'Services', 'Proof', 'WhatsApp lead form'],
     componentLoader: () => import('../components/templates/Premium3ColumnTemplate').then(m => ({ default: m.Premium3ColumnTemplate })),
   },
   {
@@ -122,6 +200,8 @@ const TEMPLATES: Template[] = [
     description: 'Elegant fashion showcase with image-first design.',
     preview: '👗',
     bestFor: ['Fashion', 'Boutiques'],
+    accent: '#EC4899',
+    sections: ['Lookbook', 'Product grid', 'Size guide', 'COD checkout'],
     componentLoader: () => import('../components/templates/PremiumFashionTemplate').then(m => ({ default: m.PremiumFashionTemplate })),
   },
   {
@@ -130,6 +210,8 @@ const TEMPLATES: Template[] = [
     description: 'Beautiful menu showcase with categories and reservations.',
     preview: '🍽️',
     bestFor: ['Restaurants', 'Cafes'],
+    accent: '#EA580C',
+    sections: ['Menu', 'Daily specials', 'Delivery zones', 'Booking'],
     componentLoader: () => import('../components/templates/PremiumRestaurantTemplate').then(m => ({ default: m.PremiumRestaurantTemplate })),
   },
   {
@@ -138,6 +220,8 @@ const TEMPLATES: Template[] = [
     description: 'Service-focused with stylist profiles and booking.',
     preview: '💅',
     bestFor: ['Beauty', 'Wellness'],
+    accent: '#7C3AED',
+    sections: ['Service menu', 'Booking', 'Gallery', 'Reviews'],
     componentLoader: () => import('../components/templates/PremiumBeautyTemplate').then(m => ({ default: m.PremiumBeautyTemplate })),
   },
   {
@@ -146,6 +230,18 @@ const TEMPLATES: Template[] = [
     description: 'Product grid with filters, search, and reviews.',
     preview: '🛍️',
     bestFor: ['Retail', 'Electronics'],
+    accent: '#0066CC',
+    sections: ['Product grid', 'Filters', 'Reviews', 'Checkout'],
+    componentLoader: () => import('../components/templates/PremiumEcommerceTemplate').then(m => ({ default: m.PremiumEcommerceTemplate })),
+  },
+  {
+    id: 'bin-store',
+    name: 'Bin Store Daily Deals',
+    description: 'Built for liquidation stores with daily price drops, pallets, and urgency.',
+    preview: 'BN',
+    bestFor: ['Bin stores', 'Liquidation', 'Overstock'],
+    accent: '#16A34A',
+    sections: ['Daily drop banner', 'Deal bins', 'Pallet offers', 'SMS/WhatsApp leads'],
     componentLoader: () => import('../components/templates/PremiumEcommerceTemplate').then(m => ({ default: m.PremiumEcommerceTemplate })),
   },
 ];
@@ -165,6 +261,8 @@ const COLOR_PRESETS = [
 
 const StoreBuilderV3: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedTemplateParam = searchParams.get('template');
   const [state, setState] = useState<StoreBuilderState>(() => {
     try {
       const saved = localStorage.getItem(DRAFT_KEY);
@@ -174,15 +272,30 @@ const StoreBuilderV3: React.FC = () => {
     } catch (e) {
       console.warn('Could not load draft:', e);
     }
+
+    const scannerListing = getScannerListing();
+    const scannerCategory = String(scannerListing?.category || '').toLowerCase();
+    const scannerTemplate = scannerCategory.includes('food')
+      ? 'restaurant'
+      : scannerCategory.includes('beauty')
+        ? 'beauty'
+        : scannerCategory.includes('fashion')
+          ? 'fashion'
+          : scannerCategory.includes('bin') || scannerCategory.includes('liquidation')
+            ? 'bin-store'
+            : scannerListing
+              ? 'ecommerce'
+              : '';
+
     return {
-      step: 1,
-      businessType: '',
-      templateId: '',
+      step: scannerListing ? 2 : 1,
+      businessType: scannerTemplate ? BUSINESS_BY_TEMPLATE[scannerTemplate] || 'retail' : '',
+      templateId: scannerTemplate,
       storeName: '',
-      tagline: '',
+      tagline: scannerListing ? `Now selling ${scannerListing.name}` : '',
       primaryColor: '#E61E2B',
-      description: '',
-      category: '',
+      description: scannerListing ? `First product draft: ${scannerListing.name}. ${scannerListing.description || ''}`.slice(0, 500) : '',
+      category: scannerListing?.category || '',
       phone: '',
       whatsapp: '',
     };
@@ -191,6 +304,20 @@ const StoreBuilderV3: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const requestedTemplate = resolveTemplateId(requestedTemplateParam);
+    if (!requestedTemplate || !TEMPLATES.some((template) => template.id === requestedTemplate)) {
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      step: prev.step === 1 ? 2 : prev.step,
+      templateId: requestedTemplate,
+      businessType: prev.businessType || BUSINESS_BY_TEMPLATE[requestedTemplate] || 'retail',
+    }));
+  }, [requestedTemplateParam]);
 
   // Auto-save draft to localStorage
   useEffect(() => {
@@ -319,7 +446,12 @@ const StoreBuilderV3: React.FC = () => {
                   </div>
                 )}
                 <div className="flex items-start gap-4">
-                  <div className="text-5xl flex-shrink-0">{template.preview}</div>
+                  <div
+                    className="h-14 w-14 rounded-xl flex items-center justify-center text-white text-lg font-black flex-shrink-0 shadow-sm"
+                    style={{ backgroundColor: template.accent }}
+                  >
+                    {template.preview}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -338,6 +470,16 @@ const StoreBuilderV3: React.FC = () => {
                         >
                           {tag}
                         </span>
+                      ))}
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      {template.sections.map((section) => (
+                        <div
+                          key={section}
+                          className="text-xs px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900"
+                        >
+                          {section}
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -537,67 +679,162 @@ const StoreBuilderV3: React.FC = () => {
     setError(null);
 
     try {
-      // Get current user - check localStorage first, then Supabase session
-      let user = null;
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+      let storedUser: any = null;
+      let sessionUser: any = null;
+
+      const storedUserRaw = localStorage.getItem('user');
+      if (storedUserRaw) {
         try {
-          user = JSON.parse(storedUser);
+          storedUser = JSON.parse(storedUserRaw);
         } catch (e) {
           console.warn('Invalid stored user:', e);
         }
       }
 
-      // If not in localStorage, try Supabase session
-      if (!user) {
+      if (isSupabaseConfigured()) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          user = session.user as any;
+          sessionUser = session.user as any;
         }
       }
 
+      const user = sessionUser || storedUser;
+
       if (!user) {
         // Save draft and redirect to signup
-        navigate('/signup?next=/create-store');
+        navigate('/signup?redirect=/create-store');
         return;
       }
 
-      // Generate slug
-      const slug = state.storeName
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 7);
+      const slug = makeStoreSlug(state.storeName);
+      const scannerListing = getScannerListing();
+      const ownerId = sessionUser?.id || user.id || makeStoreSlug(user.email || 'owner');
+      const storePhone = state.whatsapp.trim() || state.phone.trim();
+      const storePayload = {
+        owner_id: ownerId,
+        name: state.storeName.trim(),
+        slug,
+        tagline: state.tagline.trim() || null,
+        description: state.description.trim() || null,
+        category: state.businessType || state.category || 'retail',
+        theme_config: {
+          template_id: state.templateId || 'ecommerce',
+          business_type: state.businessType || 'retail',
+          source: scannerListing ? 'scanner' : 'builder',
+        },
+        color_scheme: {
+          primary: state.primaryColor,
+        },
+        phone: state.phone.trim() || null,
+        whatsapp: storePhone || null,
+        status: 'active',
+      };
 
-      // Insert store - matches actual stores table schema (owner_id, theme_config jsonb, color_scheme jsonb)
-      const { data: store, error: storeError } = await supabase
-        .from('stores')
-        .insert({
-          owner_id: user.id,  // RLS policy: auth.uid() = owner_id
-          name: state.storeName.trim(),
-          slug,
-          tagline: state.tagline.trim() || null,
-          description: state.description.trim() || null,
-          category: state.businessType,
-          theme_config: {
-            template_id: state.templateId,
-            business_type: state.businessType,
-          },
-          color_scheme: {
-            primary: state.primaryColor,
-          },
-          phone: state.phone.trim() || null,
-          whatsapp: state.whatsapp.trim() || null,
-          status: 'active',
-        })
-        .select()
-        .single();
+      let createdStore: any = null;
+      if (isSupabaseConfigured() && sessionUser?.id) {
+        const { data: store, error: storeError } = await supabase
+          .from('stores')
+          .insert(storePayload)
+          .select()
+          .single();
 
-      if (storeError) {
-        console.error('Store creation error:', storeError);
-        throw new Error(storeError.message || 'Could not create store');
+        if (storeError) {
+          console.warn('Supabase store creation failed; using local launch store:', storeError);
+        } else {
+          createdStore = store;
+        }
       }
+
+      const starterProducts = scannerListing
+        ? [{
+            id: `local-product-${Date.now()}`,
+            store_id: createdStore?.id || `local-store-${slug}`,
+            name: scannerListing.name || 'Featured Product',
+            slug: makeStoreSlug(scannerListing.name || 'featured-product'),
+            description: scannerListing.description || 'Store-ready product generated from the landing page scanner.',
+            price: Number(scannerListing.price || 75),
+            compare_at_price: Number(scannerListing.price || 75) + 30,
+            stock: 25,
+            sku: `SCAN-${Date.now().toString().slice(-6)}`,
+            image_url: null,
+            gallery_images: [],
+            category: scannerListing.category || 'Featured',
+            category_ids: [],
+            variants: [],
+            seo: {
+              title: scannerListing.name || 'Featured Product',
+              description: scannerListing.description || '',
+              keywords: scannerListing.tags || [],
+            },
+            specifications: {},
+            status: 'active',
+            created_at: new Date().toISOString(),
+          }]
+        : [{
+            id: `local-product-${Date.now()}`,
+            store_id: createdStore?.id || `local-store-${slug}`,
+            name: state.businessType === 'liquidation' ? 'Daily Deal Item' : 'Featured Product',
+            slug: 'featured-product',
+            description: state.businessType === 'liquidation'
+              ? 'Add today price, pickup window, and quantity for your next bin-store drop.'
+              : 'Add your first product with price, stock, category, and delivery details.',
+            price: state.businessType === 'liquidation' ? 25 : 99,
+            compare_at_price: state.businessType === 'liquidation' ? 60 : 129,
+            stock: 20,
+            sku: 'STARTER-001',
+            image_url: null,
+            gallery_images: [],
+            category: state.businessType || 'Featured',
+            category_ids: [],
+            variants: [],
+            seo: {},
+            specifications: {},
+            status: 'active',
+            created_at: new Date().toISOString(),
+          }];
+
+      const localStore = {
+        id: createdStore?.id || `local-store-${slug}`,
+        ...storePayload,
+        ...createdStore,
+        owner_id: createdStore?.owner_id || ownerId,
+        logo_url: createdStore?.logo_url || null,
+        banner_url: createdStore?.banner_url || '/trini-market-hero.jpg',
+        location: createdStore?.location || 'Trinidad & Tobago',
+        settings: createdStore?.settings || {
+          currency: 'TTD',
+          locale: 'en-TT',
+          taxInclusive: true,
+          shippingZones: [],
+          paymentProviders: [
+            { id: 'cod', enabled: true, config: {} },
+          ],
+          marketing: {
+            discounts: [],
+          },
+        },
+        theme: createdStore?.theme || {
+          template: 'modern',
+          colors: {
+            primary: state.primaryColor,
+            secondary: '#111827',
+            accent: '#FFD700',
+            background: '#ffffff',
+            text: '#111827',
+          },
+          sections: {},
+        },
+        contact_info: createdStore?.contact_info || {
+          email: user.email,
+          phone: storePhone,
+        },
+        color_scheme: createdStore?.color_scheme || { primary: state.primaryColor },
+        status: 'active',
+        created_at: createdStore?.created_at || new Date().toISOString(),
+        products: createdStore?.products || starterProducts,
+      };
+
+      saveLocalStore(slug, localStore);
 
       // Clear draft
       localStorage.removeItem(DRAFT_KEY);
@@ -610,12 +847,14 @@ const StoreBuilderV3: React.FC = () => {
         });
       }
 
-      // Award gamification points + give them a free spin (non-blocking)
-      try {
-        const { MerchantGamification } = await import('../services/gamificationIntegration');
-        await MerchantGamification.recordStoreCreation(user.id);
-      } catch (gamiErr) {
-        console.warn('Gamification reward failed (non-blocking):', gamiErr);
+      // Award gamification points for real Supabase sessions; local launch accounts stay non-blocking.
+      if (sessionUser?.id) {
+        try {
+          const { MerchantGamification } = await import('../services/gamificationIntegration');
+          await MerchantGamification.recordStoreCreation(sessionUser.id);
+        } catch (gamiErr) {
+          console.warn('Gamification reward failed (non-blocking):', gamiErr);
+        }
       }
 
       // Navigate to success page; ?welcome=1 triggers the spin-wheel reward popup on storefront

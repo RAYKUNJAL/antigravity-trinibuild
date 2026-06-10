@@ -7,7 +7,7 @@ import { supabase } from '../services/supabaseClient';
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(searchParams.get('mode') !== 'signup');
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [loading, setLoading] = useState(false);
 
