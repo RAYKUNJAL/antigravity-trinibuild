@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,9 +10,6 @@ import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import { StorefrontTemplateRenderer } from '../components/templates/StorefrontTemplateRenderer';
 import { getStoreTemplateProfile } from '../services/storeTemplateRegistry';
 import type { Store, Product } from '../types';
-
-// Lazy load heavy components
-const GooglePayButton = lazy(() => import('@google-pay/button-react'));
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -44,6 +41,8 @@ export const StorefrontV2: React.FC = () => {
     const [processing, setProcessing] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
+    const onlinePaymentsEnabled = import.meta.env.VITE_ENABLE_ONLINE_PAYMENTS === 'true';
+    const googlePayEnabled = onlinePaymentsEnabled && import.meta.env.VITE_ENABLE_GOOGLE_PAY === 'true';
 
     // Discount State
     const [promoCode, setPromoCode] = useState('');
@@ -212,15 +211,30 @@ export const StorefrontV2: React.FC = () => {
                 let result;
                 switch (paymentMethod) {
                     case 'wipay':
+                        if (!onlinePaymentsEnabled) {
+                            result = { success: false, error: 'Card payments are not enabled for this store yet. Please use Cash on Delivery or Bank Transfer.' };
+                            break;
+                        }
                         result = await paymentService.processWiPayPayment(paymentConfig);
                         if (result.redirectUrl) {
                             window.location.href = result.redirectUrl;
                             return;
                         }
                         break;
+                    case 'bank_transfer':
+                        const bankSettings = store?.settings as any;
+                        result = await paymentService.processBankTransfer(paymentConfig, {
+                            bank: bankSettings?.bank_name || bankSettings?.bank?.name || 'Store bank transfer',
+                            accountNumber: bankSettings?.bank_account_number || bankSettings?.bank?.account_number || 'Provided after order confirmation',
+                            accountName: bankSettings?.bank_account_name || bankSettings?.bank?.account_name || store?.name || 'Store owner'
+                        });
+                        break;
                     case 'cod':
                     case 'cash':
                         result = await paymentService.processCashPayment(paymentConfig);
+                        break;
+                    case 'google_pay':
+                        result = { success: false, error: 'Google Pay is not enabled for this store yet. Please use Cash on Delivery or Bank Transfer.' };
                         break;
                     default:
                         result = { success: false, error: 'Payment method not supported' };
@@ -765,36 +779,38 @@ export const StorefrontV2: React.FC = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => setPaymentMethod('wipay')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'wipay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                                type="button"
+                                                disabled={!onlinePaymentsEnabled}
+                                                onClick={() => onlinePaymentsEnabled && setPaymentMethod('wipay')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all disabled:cursor-not-allowed disabled:opacity-60 ${paymentMethod === 'wipay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
                                                     <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
                                                     <div className="text-left">
                                                         <p className="font-bold text-gray-900">WiPay</p>
-                                                        <p className="text-xs text-gray-500">Credit/Debit Card & Linx</p>
+                                                        <p className="text-xs text-gray-500">{onlinePaymentsEnabled ? 'Credit/Debit Card & Linx' : 'Coming soon - use COD or bank transfer'}</p>
                                                     </div>
                                                 </div>
                                                 {paymentMethod === 'wipay' && <Check className="h-5 w-5 text-blue-600" />}
                                             </button>
 
-                                            <Suspense fallback={<div>Loading Google Pay...</div>}>
-                                                <button
-                                                    onClick={() => setPaymentMethod('google_pay')}
-                                                    className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'google_pay' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center">
-                                                        <Smartphone className="h-6 w-6 text-purple-600 mr-3" />
-                                                        <div className="text-left">
-                                                            <p className="font-bold text-gray-900">Google Pay</p>
-                                                            <p className="text-xs text-gray-500">Fast & Secure</p>
-                                                        </div>
+                                            <button
+                                                type="button"
+                                                disabled={!googlePayEnabled}
+                                                onClick={() => googlePayEnabled && setPaymentMethod('google_pay')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all disabled:cursor-not-allowed disabled:opacity-60 ${paymentMethod === 'google_pay' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <Smartphone className="h-6 w-6 text-purple-600 mr-3" />
+                                                    <div className="text-left">
+                                                        <p className="font-bold text-gray-900">Google Pay</p>
+                                                        <p className="text-xs text-gray-500">{googlePayEnabled ? 'Fast & secure' : 'Coming soon - use COD or bank transfer'}</p>
                                                     </div>
-                                                    {paymentMethod === 'google_pay' && <Check className="h-5 w-5 text-purple-600" />}
-                                                </button>
-                                            </Suspense>
+                                                </div>
+                                                {paymentMethod === 'google_pay' && <Check className="h-5 w-5 text-purple-600" />}
+                                            </button>
 
                                             <button
                                                 onClick={() => setPaymentMethod('bank_transfer')}
