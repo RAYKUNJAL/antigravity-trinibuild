@@ -48,9 +48,9 @@ export const Auth: React.FC = () => {
     try {
       if (isLogin) {
         // LOGIN
-        const { error, data } = await authService.login({ email, password });
-        if (error) throw new Error(error);
-        if (data.user) {
+        const result = await authService.login({ email, password });
+        if (result.error) throw new Error(result.error);
+        if (result.user) {
           navigate(searchParams.get('redirect') || '/dashboard');
         }
       } else {

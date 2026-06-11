@@ -2,7 +2,7 @@
  * documentCenterService.ts — AI Banking & Visa Document System
  * Generates: Proof of Income, Bank Account Letter, Visa Support,
  * Job Letters, Loan Support, Financial Statements, VAT Certificates
- * Uses GPT-4o mini via VITE_OPENAI_API_KEY
+ * Uses the server AI gateway so provider keys stay out of the browser bundle.
  */
 
 import { supabase } from './supabaseClient';
@@ -200,9 +200,6 @@ export const documentCenterService = {
     const doc = DOCUMENT_CATALOG.find(d => d.id === document_type);
     if (!doc) throw new Error('Document type not found');
 
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    if (!apiKey) throw new Error('AI service not configured');
-
     const systemPrompt = SYSTEM_PROMPTS[document_type] || 'Generate a professional business document.';
     const today = new Date().toLocaleDateString('en-TT', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -212,22 +209,19 @@ ${Object.entries(fields).map(([k, v]) => `${k.replace(/_/g, ' ').replace(/\b\w/g
 
 Generate the complete, print-ready document. No placeholders, no instructions — only the final document text.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        message: userPrompt,
+        system_prompt: systemPrompt,
         temperature: 0.3,
         max_tokens: 1500,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
       }),
     });
 
     const result = await response.json();
-    const content = result.choices?.[0]?.message?.content || '';
+    const content = result.content || '';
     if (!content) throw new Error('AI generation failed');
 
     // Save to database

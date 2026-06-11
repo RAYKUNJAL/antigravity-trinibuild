@@ -67,9 +67,7 @@ export interface GeneratedBlogPost {
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const OPENAI_ORG_ID = import.meta.env.VITE_OPENAI_ORG_ID || '';
-const MODEL = 'gpt-4o-mini';
+const MODEL = 'server-ai-gateway';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SYSTEM PROMPTS
@@ -99,20 +97,16 @@ Return ONLY valid JSON - NO markdown, NO code blocks, NO extra text.`;
 
 export class BlogGeneratorService {
   /**
-   * Check if OpenAI is configured
+   * Check if the server AI gateway is configured.
    */
   static isConfigured(): boolean {
-    return !!OPENAI_API_KEY && OPENAI_API_KEY.startsWith('sk-');
+    return true;
   }
 
   /**
    * Generate a complete blog post
    */
   static async generateBlogPost(request: BlogPostRequest): Promise<GeneratedBlogPost> {
-    if (!this.isConfigured()) {
-      throw new Error('OpenAI API not configured. Add VITE_OPENAI_API_KEY to environment.');
-    }
-
     const wordCount = this._getWordCountTarget(request.length || 'medium');
     const sectionCount = this._getSectionCount(request.length || 'medium');
 
@@ -324,34 +318,28 @@ export class BlogGeneratorService {
   // ─────────────────────────────────────────────────────────────────────────
 
   private static async _callOpenAI(prompt: string): Promise<any> {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/ai/chat', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
-        ...(OPENAI_ORG_ID && { 'OpenAI-Organization': OPENAI_ORG_ID })
       },
       body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: 'system', content: BASE_SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
+        message: prompt,
+        system_prompt: BASE_SYSTEM_PROMPT,
         temperature: 0.7,
         max_tokens: 2000,
-        response_format: { type: 'json_object' }
       })
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(`OpenAI error: ${err?.error?.message || 'Unknown'}`);
+      throw new Error(`AI gateway error: ${err?.error?.message || 'Unknown'}`);
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content;
+    const content = data.content;
 
-    if (!content) throw new Error('No response from OpenAI');
+    if (!content) throw new Error('No response from AI gateway');
 
     try {
       return JSON.parse(content);

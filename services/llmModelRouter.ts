@@ -11,9 +11,6 @@
  * └─ Claude Opus: $0.015 (most expensive)
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { Groq } from 'groq-sdk';
 import { supabase } from './supabaseClient';
 
 export type LLMModel = 'gpt-4o-mini' | 'gpt-4o' | 'mixtral' | 'llama2' | 'claude-opus';
@@ -257,27 +254,6 @@ export function routeTask(
 }
 
 /**
- * GET LLM CLIENT FOR EXECUTION
- */
-function getClientForModel(model: LLMModel, provider: LLMProvider): any {
-  if (provider === 'openai') {
-    return new OpenAI({
-      apiKey: process.env.VITE_OPENAI_API_KEY,
-    });
-  } else if (provider === 'groq') {
-    return new Groq({
-      apiKey: process.env.VITE_GROQ_API_KEY,
-    });
-  } else if (provider === 'anthropic') {
-    return new Anthropic({
-      apiKey: process.env.VITE_ANTHROPIC_API_KEY,
-    });
-  }
-
-  throw new Error(`Unknown provider: ${provider}`);
-}
-
-/**
  * EXECUTE TASK WITH ROUTED MODEL
  */
 export async function executeWithRouting(
@@ -308,51 +284,31 @@ export async function executeWithRouting(
   console.log(`🤖 Routing ${taskType} to ${routing.model} (${routing.provider})`);
   console.log(`   Estimated cost: $${routing.estimatedCostPerThousand} per 1K tokens`);
 
-  const client = getClientForModel(routing.model, routing.provider);
-
-  // Execute with routed model
-  let response: string;
-  let inputTokens = 0;
-  let outputTokens = 0;
-
-  if (routing.provider === 'openai') {
-    const result = await client.chat.completions.create({
-      model: routing.model === 'gpt-4o-mini' ? 'gpt-4o-mini' : 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
+  const gatewayResponse = await fetch('/api/ai/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: prompt,
+      system_prompt: `You are TriniBuild's model router. Complete the ${taskType} task using the quality profile ${routing.model}.`,
       max_tokens: options?.maxTokens || 1024,
       temperature: 0.7,
-    });
+    }),
+  });
 
-    response = result.choices[0]?.message?.content || '';
-    inputTokens = result.usage?.prompt_tokens || 0;
-    outputTokens = result.usage?.completion_tokens || 0;
-  } else if (routing.provider === 'groq') {
-    const result = await client.chat.completions.create({
-      model: routing.model === 'mixtral' ? 'mixtral-8x7b-32768' : 'llama-2-70b-chat',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: options?.maxTokens || 1024,
-      temperature: 0.7,
-    });
-
-    response = result.choices[0]?.message?.content || '';
-    inputTokens = result.usage?.prompt_tokens || 0;
-    outputTokens = result.usage?.completion_tokens || 0;
-  } else if (routing.provider === 'anthropic') {
-    const result = await client.messages.create({
-      model: routing.model,
-      max_tokens: options?.maxTokens || 1024,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    response = result.content[0]?.type === 'text' ? result.content[0].text : '';
-    inputTokens = result.usage?.input_tokens || 0;
-    outputTokens = result.usage?.output_tokens || 0;
+  if (!gatewayResponse.ok) {
+    const details = await gatewayResponse.text().catch(() => '');
+    throw new Error(`AI gateway error: ${gatewayResponse.status} ${details}`);
   }
+
+  const gatewayResult = await gatewayResponse.json();
+  const response = gatewayResult.content || '';
+  const totalTokens = Math.ceil((prompt.length + response.length) / 4);
+  const inputTokens = Math.ceil(prompt.length / 4);
+  const outputTokens = Math.max(totalTokens - inputTokens, 0);
 
   // Calculate cost
   const costPerInputThousand = routing.estimatedCostPerThousand;
   const costPerOutputThousand = routing.estimatedCostPerThousand * 3; // Output typically 3x cost
-  const totalTokens = inputTokens + outputTokens;
   const cost = (inputTokens / 1000) * costPerInputThousand + (outputTokens / 1000) * costPerOutputThousand;
 
   const responseTime = Date.now() - startTime;

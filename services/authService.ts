@@ -1,5 +1,6 @@
 
 import { supabase } from './supabaseClient';
+import { RateLimiter } from './rateLimiter';
 
 export interface User {
     id: string;
@@ -62,34 +63,53 @@ export const authService = {
     // Login an existing user
     login: async (credentials: any): Promise<AuthResponse> => {
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: credentials.email,
-                password: credentials.password,
-            });
-
-            if (error) {
-                // Handle email confirmation error specifically
-                if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
-                    throw new Error('Please verify your email address before signing in. Check your inbox for the confirmation link.');
-                }
-                throw error;
+            const loginId = credentials.email || 'anonymous';
+            const limit = RateLimiter.checkLoginLimit(loginId);
+            if (!limit.allowed) {
+                return {
+                    user: null,
+                    token: null,
+                    error: `Too many login attempts. Try again in ${RateLimiter.formatResetTime(limit.resetAt)}.`
+                };
             }
 
-            if (data.user) {
+            RateLimiter.recordLoginAttempt(loginId);
+
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: credentials.email,
+                    password: credentials.password,
+                }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Login failed. Please check your email and password.');
+            }
+
+            if (result.user && result.session?.access_token && result.session?.refresh_token) {
+                await supabase.auth.setSession({
+                    access_token: result.session.access_token,
+                    refresh_token: result.session.refresh_token,
+                });
+
                 // Try to fetch profile data, but don't fail if it doesn't exist
                 let profile = null;
                 try {
                     const { data: profileData } = await supabase
                         .from('profiles')
                         .select('*')
-                        .eq('id', data.user.id)
+                        .eq('id', result.user.id)
                         .single();
                     profile = profileData;
                 } catch (e) {
                     console.warn('Could not fetch profile (non-critical):', e);
                 }
 
-                const fullName = profile?.full_name || data.user.user_metadata.full_name || '';
+                const fullName = profile?.full_name || `${result.user.firstName || ''} ${result.user.lastName || ''}`.trim();
                 const [firstName, ...lastNameParts] = fullName.split(' ');
 
                 // Priority: user metadata > localStorage > profile table > default
@@ -97,17 +117,18 @@ export const authService = {
                 const storedRole = storedUser ? JSON.parse(storedUser).role : null;
 
                 const user: User = {
-                    id: data.user.id,
-                    email: data.user.email!,
+                    id: result.user.id,
+                    email: result.user.email!,
                     firstName: firstName || '',
                     lastName: lastNameParts.join(' ') || '',
-                    role: data.user.user_metadata.role || storedRole || profile?.role || 'user',
+                    role: result.user.role || storedRole || profile?.role || 'user',
                     avatar_url: profile?.avatar_url,
                     subscription_tier: profile?.subscription_tier || 'Community Plan'
                 };
 
                 localStorage.setItem('user', JSON.stringify(user));
-                return { user, token: data.session?.access_token || '' };
+                RateLimiter.clearLoginAttempts(loginId);
+                return { user, token: result.session.access_token || '' };
             }
             return { user: null, token: null, error: 'Login failed' };
 

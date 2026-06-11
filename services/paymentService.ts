@@ -39,15 +39,10 @@ export const paymentService = {
                 };
             }
 
-            // Production WiPay API call would go here
-            const response = await fetch('https://tt.wipayfinancial.com/v1/gateway', {
+            const response = await fetch('/api/wipay/create-payment', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_WIPAY_API_KEY}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    account_number: import.meta.env.VITE_WIPAY_MERCHANT_ID,
                     amount: config.amount,
                     currency: config.currency,
                     order_id: config.orderId,

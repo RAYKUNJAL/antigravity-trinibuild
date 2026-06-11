@@ -10,8 +10,10 @@ interface NavGroup { label: string; items: DropdownItem[]; }
 
 const SERVICE_GROUPS: NavGroup[] = [
   { label: 'Shop & Sell', items: [
+    { name: 'Online Stores', path: '/online-stores', icon: Store, description: 'Launch a free online store', badge: 'Free', badgeColor: 'bg-green-500' },
+    { name: 'Food & Restaurants', path: '/food-restaurants', icon: ShoppingCart, description: 'Menus, pickup and delivery' },
     { name: 'Business Directory', path: '/directory', icon: Store, description: 'Find local businesses' },
-    { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart, description: 'Buy & sell anything' },
+    { name: 'Marketplace', path: '/marketplace', icon: ShoppingCart, description: 'Buy & sell anything' },
     { name: 'Create Store', path: '/create-store', icon: Sparkles, description: 'Free online store', badge: 'Free', badgeColor: 'bg-green-500' },
     { name: 'Store Templates', path: '/templates', icon: Star, description: '15+ premium designs' },
   ]},
@@ -23,7 +25,7 @@ const SERVICE_GROUPS: NavGroup[] = [
     { name: 'Rides & Delivery', path: '/rides', icon: Car, description: 'Book rides across T&T' },
     { name: 'Jobs', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
     { name: 'Real Estate', path: '/real-estate', icon: Building2, description: 'Buy, rent, sell property' },
-    { name: 'Events & Tickets', path: '/tickets', icon: Ticket, description: 'Fetes, concerts, shows' },
+    { name: 'Events & Tickets', path: '/events', icon: Ticket, description: 'Fetes, concerts, shows' },
   ]},
   { label: 'AI Tools', items: [
     { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
@@ -36,11 +38,13 @@ const MOBILE_LINKS = [
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
   { name: 'My Rewards', path: '/loyalty', icon: Star },
   { name: 'Directory', path: '/directory', icon: Store },
-  { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
+  { name: 'Stores', path: '/online-stores', icon: Store },
+  { name: 'Food', path: '/food-restaurants', icon: ShoppingCart },
+  { name: 'Marketplace', path: '/marketplace', icon: ShoppingCart },
   { name: 'Digital', path: '/digital', icon: Gamepad2 },
   { name: 'Rides', path: '/rides', icon: Car },
   { name: 'Jobs', path: '/jobs', icon: Briefcase },
-  { name: 'Events', path: '/tickets', icon: Ticket },
+  { name: 'Events', path: '/events', icon: Ticket },
   { name: 'Real Estate', path: '/real-estate', icon: Building2 },
   { name: 'AI Docs', path: '/documents', icon: FileText },
   { name: 'AI Lister', path: '/products/ai-add', icon: Sparkles },
@@ -112,7 +116,7 @@ export const Navbar: React.FC = () => {
           {/* Desktop */}
           <div className="hidden lg:flex lg:items-center lg:gap-1">
             <Link to="/directory" className={lc('/directory')}>Directory</Link>
-            <Link to="/classifieds" className={lc('/classifieds')}>Market</Link>
+            <Link to="/marketplace" className={lc('/marketplace')}>Market</Link>
             <Link to="/digital" className={`${lc('/digital')} flex items-center gap-1`}>
               Digital <span className="text-[10px] font-black bg-purple-500 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
             </Link>

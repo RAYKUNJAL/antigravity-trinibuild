@@ -130,35 +130,24 @@ export const WorkingAIDemo: React.FC = () => {
       setStatus('processing');
       setProgress('AI analyzing...');
 
-      const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!openaiKey) throw new Error('AI not configured');
-
-      const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      const aiRes = await fetch('/api/analyze-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Analyze this product. Return ONLY JSON:\n{"name": "Product name (max 80 chars)", "price": number (TTD), "category": "Category", "description": "2-3 paragraphs", "tags": ["tag1", "tag2", "tag3"]}`
-              },
-              { type: 'image_url', image_url: { url: publicUrl } }
-            ]
-          }],
-          max_tokens: 1000
+          imageUrl: publicUrl,
+          prompt: `Analyze this product. Return ONLY JSON:
+{"name": "Product name (max 80 chars)", "price": number (TTD), "category": "Category", "description": "2-3 paragraphs", "tags": ["tag1", "tag2", "tag3"]}`,
+          max_tokens: 1000,
+          response_format: { type: 'json_object' },
         })
       });
 
       if (!aiRes.ok) throw new Error('AI failed');
 
       const aiData = await aiRes.json();
-      const content = aiData.choices[0].message.content;
+      const content = aiData.content || aiData.analysis || '{}';
       const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const listing = JSON.parse(cleaned);
 

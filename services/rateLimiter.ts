@@ -19,6 +19,9 @@
 const RATE_LIMIT_KEY = 'trinibuild_demo_uploads';
 const MAX_UPLOADS_PER_DAY = 5;
 const RESET_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+const LOGIN_LIMIT_KEY = 'trinibuild_login_attempts';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 interface RateLimitData {
   count: number;
@@ -132,5 +135,90 @@ export class RateLimiter {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes} minutes`;
+  }
+
+  static checkLoginLimit(identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
+    return this.checkWindowedLimit(LOGIN_LIMIT_KEY, identifier, MAX_LOGIN_ATTEMPTS, LOGIN_WINDOW_MS);
+  }
+
+  static recordLoginAttempt(identifier: string): void {
+    this.recordWindowedAttempt(LOGIN_LIMIT_KEY, identifier, LOGIN_WINDOW_MS);
+  }
+
+  static clearLoginAttempts(identifier: string): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const data = this.readWindowedData(LOGIN_LIMIT_KEY);
+      delete data[this.normalizeIdentifier(identifier)];
+      localStorage.setItem(LOGIN_LIMIT_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.error('Login rate limiter clear error:', err);
+    }
+  }
+
+  private static checkWindowedLimit(
+    storageKey: string,
+    identifier: string,
+    maxAttempts: number,
+    windowMs: number
+  ): { allowed: boolean; remaining: number; resetAt: number } {
+    if (typeof window === 'undefined') {
+      return { allowed: true, remaining: maxAttempts, resetAt: Date.now() + windowMs };
+    }
+
+    try {
+      const key = this.normalizeIdentifier(identifier);
+      const now = Date.now();
+      const data = this.readWindowedData(storageKey);
+      const current = data[key];
+
+      if (!current || now >= current.resetAt) {
+        return { allowed: true, remaining: maxAttempts, resetAt: now + windowMs };
+      }
+
+      if (current.count >= maxAttempts) {
+        return { allowed: false, remaining: 0, resetAt: current.resetAt };
+      }
+
+      return {
+        allowed: true,
+        remaining: maxAttempts - current.count,
+        resetAt: current.resetAt,
+      };
+    } catch (err) {
+      console.error('Windowed rate limiter error:', err);
+      return { allowed: true, remaining: maxAttempts, resetAt: Date.now() + windowMs };
+    }
+  }
+
+  private static recordWindowedAttempt(storageKey: string, identifier: string, windowMs: number): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const key = this.normalizeIdentifier(identifier);
+      const now = Date.now();
+      const data = this.readWindowedData(storageKey);
+      const current = data[key];
+
+      if (!current || now >= current.resetAt) {
+        data[key] = { count: 1, resetAt: now + windowMs };
+      } else {
+        data[key] = { count: current.count + 1, resetAt: current.resetAt };
+      }
+
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    } catch (err) {
+      console.error('Windowed rate limiter record error:', err);
+    }
+  }
+
+  private static readWindowedData(storageKey: string): Record<string, RateLimitData> {
+    const stored = localStorage.getItem(storageKey);
+    return stored ? JSON.parse(stored) : {};
+  }
+
+  private static normalizeIdentifier(identifier: string) {
+    return identifier.trim().toLowerCase() || 'anonymous';
   }
 }

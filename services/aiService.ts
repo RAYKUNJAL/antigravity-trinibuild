@@ -31,11 +31,6 @@ export interface AIGenerationResponse {
 
 class AIService {
     private readonly MODEL = 'gpt-4o-mini';
-    private readonly apiKey: string;
-
-    constructor() {
-        this.apiKey = import.meta.env.VITE_OPENAI_API_KEY || '';
-    }
 
     /**
      * Generate business description using AI
@@ -433,29 +428,21 @@ Professional quality, suitable for business branding.`;
                 };
             }
 
-            if (!this.apiKey) {
-                throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
-            }
-
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: this.MODEL,
-                    messages: [
-                        { role: 'system', content: params.system },
-                        { role: 'user', content: params.prompt }
-                    ],
+                    message: params.prompt,
+                    system_prompt: params.system,
                     max_tokens: 1500,
                     temperature: 0.7
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`OpenAI API error: ${response.status}`);
+                throw new Error(`AI gateway error: ${response.status}`);
             }
 
             const data = await response.json();
@@ -463,8 +450,8 @@ Professional quality, suitable for business branding.`;
             return {
                 success: true,
                 data: {
-                    choices: [{ message: { content: data.choices?.[0]?.message?.content || '' } }],
-                    usage: { total_tokens: data.usage?.total_tokens || 0 }
+                    choices: [{ message: { content: data.content || '' } }],
+                    usage: { total_tokens: Math.ceil((params.prompt.length + (data.content || '').length) / 4) }
                 }
             };
         } catch (error) {

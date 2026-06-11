@@ -20,16 +20,6 @@ interface CreatePaymentIntentParams {
 }
 
 class StripeService {
-    private apiKey: string;
-    private baseUrl = 'https://api.stripe.com/v1';
-
-    constructor() {
-        this.apiKey = import.meta.env.VITE_STRIPE_SECRET_KEY || '';
-        if (!this.apiKey) {
-            console.warn('Stripe API key not configured');
-        }
-    }
-
     /**
      * Create a Stripe Checkout Session for one-time payments
      */

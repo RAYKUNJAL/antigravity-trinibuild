@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const GOOGLE_MAPS_KEY = 'AIzaSyAbjOn5lpjfYw6Ig3M-KWU1y0JP5z0LbPM';
+const GOOGLE_MAPS_BROWSER_KEY = import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY || '';
 
 const CATEGORIES = [
   // Food & Dining
@@ -172,11 +172,11 @@ export const Directory: React.FC = () => {
     };
 
     const loadMap = async () => {
-      // Check for key in localStorage first, then env, then the hardcoded fallback
-      const apiKey = localStorage.getItem('google_maps_api_key') || GOOGLE_MAPS_KEY || process.env.API_KEY;
+      const apiKey = GOOGLE_MAPS_BROWSER_KEY;
 
       if (!apiKey) {
-        setMapError("No API Key found. Please go to Settings.");
+        setMapError("Google Maps browser key is not configured. Falling back to AI search.");
+        searchWithGemini(searchQuery || 'businesses in Trinidad');
         return;
       }
 

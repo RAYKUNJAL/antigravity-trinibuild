@@ -109,6 +109,7 @@ export interface Store {
   // JSONB Fields
   settings: StoreSettings;
   theme: StoreTheme;
+  theme_config?: Record<string, any>;
   contact_info: {
     email?: string;
     phone?: string;

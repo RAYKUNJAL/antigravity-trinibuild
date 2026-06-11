@@ -1,4 +1,58 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { enforceRateLimit, RATE_LIMITS } from './_utils/rateLimit';
+
+const DEFAULT_OPENAI_VISION_MODEL = 'gpt-4o-mini';
+
+const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, '');
+
+async function callVisionProvider(options: {
+  baseUrl: string;
+  apiKey?: string;
+  model: string;
+  imageUrl: string;
+  userPrompt: string;
+  systemPrompt?: string;
+  maxTokens?: number;
+  temperature?: number;
+  responseFormat?: any;
+}) {
+  const messages: any[] = [];
+
+  if (options.systemPrompt) {
+    messages.push({ role: 'system', content: options.systemPrompt });
+  }
+
+  messages.push({
+    role: 'user',
+    content: [
+      { type: 'text', text: options.userPrompt },
+      { type: 'image_url', image_url: { url: options.imageUrl, detail: 'high' } },
+    ],
+  });
+
+  const response = await fetch(`${normalizeBaseUrl(options.baseUrl)}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.apiKey ? { Authorization: `Bearer ${options.apiKey}` } : {}),
+    },
+    body: JSON.stringify({
+      model: options.model,
+      messages,
+      max_tokens: options.maxTokens ?? 800,
+      temperature: options.temperature ?? 0.2,
+      ...(options.responseFormat ? { response_format: options.responseFormat } : {}),
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => '');
+    throw new Error(`Vision provider ${response.status}: ${details}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '';
+}
 
 export default async function handler(
   req: VercelRequest,
@@ -22,66 +76,80 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  if (!enforceRateLimit(req, res, { ...RATE_LIMITS.ai, keyPrefix: 'analyze-image' })) {
+    return;
+  }
+
   try {
-    const { imageUrl } = req.body;
+    const {
+      imageUrl,
+      prompt,
+      system_prompt,
+      max_tokens,
+      temperature,
+      response_format,
+    } = req.body;
 
     if (!imageUrl) {
       return res.status(400).json({ error: 'imageUrl is required' });
     }
 
-    const apiKey = process.env.VITE_OPENAI_API_KEY;
+    const userPrompt = prompt || 'Analyze this product image and provide: 1) Product name/title, 2) Brief description (2-3 sentences), 3) Suggested category. Return as JSON with keys: title, description, category.';
+    const localVisionBaseUrl = process.env.LOCAL_VISION_BASE_URL || process.env.LOCAL_LLM_BASE_URL;
+    const localVisionModel = process.env.LOCAL_VISION_MODEL;
 
-    if (!apiKey) {
-      console.error('VITE_OPENAI_API_KEY not found in environment');
-      return res.status(500).json({ error: 'API key not configured' });
+    if (localVisionBaseUrl && localVisionModel) {
+      try {
+        const analysis = await callVisionProvider({
+          baseUrl: localVisionBaseUrl,
+          apiKey: process.env.LOCAL_VISION_API_KEY || process.env.LOCAL_LLM_API_KEY,
+          model: localVisionModel,
+          imageUrl,
+          userPrompt,
+          systemPrompt: system_prompt,
+          maxTokens: max_tokens,
+          temperature,
+          responseFormat: response_format,
+        });
+
+        return res.status(200).json({
+          success: true,
+          analysis,
+          content: analysis,
+          provider: 'local-vision',
+          model_used: localVisionModel,
+        });
+      } catch (error: any) {
+        console.warn('Local vision provider unavailable:', error.message);
+      }
     }
 
-    console.log('Calling OpenAI with image:', imageUrl);
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Analyze this product image and provide: 1) Product name/title, 2) Brief description (2-3 sentences), 3) Suggested category. Return as JSON with keys: title, description, category.'
-              },
-              {
-                type: 'image_url',
-                image_url: { url: imageUrl }
-              }
-            ]
-          }
-        ],
-        max_tokens: 300
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      return res.status(response.status).json({
-        error: 'OpenAI API error',
-        details: errorText
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        error: 'AI vision provider unavailable',
+        message: 'Set LOCAL_VISION_BASE_URL + LOCAL_VISION_MODEL or server-side OPENAI_API_KEY.',
       });
     }
 
-    const data = await response.json();
-    console.log('OpenAI response:', data);
-
-    const analysis = data.choices?.[0]?.message?.content || 'No response';
+    const model = process.env.OPENAI_VISION_MODEL || DEFAULT_OPENAI_VISION_MODEL;
+    const analysis = await callVisionProvider({
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: process.env.OPENAI_API_KEY,
+      model,
+      imageUrl,
+      userPrompt,
+      systemPrompt: system_prompt,
+      maxTokens: max_tokens,
+      temperature,
+      responseFormat: response_format,
+    });
 
     return res.status(200).json({
       success: true,
-      analysis: analysis
+      analysis,
+      content: analysis,
+      provider: 'openai-fallback',
+      model_used: model,
     });
 
   } catch (error: any) {

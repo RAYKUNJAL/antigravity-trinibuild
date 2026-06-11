@@ -18,17 +18,18 @@ declare global {
 class FacebookPixelService {
   private PIXEL_ID: string;
   private initialized: boolean = false;
+  private enabled: boolean = false;
 
   constructor() {
-    // Get Pixel ID from environment or use placeholder
-    this.PIXEL_ID = import.meta.env.VITE_FACEBOOK_PIXEL_ID || '1234567890123456';
+    this.PIXEL_ID = import.meta.env.VITE_FACEBOOK_PIXEL_ID || '';
+    this.enabled = /^[0-9]{8,32}$/.test(this.PIXEL_ID);
   }
 
   /**
    * Initialize Facebook Pixel
    */
   initializePixel() {
-    if (this.initialized) return;
+    if (this.initialized || !this.enabled || typeof window === 'undefined') return;
 
     // Prevent duplicate initialization
     if (window.fbq) {
@@ -45,106 +46,109 @@ class FacebookPixelService {
     (window as any)._fbq = (window as any)._fbq || [];
 
     // Add script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-    document.head.appendChild(script);
+    if (!document.getElementById('facebook-pixel-script')) {
+      const script = document.createElement('script');
+      script.id = 'facebook-pixel-script';
+      script.async = true;
+      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+      document.head.appendChild(script);
+    }
 
     // Initialize pixel
     window.fbq('init', this.PIXEL_ID);
 
-    // Track initial page view
-    window.fbq('track', 'PageView');
-
     this.initialized = true;
     console.log('✅ Facebook Pixel initialized:', this.PIXEL_ID);
+  }
+
+  private safeTrack(callback: () => void) {
+    this.initializePixel();
+    if (!this.initialized || !window.fbq) return;
+
+    try {
+      callback();
+    } catch (error) {
+      console.warn('Facebook Pixel tracking skipped:', error);
+    }
   }
 
   /**
    * Track page view
    */
   trackPageView() {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'PageView');
+    this.safeTrack(() => window.fbq('track', 'PageView'));
   }
 
   /**
    * Track signup start
    */
   trackSignupStart(source?: string) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'Lead', {
+    this.safeTrack(() => window.fbq('track', 'Lead', {
       content_name: 'Signup Started',
       source: source || 'landing_page'
-    });
+    }));
   }
 
   /**
    * Track signup completion
    */
   trackSignupComplete() {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'CompleteRegistration', {
+    this.safeTrack(() => window.fbq('track', 'CompleteRegistration', {
       content_name: 'Store Created',
       status: 'completed'
-    });
+    }));
   }
 
   /**
    * Track view content (pricing/features)
    */
   trackViewContent(contentName: string, contentId?: string) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'ViewContent', {
+    this.safeTrack(() => window.fbq('track', 'ViewContent', {
       content_name: contentName,
       content_id: contentId || contentName,
       content_category: 'product'
-    });
+    }));
   }
 
   /**
    * Track add to cart (when user adds product)
    */
   trackAddToCart(productName: string, price: number) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'AddToCart', {
+    this.safeTrack(() => window.fbq('track', 'AddToCart', {
       content_name: productName,
       content_type: 'product',
       value: price,
       currency: 'TTD'
-    });
+    }));
   }
 
   /**
    * Track purchase (when merchant receives order)
    */
   trackPurchase(value: number, currency: string = 'TTD') {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'Purchase', {
+    this.safeTrack(() => window.fbq('track', 'Purchase', {
       value: value,
       currency: currency,
       content_type: 'product'
-    });
+    }));
   }
 
   /**
    * Track pro upgrade
    */
   trackSubscription(plan: string, value: number) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'Subscribe', {
+    this.safeTrack(() => window.fbq('track', 'Subscribe', {
       content_name: `${plan} Plan`,
       value: value,
       currency: 'TTD'
-    });
+    }));
   }
 
   /**
    * Track custom event
    */
   trackCustom(eventName: string, data?: Record<string, any>) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('trackCustom', eventName, data || {});
+    this.safeTrack(() => window.fbq('trackCustom', eventName, data || {}));
   }
 
   /**
@@ -170,27 +174,28 @@ class FacebookPixelService {
       return acc;
     }, {} as Record<string, any>);
 
-    window.fbq('setUserData', hashedData);
+    this.safeTrack(() => window.fbq('setUserData', hashedData));
   }
 
   /**
    * Create dynamic audience for retargeting
    */
   trackViewForRetargeting(itemId: string, itemName: string, category: string) {
-    if (!this.initialized) this.initializePixel();
-    window.fbq('track', 'ViewContent', {
+    this.safeTrack(() => window.fbq('track', 'ViewContent', {
       content_ids: [itemId],
       content_name: itemName,
       content_type: 'product_group',
       content_category: category
-    });
+    }));
   }
 
   /**
    * Add pixel to noscript for analytics without JS
    */
   addNoScriptPixel() {
+    if (!this.enabled || document.getElementById('facebook-pixel-noscript')) return;
     const noscript = document.createElement('noscript');
+    noscript.id = 'facebook-pixel-noscript';
     noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${this.PIXEL_ID}&ev=PageView&noscript=1" />`;
     document.body.appendChild(noscript);
   }

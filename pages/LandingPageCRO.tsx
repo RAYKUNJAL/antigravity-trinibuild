@@ -3,7 +3,9 @@ import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
   Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
-  MessageCircle, MessageSquare, AlertCircle, ChevronDown
+  MessageCircle, MessageSquare, AlertCircle, ChevronDown,
+  Store, UtensilsCrossed, ShoppingBag, Car, Briefcase, Ticket,
+  Building2, FileText, LayoutTemplate
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -18,10 +20,10 @@ import { ServicesShowcase } from '../components/ServicesShowcase';
  * 
  * STRATEGY:
  * - Cold traffic landing page (not existing users)
- * - Single conversion goal: "Start My Free Store"
+ * - Primary conversion goal: "Start My Free Store"
  * - Hero-focused COD merchant messaging
  * - Proof-based copy (testimonials, numbers, walkthroughs)
- * - Minimal distraction (no marketplace/jobs/rides on this page)
+ * - Hub-first discovery so the full platform is visible before launch traffic bounces
  * - Mobile-first (60% of traffic)
  * - SEO-optimized for T&T merchant keywords
  * - Revenue-focused UX (funnels to TT$99-399/mo plans)
@@ -205,6 +207,81 @@ const OBJECTION_HANDLERS = [
   }
 ];
 
+const PLATFORM_APPS = [
+  {
+    title: 'Online Stores',
+    description: 'Launch a free COD-ready store for Trinidad and Tobago.',
+    path: '/online-stores',
+    cta: 'Build a store',
+    icon: Store,
+    accent: 'text-red-600 bg-red-50 border-red-100'
+  },
+  {
+    title: 'Store Templates',
+    description: 'Pick a ready-made site design, then customize and launch.',
+    path: '/templates',
+    cta: 'Browse templates',
+    icon: LayoutTemplate,
+    accent: 'text-indigo-600 bg-indigo-50 border-indigo-100'
+  },
+  {
+    title: 'Food & Restaurants',
+    description: 'Menus, ordering, pickup, delivery, and kitchen-friendly flows.',
+    path: '/food-restaurants',
+    cta: 'Open food tools',
+    icon: UtensilsCrossed,
+    accent: 'text-orange-600 bg-orange-50 border-orange-100'
+  },
+  {
+    title: 'Marketplace',
+    description: 'List products and services where local buyers already browse.',
+    path: '/marketplace',
+    cta: 'View marketplace',
+    icon: ShoppingBag,
+    accent: 'text-emerald-600 bg-emerald-50 border-emerald-100'
+  },
+  {
+    title: 'Rides & Delivery',
+    description: 'Transport and delivery routes connected to the commerce stack.',
+    path: '/rides',
+    cta: 'Book or drive',
+    icon: Car,
+    accent: 'text-blue-600 bg-blue-50 border-blue-100'
+  },
+  {
+    title: 'Jobs',
+    description: 'Hire local talent or find work across Trinidad and Tobago.',
+    path: '/jobs',
+    cta: 'Browse jobs',
+    icon: Briefcase,
+    accent: 'text-purple-600 bg-purple-50 border-purple-100'
+  },
+  {
+    title: 'Events & Tickets',
+    description: 'Promote events, sell tickets, and manage attendees.',
+    path: '/events',
+    cta: 'Sell tickets',
+    icon: Ticket,
+    accent: 'text-pink-600 bg-pink-50 border-pink-100'
+  },
+  {
+    title: 'Real Estate',
+    description: 'List, discover, and manage properties from one local hub.',
+    path: '/real-estate',
+    cta: 'Open real estate',
+    icon: Building2,
+    accent: 'text-cyan-600 bg-cyan-50 border-cyan-100'
+  },
+  {
+    title: 'AI Documents',
+    description: 'Generate T&T-ready letters, forms, and business documents.',
+    path: '/documents',
+    cta: 'Create documents',
+    icon: FileText,
+    accent: 'text-slate-700 bg-slate-50 border-slate-200'
+  }
+];
+
 export const LandingPageCRO: React.FC = () => {
   const navigate = useNavigate();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
@@ -252,6 +329,10 @@ export const LandingPageCRO: React.FC = () => {
       facebookPixel.trackCustom('LeadCapture', { email: emailInput });
       navigate('/create-store');
     }
+  };
+
+  const openPlatformChat = () => {
+    window.dispatchEvent(new CustomEvent('open-chat', { detail: { mode: 'platform' } }));
   };
 
   return (
@@ -385,7 +466,7 @@ export const LandingPageCRO: React.FC = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center mb-10"
             >
               <button
-                onClick={handleStartFree}
+                onClick={() => handleStartFree()}
                 className="px-8 py-4 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
               >
                 Start My Free Store
@@ -414,6 +495,66 @@ export const LandingPageCRO: React.FC = () => {
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
         {/* ════════════════════════════════════════════════════════════════ */}
+        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-bold uppercase">
+                  TriniBuild app hub
+                </div>
+                <h2 className="mt-4 text-3xl sm:text-4xl font-black text-gray-900">
+                  One local platform. Every app visible from the start.
+                </h2>
+                <p className="mt-3 text-gray-600 max-w-2xl">
+                  Start with a free online store, or jump straight into restaurants, marketplace,
+                  rides, jobs, events, real estate, templates, and AI documents.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={openPlatformChat}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-gray-300 text-gray-900 font-bold hover:bg-gray-50 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Ask TriniBot
+                </button>
+                <Link
+                  to="/templates"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors"
+                >
+                  See templates
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {PLATFORM_APPS.map((app) => {
+                const Icon = app.icon;
+                return (
+                  <Link
+                    key={app.path}
+                    to={app.path}
+                    className="group border border-gray-200 rounded-lg p-5 hover:border-gray-400 hover:shadow-lg transition-all bg-white"
+                  >
+                    <div className={`w-11 h-11 rounded-lg border ${app.accent} flex items-center justify-center mb-4`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">{app.title}</h3>
+                    <p className="mt-2 text-sm text-gray-600 leading-relaxed min-h-[44px]">
+                      {app.description}
+                    </p>
+                    <div className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-trini-red group-hover:gap-2 transition-all">
+                      {app.cta}
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
         <WorkingAIDemo />
 
         {/* ════════════════════════════════════════════════════════════════ */}
@@ -585,7 +726,7 @@ export const LandingPageCRO: React.FC = () => {
                       <span className="text-gray-600 ml-2">{tier.period}</span>
                     </div>
                     <button
-                      onClick={handleStartFree}
+                      onClick={() => handleStartFree('pricing')}
                       className={`w-full py-3 rounded-lg font-bold transition-all duration-300 mb-8 ${
                         tier.highlighted
                           ? 'bg-trini-red hover:bg-red-700 text-white'
@@ -681,7 +822,7 @@ export const LandingPageCRO: React.FC = () => {
               Start your free store right now.
             </p>
             <button
-              onClick={handleStartFree}
+              onClick={() => handleStartFree('final_cta')}
               className="px-10 py-5 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Create My Free Store Now

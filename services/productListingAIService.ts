@@ -51,9 +51,7 @@ export interface ListingVariations {
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const OPENAI_ORG_ID = import.meta.env.VITE_OPENAI_ORG_ID || '';
-const MODEL = 'gpt-4o-mini';
+const MODEL = 'server-ai-gateway';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
@@ -104,10 +102,10 @@ RULES:
 
 export class ProductListingAIService {
   /**
-   * Check if OpenAI API key is configured
+   * Check if the server AI gateway is available.
    */
   static isConfigured(): boolean {
-    return !!OPENAI_API_KEY && OPENAI_API_KEY.startsWith('sk-');
+    return true;
   }
 
   /**
@@ -118,7 +116,7 @@ export class ProductListingAIService {
       configured: this.isConfigured(),
       model: MODEL,
       maxRetries: MAX_RETRIES,
-      error: !this.isConfigured() ? 'OpenAI API key not configured' : null
+      error: null
     };
   }
 
@@ -126,12 +124,6 @@ export class ProductListingAIService {
    * Generate product listing descriptions with multiple variations
    */
   static async generateListings(input: ProductListingInput): Promise<ListingVariations> {
-    if (!this.isConfigured()) {
-      throw new Error(
-        'OpenAI API not configured. Add VITE_OPENAI_API_KEY to environment variables.'
-      );
-    }
-
     const startTime = Date.now();
     const variations: GeneratedListing[] = [];
 
@@ -187,7 +179,7 @@ export class ProductListingAIService {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        return await this._callOpenAI(input, style);
+        return await this._callAIGateway(input, style);
       } catch (error: any) {
         lastError = error;
         console.warn(`Attempt ${attempt}/${MAX_RETRIES} failed:`, error.message);
@@ -203,51 +195,46 @@ export class ProductListingAIService {
   }
 
   /**
-   * Call OpenAI API with error handling
+   * Call server AI gateway with error handling
    */
-  private static async _callOpenAI(
+  private static async _callAIGateway(
     input: ProductListingInput,
     style: string
   ): Promise<GeneratedListing> {
     const userPrompt = this._buildPrompt(input, style);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/ai/chat', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
-        ...(OPENAI_ORG_ID && { 'OpenAI-Organization': OPENAI_ORG_ID })
       },
       body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
+        message: userPrompt,
+        system_prompt: SYSTEM_PROMPT,
         temperature: 0.7,
         max_tokens: 500,
-        response_format: { type: 'json_object' } // Ensure JSON response
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData?.error?.message || `HTTP ${response.status}`;
-      throw new Error(`OpenAI API error: ${errorMessage}`);
+      throw new Error(`AI gateway error: ${errorMessage}`);
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content;
+    const content = data.content;
 
     if (!content) {
-      throw new Error('No content in OpenAI response');
+      throw new Error('No content in AI gateway response');
     }
 
     try {
-      return JSON.parse(content) as GeneratedListing;
+      const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      return JSON.parse(cleaned) as GeneratedListing;
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', content);
-      throw new Error('Invalid JSON response from OpenAI');
+      console.error('Failed to parse AI gateway response:', content);
+      throw new Error('Invalid JSON response from AI gateway');
     }
   }
 

@@ -236,32 +236,7 @@ export const notificationService = {
             return;
         }
 
-        // Production email sending
-        const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${import.meta.env.VITE_SENDGRID_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                personalizations: [{
-                    to: [{ email: email.to_email, name: email.to_name }],
-                    subject: email.subject
-                }],
-                from: {
-                    email: 'noreply@trinibuild.com',
-                    name: 'TriniBuild'
-                },
-                content: [
-                    { type: 'text/plain', value: email.text_body || email.html_body },
-                    { type: 'text/html', value: email.html_body }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Email send failed: ${response.statusText}`);
-        }
+        throw new Error('Email provider credentials must be used from a server worker, not the browser.');
     },
 
     // ============================================
@@ -335,32 +310,7 @@ export const notificationService = {
             return;
         }
 
-        // WhatsApp Business API integration
-        // Using Twilio WhatsApp API as example
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                From: `whatsapp:${import.meta.env.VITE_TWILIO_WHATSAPP_NUMBER}`,
-                To: `whatsapp:${message.phone_number}`,
-                Body: message.message
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`WhatsApp send failed: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // Update with WhatsApp message ID
-        await supabase
-            .from('whatsapp_queue')
-            .update({ whatsapp_message_id: data.sid })
-            .eq('id', message.id);
+        throw new Error('WhatsApp provider credentials must be used from a server worker, not the browser.');
     },
 
     // ============================================
@@ -430,30 +380,7 @@ export const notificationService = {
             return;
         }
 
-        // Twilio SMS API
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                From: import.meta.env.VITE_TWILIO_PHONE_NUMBER,
-                To: message.phone_number,
-                Body: message.message
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`SMS send failed: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        await supabase
-            .from('sms_queue')
-            .update({ sms_id: data.sid })
-            .eq('id', message.id);
+        throw new Error('SMS provider credentials must be used from a server worker, not the browser.');
     },
 
     // ============================================

@@ -5,8 +5,9 @@ import { createClient } from '@supabase/supabase-js';
 // For development, we'll use placeholders if they aren't present
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!hasSupabaseConfig) {
     console.error('❌ Missing Supabase environment variables!');
     console.error('Please check your .env.local file and ensure:');
     console.error('  - VITE_SUPABASE_URL is set');
@@ -16,7 +17,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.log('📍 URL:', supabaseUrl);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(
+    hasSupabaseConfig ? supabaseUrl : 'https://placeholder.supabase.co',
+    hasSupabaseConfig ? supabaseAnonKey : 'missing-supabase-anon-key',
+    {
     auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -25,7 +29,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Helper to check if Supabase is configured
 export const isSupabaseConfigured = () => {
-    return supabaseUrl !== '' && supabaseAnonKey !== '';
+    return hasSupabaseConfig;
 };
 
 // Test database connection

@@ -5,8 +5,8 @@
 ### Prerequisites
 - Node.js 18+ installed
 - Supabase project set up
-- OpenAI API key (for AI features)
-- Google Maps API key (for location)
+- Server-side AI provider key or local Qwen gateway (for AI features)
+- Domain-restricted Google Maps browser key (for location)
 
 ---
 
@@ -20,20 +20,22 @@ cp .env.example .env
 
 ### 1.2 Add API Keys
 ```env
-# OpenAI (Required for AI features)
-VITE_OPENAI_API_KEY=sk-your-openai-key-here
+# AI gateway (server-side; do not expose provider secrets with VITE_)
+LOCAL_LLM_BASE_URL=http://127.0.0.1:11434/v1
+LOCAL_LLM_MODEL=qwen3:8b
+OPENAI_API_KEY=your-openai-key-here
 
-# Google Maps (Required for location picker)
-VITE_GOOGLE_MAPS_API_KEY=AIza-your-google-maps-key-here
+# Google Maps browser key (must be domain-restricted in Google Cloud)
+VITE_GOOGLE_MAPS_BROWSER_KEY=your-google-maps-browser-key
 
 # Supabase (Already configured)
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
-# Twilio (Optional - for SMS verification)
-VITE_TWILIO_ACCOUNT_SID=your-twilio-sid
-VITE_TWILIO_AUTH_TOKEN=your-twilio-token
-VITE_TWILIO_PHONE_NUMBER=+1234567890
+# Twilio (server-side only; use a backend worker/API route)
+TWILIO_ACCOUNT_SID=your-twilio-sid
+TWILIO_AUTH_TOKEN=your-twilio-token
+TWILIO_PHONE_NUMBER=+1234567890
 ```
 
 ### 1.3 Get API Keys
@@ -206,7 +208,7 @@ console.log('Imported Data:', result.data);
 ### Issue 1: OpenAI API Error
 **Error:** `API key not found`
 **Solution:**
-1. Check `.env` file has `VITE_OPENAI_API_KEY`
+1. Check the server environment has `LOCAL_LLM_BASE_URL`/`LOCAL_LLM_MODEL` or `OPENAI_API_KEY`
 2. Restart dev server
 3. Clear browser cache
 

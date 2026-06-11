@@ -187,6 +187,13 @@ const App: React.FC = () => {
               <Route path="/services/tickets" element={<TicketsLanding />} />
               <Route path="/services/living" element={<LivingLanding />} />
 
+              {/* SEO-friendly product hub aliases for launch campaigns */}
+              <Route path="/online-stores" element={<StoreServicesLanding />} />
+              <Route path="/food-restaurants" element={<FoodServicesLanding />} />
+              <Route path="/restaurants" element={<FoodServicesLanding />} />
+              <Route path="/events-tickets" element={<TicketsLanding />} />
+              <Route path="/store-templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
+
               {/* Store Builder & Storefront */}
               <Route path="/store-builder" element={<StoreBuilderV3 />} />
               <Route path="/store/builder" element={<Navigate to="/store-builder" replace />} />
@@ -333,7 +340,7 @@ const App: React.FC = () => {
             <Route element={<PageLayout />}>
               <Route path="/about" element={<About />} />
               <Route path="/features" element={<Features />} />
-              <Route path="/events" element={<Events />} />
+              <Route path="/events" element={<TicketsLanding />} />
               <Route path="/contact" element={<Contact />} />
 
               {/* Legal Documents */}

@@ -73,9 +73,6 @@
  * Target: First billion-dollar Caribbean SaaS
  */
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const GPT_VISION_MODEL = 'gpt-4o';  // Full GPT-4o for vision (not mini — needs accuracy)
-
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -800,7 +797,7 @@ function generateWarnings(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// OPENAI API HELPERS
+// SERVER AI GATEWAY HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function callGPTVisionJSON(
@@ -808,80 +805,60 @@ async function callGPTVisionJSON(
   userPrompt: string,
   systemPrompt: string
 ): Promise<any> {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('/api/analyze-image', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: GPT_VISION_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: userPrompt },
-            { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } },
-          ],
-        },
-      ],
+      imageUrl,
+      prompt: userPrompt,
+      system_prompt: systemPrompt,
       max_tokens: 1000,
-      temperature: 0.3,  // Low temp for structured output
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
     }),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`OpenAI Vision API error: ${response.status} ${errorBody}`);
+    throw new Error(`AI vision gateway error: ${response.status} ${errorBody}`);
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '{}';
+  const content = data.content || data.analysis || '{}';
 
-  // GPT-4o sometimes wraps JSON in markdown fences — strip them
+  // Some providers wrap JSON in markdown fences.
   const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
   try {
     return JSON.parse(cleaned);
   } catch (e) {
-    console.error('Failed to parse GPT Vision JSON:', cleaned);
+    console.error('Failed to parse AI vision JSON:', cleaned);
     throw new Error('AI returned invalid JSON');
   }
 }
 
 async function callGPT(userPrompt: string, systemPrompt: string): Promise<{ content: string }> {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('/api/ai/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',  // Cheaper model for text generation
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+      message: userPrompt,
+      system_prompt: systemPrompt,
       max_tokens: 500,
       temperature: 0.7,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    throw new Error(`AI gateway error: ${response.status}`);
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
+  const content = data.content || '';
 
   return { content };
 }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Key, Shield, CheckCircle, RotateCcw, Loader2, AlertCircle, Zap, Map as MapIcon } from 'lucide-react';
-import { testApiKey } from '../services/geminiService';
 
 declare global {
   interface Window {
@@ -9,8 +8,6 @@ declare global {
     mapTestCallback?: () => void;
   }
 }
-
-const DEFAULT_MAPS_KEY = 'AIzaSyAbjOn5lpjfYw6Ig3M-KWU1y0JP5z0LbPM';
 
 export const Settings: React.FC = () => {
   const [keys, setKeys] = useState({
@@ -30,104 +27,50 @@ export const Settings: React.FC = () => {
 
   useEffect(() => {
     setKeys({
-      gemini: localStorage.getItem('gemini_api_key') || '',
-      googleMaps: localStorage.getItem('google_maps_api_key') || DEFAULT_MAPS_KEY,
-      whatsappToken: localStorage.getItem('whatsapp_api_token') || '',
-      paypalClient: localStorage.getItem('paypal_client_id') || ''
+      gemini: '',
+      googleMaps: '',
+      whatsappToken: '',
+      paypalClient: ''
     });
   }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('gemini_api_key', keys.gemini);
-    localStorage.setItem('google_maps_api_key', keys.googleMaps);
-    localStorage.setItem('whatsapp_api_token', keys.whatsappToken);
-    localStorage.setItem('paypal_client_id', keys.paypalClient);
-
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
-
-    if (window.confirm("Settings saved. Reload app to apply changes?")) {
-      window.location.reload();
-    }
   };
 
   const handleTestGemini = async () => {
-    if (!keys.gemini && !process.env.API_KEY) {
-      alert("Please enter a key first.");
-      return;
-    }
-    // Temp save for test
-    if (keys.gemini) localStorage.setItem('gemini_api_key', keys.gemini);
-
     setTestingGemini(true);
     setGeminiStatus(null);
 
-    const success = await testApiKey();
-    setGeminiStatus(success ? 'success' : 'error');
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'health check', max_tokens: 20 })
+      });
+      setGeminiStatus(response.ok ? 'success' : 'error');
+    } catch {
+      setGeminiStatus('error');
+    }
     setTestingGemini(false);
   };
 
   const handleTestMapsConnection = () => {
-    if (!keys.googleMaps) {
-      alert("Please enter a Google Maps API Key.");
-      return;
-    }
-
-    // If Google Maps is already loaded, we can't easily re-test without reload
     if (window.google && window.google.maps) {
-      setMapsStatus('reload_needed');
+      setMapsStatus('success');
       return;
     }
 
-    setTestingMaps(true);
-    setMapsStatus(null);
-
-    // 1. Define specific callbacks for this test
-    const cleanup = () => {
-      // @ts-ignore
-      delete window.mapTestCallback;
-      // Restore original auth failure if it existed, or delete
-      // We don't want to break the Directory page if user navigates away
-    };
-
-    // Success Handler
-    window.mapTestCallback = () => {
-      setMapsStatus('success');
-      setTestingMaps(false);
-      cleanup();
-    };
-
-    // Failure Handler (Overriding global for the duration of this test)
-    const originalAuthFailure = window.gm_authFailure;
-    window.gm_authFailure = () => {
-      setMapsStatus('error');
-      setTestingMaps(false);
-      cleanup();
-      if (originalAuthFailure) window.gm_authFailure = originalAuthFailure;
-    };
-
-    // 2. Inject Script
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${keys.googleMaps}&callback=mapTestCallback`;
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => {
-      setMapsStatus('error');
-      setTestingMaps(false);
-      cleanup();
-    };
-
-    document.head.appendChild(script);
+    setMapsStatus('reload_needed');
   };
 
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to clear all stored keys?")) {
-      localStorage.clear();
+    if (window.confirm("Clear unsaved settings form values?")) {
       setKeys({ gemini: '', googleMaps: '', whatsappToken: '', paypalClient: '' });
       setGeminiStatus(null);
       setMapsStatus(null);
-      window.location.reload();
     }
   };
 
@@ -139,7 +82,7 @@ export const Settings: React.FC = () => {
           Platform Settings & API Keys
         </h1>
         <p className="text-gray-500 mt-2">
-          Manage the external service connections for TriniBuild. Keys are stored locally in your browser for this session.
+          Manage external service connections for TriniBuild. Sensitive provider keys are configured only in server environment variables.
         </p>
       </div>
 

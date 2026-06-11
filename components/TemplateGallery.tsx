@@ -444,13 +444,13 @@ const PREVIEWS: Record<string, React.FC> = {
   restaurant_premium:      P_restaurant_premium,
   clothing_store_pro:      P_clothing_store_pro,
   salon_barber_pro:        P_salon_barber_pro,
-  electronics_tech:        P_electronics_tech,
-  pharmacy_health:         P_pharmacy_health,
-  bakery_desserts:         P_bakery_desserts,
-  auto_parts:              P_auto_parts,
-  hardware_home:           P_hardware_home,
-  gym_fitness:             P_gym_fitness,
-  jewelry_luxury:          P_jewelry_luxury,
+  electronics_tech_pro:    P_electronics_tech,
+  pharmacy_medical_pro:    P_pharmacy_health,
+  bakery_sweets_pro:       P_bakery_desserts,
+  auto_parts_pro:          P_auto_parts,
+  hardware_home_pro:       P_hardware_home,
+  gym_fitness_pro:         P_gym_fitness,
+  jewelry_luxury_pro:      P_jewelry_luxury,
   multi_location_enterprise: P_multi_location_enterprise,
 };
 
@@ -486,7 +486,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
 
   const handleUse = (template: StoreTemplate) => {
     onSelectTemplate?.(template);
-    navigate(`/create-store?template=${template.id}`);
+    navigate(`/create-store?template=${encodeURIComponent(template.id)}`);
   };
 
   return (

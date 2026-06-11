@@ -1,8 +1,25 @@
 // TriniBuild Ads Manager - AI Service
-// Integrates with Google AI Studio for ad creative generation
+// Uses the server AI gateway so model provider keys stay server-side.
 
-const GOOGLE_AI_API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY || '';
-const AI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+async function generateWithAIGateway(prompt: string, maxTokens: number, temperature: number): Promise<string> {
+    const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: prompt,
+            system_prompt: 'You are a Caribbean advertising expert for Trinidad & Tobago businesses.',
+            max_tokens: maxTokens,
+            temperature,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(`AI gateway error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.content || '';
+}
 
 export interface ScriptGenerationInput {
     business_description: string;
@@ -35,31 +52,7 @@ export const scriptWriter = {
         const prompt = this.buildPrompt(input);
 
         try {
-            const response = await fetch(
-                `${AI_API_BASE}/models/gemini-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.9,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 800,
-                        }
-                    })
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`AI API error: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            const text = data.candidates[0]?.content?.parts[0]?.text || '';
+            const text = await generateWithAIGateway(prompt, 800, 0.9);
 
             // Parse multiple script variations
             return this.parseScriptVariations(text);
@@ -150,25 +143,7 @@ Provide 3 distinct variations:
 3. Energetic/exciting tone`;
 
         try {
-            const response = await fetch(
-                `${AI_API_BASE}/models/gemini-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.95,
-                            maxOutputTokens: 400
-                        }
-                    })
-                }
-            );
-
-            if (!response.ok) throw new Error(`AI API error: ${response.statusText}`);
-
-            const data = await response.json();
-            const text = data.candidates[0]?.content?.parts[0]?.text || '';
+            const text = await generateWithAIGateway(prompt, 400, 0.95);
 
             return this.parseCaptions(text);
         } catch (error) {
@@ -235,25 +210,7 @@ Respond in JSON format:
 }`;
 
         try {
-            const response = await fetch(
-                `${AI_API_BASE}/models/gemini-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: {
-                            temperature: 0.3,
-                            maxOutputTokens: 500
-                        }
-                    })
-                }
-            );
-
-            if (!response.ok) throw new Error(`AI API error: ${response.statusText}`);
-
-            const data = await response.json();
-            const text = data.candidates[0]?.content?.parts[0]?.text || '';
+            const text = await generateWithAIGateway(prompt, 500, 0.3);
 
             // Try to extract JSON from the response
             const jsonMatch = text.match(/\{[\s\S]*\}/);

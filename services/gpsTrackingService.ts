@@ -223,32 +223,9 @@ export class GPSTrackingService {
     toLng: number
   ): Promise<{ distance: number; duration: number } | null> {
     try {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      
-      if (!apiKey) {
-        console.warn('Google Maps API key not configured');
-        // Fallback to basic calculation
-        const distance = this.calculateDistance(fromLat, fromLng, toLat, toLng);
-        const duration = Math.ceil((distance / 30) * 60); // Assume 30 km/h average
-        return { distance: Math.round(distance * 1000), duration };
-      }
-
-      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${fromLat},${fromLng}&destinations=${toLat},${toLng}&key=${apiKey}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.rows?.[0]?.elements?.[0]) {
-        const element = data.rows[0].elements[0];
-        if (element.status === 'OK') {
-          return {
-            distance: element.distance.value, // in meters
-            duration: Math.ceil(element.duration.value / 60) // in minutes
-          };
-        }
-      }
-
-      return null;
+      const distance = this.calculateDistance(fromLat, fromLng, toLat, toLng);
+      const duration = Math.ceil((distance / 30) * 60); // Assume 30 km/h average.
+      return { distance: Math.round(distance * 1000), duration };
     } catch (err) {
       console.error('Error calculating ETA:', err);
       return null;

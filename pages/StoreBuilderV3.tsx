@@ -16,13 +16,14 @@
  */
 
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Store, Shirt, Utensils, Sparkles, ShoppingBag, Briefcase, MoreHorizontal,
   Check, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff, AlertCircle, Sparkle
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { SafeBoundary } from '../components/SafeBoundary';
+import { resolveStoreTemplateSelection } from '../services/storeTemplateRegistry';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ interface StoreBuilderState {
   step: 1 | 2 | 3 | 4;
   businessType: string;
   templateId: string;
+  sourceTemplateId: string;
   storeName: string;
   tagline: string;
   primaryColor: string;
@@ -161,15 +163,36 @@ const COLOR_PRESETS = [
   { name: 'Gold', value: '#D97706' },
 ];
 
+const resolveTemplateDeepLink = (templateId: string | null): Partial<StoreBuilderState> => {
+  if (!templateId) return {};
+
+  const selection = resolveStoreTemplateSelection(templateId);
+  return {
+    step: 2,
+    businessType: selection.businessType,
+    templateId: selection.builderTemplateId,
+    sourceTemplateId: selection.sourceTemplateId,
+  };
+};
+
 // ─── Main Component ────────────────────────────────────────────────────
 
 const StoreBuilderV3: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [state, setState] = useState<StoreBuilderState>(() => {
+    const params = new URLSearchParams(location.search);
+    const templateDeepLink = resolveTemplateDeepLink(params.get('template'));
+    const claimedStoreName = params.get('claim_name') || localStorage.getItem('draft_business_name') || '';
+
     try {
       const saved = localStorage.getItem(DRAFT_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        return {
+          ...JSON.parse(saved),
+          ...templateDeepLink,
+          ...(claimedStoreName ? { storeName: claimedStoreName } : {}),
+        };
       }
     } catch (e) {
       console.warn('Could not load draft:', e);
@@ -178,13 +201,15 @@ const StoreBuilderV3: React.FC = () => {
       step: 1,
       businessType: '',
       templateId: '',
-      storeName: '',
+      sourceTemplateId: '',
+      storeName: claimedStoreName,
       tagline: '',
       primaryColor: '#E61E2B',
       description: '',
       category: '',
       phone: '',
       whatsapp: '',
+      ...templateDeepLink,
     };
   });
 
@@ -236,6 +261,7 @@ const StoreBuilderV3: React.FC = () => {
                 updateState({
                   businessType: type.id,
                   templateId: type.recommendedTemplate,
+                  sourceTemplateId: type.recommendedTemplate,
                 });
               }}
               className={`p-6 border-2 rounded-xl text-left transition-all ${
@@ -306,7 +332,7 @@ const StoreBuilderV3: React.FC = () => {
               <button
                 key={template.id}
                 type="button"
-                onClick={() => updateState({ templateId: template.id })}
+                onClick={() => updateState({ templateId: template.id, sourceTemplateId: template.id })}
                 className={`relative p-6 border-2 rounded-xl text-left transition-all ${
                   isSelected
                     ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg'
@@ -582,6 +608,8 @@ const StoreBuilderV3: React.FC = () => {
           category: state.businessType,
           theme_config: {
             template_id: state.templateId,
+            source_template_id: state.sourceTemplateId || state.templateId,
+            customer_template_key: state.templateId,
             business_type: state.businessType,
           },
           color_scheme: {

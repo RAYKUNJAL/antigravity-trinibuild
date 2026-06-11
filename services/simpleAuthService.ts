@@ -1,3 +1,5 @@
+import { RateLimiter } from './rateLimiter';
+
 /**
  * SimpleAuthService - Minimal, working auth without complexity
  * Uses backend Express.js API for authentication instead of Supabase
@@ -62,7 +64,7 @@ export const simpleAuthService = {
 
       // Store in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', result.data.token || '');
+      sessionStorage.setItem('authToken', result.data.token || '');
 
       console.log('✅ [simpleAuthService] signup SUCCESS');
       return { success: true, user };
@@ -79,6 +81,16 @@ export const simpleAuthService = {
   login: async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: SimpleUser }> => {
     try {
       console.log('🔐 [simpleAuthService] login START:', { email });
+
+      const limit = RateLimiter.checkLoginLimit(email);
+      if (!limit.allowed) {
+        return {
+          success: false,
+          error: `Too many login attempts. Try again in ${RateLimiter.formatResetTime(limit.resetAt)}.`
+        };
+      }
+
+      RateLimiter.recordLoginAttempt(email);
 
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -113,7 +125,8 @@ export const simpleAuthService = {
 
       // Store in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', result.data.token || '');
+      sessionStorage.setItem('authToken', result.data.token || '');
+      RateLimiter.clearLoginAttempts(email);
 
       console.log('✅ [simpleAuthService] login SUCCESS');
       return { success: true, user };
@@ -132,7 +145,7 @@ export const simpleAuthService = {
   logout: async () => {
     try {
       localStorage.removeItem('user');
-      localStorage.removeItem('authToken');
+      sessionStorage.removeItem('authToken');
       console.log('✅ [simpleAuthService] logout SUCCESS');
       return { success: true };
     } catch (err: any) {
@@ -159,7 +172,7 @@ export const simpleAuthService = {
    */
   isAuthenticated: (): boolean => {
     const user = localStorage.getItem('user');
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     return !!(user && token);
   }
 };

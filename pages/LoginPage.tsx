@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '../services/supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+import { authService } from '../services/authService';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,14 +18,11 @@ export const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const result = await authService.login({ email, password });
 
-      if (error) {
+      if (result.error) {
         // Handle specific error cases
-        let errorMessage = error.message;
+        let errorMessage = result.error;
         
         // If it's a schema error, it might be an email confirmation issue
         if (errorMessage.includes('schema') || errorMessage.includes('Database error')) {
@@ -40,16 +37,10 @@ export const LoginPage: React.FC = () => {
         
         setError(errorMessage);
         setLoading(false);
-      } else if (data.user) {
+      } else if (result.user) {
         // Success - store user in localStorage for faster loading
         try {
-          localStorage.setItem('user', JSON.stringify({
-            id: data.user.id,
-            email: data.user.email,
-            firstName: data.user.user_metadata?.full_name?.split(' ')[0] || '',
-            lastName: data.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-            role: data.user.user_metadata?.role || 'user'
-          }));
+          localStorage.setItem('user', JSON.stringify(result.user));
         } catch (e) {
           console.warn('Could not save to localStorage:', e);
         }

@@ -17,8 +17,7 @@ import { generateOptimizedListing, type ProductListingOptimized } from './aiList
  * Parent Company: R&R Digital Solutions
  */
 
-const GPT_MODEL = 'gpt-4o-mini';
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+const GPT_MODEL = 'qwen-local-gateway';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -399,17 +398,13 @@ Be friendly and sales-oriented without being pushy.
 If you don't know something, suggest contacting the store via WhatsApp.`
 };
 
-// ─── OpenAI API Call (GPT-4o mini) ───────────────────────────────────────────
+// ─── Server AI Gateway Call (Qwen/OpenAI-compatible, no browser secrets) ─────
 
 async function callGPT(
     userMessage: string,
     systemPrompt: string,
     conversationHistory?: string
 ): Promise<AIResponse> {
-    if (!OPENAI_API_KEY) {
-        throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
-    }
-
     const startTime = Date.now();
 
     const messages: Array<{ role: string; content: string }> = [
@@ -422,15 +417,15 @@ async function callGPT(
         messages.push({ role: 'user', content: userMessage });
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-            model: GPT_MODEL,
-            messages,
+            message: userMessage,
+            context: conversationHistory,
+            system_prompt: systemPrompt,
             max_tokens: 2000,
             temperature: 0.7
         })
@@ -438,16 +433,16 @@ async function callGPT(
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');
-        throw new Error(`OpenAI API error ${response.status}: ${errText}`);
+        throw new Error(`AI gateway error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || 'Something went wrong on meh end. Try again nah.';
+    const text = data.content || data.choices?.[0]?.message?.content || 'Something went wrong on meh end. Try again nah.';
 
     return {
         content: text,
-        model_used: GPT_MODEL,
-        processing_time_ms: Date.now() - startTime
+        model_used: data.model_used || GPT_MODEL,
+        processing_time_ms: data.processing_time_ms || Date.now() - startTime
     };
 }
 
@@ -464,41 +459,24 @@ async function callGPTVisionJSON(
     userPrompt: string,
     systemPrompt: string,
 ): Promise<any> {
-    if (!OPENAI_API_KEY) {
-        throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/analyze-image', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-            model: GPT_MODEL,
-            response_format: { type: 'json_object' },
-            messages: [
-                { role: 'system', content: systemPrompt },
-                {
-                    role: 'user',
-                    content: [
-                        { type: 'text', text: userPrompt },
-                        { type: 'image_url', image_url: { url: imageUrl, detail: 'low' } },
-                    ],
-                },
-            ],
-            max_tokens: 800,
-            temperature: 0.5,
+            imageUrl,
+            prompt: `${systemPrompt}\n\n${userPrompt}`,
         }),
     });
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');
-        throw new Error(`OpenAI vision error ${response.status}: ${errText}`);
+        throw new Error(`Image analysis error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+    const text = data.analysis || data.content || data.choices?.[0]?.message?.content;
     if (!text) throw new Error('Empty response from vision model');
 
     try {

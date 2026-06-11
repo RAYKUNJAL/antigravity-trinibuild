@@ -11,6 +11,7 @@ export const Onboarding: React.FC = () => {
   const [intent, setIntent] = useState<'sell' | 'buy' | 'work' | null>(null);
   const [businessName, setBusinessName] = useState('');
   const [location, setLocation] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('basic_storefront');
   const [userId, setUserId] = useState<string | null>(null);
   const [showLegalFlow, setShowLegalFlow] = useState(false);
 
@@ -31,7 +32,7 @@ export const Onboarding: React.FC = () => {
   const handleLegalComplete = () => {
     // Legal docs signed, proceed to store creator
     if (intent === 'sell') {
-      navigate(`/create-store?claim_name=${encodeURIComponent(businessName)}`);
+      navigate(`/create-store?claim_name=${encodeURIComponent(businessName)}&template=${encodeURIComponent(selectedTemplate)}`);
     }
   };
 
@@ -150,6 +151,83 @@ export const Onboarding: React.FC = () => {
                   <span className="text-[10px] font-bold text-yellow-600 bg-white px-1 rounded mt-1 inline-block">Gig Economy</span>
                 </div>
                 {intent === 'work' && <CheckCircle className="h-5 w-5 text-yellow-500" />}
+              </button>
+            </div>
+          )}
+
+          {step === 2 && intent === 'sell' && (
+            <div className="space-y-5 mt-4">
+              <label className="block">
+                <span className="text-sm font-bold text-gray-800">Store name</span>
+                <input
+                  value={businessName}
+                  onChange={(event) => setBusinessName(event.target.value)}
+                  placeholder="Example: Island Style Boutique"
+                  className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-trini-red focus:border-transparent"
+                />
+              </label>
+
+              <div>
+                <p className="text-sm font-bold text-gray-800 mb-3">Pick a launch template</p>
+                <div className="grid gap-3">
+                  {[
+                    ['basic_storefront', 'General Store', 'Clean layout for any business'],
+                    ['roti_shop_pro', 'Food & Restaurant', 'Menus, pickup, COD, delivery'],
+                    ['clothing_store_pro', 'Fashion Boutique', 'Mobile-first product showcase'],
+                    ['salon_barber_pro', 'Salon & Services', 'Services, booking, WhatsApp-ready'],
+                  ].map(([id, name, description]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSelectedTemplate(id)}
+                      className={`w-full text-left p-4 border-2 rounded-xl transition-all ${
+                        selectedTemplate === id ? 'border-trini-red bg-red-50' : 'border-gray-100 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-bold text-gray-900">{name}</h3>
+                          <p className="text-xs text-gray-500">{description}</p>
+                        </div>
+                        {selectedTemplate === id && <CheckCircle className="h-5 w-5 text-trini-red" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <Link to="/templates" className="inline-block mt-3 text-xs font-bold text-trini-red hover:underline">
+                  Browse all templates
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && intent === 'buy' && (
+            <div className="space-y-5 mt-4">
+              <label className="block">
+                <span className="text-sm font-bold text-gray-800">Your area</span>
+                <input
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                  placeholder="Example: Chaguanas"
+                  className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </label>
+            </div>
+          )}
+
+          {step === 3 && intent === 'sell' && (
+            <div className="space-y-4 mt-4">
+              <div className="rounded-xl bg-gray-50 border border-gray-100 p-4">
+                <h3 className="font-bold text-gray-900">Ready to build your store</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  We saved your store name and template choice. Continue to the builder to customize and launch.
+                </p>
+              </div>
+              <button
+                onClick={handleLegalComplete}
+                className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-lg text-base font-bold text-white bg-trini-red hover:bg-red-700 transition-all"
+              >
+                Continue to Store Builder <ArrowRight className="ml-2 h-5 w-5" />
               </button>
             </div>
           )}

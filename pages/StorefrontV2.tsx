@@ -7,6 +7,8 @@ import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
+import { StorefrontTemplateRenderer } from '../components/templates/StorefrontTemplateRenderer';
+import { getStoreTemplateProfile } from '../services/storeTemplateRegistry';
 import type { Store, Product } from '../types';
 
 // Lazy load heavy components
@@ -292,6 +294,13 @@ export const StorefrontV2: React.FC = () => {
         );
     }
 
+    const templateProfile = getStoreTemplateProfile(store);
+    const shouldUseTemplateRenderer = Boolean(
+        store.theme_config?.template_id ||
+        store.theme_config?.source_template_id ||
+        store.theme_config?.customer_template_key
+    );
+
     return (
         <>
             {/* Spin-wheel popup — self-gated on ?spin=1 URL flag set by StoreBuilderV3 */}
@@ -349,6 +358,23 @@ export const StorefrontV2: React.FC = () => {
                     </div>
                 )}
 
+                {shouldUseTemplateRenderer && (
+                    <StorefrontTemplateRenderer
+                        store={store}
+                        products={filteredProducts}
+                        template={templateProfile}
+                        cartCount={cartCount}
+                        searchQuery={searchQuery}
+                        selectedCategory={selectedCategory}
+                        onSearchChange={setSearchQuery}
+                        onCategoryChange={setSelectedCategory}
+                        onAddToCart={addToCart}
+                        onOpenCart={() => setIsCartOpen(true)}
+                        onOpenShare={() => setIsShareOpen(true)}
+                    />
+                )}
+
+                <div className={shouldUseTemplateRenderer ? 'hidden' : ''}>
                 {/* Top Announcement Bar - CRO Element */}
                 <div className="bg-gradient-to-r from-trini-red to-red-600 text-white text-center py-2 px-4 text-sm font-bold">
                     <Truck className="inline h-4 w-4 mr-2" />
@@ -562,6 +588,7 @@ export const StorefrontV2: React.FC = () => {
                         </div>
                     )}
                 </main>
+                </div>
 
                 {/* Share & QR Section */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
