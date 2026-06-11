@@ -116,6 +116,15 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
     setImagePreview(URL.createObjectURL(file));
   };
 
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Could not prepare image for AI analysis.'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleGenerate = async () => {
     if (!imageFile) return;
     if (!resolvedStoreId) {
@@ -126,23 +135,10 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
     setStep('processing');
 
     try {
-      // 1. Upload the photo to the product-images bucket
-      const ext = (imageFile.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${resolvedStoreId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('product-images')
-        .upload(path, imageFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: imageFile.type,
-        });
-      if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
+      const localImageUrl = await fileToDataUrl(imageFile);
 
-      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
-
-      // 2. Ask GPT-4o-mini vision to describe the product
-      const ai = await aiService.generateProductFromImage(publicUrl, {
+      // Ask the backend vision gateway to describe the product before storage upload.
+      const ai = await aiService.generateProductFromImage(localImageUrl, {
         storeName: resolvedStoreName ?? undefined,
         storeCategory: resolvedStoreCategory ?? undefined,
       });
@@ -153,7 +149,7 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
         price: String(ai.suggested_price_ttd || ''),
         category: CATEGORY_OPTIONS.includes(ai.category) ? ai.category : 'other',
         tags: ai.tags.join(', '),
-        imageUrl: publicUrl,
+        imageUrl: imagePreview || localImageUrl,
         confidence: ai.confidence,
       });
       setStep('review');
@@ -171,6 +167,23 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
     try {
       const priceNum = Number(draft.price);
       const tagList = draft.tags.split(',').map(t => t.trim()).filter(Boolean);
+      let productImageUrl = draft.imageUrl;
+
+      if (imageFile) {
+        const ext = (imageFile.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${resolvedStoreId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('product-images')
+          .upload(path, imageFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: imageFile.type,
+          });
+        if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
+
+        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path);
+        productImageUrl = urlData.publicUrl;
+      }
 
       // Use storeService.addProduct so all the column-mapping stays in one place.
       const product = await storeService.addProduct(resolvedStoreId, {
@@ -179,7 +192,7 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
         base_price: Number.isFinite(priceNum) && priceNum > 0 ? priceNum : 0,
         stock: 1, // merchant can edit from the inventory list after save
         category: draft.category,
-        image_url: draft.imageUrl,
+        image_url: productImageUrl,
         status: 'active',
       } as any);
 

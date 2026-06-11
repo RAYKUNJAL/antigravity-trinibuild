@@ -22,14 +22,24 @@ export const AIProductListingPage: React.FC = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
+      const timeout = new Promise<null>((resolve) => {
+        window.setTimeout(() => resolve(null), 5000);
+      });
+      const authResult = await Promise.race([
+        supabase.auth.getUser().then(({ data }) => data.user).catch(() => null),
+        timeout,
+      ]);
+
+      if (cancelled) return;
+      if (!authResult) {
         navigate('/login?redirect=/products/ai-add');
         return;
       }
       setCheckingAuth(false);
     })();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   if (checkingAuth) {
