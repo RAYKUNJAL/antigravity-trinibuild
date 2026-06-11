@@ -7,14 +7,8 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 
-if (!hasSupabaseConfig) {
-    console.error('❌ Missing Supabase environment variables!');
-    console.error('Please check your .env.local file and ensure:');
-    console.error('  - VITE_SUPABASE_URL is set');
-    console.error('  - VITE_SUPABASE_ANON_KEY is set');
-} else {
-    console.log('✅ Supabase configuration loaded');
-    console.log('📍 URL:', supabaseUrl);
+if (import.meta.env.DEV && hasSupabaseConfig) {
+    console.info('Supabase configuration loaded');
 }
 
 export const supabase = createClient(

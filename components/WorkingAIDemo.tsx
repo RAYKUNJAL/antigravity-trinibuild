@@ -1,22 +1,15 @@
 /**
- * BULLETPROOF AI DEMO - ACTUALLY TESTED AND WORKS
- * 
- * Ray's Requirements Fixed:
- * ✅ iPhone HEIC photos work (converts to JPEG)
- * ✅ Large files work (auto-compresses to <800KB)
- * ✅ Proper Supabase upload
- * ✅ Mobile camera integration
- * ✅ Real error messages
+ * Landing-page AI product scanner demo.
+ * Compresses mobile photos in the browser, then sends the image to the secure
+ * backend vision endpoint so provider keys and storage policies stay off the client.
  */
-
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
 
 export const WorkingAIDemo: React.FC = () => {
-  const [status, setStatus] = useState<'idle' | 'compressing' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'compressing' | 'processing' | 'done' | 'error'>('idle');
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -94,6 +87,15 @@ export const WorkingAIDemo: React.FC = () => {
     });
   };
 
+  const blobToDataUrl = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Could not prepare image for AI analysis'));
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleFile = async (file: File) => {
     try {
       setErrorMsg('');
@@ -110,25 +112,9 @@ export const WorkingAIDemo: React.FC = () => {
       const compressed = await compressImage(file);
       console.log(`Size: ${(file.size/1024/1024).toFixed(2)}MB → ${(compressed.size/1024).toFixed(0)}KB`);
 
-      setStatus('uploading');
-      setProgress('Uploading...');
-
-      const fileName = `demo-${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(`demo/${fileName}`, compressed, {
-          contentType: 'image/jpeg',
-          cacheControl: '3600'
-        });
-
-      if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(`demo/${fileName}`);
-
       setStatus('processing');
       setProgress('AI analyzing...');
+      const imageUrl = await blobToDataUrl(compressed);
 
       const aiRes = await fetch('/api/analyze-image', {
         method: 'POST',
@@ -136,7 +122,7 @@ export const WorkingAIDemo: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageUrl: publicUrl,
+          imageUrl,
           prompt: `Analyze this product. Return ONLY JSON:
 {"name": "Product name (max 80 chars)", "price": number (TTD), "category": "Category", "description": "2-3 paragraphs", "tags": ["tag1", "tag2", "tag3"]}`,
           max_tokens: 1000,
@@ -144,7 +130,10 @@ export const WorkingAIDemo: React.FC = () => {
         })
       });
 
-      if (!aiRes.ok) throw new Error('AI failed');
+      if (!aiRes.ok) {
+        const detail = await aiRes.json().catch(() => null);
+        throw new Error(detail?.message || detail?.error || 'AI analysis failed');
+      }
 
       const aiData = await aiRes.json();
       const content = aiData.content || aiData.analysis || '{}';
@@ -212,7 +201,7 @@ export const WorkingAIDemo: React.FC = () => {
           </>
         )}
 
-        {(status === 'compressing' || status === 'uploading' || status === 'processing') && (
+        {(status === 'compressing' || status === 'processing') && (
           <div className="bg-white rounded-2xl border shadow-lg p-8 text-center">
             <Loader2 className="w-12 h-12 text-red-600 animate-spin mx-auto mb-4" />
             <p className="text-lg font-semibold">{progress}</p>
