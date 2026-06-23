@@ -15,14 +15,19 @@
  * Time: 3 minutes to live store
  */
 
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Store, Shirt, Utensils, Sparkles, ShoppingBag, Briefcase, MoreHorizontal,
-  Check, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff, AlertCircle, Sparkle
+  Check, ArrowRight, ArrowLeft, Eye, EyeOff, AlertCircle, Sparkle
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { SafeBoundary } from '../components/SafeBoundary';
+import { PremiumEcommerceTemplate } from '../components/templates/PremiumEcommerceTemplate';
+import { Premium3ColumnTemplate } from '../components/templates/Premium3ColumnTemplate';
+import { PremiumFashionTemplate } from '../components/templates/PremiumFashionTemplate';
+import { PremiumRestaurantTemplate } from '../components/templates/PremiumRestaurantTemplate';
+import { PremiumBeautyTemplate } from '../components/templates/PremiumBeautyTemplate';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -41,6 +46,7 @@ interface Template {
   preview: string;
   bestFor: string[];
   componentLoader: () => Promise<{ default: React.ComponentType<any> }>;
+  Component: React.ComponentType<any>;
 }
 
 interface StoreBuilderState {
@@ -244,7 +250,8 @@ const TEMPLATES: Template[] = [
     description: 'Clean, conversion-focused layout. Works for any business.',
     preview: '🏢',
     bestFor: ['All Types', 'Most Versatile'],
-    componentLoader: () => import('../components/templates/Premium3ColumnTemplate').then(m => ({ default: m.Premium3ColumnTemplate })),
+    componentLoader: () => Promise.resolve({ default: Premium3ColumnTemplate as any }),
+    Component: Premium3ColumnTemplate,
   },
   {
     id: 'fashion',
@@ -252,7 +259,8 @@ const TEMPLATES: Template[] = [
     description: 'Elegant fashion showcase with image-first design.',
     preview: '👗',
     bestFor: ['Fashion', 'Boutiques'],
-    componentLoader: () => import('../components/templates/PremiumFashionTemplate').then(m => ({ default: m.PremiumFashionTemplate })),
+    componentLoader: () => Promise.resolve({ default: PremiumFashionTemplate as any }),
+    Component: PremiumFashionTemplate,
   },
   {
     id: 'restaurant',
@@ -260,7 +268,8 @@ const TEMPLATES: Template[] = [
     description: 'Beautiful menu showcase with categories and reservations.',
     preview: '🍽️',
     bestFor: ['Restaurants', 'Cafes'],
-    componentLoader: () => import('../components/templates/PremiumRestaurantTemplate').then(m => ({ default: m.PremiumRestaurantTemplate })),
+    componentLoader: () => Promise.resolve({ default: PremiumRestaurantTemplate as any }),
+    Component: PremiumRestaurantTemplate,
   },
   {
     id: 'beauty',
@@ -268,7 +277,8 @@ const TEMPLATES: Template[] = [
     description: 'Service-focused with stylist profiles and booking.',
     preview: '💅',
     bestFor: ['Beauty', 'Wellness'],
-    componentLoader: () => import('../components/templates/PremiumBeautyTemplate').then(m => ({ default: m.PremiumBeautyTemplate })),
+    componentLoader: () => Promise.resolve({ default: PremiumBeautyTemplate as any }),
+    Component: PremiumBeautyTemplate,
   },
   {
     id: 'ecommerce',
@@ -276,7 +286,8 @@ const TEMPLATES: Template[] = [
     description: 'Product grid with filters, search, and reviews.',
     preview: '🛍️',
     bestFor: ['Retail', 'Electronics'],
-    componentLoader: () => import('../components/templates/PremiumEcommerceTemplate').then(m => ({ default: m.PremiumEcommerceTemplate })),
+    componentLoader: () => Promise.resolve({ default: PremiumEcommerceTemplate as any }),
+    Component: PremiumEcommerceTemplate,
   },
 ];
 
@@ -624,23 +635,37 @@ const StoreBuilderV3: React.FC = () => {
             </div>
             <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700" style={{ maxHeight: '600px', overflow: 'auto' }}>
               <SafeBoundary name="Step3Preview">
-                <Suspense fallback={
-                  <div className="flex items-center justify-center p-12">
-                    <Loader2 className="w-6 h-6 text-red-500 animate-spin" />
-                  </div>
-                }>
-                  {(() => {
-                    const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
-                    if (!selectedTemplate) return null;
-                    return (
-                      <LazyTemplate
-                        loader={selectedTemplate.componentLoader}
-                        storeName={state.storeName || 'Your Store Name'}
-                        primaryColor={state.primaryColor}
-                      />
-                    );
-                  })()}
-                </Suspense>
+                {(() => {
+                  const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
+                  if (!selectedTemplate) return (
+                    <div className="flex items-center justify-center p-12 text-gray-400">
+                      Select a template to see preview
+                    </div>
+                  );
+                  const TemplateComponent = selectedTemplate.Component;
+                  const storeData = {
+                    name: state.storeName || 'Your Store Name',
+                    tagline: state.storeName ? `Welcome to ${state.storeName}` : '',
+                    description: state.storeName ? `${state.storeName} — quality products and service in Trinidad & Tobago.` : '',
+                    phone: '',
+                    whatsapp: '',
+                    color_scheme: { primary: state.primaryColor },
+                    banner_url: undefined,
+                  };
+                  const sampleProducts = state.storeName ? [
+                    { id: 's1', name: `${state.storeName} Special`, description: 'Our signature product', price: 199.99, image_url: '', status: 'active', stock: 10, category: 'Featured' },
+                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: '', status: 'active', stock: 5, category: 'Best Seller' },
+                    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: '', status: 'active', stock: 20, category: 'Value' },
+                  ] : [];
+                  return (
+                    <TemplateComponent
+                      storeName={state.storeName || 'Your Store Name'}
+                      storeData={storeData}
+                      products={sampleProducts}
+                      primaryColor={state.primaryColor}
+                    />
+                  );
+                })()}
               </SafeBoundary>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
