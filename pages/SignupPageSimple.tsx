@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
@@ -159,12 +159,12 @@ export const SignupPageSimple: React.FC = () => {
           <div className="text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="font-bold text-trini-red hover:underline"
               >
                 Sign In
-              </a>
+              </Link>
             </p>
           </div>
         </div>

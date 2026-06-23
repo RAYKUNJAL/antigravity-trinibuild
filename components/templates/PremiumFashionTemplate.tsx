@@ -24,7 +24,7 @@ export const PremiumFashionTemplate: React.FC<{
   const handleWhatsApp = (product: Product) => {
     const phone = storeData?.whatsapp || storeData?.phone || '';
     const msg = encodeURIComponent(`Hi! I'm interested in ${product.name} (TT$${product.price.toFixed(2)}). Is it available?`);
-    window.open(`https://wa.me/${phone.replace(/\\D/g, '')}?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   };
 
   return (
@@ -37,7 +37,7 @@ export const PremiumFashionTemplate: React.FC<{
             {storeData?.tagline && <p className="text-xs text-gray-500 hidden md:block">{storeData.tagline}</p>}
           </div>
           <div className="flex items-center gap-2">
-            {storeData?.phone && <a href={`tel:${storeData.phone.replace(/\\D/g, '')}`} className="p-2 text-gray-600"><Phone className="w-5 h-5" /></a>}
+            {storeData?.phone && <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="p-2 text-gray-600"><Phone className="w-5 h-5" /></a>}
             {storeData?.whatsapp && (
               <button onClick={() => { if (activeProducts[0]) handleWhatsApp(activeProducts[0]); }} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                 <MessageCircle className="w-4 h-4" />

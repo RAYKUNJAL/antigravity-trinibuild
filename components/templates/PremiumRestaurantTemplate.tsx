@@ -25,6 +25,7 @@ export const PremiumRestaurantTemplate: React.FC<{
 
   const handleWhatsApp = (product: Product) => {
     const phone = storeData?.whatsapp || storeData?.phone || '';
+    if (!phone) return;
     const msg = encodeURIComponent(`Hi! I'd like to order: ${product.name} (TT$${product.price.toFixed(2)})`);
     window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   };

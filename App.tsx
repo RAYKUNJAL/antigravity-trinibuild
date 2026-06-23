@@ -170,6 +170,7 @@ const App: React.FC = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signin" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<div className="min-h-screen flex items-center justify-center"><p>Password reset coming soon. Use email confirmation.</p></div>} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />

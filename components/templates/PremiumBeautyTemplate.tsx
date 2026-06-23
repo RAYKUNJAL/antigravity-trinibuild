@@ -23,6 +23,7 @@ export const PremiumBeautyTemplate: React.FC<{
 
   const handleWhatsApp = (product: Product) => {
     const phone = storeData?.whatsapp || storeData?.phone || '';
+    if (!phone) return;
     const msg = encodeURIComponent(`Hi! I'd like to book: ${product.name} (TT$${product.price}). Is it available?`);
     window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   };
@@ -57,6 +58,10 @@ export const PremiumBeautyTemplate: React.FC<{
             </h2>
             {storeData?.tagline && <p className="text-lg text-gray-600 mb-4">{storeData.tagline}</p>}
             {storeData?.description && <p className="text-sm text-gray-500 mb-6">{storeData.description}</p>}
+            <div className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium mb-4">
+              <Heart className="w-4 h-4" />
+              Cash on Delivery — Pay when you receive
+            </div>
             <div className="flex flex-wrap gap-3">
               {services.map((s, i) => (
                 <button key={s.id} onClick={() => handleWhatsApp(s)} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>

@@ -10,6 +10,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 import { storeService } from '../services/storeService';
+import { subscriptionService } from '../services/subscriptionService';
 import type { Store as StoreType, Product, Order } from '../types';
 
 // ============================================

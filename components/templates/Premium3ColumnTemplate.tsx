@@ -50,6 +50,7 @@ export const Premium3ColumnTemplate: React.FC<{
 
   const handleWhatsApp = (product: Product) => {
     const phone = storeData?.whatsapp || storeData?.phone || '';
+    if (!phone) return;
     const msg = encodeURIComponent(`Hi! I'm interested in ${product.name} (TT$${product.price}). Is it available?`);
     window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   };
@@ -161,6 +162,10 @@ export const Premium3ColumnTemplate: React.FC<{
                     <MessageCircle className="w-4 h-4" />
                     {currentProduct.stock === 0 ? 'Out of Stock' : 'Order via WhatsApp'}
                   </button>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
+                  <Heart className="w-4 h-4" />
+                  Cash on Delivery — Pay when you receive
                 </div>
               </div>
             </motion.div>

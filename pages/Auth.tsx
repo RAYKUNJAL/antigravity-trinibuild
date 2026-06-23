@@ -27,13 +27,16 @@ export const Auth: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
+      const dest = isLogin ? (searchParams.get('redirect') || '/dashboard') : '/onboarding';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}${searchParams.get('redirect') || '/dashboard'}`
+          redirectTo: `${window.location.origin}${dest}`
         }
       });
       if (error) throw error;
+      // Social signup (non-login) flows to /onboarding via redirectTo above.
+      if (!isLogin) navigate('/onboarding');
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -65,8 +68,8 @@ export const Auth: React.FC = () => {
 
         if (res.error) throw new Error(res.error);
 
-        setSuccessMsg("Success! Please check your email to confirm your account.");
-        setIsLogin(true); // Switch to login view
+        // Send new users to onboarding instead of leaving them on the auth screen.
+        navigate('/onboarding');
       }
     } catch (err: any) {
       setError(err.message);
@@ -257,7 +260,13 @@ export const Auth: React.FC = () => {
                 </div>
                 {isLogin && (
                   <div className="text-right mt-1">
-                    <a href="#" className="text-xs text-red-600 hover:underline">Forgot password?</a>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/forgot-password')}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                 )}
               </div>
