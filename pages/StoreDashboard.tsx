@@ -64,6 +64,7 @@ export const StoreDashboard: React.FC = () => {
     name: '', description: '', price: 0, stock: 0, category: '', image_url: '', status: 'active'
   });
   const [showProductModal, setShowProductModal] = useState(false);
+  const [maxProducts, setMaxProducts] = useState<number>(5);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -168,7 +169,7 @@ export const StoreDashboard: React.FC = () => {
       if (editingProduct) {
         result = await storeService.updateProduct(editingProduct.id, payload);
       } else {
-        result = await storeService.createProduct(payload);
+        result = await storeService.addProduct(payload);
       }
 
       if (result) {
