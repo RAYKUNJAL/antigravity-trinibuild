@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Video, Save } from 'lucide-react';
 import { VideoPlacement, AVAILABLE_PAGES, PAGE_SECTIONS } from '../services/videoService';
-import { VideoUploadTus } from './VideoUploadTus';
+import { VideoUploadV2 } from './VideoUploadV2';
 
 interface VideoModalProps {
     isOpen: boolean;

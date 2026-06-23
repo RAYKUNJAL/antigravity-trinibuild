@@ -15,8 +15,7 @@ if (fs.existsSync(envPath)) {
     dotenv.config({ path: path.resolve(__dirname, '../.env') });
 }
 
-const supabaseUrl = process.env.VITE_SUPABA
-SE_URL;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {

@@ -114,6 +114,19 @@ import { AffiliateEarningsDashboard } from './pages/AffiliateEarningsDashboard';
 import { SellerOnboardingPage } from './pages/SellerOnboardingPage';
 import { PartnershipPage } from './pages/PartnershipPage';
 
+// AI Services Marketplace imports
+import { AIToolsMarketplace } from './pages/AIToolsMarketplace';
+import { ToolDetail } from './pages/ToolDetail';
+import { DashboardHome } from './pages/DashboardHome';
+import { CreateBusinessProfile } from './pages/CreateBusinessProfile';
+import { BusinessProfilePage } from './pages/BusinessProfilePage';
+import { MyTools } from './pages/MyTools';
+import { ToolWorkspace } from './pages/ToolWorkspace';
+import { DigitalOrders } from './pages/DigitalOrders';
+import { AccountSettings } from './pages/AccountSettings';
+import { DashboardLayout } from './components/dashboard/DashboardLayout';
+import { ToastProvider } from './components/ui/Toast';
+
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
@@ -344,6 +357,21 @@ const App: React.FC = () => {
               <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />
               <Route path="/document-disclaimer" element={<Legal type="document-disclaimer" />} />
               <Route path="/legal/all" element={<AllLegalDocuments />} />
+
+              {/* AI Tools Marketplace — Public */}
+              <Route path="/ai-tools" element={<AIToolsMarketplace />} />
+              <Route path="/ai-tools/:slug" element={<ToolDetail />} />
+            </Route>
+
+            {/* Dashboard — Protected, uses DashboardLayout */}
+            <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="/dashboard/ai" element={<DashboardHome />} />
+              <Route path="/dashboard/business/new" element={<CreateBusinessProfile />} />
+              <Route path="/dashboard/business" element={<BusinessProfilePage />} />
+              <Route path="/dashboard/tools" element={<MyTools />} />
+              <Route path="/dashboard/tools/:toolSlug" element={<ToolWorkspace />} />
+              <Route path="/dashboard/orders" element={<DigitalOrders />} />
+              <Route path="/dashboard/settings" element={<AccountSettings />} />
             </Route>
 
             {/* AI Listing System */}
