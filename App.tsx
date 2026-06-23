@@ -1,5 +1,4 @@
 import AIListingDashboard from './pages/AIListingDashboard';
-import DebugUpload from './src/pages/DebugUpload';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
@@ -237,7 +236,6 @@ const App: React.FC = () => {
               <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
 
               {/* NEW ROUTES - Template Gallery & AI Features */}
-              <Route path="/debug-upload" element={<DebugUpload />} />
               <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />

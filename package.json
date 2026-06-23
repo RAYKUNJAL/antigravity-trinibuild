@@ -23,7 +23,7 @@
     "@supabase/supabase-js": "^2.86.0",
     "@types/react-leaflet": "^2.8.3",
     "@types/uuid": "^10.0.0",
-    "framer-motion": "^12.23.25",
+    "framer-motion": "^12.40.0",
     "groq-sdk": "^0.7.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.554.0",

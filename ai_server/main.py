@@ -73,10 +73,11 @@ class GenerateRequest(BaseModel):
     prompt: str
     system_prompt: Optional[str] = None
     model: Optional[str] = None
+    max_tokens: Optional[int] = 2000
 
 # --- Helper Functions ---
 
-def query_groq(prompt: str, system_prompt: str = "", model: str = DEFAULT_MODEL) -> str:
+def query_groq(prompt: str, system_prompt: str = "", model: str = DEFAULT_MODEL, max_tokens: int = 2000) -> str:
     """
     Sends a prompt to the Groq API.
     """
@@ -91,7 +92,7 @@ def query_groq(prompt: str, system_prompt: str = "", model: str = DEFAULT_MODEL)
             messages=messages,
             model=model,
             temperature=0.7,
-            max_tokens=1024,
+            max_tokens=max_tokens,
         )
         
         return chat_completion.choices[0].message.content
@@ -182,7 +183,12 @@ async def chatbot_reply(request: ChatbotRequest):
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
     try:
-        response = query_groq(request.prompt, model=request.model or DEFAULT_MODEL, system_prompt=request.system_prompt or "")
+        response = query_groq(
+            request.prompt,
+            model=request.model or DEFAULT_MODEL,
+            system_prompt=request.system_prompt or "",
+            max_tokens=request.max_tokens or 2000
+        )
         return {"content": response, "model_used": request.model or DEFAULT_MODEL}
     except Exception as e:
         logger.error(f"Generation error: {e}")

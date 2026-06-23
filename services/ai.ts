@@ -406,48 +406,37 @@ async function callGPT(
     systemPrompt: string,
     conversationHistory?: string
 ): Promise<AIResponse> {
-    if (!OPENAI_API_KEY) {
-        throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
-    }
-
+    const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
     const startTime = Date.now();
 
-    const messages: Array<{ role: string; content: string }> = [
-        { role: 'system', content: systemPrompt }
-    ];
+    const fullPrompt = conversationHistory
+        ? `Previous conversation:\n${conversationHistory}\n\n---\nCurrent message: ${userMessage}`
+        : userMessage;
 
-    if (conversationHistory) {
-        messages.push({ role: 'user', content: `Previous conversation:\n${conversationHistory}\n\n---\nCurrent message: ${userMessage}` });
-    } else {
-        messages.push({ role: 'user', content: userMessage });
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${AI_SERVER}/generate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-            model: GPT_MODEL,
-            messages,
-            max_tokens: 2000,
-            temperature: 0.7
-        })
+            prompt: fullPrompt,
+            system_prompt: systemPrompt,
+            model: 'llama-3.3-70b-versatile',
+        }),
     });
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');
-        throw new Error(`OpenAI API error ${response.status}: ${errText}`);
+        throw new Error(`AI server error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || 'Something went wrong on meh end. Try again nah.';
+    const text = data.content || 'Something went wrong on meh end. Try again nah.';
 
     return {
         content: text,
-        model_used: GPT_MODEL,
-        processing_time_ms: Date.now() - startTime
+        model_used: data.model_used || 'groq-local',
+        processing_time_ms: Date.now() - startTime,
     };
 }
 
@@ -464,8 +453,10 @@ async function callGPTVisionJSON(
     userPrompt: string,
     systemPrompt: string,
 ): Promise<any> {
+    // Vision calls still use OpenAI directly (Groq doesn't support vision yet)
+    // Falls back gracefully if no key
     if (!OPENAI_API_KEY) {
-        throw new Error('No OpenAI API key configured — set VITE_OPENAI_API_KEY');
+        throw new Error('No OpenAI API key configured for vision — set VITE_OPENAI_API_KEY');
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
