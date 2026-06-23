@@ -1,302 +1,255 @@
 import React, { useState } from 'react';
-import { Clock, MapPin, Phone, Star, ChevronDown, ShoppingCart } from 'lucide-react';
+import { Clock, MapPin, Phone, Star, MessageCircle, Menu, X, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import type { Product, Store } from '../../types';
 
 /**
  * PREMIUM RESTAURANT TEMPLATE
- * - Sophisticated dining aesthetic
- * - Menu showcase with categories
- * - Reservation system
- * - Premium animations
+ * Fine dining and restaurant template
+ * Real data driven - products rendered as menu items
  */
 
-export const PremiumRestaurantTemplate: React.FC<{ storeName?: string; storeData?: any }> = ({
-  storeName = 'Elegant Dining',
-  storeData
-}) => {
-  const [selectedCategory, setSelectedCategory] = useState('appetizers');
-  const [isReservationOpen, setIsReservationOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+export const PremiumRestaurantTemplate: React.FC<{
+  storeName?: string;
+  storeData?: Store;
+  products?: Product[];
+  primaryColor?: string;
+}> = ({ storeName = 'Restaurant', storeData, products = [], primaryColor = '#E61E2B' }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const menuItems = {
-    appetizers: [
-      {
-        name: 'Truffle Risotto Croquettes',
-        description: 'Golden fried risotto with black truffle and parmesan',
-        price: 'TT$185',
-        icon: '🍤'
-      },
-      {
-        name: 'Pan Seared Foie Gras',
-        description: 'With warm brioche and fig reduction',
-        price: 'TT$275',
-        icon: '🥘'
-      },
-      {
-        name: 'Chilled Lobster Bisque',
-        description: 'Served with caviar and crispy croutons',
-        price: 'TT$165',
-        icon: '🦞'
-      }
-    ],
-    mains: [
-      {
-        name: 'Pan Seared Snapper',
-        description: 'With roasted vegetables and lemon beurre blanc',
-        price: 'TT$395',
-        icon: '🐟'
-      },
-      {
-        name: 'Prime Ribeye Steak',
-        description: '350g grain-fed, with truffle mash and seasonal vegetables',
-        price: 'TT$575',
-        icon: '🥩'
-      },
-      {
-        name: 'Duck Confit',
-        description: 'With cherry gastrique and polenta fries',
-        price: 'TT$425',
-        icon: '🦆'
-      }
-    ],
-    desserts: [
-      {
-        name: 'Dark Chocolate Torte',
-        description: 'With raspberry coulis and vanilla ice cream',
-        price: 'TT$145',
-        icon: '🍫'
-      },
-      {
-        name: 'Passion Fruit Cheesecake',
-        description: 'With coconut crumb and mango sorbet',
-        price: 'TT$155',
-        icon: '🎂'
-      },
-      {
-        name: 'Tiramisu Classico',
-        description: 'Traditional Italian preparation with espresso',
-        price: 'TT$125',
-        icon: '☕'
-      }
-    ]
+  const menuItems = products.filter(p => p.status === 'active');
+  const categories = ['all', ...Array.from(new Set(menuItems.map(p => p.category).filter(Boolean) as string[]))];
+  const filteredItems = menuItems.filter(p => selectedCategory === 'all' || p.category === selectedCategory);
+
+  const handleWhatsApp = (product: Product) => {
+    const phone = storeData?.whatsapp || storeData?.phone || '';
+    const msg = encodeURIComponent(`Hi! I'd like to order: ${product.name} (TT$${product.price})`);
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
   };
-
-  const categories = ['appetizers', 'mains', 'desserts'];
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
-      {/* HERO SECTION */}
-      <header className="relative h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white flex items-center justify-center overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-          }}
-        />
-
-        <div className="relative z-10 text-center max-w-4xl px-4">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-6xl md:text-8xl font-light mb-6 tracking-tight"
-          >
-            {storeName}
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-xl md:text-2xl text-gray-300 mb-8 font-light"
-          >
-            A culinary journey of taste and refinement
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col md:flex-row items-center justify-center gap-4"
-          >
-            <button className="px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white uppercase tracking-widest text-sm transition duration-300">
-              Reserve Table
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-gray-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden">
+              <Menu className="w-6 h-6" />
             </button>
-            <button className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-slate-900 uppercase tracking-widest text-sm transition duration-300">
-              View Menu
-            </button>
-          </motion.div>
+            <div>
+              <h1 className="text-2xl font-light tracking-tight">{storeName}</h1>
+              {storeData?.tagline && <p className="text-xs text-gray-500">{storeData.tagline}</p>}
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/${(storeData?.whatsapp || storeData?.phone || '').replace(/\D/g, '')}`}
+            className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full text-sm hover:opacity-90 transition"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <MessageCircle className="w-4 h-4" /> Order Now
+          </a>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <ChevronDown className="w-6 h-6" />
-        </motion.div>
+        {mobileOpen && (
+          <div className="md:hidden border-t border-gray-200 dark:border-slate-800 p-4">
+            <nav className="flex flex-col gap-3">
+              <a href="#menu" className="text-sm py-2">Menu</a>
+              <a href="#about" className="text-sm py-2">About</a>
+              <a href="#contact" className="text-sm py-2">Contact</a>
+            </nav>
+          </div>
+        )}
       </header>
 
-      {/* MENU SECTION */}
-      <section className="py-20 px-4 max-w-7xl mx-auto">
-        <h2 className="text-4xl font-light mb-12 tracking-tight text-center">Our Menu</h2>
-
-        {/* Category Tabs */}
-        <div className="flex justify-center gap-8 mb-16 flex-wrap">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`text-lg capitalize tracking-wider transition duration-300 pb-2 border-b-2 ${
-                selectedCategory === category
-                  ? 'text-amber-600 border-amber-600'
-                  : 'text-gray-400 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Menu Items Grid */}
-        <motion.div
-          key={selectedCategory}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {menuItems[selectedCategory as keyof typeof menuItems].map((item, idx) => (
-            <motion.div
-              key={idx}
+      {/* HERO */}
+      <section className="relative h-[70vh] bg-gray-900 text-white flex items-center justify-center overflow-hidden">
+        {storeData?.banner_url && (
+          <img src={storeData.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+        )}
+        <div className="relative z-10 text-center max-w-4xl px-4">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl font-light mb-6 tracking-tight"
+          >
+            {storeName}
+          </motion.h2>
+          {storeData?.description && (
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="group cursor-pointer"
+              transition={{ delay: 0.2 }}
+              className="text-xl text-gray-300 mb-8"
             >
-              <div className="mb-4 text-6xl">{item.icon}</div>
-              <h3 className="text-xl font-light mb-2 tracking-tight">{item.name}</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 leading-relaxed">
-                {item.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-amber-600 font-semibold">{item.price}</span>
+              {storeData.description}
+            </motion.p>
+          )}
+          <motion.a
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            href="#menu"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 rounded-full hover:bg-gray-100 transition font-light"
+          >
+            View Menu <ChevronRight className="w-4 h-4" />
+          </motion.a>
+        </div>
+      </section>
+
+      {/* INFO BAR */}
+      <section className="bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {storeData?.phone && (
+            <div className="flex items-center gap-3">
+              <Phone className="w-5 h-5 text-gray-600" />
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">Phone</div>
+                <div className="text-sm font-medium">{storeData.phone}</div>
+              </div>
+            </div>
+          )}
+          {storeData?.whatsapp && (
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-5 h-5 text-gray-600" />
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider">WhatsApp</div>
+                <div className="text-sm font-medium">{storeData.whatsapp}</div>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-gray-600" />
+            <div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider">Hours</div>
+              <div className="text-sm font-medium">Open Daily</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MENU */}
+      <section id="menu" className="py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-light tracking-tight mb-2">Our Menu</h2>
+            <p className="text-gray-600">Made with love, served with pride</p>
+          </div>
+
+          {/* Categories */}
+          {categories.length > 1 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-12">
+              {categories.map(cat => (
                 <button
-                  onClick={() => setCartCount(cartCount + 1)}
-                  className="p-2 hover:bg-amber-50 dark:hover:bg-amber-950 rounded-full transition"
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-sm transition ${
+                    selectedCategory === cat
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-black'
+                      : 'bg-gray-100 dark:bg-slate-800 hover:bg-gray-200'
+                  }`}
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  {cat === 'all' ? 'Everything' : cat}
                 </button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
+              ))}
+            </div>
+          )}
 
-      {/* RESTAURANT INFO */}
-      <section className="bg-slate-100 dark:bg-slate-900 py-16 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <Clock className="w-12 h-12 mx-auto mb-4 text-amber-600" />
-            <h3 className="text-lg font-light mb-2">Hours</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Tue - Thu: 5pm - 11pm<br />
-              Fri - Sat: 5pm - 12am<br />
-              Sun: 12pm - 10pm<br />
-              Closed Mondays
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-center"
-          >
-            <MapPin className="w-12 h-12 mx-auto mb-4 text-amber-600" />
-            <h3 className="text-lg font-light mb-2">Location</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              123 Luxury Lane<br />
-              Port of Spain<br />
-              Trinidad & Tobago
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-center"
-          >
-            <Phone className="w-12 h-12 mx-auto mb-4 text-amber-600" />
-            <h3 className="text-lg font-light mb-2">Contact</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              +1 (868) 555-DINE<br />
-              reservations@{storeName.toLowerCase().replace(/\s/g, '')}.tt<br />
-              WhatsApp: Message us anytime
-            </p>
-          </motion.div>
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">🍽️</div>
+              <h3 className="text-xl font-light">Menu coming soon</h3>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredItems.map((item, idx) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl hover:shadow-md transition"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl">🍴</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 mb-1">{item.name}</h3>
+                      {item.description && (
+                        <p className="text-sm text-gray-500 line-clamp-1">{item.description}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="font-medium text-gray-900">TT${item.price.toFixed(2)}</span>
+                    <button
+                      onClick={() => handleWhatsApp(item)}
+                      className="px-4 py-2 text-white rounded-lg text-sm hover:opacity-90 transition flex items-center gap-2"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <MessageCircle className="w-4 h-4" /> Order
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="py-20 px-4 max-w-7xl mx-auto">
-        <h2 className="text-4xl font-light mb-12 tracking-tight text-center">What Guests Say</h2>
+      {/* ABOUT */}
+      {storeData?.description && (
+        <section id="about" className="py-20 px-4 bg-gray-50 dark:bg-slate-900">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-light tracking-tight mb-6">About {storeName}</h2>
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{storeData.description}</p>
+            <div className="flex items-center justify-center gap-1 mt-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+              ))}
+              <span className="ml-2 text-sm text-gray-600">5.0 (100+ reviews)</span>
+            </div>
+          </div>
+        </section>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { name: 'Michelle R.', text: 'An unforgettable dining experience. Every dish was a masterpiece.' },
-            { name: 'David T.', text: 'The ambiance, the food, the service - absolutely impeccable.' },
-            { name: 'Lisa P.', text: 'Best fine dining restaurant in Trinidad. Highly recommended!' }
-          ].map((testimonial, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="border border-gray-200 dark:border-gray-800 p-8 rounded-lg"
-            >
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-600 text-amber-600" />
-                ))}
-              </div>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">"{testimonial.text}"</p>
-              <p className="font-light text-sm">{testimonial.name}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* RESERVATION CTA */}
-      <section className="bg-slate-900 text-white py-16 px-4">
+      {/* CONTACT */}
+      <section id="contact" className="py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-light mb-4">Reserve Your Table</h2>
-          <p className="text-gray-300 mb-8">
-            Experience fine dining crafted with passion and precision. Limited reservations available.
-          </p>
-          <button className="px-12 py-4 bg-amber-600 hover:bg-amber-700 uppercase tracking-widest text-sm transition duration-300">
-            Book Now
-          </button>
+          <h2 className="text-3xl font-light tracking-tight mb-6">Contact Us</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {storeData?.phone && (
+              <div className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+                <Phone className="w-6 h-6 mx-auto mb-3 text-gray-600" />
+                <div className="text-sm font-medium">{storeData.phone}</div>
+              </div>
+            )}
+            {storeData?.whatsapp && (
+              <div className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+                <MessageCircle className="w-6 h-6 mx-auto mb-3 text-green-600" />
+                <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="text-sm font-medium text-green-600 hover:underline">
+                  WhatsApp Us
+                </a>
+              </div>
+            )}
+            <div className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl">
+              <MapPin className="w-6 h-6 mx-auto mb-3 text-gray-600" />
+              <div className="text-sm font-medium">Trinidad & Tobago</div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-950 text-gray-400 py-12 px-4 text-sm">
-        <div className="max-w-7xl mx-auto text-center">
-          <p>&copy; 2026 {storeName}. All rights reserved. Crafted for the discerning palate.</p>
+      <footer className="border-t border-gray-200 dark:border-slate-800 py-12 px-4 bg-gray-50 dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>&copy; 2026 {storeName}. All rights reserved.</p>
         </div>
       </footer>
     </div>

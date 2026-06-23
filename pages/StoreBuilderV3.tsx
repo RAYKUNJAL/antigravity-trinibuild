@@ -381,9 +381,9 @@ const StoreBuilderV3: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Form */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-span-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Store Name *
@@ -481,30 +481,38 @@ const StoreBuilderV3: React.FC = () => {
           </div>
         </div>
 
-        {/* Preview Card */}
-        <div className="lg:sticky lg:top-4 self-start">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-6">
-            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
-              Live Preview
+        {/* Live Template Preview */}
+        <div className="lg:col-span-3">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4">
+            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center justify-between">
+              <span>Live Template Preview</span>
+              <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+                {TEMPLATES.find(t => t.id === state.templateId)?.name || 'Preview'}
+              </span>
             </div>
-            <div
-              className="rounded-lg p-6 text-white"
-              style={{
-                background: `linear-gradient(135deg, ${state.primaryColor}, ${state.primaryColor}dd)`,
-              }}
-            >
-              <h3 className="text-2xl font-bold mb-1">
-                {state.storeName || 'Your Store Name'}
-              </h3>
-              <p className="text-white/90 text-sm">
-                {state.tagline || 'Your tagline goes here'}
-              </p>
-              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur rounded-lg text-sm">
-                Shop Now <ArrowRight className="w-3 h-3" />
-              </div>
+            <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700" style={{ maxHeight: '600px', overflow: 'auto' }}>
+              <SafeBoundary name="Step3Preview">
+                <Suspense fallback={
+                  <div className="flex items-center justify-center p-12">
+                    <Loader2 className="w-6 h-6 text-red-500 animate-spin" />
+                  </div>
+                }>
+                  {(() => {
+                    const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
+                    if (!selectedTemplate) return null;
+                    return (
+                      <LazyTemplate
+                        loader={selectedTemplate.componentLoader}
+                        storeName={state.storeName || 'Your Store Name'}
+                        primaryColor={state.primaryColor}
+                      />
+                    );
+                  })()}
+                </Suspense>
+              </SafeBoundary>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-              This is a quick preview. The full template will look much better.
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+              This is a live preview with sample data. Your real products will appear here.
             </p>
           </div>
         </div>
@@ -828,12 +836,33 @@ interface LazyTemplateProps {
 }
 
 const LazyTemplate: React.FC<LazyTemplateProps> = ({ loader, storeName, primaryColor }) => {
-  // We use lazy() but not at module level — it's called fresh each render of the component (memoized by template id)
   const Template = React.useMemo(() => lazy(loader), [loader]);
+
+  // Build a minimal storeData object from wizard state so templates render
+  const storeData: any = {
+    name: storeName,
+    tagline: storeName ? `Welcome to ${storeName}` : '',
+    description: storeName ? `${storeName} — quality products and service in Trinidad & Tobago.` : '',
+    phone: '',
+    whatsapp: '',
+    color_scheme: { primary: primaryColor },
+    banner_url: undefined,
+  };
+
+  // Seed realistic sample products per template type so the preview looks alive
+  const sampleProducts: any[] = (() => {
+    if (!storeName) return [];
+    const base = [
+      { id: 's1', name: `${storeName} Special`, description: 'Our signature product', price: 199.99, image_url: '', status: 'active', stock: 10, category: 'Featured' },
+      { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: '', status: 'active', stock: 5, category: 'Best Seller' },
+      { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: '', status: 'active', stock: 20, category: 'Value' },
+    ];
+    return base;
+  })();
 
   return (
     <div style={{ '--brand-color': primaryColor } as React.CSSProperties}>
-      <Template storeName={storeName} primaryColor={primaryColor} />
+      <Template storeName={storeName} storeData={storeData} products={sampleProducts} primaryColor={primaryColor} />
     </div>
   );
 };
