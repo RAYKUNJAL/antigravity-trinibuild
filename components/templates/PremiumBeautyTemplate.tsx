@@ -14,7 +14,10 @@ export const PremiumBeautyTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Beauty Studio', storeData, products = [], primaryColor = '#E61E2B' }) => {
+}> = ({ storeName = 'Beauty Studio', storeData, products = [], primaryColor = '#EC4899' }) => {
+  // UI/UX Pro Max: Beauty/Spa = Lora headings + Raleway body
+  const headingStyle = { fontFamily: "'Lora', serif" };
+  const fontStyle = { fontFamily: "'Raleway', sans-serif" };
   const [selectedService, setSelectedService] = useState(0);
 
   const services = products.filter(p => p.status === 'active');

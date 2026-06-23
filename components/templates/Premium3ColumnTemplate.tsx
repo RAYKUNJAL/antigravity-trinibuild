@@ -14,7 +14,10 @@ export const Premium3ColumnTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#E61E2B' }) => {
+}> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#0F172A' }) => {
+  // UI/UX Pro Max: Professional Services = Poppins headings + Open Sans body
+  const headingStyle = { fontFamily: "'Poppins', sans-serif" };
+  const fontStyle = { fontFamily: "'Open Sans', sans-serif" };
   const [selectedProduct, setSelectedProduct] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState(0);

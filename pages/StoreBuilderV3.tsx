@@ -58,6 +58,136 @@ interface StoreBuilderState {
 
 const DRAFT_KEY = 'trinibuild_store_draft_v3';
 
+// ─── Industry-Specific Design Systems (from UI/UX Pro Max skill) ──────
+
+interface DesignSystem {
+  defaultColor: string;
+  accentColor: string;
+  colorPresets: { name: string; value: string }[];
+  headingFont: string;
+  bodyFont: string;
+  fontImport: string;
+  landingPattern: string;
+  styleKeywords: string[];
+}
+
+const DESIGN_SYSTEMS: Record<string, DesignSystem> = {
+  fashion: {
+    defaultColor: '#BE185D',
+    accentColor: '#D97706',
+    colorPresets: [
+      { name: 'Fashion Rose', value: '#BE185D' },
+      { name: 'Luxury Black', value: '#1C1917' },
+      { name: 'Gold Accent', value: '#D97706' },
+      { name: 'Editorial Navy', value: '#1E3A5F' },
+      { name: 'Burgundy', value: '#7C2D12' },
+      { name: 'Champagne', value: '#CA8A04' },
+      { name: 'Charcoal', value: '#1F2937' },
+      { name: 'Blush Pink', value: '#EC4899' },
+    ],
+    headingFont: "'Cormorant', serif",
+    bodyFont: "'Montserrat', sans-serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap",
+    landingPattern: 'Feature-Rich Showcase',
+    styleKeywords: ['Liquid Glass', 'Glassmorphism', 'Elegance & sophistication'],
+  },
+  food: {
+    defaultColor: '#DC2626',
+    accentColor: '#A16207',
+    colorPresets: [
+      { name: 'Appetizing Red', value: '#DC2626' },
+      { name: 'Warm Gold', value: '#A16207' },
+      { name: 'Food Delivery Orange', value: '#EA580C' },
+      { name: 'Trust Blue', value: '#2563EB' },
+      { name: 'Fresh Green', value: '#059669' },
+      { name: 'Trinidad Red', value: '#E61E2B' },
+      { name: 'Coffee Brown', value: '#78350F' },
+      { name: 'Chili Red', value: '#B91C1C' },
+    ],
+    headingFont: "'Abril Fatface', serif",
+    bodyFont: "'Merriweather', serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Merriweather:wght@300;400;700&display=swap",
+    landingPattern: 'Hero-Centric + Conversion',
+    styleKeywords: ['Vibrant & Block-based', 'Motion-Driven', 'Appetizing imagery'],
+  },
+  beauty: {
+    defaultColor: '#EC4899',
+    accentColor: '#8B5CF6',
+    colorPresets: [
+      { name: 'Soft Pink', value: '#EC4899' },
+      { name: 'Lavender Luxury', value: '#8B5CF6' },
+      { name: 'Sage Green', value: '#90EE90' },
+      { name: 'Gold Accent', value: '#D4AF37' },
+      { name: 'Rose Gold', value: '#E8B4B8' },
+      { name: 'Mauve', value: '#C084FC' },
+      { name: 'Warm White', value: '#FFF5F5' },
+      { name: 'Charcoal', value: '#2D3436' },
+    ],
+    headingFont: "'Lora', serif",
+    bodyFont: "'Raleway', sans-serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap",
+    landingPattern: 'Hero-Centric + Social Proof',
+    styleKeywords: ['Soft UI Evolution', 'Neumorphism', 'Calming aesthetic'],
+  },
+  retail: {
+    defaultColor: '#059669',
+    accentColor: '#EA580C',
+    colorPresets: [
+      { name: 'Success Green', value: '#059669' },
+      { name: 'Urgency Orange', value: '#EA580C' },
+      { name: 'Trust Blue', value: '#2563EB' },
+      { name: 'Trinidad Red', value: '#E61E2B' },
+      { name: 'Ocean Blue', value: '#0066CC' },
+      { name: 'Forest Green', value: '#16A34A' },
+      { name: 'Royal Purple', value: '#7C3AED' },
+      { name: 'Charcoal', value: '#1F2937' },
+    ],
+    headingFont: "'Outfit', sans-serif",
+    bodyFont: "'Work Sans', sans-serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap",
+    landingPattern: 'Feature-Rich Showcase',
+    styleKeywords: ['Vibrant & Block-based', 'High visual hierarchy', 'Engagement & conversions'],
+  },
+  services: {
+    defaultColor: '#0F172A',
+    accentColor: '#0369A1',
+    colorPresets: [
+      { name: 'Professional Navy', value: '#0F172A' },
+      { name: 'Corporate Blue', value: '#0369A1' },
+      { name: 'Trust Blue', value: '#2563EB' },
+      { name: 'Success Green', value: '#059669' },
+      { name: 'Trinidad Red', value: '#E61E2B' },
+      { name: 'Ocean Blue', value: '#0066CC' },
+      { name: 'Charcoal', value: '#1F2937' },
+      { name: 'Gold', value: '#D97706' },
+    ],
+    headingFont: "'Poppins', sans-serif",
+    bodyFont: "'Open Sans', sans-serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap",
+    landingPattern: 'Trust & Authority',
+    styleKeywords: ['Trust & Authority', 'Minimal', 'Credibility essential'],
+  },
+  other: {
+    defaultColor: '#E61E2B',
+    accentColor: '#EA580C',
+    colorPresets: [
+      { name: 'Trinidad Red', value: '#E61E2B' },
+      { name: 'Ocean Blue', value: '#0066CC' },
+      { name: 'Forest Green', value: '#16A34A' },
+      { name: 'Sunset Orange', value: '#EA580C' },
+      { name: 'Royal Purple', value: '#7C3AED' },
+      { name: 'Rose Pink', value: '#EC4899' },
+      { name: 'Charcoal', value: '#1F2937' },
+      { name: 'Gold', value: '#D97706' },
+    ],
+    headingFont: "'Poppins', sans-serif",
+    bodyFont: "'Open Sans', sans-serif",
+    fontImport: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap",
+    landingPattern: 'Hero + Features + CTA',
+    styleKeywords: ['Minimalism', 'Versatile', 'Clean'],
+  },
+};
+
 // ─── Business Types ────────────────────────────────────────────────────
 
 const BUSINESS_TYPES: BusinessType[] = [
@@ -233,9 +363,11 @@ const StoreBuilderV3: React.FC = () => {
               key={type.id}
               type="button"
               onClick={() => {
+                const ds = DESIGN_SYSTEMS[type.id];
                 updateState({
                   businessType: type.id,
                   templateId: type.recommendedTemplate,
+                  primaryColor: ds?.defaultColor || '#E61E2B',
                 });
               }}
               className={`p-6 border-2 rounded-xl text-left transition-all ${
@@ -458,7 +590,7 @@ const StoreBuilderV3: React.FC = () => {
               Brand Color
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {COLOR_PRESETS.map((preset) => (
+              {(DESIGN_SYSTEMS[state.businessType]?.colorPresets || COLOR_PRESETS).map((preset) => (
                 <button
                   key={preset.value}
                   type="button"
@@ -837,6 +969,19 @@ interface LazyTemplateProps {
 
 const LazyTemplate: React.FC<LazyTemplateProps> = ({ loader, storeName, primaryColor }) => {
   const Template = React.useMemo(() => lazy(loader), [loader]);
+
+  // Load industry-specific fonts dynamically (UI/UX Pro Max design system)
+  useEffect(() => {
+    const id = 'trinibuild-template-fonts';
+    const existing = document.getElementById(id);
+    if (existing) existing.remove();
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cormorant:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap';
+    document.head.appendChild(link);
+    return () => { link.remove(); };
+  }, []);
 
   // Build a minimal storeData object from wizard state so templates render
   const storeData: any = {

@@ -14,7 +14,10 @@ export const PremiumFashionTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Fashion Store', storeData, products = [], primaryColor = '#E61E2B' }) => {
+}> = ({ storeName = 'Fashion Store', storeData, products = [], primaryColor = '#BE185D' }) => {
+  // UI/UX Pro Max: Fashion = Cormorant headings + Montserrat body
+  const headingStyle = { fontFamily: "'Cormorant', serif" };
+  const fontStyle = { fontFamily: "'Montserrat', sans-serif" };
   const [cart, setCart] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
 

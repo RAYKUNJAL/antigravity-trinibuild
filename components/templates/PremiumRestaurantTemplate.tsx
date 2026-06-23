@@ -14,7 +14,14 @@ export const PremiumRestaurantTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Restaurant', storeData, products = [], primaryColor = '#E61E2B' }) => {
+}> = ({ storeName = 'Restaurant', storeData, products = [], primaryColor = '#DC2626' }) => {
+  // UI/UX Pro Max: Restaurant = Abril Fatface headings + Merriweather body
+  const fontStyle = {
+    fontFamily: "'Merriweather', serif",
+  };
+  const headingStyle = {
+    fontFamily: "'Abril Fatface', serif",
+  };
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -38,7 +45,7 @@ export const PremiumRestaurantTemplate: React.FC<{
               <Menu className="w-6 h-6" />
             </button>
             <div>
-              <h1 className="text-2xl font-light tracking-tight">{storeName}</h1>
+              <h1 className="text-2xl font-light tracking-tight" style={headingStyle}>{storeName}</h1>
               {storeData?.tagline && <p className="text-xs text-gray-500">{storeData.tagline}</p>}
             </div>
           </div>
@@ -72,6 +79,7 @@ export const PremiumRestaurantTemplate: React.FC<{
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-light mb-6 tracking-tight"
+            style={headingStyle}
           >
             {storeName}
           </motion.h2>
@@ -132,7 +140,7 @@ export const PremiumRestaurantTemplate: React.FC<{
       <section id="menu" className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-light tracking-tight mb-2">Our Menu</h2>
+            <h2 className="text-4xl font-light tracking-tight mb-2" style={headingStyle}>Our Menu</h2>
             <p className="text-gray-600">Made with love, served with pride</p>
           </div>
 

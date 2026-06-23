@@ -17,7 +17,10 @@ export const PremiumEcommerceTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#E61E2B' }) => {
+}> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#059669' }) => {
+  // UI/UX Pro Max: E-commerce = Outfit headings + Work Sans body
+  const headingStyle = { fontFamily: "'Outfit', sans-serif" };
+  const fontStyle = { fontFamily: "'Work Sans', sans-serif" };
   const [cartCount, setCartCount] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
