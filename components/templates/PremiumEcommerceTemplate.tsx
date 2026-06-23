@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Heart, Search, Filter, ChevronRight, Star, Truck, Shield, RotateCw, MessageCircle, Phone } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ShoppingCart, MessageCircle, Phone, Star, Truck, Shield, RotateCw, ChevronRight, ExternalLink } from 'lucide-react';
 import type { Product, Store } from '../../types';
 
 /**
- * PREMIUM ECOMMERCE TEMPLATE
- * - Modern retail aesthetic
- * - Advanced product filters
- * - Smart recommendations
- * - Mobile-optimized
- * - Real data driven
+ * CONVERSION-OPTIMIZED E-COMMERCE TEMPLATE
+ * Based on proven T&T e-commerce patterns:
+ * - WhatsApp-first ordering (COD is king in T&T)
+ * - Immediate trust signals
+ * - Stock urgency + social proof
+ * - Mobile sticky CTA
+ * - FAQ to reduce objections
+ * - Fast: no heavy libs, minimal state
  */
 
 export const PremiumEcommerceTemplate: React.FC<{
@@ -17,288 +18,403 @@ export const PremiumEcommerceTemplate: React.FC<{
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
-}> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#059669' }) => {
-  // UI/UX Pro Max: E-commerce = Outfit headings + Work Sans body
-  const headingStyle = { fontFamily: "'Outfit', sans-serif" };
-  const fontStyle = { fontFamily: "'Work Sans', sans-serif" };
+}> = ({ storeName = 'Store', storeData, products = [], primaryColor = '#059669' }) => {
   const [cartCount, setCartCount] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [addedToCart, setAddedToCart] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
 
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category).filter(Boolean) as string[]))];
 
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = true;
-    const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
-    return matchesSearch && matchesCategory && p.status === 'active';
+  const activeProducts = products.filter(p => p.status === 'active');
+  const outOfStock = products.filter(p => p.stock === 0);
+  const totalStock = products.reduce((s, p) => s + (p.stock || 0), 0);
+
+  const filteredProducts = activeProducts.filter(p => {
+    const catMatch = selectedCategory === 'all' || p.category === selectedCategory;
+    return catMatch;
   });
 
-  const handleAddToCart = (product: Product) => {
-    setCartCount(prev => prev + 1);
-    setAddedToCart(product.id);
-    setTimeout(() => setAddedToCart(null), 1500);
+  const handleWhatsApp = (product?: Product) => {
+    const phone = storeData?.whatsapp || storeData?.phone || '';
+    if (!phone) return;
+    let msg = `Hi! I'm interested in ${storeName}`;
+    if (product) {
+      msg += ` — ${product.name} (TT$${product.price.toFixed(2)})`;
+    }
+    msg += '. Is it available for COD?';
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  const handleWhatsApp = (product: Product) => {
-    const phone = storeData?.whatsapp || storeData?.phone || '';
-    const msg = encodeURIComponent(`Hi! I'm interested in ${product.name} (TT$${product.price}). Is it available?`);
-    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
+  const handleCall = () => {
+    const phone = storeData?.phone || storeData?.whatsapp || '';
+    if (phone) window.location.href = `tel:${phone.replace(/\D/g, '')}`;
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-light tracking-tight">{storeName}</h1>
-            <div className="flex items-center gap-4">
-              <button className="hidden md:block p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">
-                <Search className="w-5 h-5" />
+    <div className="min-h-screen bg-white">
+      {/* ─── STICKY HEADER WITH WHATSAPP FIRST ─── */}
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-gray-100 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div>
+            <h1 className="text-lg md:text-xl font-medium tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              {storeName}
+            </h1>
+            {storeData?.tagline && (
+              <p className="text-xs text-gray-500 hidden md:block">{storeData.tagline}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {storeData?.phone && (
+              <button onClick={handleCall} className="p-2 text-gray-600 hover:text-gray-900" title="Call">
+                <Phone className="w-5 h-5" />
               </button>
-              <button className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg relative">
-                <ShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
+            )}
+            {storeData?.whatsapp && (
+              <button
+                onClick={() => handleWhatsApp()}
+                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-full"
+                style={{ backgroundColor: primaryColor }}
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden md:inline">Order on WhatsApp</span>
+                <span className="md:hidden">Chat</span>
               </button>
-            </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* HERO SECTION */}
-      {storeData?.description && (
-        <section className="relative h-64 md:h-96 bg-gradient-to-r from-gray-900 to-slate-900 text-white flex items-center justify-center overflow-hidden">
-          <div className="relative z-10 text-center max-w-4xl px-4">
-            <h2 className="text-4xl md:text-6xl font-light mb-4 tracking-tight">
-              {storeData.name}
-            </h2>
-            {storeData.tagline && (
-              <p className="text-xl text-gray-300 mb-6">{storeData.tagline}</p>
-            )}
-            <p className="text-gray-400 max-w-2xl mx-auto mb-8">{storeData.description}</p>
-            <a
-              href="#products"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition font-light tracking-wider text-sm"
-            >
-              Shop Now <ChevronRight className="w-4 h-4" />
-            </a>
-            {storeData?.whatsapp && (
-              <a
-                href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`}
-                className="inline-flex items-center gap-2 px-8 py-3 text-white rounded-lg hover:opacity-90 transition font-light ml-3"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <MessageCircle className="w-5 h-5" /> WhatsApp Us
+      {/* ─── HERO: VALUE PROP IN 3s ─── */}
+      <section className="relative bg-gradient-to-b from-gray-50 to-white dark:from-slate-950 dark:to-slate-900 py-12 md:py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-400 rounded-full text-xs font-medium mb-4">
+                <Shield className="w-3.5 h-3.5" />
+                Cash on Delivery
+              </div>
+              <h2 className="text-4xl md:text-5xl font-light tracking-tight mb-4" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                {storeData?.name || storeName}
+              </h2>
+              {storeData?.tagline && (
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">{storeData.tagline}</p>
+              )}
+              {storeData?.description && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-2">{storeData.description}</p>
+              )}
+              <div className="flex flex-wrap gap-3">
+                {storeData?.whatsapp && (
+                  <button
+                    onClick={() => handleWhatsApp()}
+                    className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Order via WhatsApp
+                  </button>
+                )}
+                {storeData?.phone && (
+                  <button onClick={handleCall} className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium hover:border-gray-300">
+                    <Phone className="w-4 h-4" />
+                    Call Us
+                  </button>
+                )}
+              </div>
+              <a href="#products" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mt-6">
+                Browse products <ChevronRight className="w-4 h-4" />
               </a>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* FEATURES */}
-      <section className="py-12 px-4 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex items-center gap-4">
-            <Truck className="w-8 h-8 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-            <div>
-              <h3 className="font-light text-sm">Cash on Delivery</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Pay when you receive</p>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <Shield className="w-8 h-8 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-            <div>
-              <h3 className="font-light text-sm">Verified Store</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">TriniBuild trusted</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <MessageCircle className="w-8 h-8 text-gray-600 dark:text-gray-400 flex-shrink-0" />
-            <div>
-              <h3 className="font-light text-sm">WhatsApp Support</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Chat with us anytime</p>
+            <div className="hidden md:grid grid-cols-3 gap-3">
+              {filteredProducts.slice(0, 3).map(p => (
+                <div key={p.id} className="aspect-[4/5] bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden relative">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
+                  )}
+                  {p.stock <= 5 && p.stock > 0 && (
+                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-600 text-white text-xs rounded-full font-medium">
+                      Only {p.stock} left
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRODUCTS */}
-      <section id="products" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-4xl font-light tracking-tight">
-              {filteredProducts.length > 0 ? 'Our Products' : 'Coming Soon'}
-            </h2>
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 md:hidden"
-            >
-              <Filter className="w-5 h-5" />
-              Filters
-            </button>
+      {/* ─── TRUST BAR: 3 PROOF POINTS ─── */}
+      <section className="border-y border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto grid grid-cols-3 divide-x divide-gray-100 dark:divide-slate-800">
+          <div className="flex items-center justify-center gap-3 py-4 px-2">
+            <Truck className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <div className="text-left">
+              <div className="text-sm font-medium">Cash on Delivery</div>
+              <div className="text-xs text-gray-500">Pay when you get it</div>
+            </div>
           </div>
+          <div className="flex items-center justify-center gap-3 py-4 px-2">
+            <Shield className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <div className="text-left">
+              <div className="text-sm font-medium">Verified Store</div>
+              <div className="text-xs text-gray-500">Built on TriniBuild</div>
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 py-4 px-2">
+            <MessageCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            <div className="text-left">
+              <div className="text-sm font-medium">WhatsApp Support</div>
+              <div className="text-xs text-gray-500">Chat anytime</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PRODUCTS ─── */}
+      <section id="products" className="py-12 md:py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                {filteredProducts.length > 0 ? 'Shop Now' : 'Coming Soon'}
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} available
+              </p>
+            </div>
+            {categories.length > 2 && (
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="md:hidden inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Filter
+              </button>
+            )}
+          </div>
+
+          {/* Mobile filter pills */}
+          {showFilters && categories.length > 2 && (
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 md:hidden">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition ${
+                    selectedCategory === cat
+                      ? 'bg-gray-900 text-white dark:bg-white dark:text-black'
+                      : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {cat === 'all' ? 'All' : cat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Desktop side filter */}
+          {categories.length > 2 && (
+            <div className="hidden md:flex gap-8">
+              <aside className="w-40 flex-shrink-0 space-y-2">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`block w-full text-left px-4 py-2 rounded-lg text-sm transition ${
+                      selectedCategory === cat
+                        ? 'bg-gray-900 text-white dark:bg-white dark:text-black font-medium'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-900 text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {cat === 'all' ? 'All Products' : cat}
+                  </button>
+                ))}
+              </aside>
+              <div className="flex-1" />
+            </div>
+          )}
 
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">📦</div>
-              <h3 className="text-xl font-light text-gray-900 mb-2">No products yet</h3>
-              <p className="text-gray-500">This store is getting ready. Check back soon!</p>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No products yet</h3>
+              <p className="text-gray-500">Products will appear here when added.</p>
+              {activeProducts.length === 0 && (
+                <button
+                  onClick={() => handleWhatsApp()}
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Ask about availability
+                </button>
+              )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-              {/* Sidebar - Desktop */}
-              {categories.length > 1 && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="hidden lg:block"
-                >
-                  <div className="space-y-4">
-                    <h3 className="font-light text-sm uppercase tracking-wider">Categories</h3>
-                    {categories.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`block text-sm w-full text-left py-2 px-4 rounded-lg transition ${
-                          selectedCategory === cat
-                            ? 'bg-gray-900 dark:bg-white text-white dark:text-black'
-                            : 'hover:bg-gray-100 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        <span className="font-light capitalize">{cat === 'all' ? 'All Products' : cat}</span>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Products Grid */}
-              <div className={categories.length > 1 ? 'lg:col-span-4' : 'lg:col-span-5'}>
-                <motion.div
-                  layout
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                >
-                  {filteredProducts.map((product, idx) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="group"
-                    >
-                      {/* Product Image */}
-                      <div className="relative mb-4 aspect-square bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden flex items-center justify-center">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                          />
-                        ) : (
-                          <div className="text-6xl text-gray-300">📦</div>
-                        )}
-                        {product.stock === 0 && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <span className="text-white font-medium px-3 py-1 bg-black/70 rounded">Out of Stock</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Product Info */}
-                      <h3 className="font-light mb-2 line-clamp-1">{product.name}</h3>
-                      {product.description && (
-                        <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.description}</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {filteredProducts.map(product => {
+                const isLow = product.stock > 0 && product.stock <= 5;
+                const isOut = product.stock === 0;
+                return (
+                  <div key={product.id} className="group bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
+                    <div className="relative aspect-square bg-gray-50 dark:bg-slate-800">
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
                       )}
-
-                      {/* Price */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="font-semibold text-lg">TT${product.price.toFixed(2)}</span>
+                      {isLow && (
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-red-600 text-white text-xs rounded-lg font-medium shadow-sm">
+                          Only {product.stock} left
+                        </div>
+                      )}
+                      {isOut && (
+                        <div className="absolute inset-0 bg-white/80 dark:bg-slate-950/80 flex items-center justify-center">
+                          <span className="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-lg font-medium">Sold Out</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 md:p-4">
+                      <h3 className="font-medium text-sm md:text-base mb-1 line-clamp-1">{product.name}</h3>
+                      {product.description && (
+                        <p className="text-xs text-gray-500 mb-3 line-clamp-2 leading-relaxed">{product.description}</p>
+                      )}
+                      <div className="flex items-end gap-2 mb-3">
+                        <span className="text-lg md:text-xl font-semibold">TT${product.price.toFixed(2)}</span>
                       </div>
-
-                      {/* Actions */}
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleAddToCart(product)}
-                          disabled={product.stock === 0}
-                          className="flex-1 py-2.5 text-white rounded-lg hover:opacity-90 transition text-sm font-light disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleWhatsApp(product)}
+                          disabled={isOut}
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 text-white rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
                           style={{ backgroundColor: primaryColor }}
                         >
-                          {addedToCart === product.id ? 'Added!' : 'Add to Cart'}
-                        </button>
-                        <button
-                          onClick={() => handleWhatsApp(product)}
-                          className="px-3 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition"
-                          title="Order via WhatsApp"
-                        >
                           <MessageCircle className="w-4 h-4" />
+                          Order
                         </button>
                       </div>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      {storeData?.whatsapp && (
-        <section className="py-16 px-4 bg-gray-900 text-white text-center">
-          <h2 className="text-3xl font-light mb-4">Want to order?</h2>
-          <p className="text-gray-300 mb-6">Chat with us on WhatsApp for COD orders</p>
-          <a
-            href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-light"
-          >
-            <MessageCircle className="w-5 h-5" /> WhatsApp Us
-          </a>
+      {/* ─── SOCIAL PROOF ─── */}
+      {activeProducts.length >= 3 && (
+        <section className="py-12 px-4 bg-gray-50 dark:bg-slate-900 border-y border-gray-100 dark:border-slate-800">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-light" style={{ fontFamily: "'Outfit', sans-serif" }}>{activeProducts.length}</div>
+                <div className="text-sm text-gray-500">Products Available</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <div className="text-sm text-gray-500">Trusted by customers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-light" style={{ fontFamily: "'Outfit', sans-serif" }}>TT${(activeProducts.reduce((s, p) => s + p.price, 0) / Math.max(1, activeProducts.length)).toFixed(0)}</div>
+                <div className="text-sm text-gray-500">Average price</div>
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
-      {/* FOOTER */}
-      <footer className="border-t border-gray-200 dark:border-slate-800 mt-20 py-16 px-4 md:px-6 bg-gray-50 dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <h4 className="font-light uppercase tracking-wider text-sm mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              {storeData?.phone && <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> {storeData.phone}</li>}
-              {storeData?.whatsapp && <li className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> {storeData.whatsapp}</li>}
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-light uppercase tracking-wider text-sm mb-4">About</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {storeData?.description || `${storeName} on TriniBuild`}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-light uppercase tracking-wider text-sm mb-4">Payments</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Cash on Delivery (COD)</p>
-          </div>
-          <div>
-            <h4 className="font-light uppercase tracking-wider text-sm mb-4">Follow Us</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><a href="#" className="hover:text-black dark:hover:text-white">Instagram</a></li>
-              <li><a href="#" className="hover:text-black dark:hover:text-white">Facebook</a></li>
-              <li><a href="#" className="hover:text-black dark:hover:text-white">WhatsApp</a></li>
-            </ul>
+      {/* ─── FAQ (REDUCES OBJECTIONS) ─── */}
+      <section className="py-12 md:py-16 px-4">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-light tracking-tight text-center mb-8" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Common Questions
+          </h2>
+          <div className="space-y-3">
+            {[
+              { q: 'How does Cash on Delivery work?', a: 'You order via WhatsApp, we confirm availability, and you pay only when you receive your item. No online payment needed.' },
+              { q: 'What areas do you deliver to?', a: storeData?.address || 'Contact us to confirm delivery to your area in Trinidad & Tobago.' },
+              { q: 'How long does delivery take?', a: 'Usually same-day or next-day depending on your location and product availability.' },
+              { q: 'Can I return or exchange?', a: 'Yes — if a product is damaged or wrong, contact us within 24 hours of delivery for return/exchange.' },
+            ].map((item, i) => (
+              <div key={i} className="border border-gray-100 dark:border-slate-800 rounded-xl">
+                <button
+                  onClick={() => setShowFAQ(!showFAQ)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                >
+                  <span className="font-medium text-sm md:text-base">{item.q}</span>
+                  <span className={`text-xs text-gray-400 transition ${showFAQ ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                {showFAQ && (
+                  <p className="px-4 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{item.a}</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-        <div className="border-t border-gray-200 dark:border-slate-800 pt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>&copy; 2026 {storeName}. All rights reserved.</p>
+      </section>
+
+      {/* ─── BOTTOM CTA ─── */}
+      {storeData?.whatsapp && (
+        <section className="py-12 px-4">
+          <div className="max-w-4xl mx-auto rounded-2xl p-8 md:p-12 text-center text-white" style={{ backgroundColor: primaryColor }}>
+            <h2 className="text-2xl md:text-3xl font-light mb-3 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              Ready to order?
+            </h2>
+            <p className="text-white/80 mb-6 text-sm md:text-base">Chat with us now — fast response, COD available</p>
+            <button
+              onClick={() => handleWhatsApp()}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white rounded-xl font-medium hover:bg-gray-100 transition"
+              style={{ color: primaryColor }}
+            >
+              <MessageCircle className="w-5 h-5" />
+              Start WhatsApp Order
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-gray-100 dark:border-slate-800 py-12 px-4 bg-gray-50 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <h4 className="font-medium mb-3">{storeName}</h4>
+            <p className="text-sm text-gray-500 mb-4">{storeData?.description || 'Your trusted store on TriniBuild.'}</p>
+            {storeData?.phone && (
+              <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="inline-flex items-center gap-2 text-sm hover:opacity-70">
+                <Phone className="w-4 h-4" /> {storeData.phone}
+              </a>
+            )}
+          </div>
+          <div>
+            <h4 className="font-medium mb-3">Visit Us</h4>
+            {storeData?.address ? (
+              <p className="text-sm text-gray-500">{storeData.address}</p>
+            ) : (
+              <p className="text-sm text-gray-500">Trinidad & Tobago</p>
+            )}
+          </div>
+          <div>
+            <h4 className="font-medium mb-3">Payments</h4>
+            <div className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-xs font-medium">
+              <Truck className="w-3.5 h-3.5" />
+              Cash on Delivery
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-200 dark:border-slate-800 text-center text-xs text-gray-400">
+          <p>Powered by <a href="https://trinibuild.com" className="underline">TriniBuild</a> • {storeName} © 2026</p>
         </div>
       </footer>
     </div>
   );
 };
-
-export default PremiumEcommerceTemplate;

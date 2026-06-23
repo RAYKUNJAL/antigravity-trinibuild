@@ -150,14 +150,13 @@ export const Premium3ColumnTemplate: React.FC<{
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setCart(cart + 1);
-                      handleWhatsApp(currentProduct);
-                    }}
-                    className="flex-1 py-3 text-white rounded-lg hover:opacity-90 transition font-light text-sm flex items-center justify-center gap-2"
+                    onClick={() => handleWhatsApp(currentProduct)}
+                    disabled={(currentProduct.stock ?? 0) === 0}
+                    className="flex-1 py-3 text-white rounded-lg hover:opacity-90 transition font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-40"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    <MessageCircle className="w-4 h-4" /> Order via WhatsApp
+                    <MessageCircle className="w-4 h-4" />
+                    {currentProduct.stock === 0 ? 'Out of Stock' : 'Order via WhatsApp'}
                   </button>
                 </div>
               </div>

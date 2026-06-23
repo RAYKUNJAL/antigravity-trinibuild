@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Star, MessageCircle, Phone, Calendar, Clock, Award, Heart, Instagram, Scissors, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Star, MessageCircle, Phone, Clock, Award, Heart, Instagram, Scissors, ChevronRight } from 'lucide-react';
 import type { Product, Store } from '../../types';
 
 /**
- * PREMIUM BEAUTY TEMPLATE
- * Beauty salon, spa and wellness services
- * Real data driven
+ * CONVERSION-OPTIMIZED BEAUTY TEMPLATE
+ * Focus: Direct booking via WhatsApp
  */
 
 export const PremiumBeautyTemplate: React.FC<{
@@ -15,32 +13,10 @@ export const PremiumBeautyTemplate: React.FC<{
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Beauty Studio', storeData, products = [], primaryColor = '#EC4899' }) => {
-  // UI/UX Pro Max: Beauty/Spa = Lora headings + Raleway body
   const headingStyle = { fontFamily: "'Lora', serif" };
-  const fontStyle = { fontFamily: "'Raleway', sans-serif" };
   const [selectedService, setSelectedService] = useState(0);
 
   const services = products.filter(p => p.status === 'active');
-  const currentService = services[selectedService] || {
-    id: 'default',
-    name: 'Our Services',
-    description: storeData?.description || 'Professional beauty and wellness services',
-    price: 0,
-    store_id: '',
-    slug: '',
-    image_url: null,
-    compare_at_price: undefined,
-    stock: 0,
-    sku: undefined,
-    gallery_images: [],
-    category: 'Beauty',
-    category_ids: [],
-    variants: [],
-    seo: {},
-    specifications: {},
-    status: 'active',
-    created_at: ''
-  };
 
   const handleWhatsApp = (product: Product) => {
     const phone = storeData?.whatsapp || storeData?.phone || '';
@@ -50,191 +26,126 @@ export const PremiumBeautyTemplate: React.FC<{
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950">
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-gray-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      {/* ─── HEADER ─── */}
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-950/95 backdrop-blur border-b border-gray-100 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-light tracking-tight">{storeName}</h1>
-            {storeData?.tagline && <p className="text-xs text-gray-500">{storeData.tagline}</p>}
+            <h1 className="text-lg md:text-xl font-medium tracking-tight" style={headingStyle}>{storeName}</h1>
+            {storeData?.tagline && <p className="text-xs text-gray-500 hidden md:block">{storeData.tagline}</p>}
           </div>
-          <a
-            href={`https://wa.me/${(storeData?.whatsapp || storeData?.phone || '').replace(/\D/g, '')}`}
-            className="inline-flex items-center gap-2 px-4 py-2 text-white rounded-full text-sm hover:opacity-90 transition"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <Calendar className="w-4 h-4" /> Book Now
-          </a>
+          <div className="flex items-center gap-2">
+            {storeData?.phone && <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="p-2 text-gray-600"><Phone className="w-5 h-5" /></a>}
+            {storeData?.whatsapp && (
+              <button onClick={() => services[0] && handleWhatsApp(services[0])} className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor }}>
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden md:inline">Book Now</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative h-[70vh] bg-gradient-to-b from-rose-50 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center">
-        {storeData?.banner_url && (
-          <img src={storeData.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
-        )}
-        <div className="relative z-10 text-center max-w-4xl px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center justify-center w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full mb-6"
-          >
-            <Scissors className="w-10 h-10 text-rose-600 dark:text-rose-400" />
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-5xl font-light tracking-tight mb-4"
-          >
-            {storeName}
-          </motion.h2>
-          {storeData?.description && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl text-gray-600 dark:text-gray-400 mb-8"
-            >
-              {storeData.description}
-            </motion.p>
-          )}
-          <motion.a
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            href="#services"
-            className="inline-flex items-center gap-2 px-8 py-3 text-white rounded-full hover:opacity-90 transition font-light"
-            style={{ backgroundColor: primaryColor }}
-          >
-            View Services <ChevronRight className="w-4 h-4" />
-          </motion.a>
-        </div>
-      </section>
-
-      {/* SERVICES */}
-      <section id="services" className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-light tracking-tight mb-2">Our Services</h2>
-            <p className="text-gray-600">Professional care tailored for you</p>
-          </div>
-
-          {services.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">💅</div>
-              <h3 className="text-xl font-light">Services coming soon</h3>
-              {storeData?.whatsapp && (
-                <a
-                  href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`}
-                  className="inline-flex items-center gap-2 mt-6 px-6 py-3 text-white rounded-lg hover:opacity-90 transition"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <MessageCircle className="w-5 h-5" /> WhatsApp Us
-                </a>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service, idx) => (
-                <motion.div
-                  key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="group bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-xl transition"
-                >
-                  <div className="aspect-square bg-gray-100 dark:bg-slate-800 overflow-hidden">
-                    {service.image_url ? (
-                      <img
-                        src={service.image_url}
-                        alt={service.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-6xl">💅</div>
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-medium mb-2">{service.name}</h3>
-                    {service.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{service.description}</p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold text-gray-900">TT${service.price.toFixed(2)}</span>
-                      <button
-                        onClick={() => handleWhatsApp(service)}
-                        className="px-4 py-2 text-white rounded-lg text-sm hover:opacity-90 transition flex items-center gap-2"
-                      style={{ backgroundColor: primaryColor }}
-                      >
-                        <MessageCircle className="w-4 h-4" /> Book
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
+      {/* ─── HERO ─── */}
+      <section className="relative bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-950 py-12 md:py-16 px-4">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-light mb-4 tracking-tight" style={headingStyle}>
+              {storeData?.name || storeName}
+            </h2>
+            {storeData?.tagline && <p className="text-lg text-gray-600 mb-4">{storeData.tagline}</p>}
+            {storeData?.description && <p className="text-sm text-gray-500 mb-6">{storeData.description}</p>}
+            <div className="flex flex-wrap gap-3">
+              {services.map((s, i) => (
+                <button key={s.id} onClick={() => handleWhatsApp(s)} className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium" style={{ backgroundColor: primaryColor }}>
+                  <MessageCircle className="w-5 h-5" />
+                  Book {s.name}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* WHY US */}
-      <section className="py-20 px-4 bg-gray-50 dark:bg-slate-900">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-light tracking-tight">Why Choose Us</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-col gap-3">
             {[
-              { icon: <Award className="w-8 h-8 text-rose-600" />, title: 'Expert Stylists', desc: 'Trained professionals with years of experience' },
-              { icon: <Clock className="w-8 h-8 text-rose-600" />, title: 'Flexible Hours', desc: 'Open 7 days a week for your convenience' },
-              { icon: <Heart className="w-8 h-8 text-rose-600" />, title: 'Premium Products', desc: 'Only the best products for your care' },
-            ].map((feature, idx) => (
-              <div key={idx} className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-full mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="font-medium mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{feature.desc}</p>
+              { icon: <Award className="w-5 h-5" />, text: 'Expert stylists' },
+              { icon: <Clock className="w-5 h-5" />, text: 'Flexible hours' },
+              { icon: <Heart className="w-5 h-5" />, text: 'Premium products' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl">
+                <div className="p-2 bg-gray-100 dark:bg-slate-800 rounded-full text-gray-700">{item.icon}</div>
+                <span className="text-sm font-medium">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CONTACT */}
-      {storeData && (
-        <section className="py-20 px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-light tracking-tight mb-6">Get in Touch</h2>
-            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-              {storeData.phone && (
-                <a href={`tel:${storeData.phone}`} className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl hover:shadow-md transition">
-                  <Phone className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium">{storeData.phone}</span>
-                </a>
-              )}
-              {storeData.whatsapp && (
-                <a
-                  href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`}
-                  className="flex items-center gap-3 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition"
-                >
-                  <MessageCircle className="w-5 h-5" /> WhatsApp
-                </a>
+      {/* ─── SERVICES ─── */}
+      <section className="py-12 md:py-16 px-4">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-8 text-center" style={headingStyle}>Our Services</h2>
+          {services.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-gray-500">Services coming soon. Contact us to book!</p>
+              {storeData?.whatsapp && (
+                <button onClick={() => handleWhatsApp({ id: 'general', name: 'General Inquiry', price: 0, category: 'general', description: '', image_url: '', status: 'active', stock: 99 } as any)} className="mt-4 inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl" style={{ backgroundColor: primaryColor }}>
+                  <MessageCircle className="w-5 h-5" /> Contact Us
+                </button>
               )}
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {services.map(service => (
+                <div key={service.id} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
+                  <div className="aspect-[4/3] bg-gray-100 dark:bg-slate-800">
+                    {service.image_url ? (
+                      <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-5xl">💅</div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-medium mb-1">{service.name}</h3>
+                    {service.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{service.description}</p>}
+                    <div className="flex items-end justify-between">
+                      <span className="text-lg font-semibold">TT${service.price.toFixed(2)}</span>
+                      <button onClick={() => handleWhatsApp(service)} className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg" style={{ backgroundColor: primaryColor }}>
+                        <MessageCircle className="w-4 h-4" /> Book
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-gray-200 dark:border-slate-800 py-12 px-4 bg-gray-50 dark:bg-slate-900">
-        <div className="max-w-7xl mx-auto text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>&copy; 2026 {storeName}. All rights reserved.</p>
+      {/* ─── CONTACT ─── */}
+      <section className="py-12 px-4 bg-gray-50 dark:bg-slate-900">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-light tracking-tight mb-6" style={headingStyle}>Get in Touch</h2>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            {storeData?.phone && (
+              <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl hover:shadow-md transition">
+                <Phone className="w-5 h-5 text-gray-600" />
+                <span className="font-medium">{storeData.phone}</span>
+              </a>
+            )}
+            {storeData?.whatsapp && (
+              <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="flex items-center gap-3 px-6 py-3 rounded-xl text-white font-medium hover:opacity-90 transition" style={{ backgroundColor: primaryColor }}>
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-gray-100 dark:border-slate-800 py-8 px-4 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto text-center text-xs text-gray-400">
+          <p>© 2026 {storeName} · Powered by <a href="https://trinibuild.com" className="underline">TriniBuild</a></p>
         </div>
       </footer>
     </div>
   );
 };
-
-export default PremiumBeautyTemplate;
