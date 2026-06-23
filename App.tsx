@@ -15,6 +15,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 
 // NEW: Single store builder (replaces 5+ legacy creators)
 import StoreBuilderV3 from './pages/StoreBuilderV3';
+import { StoreDashboard } from './pages/StoreDashboard';
 
 import MerchantTaxDashboard from './components/MerchantTaxDashboard';
 import AdminFinancialDashboard from './components/AdminFinancialDashboard';
@@ -200,10 +201,11 @@ const App: React.FC = () => {
               <Route path="/services/living" element={<LivingLanding />} />
 
               {/* Store Builder & Storefront */}
-              <Route path="/store-builder" element={<StoreBuilderV3 />} />
+              <Route path="/create-store" element={<StoreBuilderV3 />} />
+              <Route path="/store-builder" element={<ProtectedRoute><StoreDashboard /></ProtectedRoute>} />
               <Route path="/store/builder" element={<Navigate to="/store-builder" replace />} />
               <Route path="/store/:slug/v2" element={<Navigate to="/store/:slug" replace />} />
-
+              <Route path="/store/preview" element={<Navigate to="/store-builder" replace />} />
               {/* Ticket Ecosystem */}
               <Route path="/solutions/tickets" element={<TicketsLanding />} />
               <Route path="/tickets" element={<Tickets />} />
