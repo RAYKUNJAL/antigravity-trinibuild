@@ -15,11 +15,12 @@
  * Time: 3 minutes to live store
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown } from 'lucide-react';
 import {
-  Store, Shirt, Utensils, Sparkles, ShoppingBag, Briefcase, MoreHorizontal,
-  Check, ArrowRight, ArrowLeft, Eye, EyeOff, AlertCircle, Sparkle
+  Store as StoreIcon, Shirt, Utensils, ShoppingBag, Briefcase, MoreHorizontal,
+  Check, EyeOff, AlertCircle, Sparkle
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { SafeBoundary } from '../components/SafeBoundary';
