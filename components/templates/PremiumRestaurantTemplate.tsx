@@ -7,12 +7,15 @@ import type { Product, Store } from '../../types';
  * Focus: Easy menu browsing + WhatsApp ordering
  */
 
+import { getContrastColor } from './contrast';
+
 export const PremiumRestaurantTemplate: React.FC<{
   storeName?: string;
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Restaurant', storeData, products = [], primaryColor = '#DC2626' }) => {
+  const contrastText = getContrastColor(primaryColor);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -49,8 +52,8 @@ export const PremiumRestaurantTemplate: React.FC<{
             )}
             <button
               onClick={() => handleWhatsApp({ id: 'reserve', name: `${storeName} Reservation`, price: 0, description: '', category: 'reservation', image_url: '', status: 'active', stock: 99 } as any)}
-              className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-full font-medium"
-              style={{ backgroundColor: primaryColor }}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full font-medium"
+              style={{ backgroundColor: primaryColor, color: contrastText }}
             >
               <MessageCircle className="w-4 h-4" />
               <span className="hidden md:inline">Reservations</span>
@@ -98,8 +101,8 @@ export const PremiumRestaurantTemplate: React.FC<{
                 {storeData?.whatsapp && (
                   <button
                     onClick={() => setMobileOpen(false)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white"
-                    style={{ backgroundColor: primaryColor }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium"
+                    style={{ backgroundColor: primaryColor, color: contrastText }}
                   >
                     <MessageCircle className="w-5 h-5" />
                     Reserve Table
@@ -167,8 +170,8 @@ export const PremiumRestaurantTemplate: React.FC<{
                   </div>
                   <button
                     onClick={() => handleWhatsApp(item)}
-                    className="px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5 flex-shrink-0"
-                    style={{ backgroundColor: primaryColor }}
+                    className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition flex items-center gap-1.5 flex-shrink-0"
+                    style={{ backgroundColor: primaryColor, color: contrastText }}
                   >
                     <MessageCircle className="w-4 h-4" />
                     Order
@@ -228,8 +231,8 @@ export const PremiumRestaurantTemplate: React.FC<{
           {storeData?.whatsapp && (
             <button
               onClick={() => handleWhatsApp({ id: 'order', name: 'Order Inquiry', price: 0, description: '', category: 'order', image_url: '', status: 'active', stock: 99 } as any)}
-              className="inline-flex items-center gap-2 px-8 py-4 text-white rounded-xl font-medium hover:opacity-90 transition"
-              style={{ backgroundColor: primaryColor }}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-medium hover:opacity-90 transition"
+              style={{ backgroundColor: primaryColor, color: contrastText }}
             >
               <MessageCircle className="w-5 h-5" />
               Order Now

@@ -9,12 +9,15 @@ import type { Product,Store } from '../../types';
  * Real data driven - no dummy products
  */
 
+import { getContrastColor } from './contrast';
+
 export const Premium3ColumnTemplate: React.FC<{
   storeName?: string;
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Premium Store', storeData, products = [], primaryColor = '#0F172A' }) => {
+  const contrastText = getContrastColor(primaryColor);
   // UI/UX Pro Max: Professional Services = Poppins headings + Open Sans body
   const headingStyle = { fontFamily: "'Poppins', sans-serif" };
   const fontStyle = { fontFamily: "'Open Sans', sans-serif" };
@@ -152,8 +155,8 @@ export const Premium3ColumnTemplate: React.FC<{
                   <button
                     onClick={() => handleWhatsApp(currentProduct)}
                     disabled={(currentProduct.stock ?? 0) === 0}
-                    className="flex-1 py-3 text-white rounded-lg hover:opacity-90 transition font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-40"
-                    style={{ backgroundColor: primaryColor }}
+                    className="flex-1 py-3 rounded-lg hover:opacity-90 transition font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-40"
+                    style={{ backgroundColor: primaryColor, color: contrastText }}
                   >
                     <MessageCircle className="w-4 h-4" />
                     {currentProduct.stock === 0 ? 'Out of Stock' : 'Order via WhatsApp'}

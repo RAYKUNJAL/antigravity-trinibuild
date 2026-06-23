@@ -7,12 +7,15 @@ import type { Product, Store } from '../../types';
  * Luxury, image-first, direct WhatsApp ordering
  */
 
+import { getContrastColor } from './contrast';
+
 export const PremiumFashionTemplate: React.FC<{
   storeName?: string;
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Fashion Store', storeData, products = [], primaryColor = '#BE185D' }) => {
+  const contrastText = getContrastColor(primaryColor);
   const headingStyle = { fontFamily: "'Cormorant', serif" };
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -36,7 +39,7 @@ export const PremiumFashionTemplate: React.FC<{
           <div className="flex items-center gap-2">
             {storeData?.phone && <a href={`tel:${storeData.phone.replace(/\\D/g, '')}`} className="p-2 text-gray-600"><Phone className="w-5 h-5" /></a>}
             {storeData?.whatsapp && (
-              <button onClick={() => { if (activeProducts[0]) handleWhatsApp(activeProducts[0]); }} className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor }}>
+              <button onClick={() => { if (activeProducts[0]) handleWhatsApp(activeProducts[0]); }} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden md:inline">Shop</span>
               </button>
@@ -60,7 +63,7 @@ export const PremiumFashionTemplate: React.FC<{
                   Shop Now <ChevronRight className="w-4 h-4" />
                 </a>
                 {storeData?.whatsapp && (
-                  <button onClick={() => { if (activeProducts[0]) handleWhatsApp(activeProducts[0]); }} className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium" style={{ backgroundColor: primaryColor }}>
+                  <button onClick={() => { if (activeProducts[0]) handleWhatsApp(activeProducts[0]); }} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                     <MessageCircle className="w-5 h-5" />
                     Order via WhatsApp
                   </button>
@@ -140,8 +143,8 @@ export const PremiumFashionTemplate: React.FC<{
                     <button
                       onClick={() => handleWhatsApp(product)}
                       disabled={product.stock === 0}
-                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40"
-                      style={{ backgroundColor: primaryColor }}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40"
+                      style={{ backgroundColor: primaryColor, color: contrastText }}
                     >
                       <MessageCircle className="w-4 h-4" />
                       Order via WhatsApp
@@ -161,7 +164,7 @@ export const PremiumFashionTemplate: React.FC<{
             <h2 className="text-3xl font-light tracking-tight mb-4" style={headingStyle}>About {storeName}</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{storeData.description}</p>
             {storeData?.whatsapp && (
-              <a href={`https://wa.me/${storeData.whatsapp.replace(/\\D/g, '')}`} className="inline-flex items-center gap-2 mt-6 px-6 py-3 text-white rounded-xl font-medium" style={{ backgroundColor: primaryColor }}>
+              <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-xl font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                 <MessageCircle className="w-5 h-5" /> Get in Touch
               </a>
             )}
@@ -172,10 +175,10 @@ export const PremiumFashionTemplate: React.FC<{
       {/* ─── BOTTOM CTA ─── */}
       {storeData?.whatsapp && (
         <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto rounded-2xl p-8 md:p-10 text-center text-white" style={{ backgroundColor: primaryColor }}>
+          <div className="max-w-4xl mx-auto rounded-2xl p-8 md:p-10 text-center" style={{ backgroundColor: primaryColor, color: contrastText }}>
             <h3 className="text-2xl font-light tracking-tight mb-2" style={headingStyle}>Like what you see?</h3>
-            <p className="text-white/80 text-sm mb-6">Order now via WhatsApp — fast COD delivery across Trinidad</p>
-            <a href={`https://wa.me/${storeData.whatsapp.replace(/\\D/g, '')}`} className="inline-flex items-center gap-2 px-8 py-3 bg-white rounded-xl font-medium hover:bg-gray-100 transition" style={{ color: primaryColor }}>
+            <p className="mb-6 text-sm md:text-base" style={{ color: contrastText, opacity: 0.8 }}>Order now via WhatsApp — fast COD delivery across Trinidad</p>
+            <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="inline-flex items-center gap-2 px-8 py-3 bg-white rounded-xl font-medium hover:bg-gray-100 transition" style={{ color: primaryColor }}>
               <MessageCircle className="w-5 h-5" /> Start Shopping
             </a>
           </div>

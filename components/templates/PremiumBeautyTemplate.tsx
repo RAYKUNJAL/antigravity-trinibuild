@@ -7,12 +7,15 @@ import type { Product, Store } from '../../types';
  * Focus: Direct booking via WhatsApp
  */
 
+import { getContrastColor } from './contrast';
+
 export const PremiumBeautyTemplate: React.FC<{
   storeName?: string;
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Beauty Studio', storeData, products = [], primaryColor = '#EC4899' }) => {
+  const contrastText = getContrastColor(primaryColor);
   const headingStyle = { fontFamily: "'Lora', serif" };
   const [selectedService, setSelectedService] = useState(0);
 
@@ -36,7 +39,7 @@ export const PremiumBeautyTemplate: React.FC<{
           <div className="flex items-center gap-2">
             {storeData?.phone && <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="p-2 text-gray-600"><Phone className="w-5 h-5" /></a>}
             {storeData?.whatsapp && (
-              <button onClick={() => services[0] && handleWhatsApp(services[0])} className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor }}>
+              <button onClick={() => services[0] && handleWhatsApp(services[0])} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-full font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden md:inline">Book Now</span>
               </button>
@@ -56,7 +59,7 @@ export const PremiumBeautyTemplate: React.FC<{
             {storeData?.description && <p className="text-sm text-gray-500 mb-6">{storeData.description}</p>}
             <div className="flex flex-wrap gap-3">
               {services.map((s, i) => (
-                <button key={s.id} onClick={() => handleWhatsApp(s)} className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium" style={{ backgroundColor: primaryColor }}>
+                <button key={s.id} onClick={() => handleWhatsApp(s)} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium" style={{ backgroundColor: primaryColor, color: contrastText }}>
                   <MessageCircle className="w-5 h-5" />
                   Book {s.name}
                 </button>
@@ -86,7 +89,7 @@ export const PremiumBeautyTemplate: React.FC<{
             <div className="text-center py-16">
               <p className="text-gray-500">Services coming soon. Contact us to book!</p>
               {storeData?.whatsapp && (
-                <button onClick={() => handleWhatsApp({ id: 'general', name: 'General Inquiry', price: 0, category: 'general', description: '', image_url: '', status: 'active', stock: 99 } as any)} className="mt-4 inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl" style={{ backgroundColor: primaryColor }}>
+                <button onClick={() => handleWhatsApp({ id: 'general', name: 'General Inquiry', price: 0, category: 'general', description: '', image_url: '', status: 'active', stock: 99 } as any)} className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl" style={{ backgroundColor: primaryColor, color: contrastText }}>
                   <MessageCircle className="w-5 h-5" /> Contact Us
                 </button>
               )}
@@ -107,7 +110,7 @@ export const PremiumBeautyTemplate: React.FC<{
                     {service.description && <p className="text-xs text-gray-500 mb-3 line-clamp-2">{service.description}</p>}
                     <div className="flex items-end justify-between">
                       <span className="text-lg font-semibold">TT${service.price.toFixed(2)}</span>
-                      <button onClick={() => handleWhatsApp(service)} className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg" style={{ backgroundColor: primaryColor }}>
+                      <button onClick={() => handleWhatsApp(service)} className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg" style={{ backgroundColor: primaryColor, color: contrastText }}>
                         <MessageCircle className="w-4 h-4" /> Book
                       </button>
                     </div>
@@ -131,7 +134,7 @@ export const PremiumBeautyTemplate: React.FC<{
               </a>
             )}
             {storeData?.whatsapp && (
-              <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="flex items-center gap-3 px-6 py-3 rounded-xl text-white font-medium hover:opacity-90 transition" style={{ backgroundColor: primaryColor }}>
+              <a href={`https://wa.me/${storeData.whatsapp.replace(/\D/g, '')}`} className="flex items-center gap-3 px-6 py-3 rounded-xl font-medium hover:opacity-90 transition" style={{ backgroundColor: primaryColor, color: contrastText }}>
                 <MessageCircle className="w-5 h-5" />
                 WhatsApp
               </a>

@@ -13,12 +13,15 @@ import type { Product, Store } from '../../types';
  * - Fast: no heavy libs, minimal state
  */
 
+import { getContrastColor } from './contrast';
+
 export const PremiumEcommerceTemplate: React.FC<{
   storeName?: string;
   storeData?: Store;
   products?: Product[];
   primaryColor?: string;
 }> = ({ storeName = 'Store', storeData, products = [], primaryColor = '#059669' }) => {
+  const contrastText = getContrastColor(primaryColor);
   const [cartCount, setCartCount] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -73,8 +76,8 @@ export const PremiumEcommerceTemplate: React.FC<{
             {storeData?.whatsapp && (
               <button
                 onClick={() => handleWhatsApp()}
-                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-full"
-                style={{ backgroundColor: primaryColor }}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full"
+                style={{ backgroundColor: primaryColor, color: contrastText }}
               >
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden md:inline">Order on WhatsApp</span>
@@ -107,8 +110,8 @@ export const PremiumEcommerceTemplate: React.FC<{
                 {storeData?.whatsapp && (
                   <button
                     onClick={() => handleWhatsApp()}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium"
-                    style={{ backgroundColor: primaryColor }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium"
+                    style={{ backgroundColor: primaryColor, color: contrastText }}
                   >
                     <MessageCircle className="w-5 h-5" />
                     Order via WhatsApp
@@ -244,8 +247,8 @@ export const PremiumEcommerceTemplate: React.FC<{
               {activeProducts.length === 0 && (
                 <button
                   onClick={() => handleWhatsApp()}
-                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-medium"
-                  style={{ backgroundColor: primaryColor }}
+                  className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium"
+                  style={{ backgroundColor: primaryColor, color: contrastText }}
                 >
                   <MessageCircle className="w-5 h-5" />
                   Ask about availability
@@ -293,8 +296,8 @@ export const PremiumEcommerceTemplate: React.FC<{
                         <button
                           onClick={() => handleWhatsApp(product)}
                           disabled={isOut}
-                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 text-white rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                          style={{ backgroundColor: primaryColor }}
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          style={{ backgroundColor: primaryColor, color: contrastText }}
                         >
                           <MessageCircle className="w-4 h-4" />
                           Order
@@ -366,11 +369,11 @@ export const PremiumEcommerceTemplate: React.FC<{
       {/* ─── BOTTOM CTA ─── */}
       {storeData?.whatsapp && (
         <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto rounded-2xl p-8 md:p-12 text-center text-white" style={{ backgroundColor: primaryColor }}>
+          <div className="max-w-4xl mx-auto rounded-2xl p-8 md:p-12 text-center" style={{ backgroundColor: primaryColor, color: contrastText }}>
             <h2 className="text-2xl md:text-3xl font-light mb-3 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
               Ready to order?
             </h2>
-            <p className="text-white/80 mb-6 text-sm md:text-base">Chat with us now — fast response, COD available</p>
+            <p className="mb-6 text-sm md:text-base" style={{ color: contrastText, opacity: 0.8 }}>Chat with us now — fast response, COD available</p>
             <button
               onClick={() => handleWhatsApp()}
               className="inline-flex items-center gap-2 px-8 py-4 bg-white rounded-xl font-medium hover:bg-gray-100 transition"
