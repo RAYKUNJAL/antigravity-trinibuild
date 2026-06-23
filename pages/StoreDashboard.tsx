@@ -109,6 +109,12 @@ export const StoreDashboard: React.FC = () => {
       const storeOrders = await storeService.getStoreOrders(storeData.id);
       setOrders(storeOrders);
 
+      // Load plan limit
+      if (user) {
+        const { plan } = await subscriptionService.getUserPlan(user.id);
+        setMaxProducts(plan?.max_products ?? 5);
+      }
+
     } catch (err: any) {
       console.error('Dashboard load error:', err);
       setError(err?.message || 'Failed to load dashboard');
@@ -125,7 +131,21 @@ export const StoreDashboard: React.FC = () => {
   // PRODUCT OPERATIONS
   // ============================================
 
-  const openCreateProduct = () => {
+  const openCreateProduct = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { plan } = await subscriptionService.getUserPlan(user.id);
+        const limit = plan?.max_products ?? 5;
+        setMaxProducts(limit);
+        if (products.length >= limit) {
+          alert('Upgrade plan to add more products');
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Plan check failed:', err);
+    }
     setEditingProduct(null);
     setProductForm({
       name: '', description: '', price: 0, stock: 0,
@@ -505,12 +525,21 @@ export const StoreDashboard: React.FC = () => {
                       <option value="archived">Archived</option>
                     </select>
                   </div>
-                  <button
-                    onClick={openCreateProduct}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg"
-                  >
-                    <Plus className="w-4 h-4" /> Add Product
-                  </button>
+                  {products.length >= maxProducts ? (
+                    <button
+                      onClick={() => navigate('/pricing')}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg border border-gray-300"
+                    >
+                      <Plus className="w-4 h-4" /> Upgrade to add more
+                    </button>
+                  ) : (
+                    <button
+                      onClick={openCreateProduct}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg"
+                    >
+                      <Plus className="w-4 h-4" /> Add Product
+                    </button>
+                  )}
                 </div>
 
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
