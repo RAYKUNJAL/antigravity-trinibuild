@@ -627,19 +627,19 @@ const StoreBuilderV3: React.FC = () => {
 
         {/* Live Template Preview */}
         <div className="lg:col-span-3">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-4">
-            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center justify-between">
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-white">
+            <div className="text-xs uppercase tracking-wider text-gray-500 mb-3 flex items-center justify-between">
               <span>Live Template Preview</span>
-              <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+              <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded-full">
                 {TEMPLATES.find(t => t.id === state.templateId)?.name || 'Preview'}
               </span>
             </div>
-            <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700" style={{ maxHeight: '600px', overflow: 'auto' }}>
+            <div className="rounded-lg overflow-hidden border border-gray-200 bg-white" style={{ maxHeight: '600px', overflow: 'auto' }}>
               <SafeBoundary name="Step3Preview">
                 {(() => {
                   const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
                   if (!selectedTemplate) return (
-                    <div className="flex items-center justify-center p-12 text-gray-400">
+                    <div className="flex items-center justify-center p-12 text-gray-800 font-medium text-lg">
                       Select a template to see preview
                     </div>
                   );
@@ -648,15 +648,16 @@ const StoreBuilderV3: React.FC = () => {
                     name: state.storeName || 'Your Store Name',
                     tagline: state.storeName ? `Welcome to ${state.storeName}` : '',
                     description: state.storeName ? `${state.storeName} — quality products and service in Trinidad & Tobago.` : '',
-                    phone: '',
-                    whatsapp: '',
+                    phone: '8681234567',
+                    whatsapp: '8681234567',
                     color_scheme: { primary: state.primaryColor },
-                    banner_url: undefined,
+                    address: 'Trinidad & Tobago',
+                    delivery: 'Island-wide delivery available',
                   };
                   const sampleProducts = state.storeName ? [
-                    { id: 's1', name: `${state.storeName} Special`, description: 'Our signature product', price: 199.99, image_url: '', status: 'active', stock: 10, category: 'Featured' },
-                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: '', status: 'active', stock: 5, category: 'Best Seller' },
-                    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: '', status: 'active', stock: 20, category: 'Value' },
+                    { id: 's1', name: `${state.storeName} Special`, description: 'Our signature product', price: 199.99, image_url: 'https://images.unsplash.com/photo-1607344645869-1993b5fd9c9c?w=640&q=80', status: 'active', stock: 10, category: 'Featured' },
+                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Best Seller' },
+                    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=640&q=80', status: 'active', stock: 20, category: 'Value' },
                   ] : [];
                   return (
                     <TemplateComponent
@@ -669,7 +670,7 @@ const StoreBuilderV3: React.FC = () => {
                 })()}
               </SafeBoundary>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+            <p className="text-xs text-gray-500 mt-3 text-center">
               This is a live preview with sample data. Your real products will appear here.
             </p>
           </div>
