@@ -146,12 +146,18 @@ Current user is browsing TriniBuild.`;
         systemPrompt = botSettings?.bot_system_prompt || `You are a sales assistant for ${vendorContext.name}. ${vendorContext.description}. Products: ${JSON.stringify(vendorContext.products)}`;
       }
 
-      const response = await aiService.chatWithBot({
-        message: userMsg.text,
-        context: historyContext,
-        persona: botSettings?.bot_persona || 'concierge',
-        system_prompt: systemPrompt
-      });
+      const response = mode === 'platform'
+        ? await aiService.islandChat(
+            userMsg.text,
+            messages.slice(-8).map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
+            'support'
+          )
+        : await aiService.chatWithBot({
+            message: userMsg.text,
+            context: historyContext,
+            persona: botSettings?.bot_persona || 'concierge',
+            system_prompt: systemPrompt
+          });
 
       const aiMsg: Message = { id: (Date.now() + 1).toString(), text: response.content, sender: 'ai' };
       setMessages(prev => [...prev, aiMsg]);

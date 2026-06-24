@@ -614,6 +614,28 @@ export const aiService = {
         }
     },
 
+    /**
+     * "Lime" — the dedicated Trini-accent island chatbot for support + onboarding.
+     * Calls the server-side /island-chat endpoint (tuned persona, accurate TriniBuild
+     * facts, no fabricated claims). Falls back to the Trini canned responses on failure.
+     */
+    async islandChat(message: string, history: { role: string; content: string }[] = [], mode: 'support' | 'onboarding' | 'sales' = 'support'): Promise<AIResponse> {
+        const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+        try {
+            const res = await fetch(`${AI_SERVER}/island-chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, history, mode }),
+            });
+            if (!res.ok) throw new Error(`island-chat ${res.status}`);
+            const data = await res.json();
+            return { content: data.content, model_used: data.model_used || 'groq-island' };
+        } catch (error) {
+            console.warn('Island chat unavailable, using Trini fallback:', error);
+            return { content: getTriniFallback(message, 'platform'), model_used: 'fallback-trini' };
+        }
+    },
+
     async generateDocument(docType: string, docTitle: string, formData: Record<string, string>): Promise<AIResponse> {
         try {
             const fieldSummary = Object.entries(formData)
