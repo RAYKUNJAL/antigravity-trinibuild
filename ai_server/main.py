@@ -34,7 +34,7 @@ app.add_middleware(
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 # Groq vision-capable model for the product scanner. Override via env if Groq renames it.
-VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "meta-llama/llama-4-maverick-17b-128e-instruct")
+VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
 
 if not GROQ_API_KEY:
     logger.warning("GROQ_API_KEY not found in environment variables. AI features will fail.")
