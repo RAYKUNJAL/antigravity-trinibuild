@@ -262,6 +262,22 @@ export const storeService = {
         return data as Store;
     },
 
+    // Update store theme_config (jsonb) — used by the visual block editor
+    updateStoreTheme: async (storeId: string, themeConfig: Record<string, any>): Promise<Store | null> => {
+        const { data, error } = await supabase
+            .from('stores')
+            .update({ theme_config: themeConfig })
+            .eq('id', storeId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating store theme_config:', error);
+            throw error;
+        }
+        return data as Store;
+    },
+
     // --- PRODUCT MANAGEMENT ---
 
     getProducts: async (storeId: string): Promise<Product[]> => {
