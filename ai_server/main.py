@@ -33,6 +33,8 @@ app.add_middleware(
 # Configuration
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
+# Groq vision-capable model for the product scanner. Override via env if Groq renames it.
+VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "llama-3.2-90b-vision-preview")
 
 if not GROQ_API_KEY:
     logger.warning("GROQ_API_KEY not found in environment variables. AI features will fail.")
@@ -74,6 +76,14 @@ class GenerateRequest(BaseModel):
     system_prompt: Optional[str] = None
     model: Optional[str] = None
     max_tokens: Optional[int] = 2000
+
+class AnalyzeImageRequest(BaseModel):
+    image_url: str  # public URL of the uploaded product photo
+
+class IslandChatRequest(BaseModel):
+    message: str
+    history: Optional[List[dict]] = None  # [{role, content}, ...]
+    mode: str = "support"  # support, onboarding, sales
 
 # --- Helper Functions ---
 
@@ -193,6 +203,88 @@ async def generate_text(request: GenerateRequest):
     except Exception as e:
         logger.error(f"Generation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Island Chatbot persona (Trini accent, support + onboarding) ---
+
+ISLAND_BOT_PERSONA = (
+    "You are 'Lime', the TriniBuild island assistant — a warm, friendly Trinidadian helper. "
+    "Speak with a natural light Trini accent and local flavour (e.g. 'Aye', 'no problem at all', "
+    "'leh we get yuh store set up', 'real easy', 'just now', 'yuh good'), but stay clear and professional — "
+    "never overdo the dialect to the point it's hard to read, and keep it respectful. "
+    "You help Trinidad & Tobago small businesses use TriniBuild to sell online. "
+    "Key facts you know about TriniBuild: it's a FREE online store builder; free accounts get up to 10 products; "
+    "ordering is WhatsApp-first with Cash on Delivery (COD); merchants pick a template, add products, and share a "
+    "trinibuild.com/their-store link; paid plans add custom domains and more products; payments can be made at any T&T bank. "
+    "Keep answers short, friendly, and practical. If you don't know something, say so honestly and point them to support@trinibuild.com. "
+    "Never invent prices, sales numbers, or features that don't exist."
+)
+
+ISLAND_BOT_MODES = {
+    "support": "The user needs help using TriniBuild. Answer their question simply and guide them step by step.",
+    "onboarding": (
+        "You are walking a brand-new merchant through getting started. Be encouraging and guide them: "
+        "1) pick a business type, 2) choose a template, 3) add their store name and a few products, "
+        "4) share their store link on WhatsApp. Ask one friendly question at a time."
+    ),
+    "sales": "The user is deciding whether to use TriniBuild. Be honest and helpful, highlight free COD selling and the founding-merchant offer, and invite them to start free. Do not pressure or exaggerate.",
+}
+
+@app.post("/analyze-product-image", response_model=AIResponse)
+async def analyze_product_image(request: AnalyzeImageRequest):
+    """Vision: turn a product photo into a ready-to-publish listing (name, price TTD, category, description, tags)."""
+    try:
+        completion = client.chat.completions.create(
+            model=VISION_MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": (
+                        "You are a product listing assistant for a Trinidad & Tobago online store. "
+                        "Look at this product photo and return ONLY valid JSON (no markdown, no backticks) with keys: "
+                        '{"name": "concise product name max 80 chars", "price": number in TTD (your best estimate), '
+                        '"category": "one short category", "description": "2-3 short persuasive sentences for T&T shoppers", '
+                        '"tags": ["tag1","tag2","tag3","tag4","tag5"]}'
+                    )},
+                    {"type": "image_url", "image_url": {"url": request.image_url}},
+                ],
+            }],
+            temperature=0.4,
+            max_tokens=800,
+        )
+        content = completion.choices[0].message.content
+        return AIResponse(content=content, model_used=VISION_MODEL)
+    except Exception as e:
+        logger.error(f"Vision analyze error: {e}")
+        raise HTTPException(status_code=502, detail="Image analysis is temporarily unavailable. Please try again.")
+
+@app.post("/island-chat", response_model=AIResponse)
+async def island_chat(request: IslandChatRequest):
+    """The Trini-accent island chatbot for customer support and onboarding."""
+    try:
+        mode_note = ISLAND_BOT_MODES.get(request.mode, ISLAND_BOT_MODES["support"])
+        messages = [{"role": "system", "content": ISLAND_BOT_PERSONA + "\n\n" + mode_note}]
+        if request.history:
+            # keep last 8 turns to bound tokens
+            for turn in request.history[-8:]:
+                role = turn.get("role")
+                content = turn.get("content")
+                if role in ("user", "assistant") and content:
+                    messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": request.message})
+
+        chat_completion = client.chat.completions.create(
+            messages=messages,
+            model=DEFAULT_MODEL,
+            temperature=0.8,
+            max_tokens=600,
+        )
+        return AIResponse(content=chat_completion.choices[0].message.content, model_used=DEFAULT_MODEL)
+    except Exception as e:
+        logger.error(f"Island chat error: {e}")
+        return AIResponse(
+            content="Aye, sorry — meh brain hiccup just now. Try me again in a moment, or reach support@trinibuild.com.",
+            model_used=DEFAULT_MODEL,
+        )
 
 if __name__ == "__main__":
     import uvicorn

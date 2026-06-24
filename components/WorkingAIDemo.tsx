@@ -15,12 +15,19 @@ import { Sparkles, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 
+// AI backend base URL. In prod set VITE_AI_SERVER_URL to the deployed AI server (e.g. https://trinibuild.com/ai).
+const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+// Free, signed-out visitors get a small number of demo scans before we ask them to sign up.
+const FREE_SCAN_LIMIT = 2;
+const SCAN_COUNT_KEY = 'trinibuild_free_scans_used';
+
 export const WorkingAIDemo: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'compressing' | 'uploading' | 'processing' | 'done' | 'error'>('idle');
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [progress, setProgress] = useState<string>('');
+  const [limitReached, setLimitReached] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -99,6 +106,18 @@ export const WorkingAIDemo: React.FC = () => {
       setErrorMsg('');
       setProgress('Preparing...');
 
+      // ── Tier gate: signed-out visitors get FREE_SCAN_LIMIT demo scans, then a sign-up CTA ──
+      const { data: { session } } = await supabase.auth.getSession();
+      const isSignedIn = !!session?.user;
+      if (!isSignedIn) {
+        const used = parseInt(localStorage.getItem(SCAN_COUNT_KEY) || '0', 10);
+        if (used >= FREE_SCAN_LIMIT) {
+          setLimitReached(true);
+          setStatus('idle');
+          return;
+        }
+      }
+
       if (!file.type.startsWith('image/')) {
         throw new Error('Please upload an image');
       }
@@ -130,37 +149,25 @@ export const WorkingAIDemo: React.FC = () => {
       setStatus('processing');
       setProgress('AI analyzing...');
 
-      const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!openaiKey) throw new Error('AI not configured');
-
-      const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Call our OWN AI backend (server-side Groq vision) — no secret keys in the browser.
+      const aiRes = await fetch(`${AI_SERVER}/analyze-product-image`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Analyze this product. Return ONLY JSON:\n{"name": "Product name (max 80 chars)", "price": number (TTD), "category": "Category", "description": "2-3 paragraphs", "tags": ["tag1", "tag2", "tag3"]}`
-              },
-              { type: 'image_url', image_url: { url: publicUrl } }
-            ]
-          }],
-          max_tokens: 1000
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: publicUrl }),
       });
 
-      if (!aiRes.ok) throw new Error('AI failed');
+      if (!aiRes.ok) throw new Error('AI is busy right now — please try again in a moment.');
 
       const aiData = await aiRes.json();
-      const content = aiData.choices[0].message.content;
-      const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const content = aiData.content ?? '';
+      const cleaned = String(content).replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const listing = JSON.parse(cleaned);
+
+      // Count this successful scan against the free allowance (signed-out only).
+      if (!isSignedIn) {
+        const used = parseInt(localStorage.getItem(SCAN_COUNT_KEY) || '0', 10);
+        localStorage.setItem(SCAN_COUNT_KEY, String(used + 1));
+      }
 
       setResult(listing);
       setStatus('done');
@@ -194,7 +201,39 @@ export const WorkingAIDemo: React.FC = () => {
           </p>
         </div>
 
-        {status === 'idle' && (
+        {limitReached && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl border-2 border-red-200 shadow-xl p-8 text-center"
+          >
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">You've used your free AI scans 🎉</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Create a free TriniBuild account to keep using the AI Product Lister — free accounts get more scans,
+              and paid plans unlock unlimited listings.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold px-7 py-3.5 rounded-xl transition-colors"
+              >
+                Create Free Account
+              </Link>
+              <Link
+                to="/pricing"
+                className="inline-flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold px-7 py-3.5 rounded-xl transition-colors"
+              >
+                See Paid Plans
+              </Link>
+            </div>
+            <p className="text-xs text-gray-400 mt-4">Free forever. No credit card required.</p>
+          </motion.div>
+        )}
+
+        {!limitReached && status === 'idle' && (
           <>
             <input
               ref={fileInputRef}
