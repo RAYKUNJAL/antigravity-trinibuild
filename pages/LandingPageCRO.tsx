@@ -540,6 +540,23 @@ export const LandingPageCRO: React.FC = () => {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [variant, setVariant] = useState('control');
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Mobile sticky CTA: show only after the hero has scrolled out of view
+  useEffect(() => {
+    const heroEl = heroRef.current;
+    if (!heroEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Show sticky CTA once hero is no longer visible (scrolled past)
+        setShowStickyCTA(!entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(heroEl);
+    return () => observer.disconnect();
+  }, []);
 
   // Initialize analytics and tracking
   useEffect(() => {
@@ -639,7 +656,7 @@ export const LandingPageCRO: React.FC = () => {
         {/* HERO - PRIMARY CONVERSION ZONE */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <section className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
+        <section ref={heroRef} className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-trini-red/10 rounded-full blur-3xl -z-0"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-trini-red/5 rounded-full blur-3xl -z-0"></div>
@@ -1080,6 +1097,22 @@ export const LandingPageCRO: React.FC = () => {
           </div>
         </section>
       </div>
+
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* MOBILE STICKY CTA — appears after scrolling past the hero */}
+      {/* Hidden on md+ screens. z-40 sits below modal overlays but above content. */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {showStickyCTA && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] px-4 py-3">
+          <button
+            onClick={() => handleStartFree('mobile_sticky_cta')}
+            className="w-full py-3.5 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-md"
+          >
+            Start My Free Store
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </>
   );
 };

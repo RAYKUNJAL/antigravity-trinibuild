@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Mail, MapPin, Youtube } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail, MapPin, Youtube, Lock, ShieldCheck, Truck, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LOGO_URL = "/trinibuild-logo.png";
@@ -118,11 +118,31 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
+      {/* Trust Badges — truthful only (HTTPS via Caddy, Supabase encrypted, COD supported) */}
+      <div className="border-t border-white/5 bg-gray-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-gray-300">
+            <span className="flex items-center gap-1.5 text-xs font-medium" title="Site is served over HTTPS with SSL via Caddy">
+              <Lock className="h-4 w-4 text-green-400" /> SSL Secured
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-medium" title="HTTPS/TLS encryption in transit">
+              <ShieldCheck className="h-4 w-4 text-green-400" /> 256-bit Encryption
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-medium" title="Cash on delivery is supported at checkout">
+              <Truck className="h-4 w-4 text-green-400" /> Cash on Delivery
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-medium" title="Data is stored on Supabase (encrypted at rest)">
+              <Shield className="h-4 w-4 text-green-400" /> Powered by Supabase
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Bar */}
       <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
               <span>&copy; {new Date().getFullYear()} TriniBuild — A product of R&R Digital Solutions. All rights reserved.</span>
               <span className="hidden md:inline">•</span>
               <span>Trinidad & Tobago</span>
@@ -130,9 +150,9 @@ export const Footer: React.FC = () => {
               <span>For We, By We 🇹🇹</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/admin" className="text-xs text-gray-700 hover:text-gray-500 transition-colors">Admin</Link>
-              <a href="https://trinibuild.com/sitemap.xml" className="text-xs text-gray-700 hover:text-gray-500 transition-colors">Sitemap</a>
-              <span className="text-xs text-gray-700">v2.0</span>
+              <Link to="/admin" className="text-xs text-gray-400 hover:text-gray-200 transition-colors">Admin</Link>
+              <a href="https://trinibuild.com/sitemap.xml" className="text-xs text-gray-400 hover:text-gray-200 transition-colors">Sitemap</a>
+              <span className="text-xs text-gray-400">v2.0</span>
             </div>
           </div>
         </div>

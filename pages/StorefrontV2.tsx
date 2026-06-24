@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye } from 'lucide-react';
+import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye, Lock, ShieldCheck } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
@@ -783,6 +783,22 @@ export const StorefrontV2: React.FC = () => {
                                                 </div>
                                                 {paymentMethod === 'bank_transfer' && <Check className="h-5 w-5 text-orange-600" />}
                                             </button>
+
+                                            {/* Trust badges — truthful: HTTPS/SSL via Caddy, encrypted Supabase, COD supported */}
+                                            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 pb-1">
+                                                <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-700" title="Site is served over HTTPS with SSL">
+                                                    <Lock className="h-3.5 w-3.5 text-green-600" /> SSL Secured
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-700" title="HTTPS/TLS encryption in transit">
+                                                    <ShieldCheck className="h-3.5 w-3.5 text-green-600" /> 256-bit Encryption
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-700" title="Cash on delivery available">
+                                                    <Truck className="h-3.5 w-3.5 text-green-600" /> Cash on Delivery
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-700" title="Data stored on encrypted Supabase infrastructure">
+                                                    <Shield className="h-3.5 w-3.5 text-green-600" /> Secure Infrastructure
+                                                </span>
+                                            </div>
                                         </div>
                                     )}
 

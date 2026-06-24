@@ -68,6 +68,7 @@ export const Pricing: React.FC = () => {
       features: [
         '1 TriniBuild Storefront',
         '15 Listings',
+        'trinibuild.com/your-store subdomain',
         'TriniBuild Go Delivery Access',
         'Basic SEO & Analytics',
         'In-app Messaging',
@@ -84,7 +85,7 @@ export const Pricing: React.FC = () => {
       fee: '0%',
       features: [
         '50 Listings',
-        'Custom Domain (.com)',
+        'Connect your own custom domain',
         'No TriniBuild Branding',
         'Full Theme Customization',
         'Abandoned Cart Emails',
@@ -101,6 +102,7 @@ export const Pricing: React.FC = () => {
       fee: '0%',
       features: [
         'Unlimited Listings',
+        'Connect your own custom domain',
         'WhatsApp Order Alerts',
         'Advanced Analytics',
         'Discount Codes & Coupons',
@@ -118,6 +120,7 @@ export const Pricing: React.FC = () => {
       fee: '0%',
       features: [
         'Unlimited Everything',
+        'Connect your own custom domain',
         'Staff Accounts',
         'POS Mode (Physical Shop)',
         'Priority Support',
@@ -241,7 +244,7 @@ export const Pricing: React.FC = () => {
               {[
                 { q: "Do I really need no credit card?", a: "Yes. You can sign up, build your store, and list 10 items without entering any payment information." },
                 { q: "What happens if I sell more than 10 items?", a: "You can upgrade to the Growth plan instantly from your dashboard to unlock more space." },
-                { q: "Can I use my own domain name?", a: "Custom domains (e.g., mystore.com) are available on the Empire plan. Free plans use a trinibuild.com/store address." },
+                { q: "Can I use my own domain name?", a: "Free (Hustle) plans use a trinibuild.com/your-store subdomain. Paid plans (Storefront, Growth, and Empire) let you connect your own custom domain (e.g., mystore.com)." },
                 { q: "How does Cash on Delivery work?", a: "Customers order on the site. You get the order details via WhatsApp. You collect cash when you deliver. We invoice you the small transaction fee monthly." }
               ].map((faq, i) => (
                 <div key={i}>
