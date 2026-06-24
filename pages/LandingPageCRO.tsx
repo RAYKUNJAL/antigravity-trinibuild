@@ -68,10 +68,14 @@ const TESTIMONIALS = [
   },
 ];
 
+/* Robust fade-in: content is visible by default (opacity 1). Animation is
+   purely additive — if framer-motion never fires whileInView, the element
+   still renders fully visible. initial={false} skips the initial render frame
+   so the element starts at its natural (visible) state instead of opacity:0. */
 const fadeInUp = {
-  initial: { opacity: 0, y: 24 },
+  initial: false,
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
+  viewport: { once: true, amount: 0.1 },
   transition: { duration: 0.5 },
 };
 
@@ -196,13 +200,17 @@ const Testimonials: React.FC = () => (
 /* ── Animated merchant counter (count up on scroll into view) ── */
 const MerchantCounter: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const inView = useInView(ref, { once: true, amount: 0.1 });
   const count = useMotionValue(0);
   const rounded = useTransform(count, (v) => Math.round(v).toLocaleString());
-  const [display, setDisplay] = useState('0');
+  // Default to the final value so the counter is NEVER blank even if the
+  // inView trigger never fires — the count-up is purely an enhancement.
+  const [display, setDisplay] = useState('1,247');
 
   useEffect(() => {
     if (inView) {
+      // Reset to 0 then animate up to 1,247 (enhancement only).
+      setDisplay('0');
       const controls = animate(count, 1247, { duration: 2, ease: 'easeOut' });
       const unsub = rounded.on('change', (v) => setDisplay(v));
       return () => { controls.stop(); unsub(); };
@@ -230,28 +238,35 @@ const TYPEWRITER_DESC =
   'Elegant quartz movement timepiece with a classic stainless steel finish. Perfect for formal occasions or everyday wear. Water-resistant and built to last.';
 
 const ListerDemo: React.FC = () => {
-  const [typed, setTyped] = useState('');
-  const [showResult, setShowResult] = useState(false);
+  // Default to the finished state so the listing card is ALWAYS visible even
+  // if the inView trigger never fires. The typewriter/count-up is purely an
+  // enhancement that replays when scrolled into view.
+  const [typed, setTyped] = useState(TYPEWRITER_DESC);
+  const [showResult, setShowResult] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef, { once: true, amount: 0.3 });
+  const inView = useInView(sectionRef, { once: true, amount: 0.1 });
 
   useEffect(() => {
     if (!inView) return;
-    // Reveal result card after brief "processing" delay
+    // Replay the before→after reveal as an enhancement.
+    setShowResult(false);
+    setTyped('');
     const reveal = setTimeout(() => setShowResult(true), 800);
     return () => clearTimeout(reveal);
   }, [inView]);
 
   useEffect(() => {
     if (!showResult) return;
-    let i = 0;
+    // Only run the typewriter if we reset it above; otherwise keep full text.
+    if (typed.length >= TYPEWRITER_DESC.length) return;
+    let i = typed.length;
     const id = setInterval(() => {
       i++;
       setTyped(TYPEWRITER_DESC.slice(0, i));
       if (i >= TYPEWRITER_DESC.length) clearInterval(id);
     }, 28);
     return () => clearInterval(id);
-  }, [showResult]);
+  }, [showResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tags = ['Luxury Watch', 'Quartz', 'Stainless Steel', 'Classic', 'Water Resistant'];
 
@@ -269,9 +284,9 @@ const ListerDemo: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           {/* LEFT — Upload widget */}
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
+            initial={false}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.5 }}
             className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center"
           >
@@ -290,9 +305,9 @@ const ListerDemo: React.FC = () => {
 
           {/* RIGHT — Before → After result */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
+            initial={false}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ duration: 0.5 }}
             className="relative"
           >
