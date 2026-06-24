@@ -536,25 +536,24 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
   },
 
   {
-    id: 'pharmacy_medical_pro',
-    name: 'Pharmacy & Health Store',
+    id: 'modern_market',
+    name: 'Modern Marketplace',
     category: 'Retail',
-    description: 'Healthcare products, prescriptions, wellness. Secure ordering, delivery, health info.',
-    thumbnail: '/templates/pharmacy.jpg',
+    description: 'Clean Vercel-style commerce with product grid, variants, and instant cart.',
+    thumbnail: '/templates/modern-market.jpg',
     features: [
-      'Product catalog',
-      'Prescription upload',
-      'Health categories',
-      'Delivery service',
-      'Customer accounts',
-      'Reorder favorites',
-      'Health articles'
+      'Product grid with variants',
+      'Instant add-to-cart drawer',
+      'Collection filtering',
+      'TT$ live pricing',
+      'Mobile-first checkout',
+      'WhatsApp order fallback'
     ],
-    businessTypes: ['Pharmacy', 'Health Store', 'Medical Supply'],
+    businessTypes: ['General Store', 'Variety Store', 'Online Shop', 'Retailer'],
     tier: 'pro',
     theme: {
-      primary_color: '#0066CC', // Medical blue
-      secondary_color: '#FFFFFF',
+      primary_color: '#171717',
+      secondary_color: '#ffffff',
       accent_color: '#E61E2B',
       fonts: {
         heading: 'Inter',
@@ -564,75 +563,147 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
     sections: [
       {
         id: 'hero',
-        name: 'Pharmacy Hero',
+        name: 'Commerce Hero',
         type: 'hero',
         required: true,
         cro_elements: [
-          'Prescription upload',
-          'Delivery available',
-          'Licensed badge',
-          'Contact pharmacist'
+          'Shop now CTA',
+          'Free delivery banner',
+          'Featured collection',
+          'Trust badge'
         ]
       },
       {
         id: 'products',
-        name: 'Product Catalog',
+        name: 'Product Grid',
         type: 'products',
         required: true,
         cro_elements: [
-          'Health categories',
-          'Search function',
-          'Prescription required badge',
-          'In stock indicator'
+          'Variant selectors',
+          'Quick add button',
+          'Sale badges',
+          'In-stock indicator'
         ]
       },
       {
-        id: 'services',
-        name: 'Our Services',
-        type: 'about',
+        id: 'cart',
+        name: 'Cart Drawer',
+        type: 'cta',
         required: true,
         cro_elements: [
-          'Prescription services',
-          'Health screenings',
-          'Vaccinations',
-          'Consultations'
+          'Slide-out cart',
+          'Quantity controls',
+          'Free shipping progress',
+          'Checkout button'
         ]
       }
     ],
     cro_optimizations: [
-      'Secure prescription upload',
-      'Licensed professional badges',
-      'Health information library',
-      'Reorder from history',
-      'Delivery tracking',
-      'Privacy assurance',
-      'Insurance accepted info',
-      'Contact pharmacist button'
+      'Above-fold product grid',
+      'Instant cart drawer',
+      'Variant quick-select',
+      'Free shipping threshold bar',
+      'Sticky mobile checkout bar',
+      'WhatsApp order fallback'
+    ],
+    load_time_target: 1.5,
+    mobile_first: true
+  },
+
+  {
+    id: 'furniture_home_store',
+    name: 'Furniture & Home',
+    category: 'Retail',
+    description: 'Flatlogic-inspired furniture store with new arrivals, trust badges, and sale pricing.',
+    thumbnail: '/templates/furniture-home.jpg',
+    features: [
+      'New arrivals carousel',
+      'Sale pricing with strikethrough',
+      'Trust badges (Free Shipping, Money Back)',
+      'Room category filters',
+      'Product dimensions display',
+      'Delivery & assembly info'
+    ],
+    businessTypes: ['Furniture Store', 'Home Goods', 'Decor Shop', 'Mattress Store'],
+    tier: 'pro',
+    theme: {
+      primary_color: '#0d9488',
+      secondary_color: '#f8fafc',
+      accent_color: '#E61E2B',
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      }
+    },
+    sections: [
+      {
+        id: 'hero',
+        name: 'New Arrivals Hero',
+        type: 'hero',
+        required: true,
+        cro_elements: [
+          'New arrivals badge',
+          'Shop collection CTA',
+          'Free shipping banner',
+          'Money-back guarantee'
+        ]
+      },
+      {
+        id: 'products',
+        name: 'Top Selling Products',
+        type: 'products',
+        required: true,
+        cro_elements: [
+          'Sale price strikethrough',
+          'Star ratings',
+          'Add to cart button',
+          'Quick view modal'
+        ]
+      },
+      {
+        id: 'trust',
+        name: 'Trust Badges',
+        type: 'about',
+        required: true,
+        cro_elements: [
+          'Free shipping badge',
+          'Money-back guarantee',
+          'Secure checkout',
+          'Local assembly service'
+        ]
+      }
+    ],
+    cro_optimizations: [
+      'Sale price with strikethrough anchor',
+      'Free shipping progress bar',
+      'Trust badges above fold',
+      'Room-based category navigation',
+      'Assembly booking upsell',
+      'WhatsApp design consultation'
     ],
     load_time_target: 1.8,
     mobile_first: true
   },
 
   {
-    id: 'electronics_tech_pro',
-    name: 'Electronics & Tech Store',
+    id: 'tech_gadgets_store',
+    name: 'Tech & Gadgets',
     category: 'Retail',
-    description: 'Electronics, phones, computers, accessories. Specs, comparisons, warranties.',
-    thumbnail: '/templates/electronics.jpg',
+    description: 'Modern dark tech store with detailed specs, variant selection, and comparison tools.',
+    thumbnail: '/templates/tech-gadgets.jpg',
     features: [
-      'Product specifications',
-      'Compare products',
+      'Dark mode product showcase',
+      'Detailed spec sheets',
+      'Variant selection (color/storage)',
+      'Product comparison tool',
       'Warranty information',
-      'Tech support',
-      'Trade-in program',
-      'Installation services',
-      'Financing options'
+      'Trade-in estimator'
     ],
-    businessTypes: ['Electronics Store', 'Computer Shop', 'Phone Repair', 'Tech Services'],
+    businessTypes: ['Electronics Store', 'Phone Shop', 'Computer Store', 'Gadget Retailer'],
     tier: 'pro',
     theme: {
-      primary_color: '#000000',
-      secondary_color: '#00D4FF', // Tech blue
+      primary_color: '#2563eb',
+      secondary_color: '#0f172a',
       accent_color: '#E61E2B',
       fonts: {
         heading: 'Inter',
@@ -646,10 +717,10 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
         type: 'hero',
         required: true,
         cro_elements: [
-          'Latest products',
-          'Special offers',
-          'Trade-in CTA',
-          'Expert support'
+          'Latest drop badge',
+          'Shop deals CTA',
+          'Trade-in banner',
+          'Expert support badge'
         ]
       },
       {
@@ -658,61 +729,58 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
         type: 'products',
         required: true,
         cro_elements: [
-          'Detailed specs',
-          'Image gallery',
+          'Spec highlights',
+          'Variant pills (color/storage)',
           'Compare button',
-          'Warranty badge',
-          'In stock status'
+          'In-stock status',
+          'Warranty badge'
         ]
       },
       {
-        id: 'services',
-        name: 'Services',
+        id: 'compare',
+        name: 'Compare Tool',
         type: 'about',
         required: true,
         cro_elements: [
-          'Repair services',
-          'Installation',
-          'Tech support',
-          'Financing'
+          'Side-by-side specs',
+          'Price difference',
+          'Feature checklist',
+          'Add to cart from compare'
         ]
       }
     ],
     cro_optimizations: [
-      'Product comparison tool',
-      'Detailed specifications',
-      'Warranty information',
+      'Spec-first product cards',
+      'Variant pill quick-select',
+      'Side-by-side comparison tool',
+      'Trade-in value estimator',
       'Financing calculator',
-      'Trade-in estimator',
-      'Tech support chat',
-      'Installation booking',
-      'Customer reviews with photos'
+      'WhatsApp tech support'
     ],
     load_time_target: 1.8,
     mobile_first: true
   },
 
   {
-    id: 'bakery_sweets_pro',
-    name: 'Bakery & Desserts',
-    category: 'Food & Beverage',
-    description: 'Bakeries, cake shops, desserts. Custom orders, photo gallery, event catering.',
-    thumbnail: '/templates/bakery.jpg',
+    id: 'beauty_cosmetics_store',
+    name: 'Beauty & Cosmetics',
+    category: 'Retail',
+    description: 'Soft modern beauty commerce with shade match, bundles, and subscription options.',
+    thumbnail: '/templates/beauty-cosmetics.jpg',
     features: [
-      'Product showcase',
-      'Custom cake orders',
-      'Event catering',
-      'Photo gallery',
-      'Flavor options',
-      'Delivery/pickup',
-      'Order ahead'
+      'Shade matcher tool',
+      'Product bundles & kits',
+      'Subscribe & save option',
+      'Ingredient transparency',
+      'Before/after gallery',
+      'Loyalty rewards points'
     ],
-    businessTypes: ['Bakery', 'Cake Shop', 'Dessert Shop', 'Pastry Shop'],
+    businessTypes: ['Cosmetics Store', 'Beauty Supply', 'Skincare Brand', 'Makeup Artist'],
     tier: 'pro',
     theme: {
-      primary_color: '#FF69B4', // Pink
-      secondary_color: '#8B4513', // Brown
-      accent_color: '#FFD700',
+      primary_color: '#ec4899',
+      secondary_color: '#fdf2f8',
+      accent_color: '#E61E2B',
       fonts: {
         heading: 'Inter',
         body: 'Inter'
@@ -721,89 +789,150 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
     sections: [
       {
         id: 'hero',
-        name: 'Bakery Hero',
+        name: 'Beauty Hero',
         type: 'hero',
         required: true,
         cro_elements: [
-          'Custom order CTA',
-          'Fresh daily badge',
-          'Order ahead',
-          'Event catering'
+          'Shop collection CTA',
+          'Free gift banner',
+          'Shade match tool',
+          'Cruelty-free badge'
         ]
       },
       {
-        id: 'gallery',
-        name: 'Product Gallery',
+        id: 'products',
+        name: 'Product Grid',
+        type: 'products',
+        required: true,
+        cro_elements: [
+          'Shade swatches',
+          'Bundle pricing',
+          'Subscribe & save badge',
+          'Star ratings',
+          'Add to bag button'
+        ]
+      },
+      {
+        id: 'reviews',
+        name: 'Before & After',
         type: 'gallery',
         required: true,
         cro_elements: [
-          'Beautiful photos',
-          'Category filters',
-          'Custom designs',
-          'Customer creations'
-        ]
-      },
-      {
-        id: 'menu',
-        name: 'Menu',
-        type: 'menu',
-        required: true,
-        cro_elements: [
-          'Product categories',
-          'Flavors',
-          'Sizes',
-          'Pricing',
-          'Allergen info'
-        ]
-      },
-      {
-        id: 'custom_orders',
-        name: 'Custom Orders',
-        type: 'booking',
-        required: true,
-        cro_elements: [
-          'Order form',
-          'Occasion selector',
-          'Design upload',
-          'Delivery date'
+          'Customer photo reviews',
+          'Shade results',
+          'Verified purchase badges',
+          'Star ratings'
         ]
       }
     ],
     cro_optimizations: [
-      'Visual product gallery',
-      'Custom order form',
-      'Event catering section',
-      'Flavor/size selectors',
-      'Delivery scheduling',
-      'Order ahead options',
-      'Customer photo testimonials',
-      'Occasion-based categories'
+      'Shade matcher quiz',
+      'Bundle upsell pricing',
+      'Subscribe & save discount',
+      'Ingredient transparency labels',
+      'Loyalty points display',
+      'Free gift with purchase threshold'
+    ],
+    load_time_target: 1.6,
+    mobile_first: true
+  },
+
+  {
+    id: 'sneaker_streetwear',
+    name: 'Sneakers & Streetwear',
+    category: 'Retail',
+    description: 'Bold drop-style streetwear store with size pills, countdown drops, and hype feeds.',
+    thumbnail: '/templates/sneaker-streetwear.jpg',
+    features: [
+      'Drop countdown timer',
+      'Size selector pills',
+      'Hype release feed',
+      'Limited stock badges',
+      'Lookbook gallery',
+      'Restock notifications'
+    ],
+    businessTypes: ['Sneaker Store', 'Streetwear Brand', 'Clothing Boutique', 'Shoe Store'],
+    tier: 'pro',
+    theme: {
+      primary_color: '#171717',
+      secondary_color: '#ffffff',
+      accent_color: '#E61E2B',
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      }
+    },
+    sections: [
+      {
+        id: 'hero',
+        name: 'Drop Hero',
+        type: 'hero',
+        required: true,
+        cro_elements: [
+          'Live countdown timer',
+          'Shop drop CTA',
+          'Limited stock badge',
+          'Restock alert signup'
+        ]
+      },
+      {
+        id: 'products',
+        name: 'Product Grid',
+        type: 'products',
+        required: true,
+        cro_elements: [
+          'Size selector pills',
+          'Color variant swatches',
+          'Limited stock indicator',
+          'Add to cart button',
+          'Wishlist heart'
+        ]
+      },
+      {
+        id: 'lookbook',
+        name: 'Lookbook',
+        type: 'gallery',
+        required: true,
+        cro_elements: [
+          'Styled outfit shots',
+          'Shop the look',
+          'Instagram feed integration',
+          'Tagged products'
+        ]
+      }
+    ],
+    cro_optimizations: [
+      'Drop countdown urgency timer',
+      'Size pill quick-select',
+      'Limited stock scarcity badges',
+      'Restock notification capture',
+      'Shop-the-look tagging',
+      'WhatsApp drop alerts'
     ],
     load_time_target: 1.5,
     mobile_first: true
   },
 
   {
-    id: 'auto_parts_pro',
-    name: 'Auto Parts & Accessories',
-    category: 'Automotive',
-    description: 'Car parts, accessories, services. Vehicle finder, installation, warranties.',
-    thumbnail: '/templates/auto.jpg',
+    id: 'wellness_supplements',
+    name: 'Wellness & Supplements',
+    category: 'Retail',
+    description: 'Clean health and supplement commerce with subscription plans and goal-based bundles.',
+    thumbnail: '/templates/wellness-supplements.jpg',
     features: [
-      'Vehicle compatibility',
-      'Part finder',
-      'Installation services',
-      'Warranties',
-      'Bulk discounts',
-      'Trade accounts',
-      'Expert advice'
+      'Goal-based product bundles',
+      'Subscribe & save plans',
+      'Ingredient transparency',
+      'Lab test badges',
+      'Dosage guide',
+      'Health quiz funnel'
     ],
-    businessTypes: ['Auto Parts', 'Car Accessories', 'Auto Service', 'Car Wash'],
+    businessTypes: ['Supplement Store', 'Health Food Shop', 'Vitamin Store', 'Wellness Brand'],
     tier: 'pro',
     theme: {
-      primary_color: '#FF0000', // Red
-      secondary_color: '#000000',
-      accent_color: '#FFD700',
+      primary_color: '#16a34a',
+      secondary_color: '#f0fdf4',
+      accent_color: '#E61E2B',
       fonts: {
         heading: 'Inter',
         body: 'Inter'
@@ -812,14 +941,90 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
     sections: [
       {
         id: 'hero',
-        name: 'Auto Hero',
+        name: 'Wellness Hero',
         type: 'hero',
         required: true,
         cro_elements: [
-          'Part finder tool',
-          'Expert service badge',
-          'Same-day delivery',
-          'Installation available'
+          'Take the quiz CTA',
+          'Subscribe & save banner',
+          'Lab-tested badge',
+          'Free delivery badge'
+        ]
+      },
+      {
+        id: 'products',
+        name: 'Product Grid',
+        type: 'products',
+        required: true,
+        cro_elements: [
+          'Goal category filters',
+          'Subscribe & save price',
+          'Ingredient highlights',
+          'Star ratings',
+          'Add to cart button'
+        ]
+      },
+      {
+        id: 'quiz',
+        name: 'Health Quiz',
+        type: 'cta',
+        required: true,
+        cro_elements: [
+          'Goal-based questions',
+          'Personalized results',
+          'Bundle recommendation',
+          'Email capture'
+        ]
+      }
+    ],
+    cro_optimizations: [
+      'Health quiz personalization funnel',
+      'Subscribe & save pricing anchor',
+      'Goal-based bundle builder',
+      'Lab-tested trust badges',
+      'Dosage guide tooltips',
+      'Free delivery threshold bar'
+    ],
+    load_time_target: 1.6,
+    mobile_first: true
+  },
+
+  {
+    id: 'auto_accessories_store',
+    name: 'Auto & Accessories',
+    category: 'Automotive',
+    description: 'Modern parts and accessories shop with a vehicle part finder and compatibility check.',
+    thumbnail: '/templates/auto-accessories.jpg',
+    features: [
+      'Vehicle part finder (make/model/year)',
+      'Compatibility checker',
+      'Part number search',
+      'Installation service booking',
+      'Warranty information',
+      'Bulk/trade pricing'
+    ],
+    businessTypes: ['Auto Parts Store', 'Car Accessories', 'Auto Service', 'Tire Shop'],
+    tier: 'pro',
+    theme: {
+      primary_color: '#ea580c',
+      secondary_color: '#0f0f0f',
+      accent_color: '#E61E2B',
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      }
+    },
+    sections: [
+      {
+        id: 'hero',
+        name: 'Part Finder Hero',
+        type: 'hero',
+        required: true,
+        cro_elements: [
+          'Vehicle selector (make/model/year)',
+          'Search parts CTA',
+          'Same-day delivery badge',
+          'Installation available badge'
         ]
       },
       {
@@ -828,11 +1033,11 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
         type: 'products',
         required: true,
         cro_elements: [
-          'Vehicle selector',
-          'Part categories',
-          'Compatibility check',
-          'Warranty badge',
-          'Bulk pricing'
+          'Compatibility badge',
+          'Part number display',
+          'Warranty info',
+          'In-stock status',
+          'Add to cart button'
         ]
       },
       {
@@ -841,286 +1046,22 @@ export const TRINIDAD_TEMPLATES: StoreTemplate[] = [
         type: 'about',
         required: true,
         cro_elements: [
-          'Installation',
-          'Diagnostics',
-          'Maintenance',
-          'Trade accounts'
+          'Installation booking',
+          'Diagnostics service',
+          'Trade account signup',
+          'Bulk pricing inquiry'
         ]
       }
     ],
     cro_optimizations: [
-      'Vehicle compatibility checker',
-      'Part number search',
-      'Installation booking',
-      'Warranty information',
-      'Bulk discount calculator',
-      'Trade account signup',
-      'Expert advice chat',
+      'Vehicle part finder tool',
+      'Compatibility check on every product',
+      'Part number quick search',
+      'Installation booking upsell',
+      'Trade account portal',
       'Same-day delivery badge'
     ],
     load_time_target: 1.8,
-    mobile_first: true
-  },
-
-  {
-    id: 'hardware_home_pro',
-    name: 'Hardware & Home Improvement',
-    category: 'Retail',
-    description: 'Hardware store, construction supplies, tools. Project planning, delivery, trade accounts.',
-    thumbnail: '/templates/hardware.jpg',
-    features: [
-      'Product catalog',
-      'Project calculator',
-      'Delivery service',
-      'Trade accounts',
-      'How-to guides',
-      'Tool rental',
-      'Bulk ordering'
-    ],
-    businessTypes: ['Hardware Store', 'Building Supplies', 'Tools', 'Paint Store'],
-    tier: 'pro',
-    theme: {
-      primary_color: '#FF6600', // Orange
-      secondary_color: '#2F4F2F', // Dark green
-      accent_color: '#FFD700',
-      fonts: {
-        heading: 'Inter',
-        body: 'Inter'
-      }
-    },
-    sections: [
-      {
-        id: 'hero',
-        name: 'Hardware Hero',
-        type: 'hero',
-        required: true,
-        cro_elements: [
-          'Project calculator',
-          'Delivery available',
-          'Trade accounts',
-          'Expert advice'
-        ]
-      },
-      {
-        id: 'products',
-        name: 'Product Catalog',
-        type: 'products',
-        required: true,
-        cro_elements: [
-          'Category navigation',
-          'Search by project',
-          'Bulk quantities',
-          'In-stock indicator',
-          'Compare products'
-        ]
-      },
-      {
-        id: 'services',
-        name: 'Services',
-        type: 'about',
-        required: true,
-        cro_elements: [
-          'Delivery service',
-          'Tool rental',
-          'Cutting services',
-          'Color matching'
-        ]
-      }
-    ],
-    cro_optimizations: [
-      'Project material calculator',
-      'How-to guides library',
-      'Trade account portal',
-      'Bulk order discounts',
-      'Delivery scheduling',
-      'Tool rental booking',
-      'Expert chat support',
-      'Contractor resources'
-    ],
-    load_time_target: 1.8,
-    mobile_first: true
-  },
-
-  {
-    id: 'gym_fitness_pro',
-    name: 'Gym & Fitness Center',
-    category: 'Services',
-    description: 'Gym, fitness studio, personal training. Memberships, class schedules, trainer booking.',
-    thumbnail: '/templates/gym.jpg',
-    features: [
-      'Class schedule',
-      'Membership plans',
-      'Trainer profiles',
-      'Online booking',
-      'Progress tracking',
-      'Nutrition plans',
-      'Member portal'
-    ],
-    businessTypes: ['Gym', 'Fitness Studio', 'Yoga Studio', 'Personal Training', 'Sports Facility'],
-    tier: 'pro',
-    theme: {
-      primary_color: '#E61E2B', // Red
-      secondary_color: '#000000',
-      accent_color: '#FFD700',
-      fonts: {
-        heading: 'Inter',
-        body: 'Inter'
-      }
-    },
-    sections: [
-      {
-        id: 'hero',
-        name: 'Fitness Hero',
-        type: 'hero',
-        required: true,
-        cro_elements: [
-          'Free trial CTA',
-          'Membership deals',
-          'Virtual tour',
-          'Join now button'
-        ]
-      },
-      {
-        id: 'classes',
-        name: 'Class Schedule',
-        type: 'booking',
-        required: true,
-        cro_elements: [
-          'Weekly schedule',
-          'Class types',
-          'Trainer info',
-          'Book class button',
-          'Spots available'
-        ]
-      },
-      {
-        id: 'memberships',
-        name: 'Membership Plans',
-        type: 'menu',
-        required: true,
-        cro_elements: [
-          'Plan comparison',
-          'Pricing tiers',
-          'Benefits list',
-          'Sign up CTA',
-          'No contract option'
-        ]
-      },
-      {
-        id: 'trainers',
-        name: 'Our Trainers',
-        type: 'about',
-        required: true,
-        cro_elements: [
-          'Trainer profiles',
-          'Certifications',
-          'Specialties',
-          'Book session'
-        ]
-      }
-    ],
-    cro_optimizations: [
-      'Free trial signup',
-      'Easy class booking',
-      'Membership comparison',
-      'Trainer profiles with booking',
-      'Progress tracking app mention',
-      'Transformation gallery',
-      'Member testimonials',
-      'Virtual tour video'
-    ],
-    load_time_target: 1.5,
-    mobile_first: true
-  },
-
-  {
-    id: 'jewelry_luxury_pro',
-    name: 'Jewelry & Luxury Goods',
-    category: 'Retail',
-    description: 'Fine jewelry, watches, luxury items. High-quality images, custom orders, authentication.',
-    thumbnail: '/templates/jewelry.jpg',
-    features: [
-      'Product showcase',
-      'Custom design',
-      'Virtual try-on',
-      'Certification info',
-      'Secure checkout',
-      'Appointment booking',
-      'Gift registry'
-    ],
-    businessTypes: ['Jewelry Store', 'Watch Store', 'Luxury Goods', 'Diamond Dealer'],
-    tier: 'pro',
-    theme: {
-      primary_color: '#000000',
-      secondary_color: '#FFD700', // Gold
-      accent_color: '#FFFFFF',
-      fonts: {
-        heading: 'Inter',
-        body: 'Inter'
-      }
-    },
-    sections: [
-      {
-        id: 'hero',
-        name: 'Luxury Hero',
-        type: 'hero',
-        required: true,
-        cro_elements: [
-          'Premium imagery',
-          'New collection',
-          'Book appointment',
-          'Certification badges'
-        ]
-      },
-      {
-        id: 'products',
-        name: 'Collection',
-        type: 'products',
-        required: true,
-        cro_elements: [
-          'High-res images',
-          '360° view',
-          'Zoom feature',
-          'Certification info',
-          'Customization options'
-        ]
-      },
-      {
-        id: 'services',
-        name: 'Services',
-        type: 'about',
-        required: true,
-        cro_elements: [
-          'Custom design',
-          'Repairs',
-          'Appraisals',
-          'Cleaning'
-        ]
-      },
-      {
-        id: 'booking',
-        name: 'Book Appointment',
-        type: 'booking',
-        required: true,
-        cro_elements: [
-          'Private viewing',
-          'Design consultation',
-          'Expert advice',
-          'Calendar booking'
-        ]
-      }
-    ],
-    cro_optimizations: [
-      'Premium product photography',
-      '360° product views',
-      'Certification transparency',
-      'Custom design consultation',
-      'Secure payment badges',
-      'Insurance information',
-      'Gift registry service',
-      'Appointment scheduling'
-    ],
-    load_time_target: 2,
     mobile_first: true
   },
 

@@ -184,188 +184,290 @@ const P_salon_barber_pro = () => (
   </div>
 );
 
-const P_electronics_tech = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#030712', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
-    <div style={{ background: '#0d1117', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #21262d' }}>
-      <span style={{ fontWeight: 800, fontSize: 13, color: '#60a5fa' }}>TechHub TT</span>
-      <div style={{ background: '#3b82f6', borderRadius: 4, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>All Products</div>
+const P_modern_market = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#ffffff', height: '100%', overflow: 'hidden', fontSize: 11, color: '#171717' }}>
+    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0f0f0' }}>
+      <span style={{ fontWeight: 800, fontSize: 13, letterSpacing: '-0.02em' }}>Isle Market</span>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <span style={{ opacity: 0.5, fontSize: 9 }}>Search</span>
+        <div style={{ background: '#171717', color: '#fff', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Cart 2</div>
+      </div>
     </div>
-    <div style={{ padding: '12px 14px', background: 'linear-gradient(160deg,#0d1b40,#030712)' }}>
-      <div style={{ fontSize: 9, color: '#60a5fa', letterSpacing: 2, marginBottom: 4, fontWeight: 600 }}>NEW ARRIVALS</div>
-      <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.15 }}>Latest Tech,<br />Trinidad Price.</div>
+    <div style={{ padding: '14px 14px 10px', background: '#fafafa' }}>
+      <div style={{ fontSize: 8, letterSpacing: 3, color: '#999', fontWeight: 600, marginBottom: 4 }}>NEW COLLECTION</div>
+      <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.02em' }}>Everyday essentials,<br />island prices.</div>
       <div style={{ marginTop: 8, display: 'flex', gap: 5 }}>
-        <div style={{ background: '#3b82f6', borderRadius: 4, padding: '4px 12px', fontSize: 9, fontWeight: 700 }}>Shop Deals</div>
-        <div style={{ border: '1px solid #21262d', borderRadius: 4, padding: '4px 12px', fontSize: 9 }}>Compare</div>
+        <div style={{ background: '#171717', color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 9, fontWeight: 700 }}>Shop Now</div>
+        <div style={{ border: '1px solid #e5e5e5', borderRadius: 20, padding: '4px 14px', fontSize: 9, color: '#666' }}>Collections</div>
       </div>
     </div>
-    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['💻','MacBook M3','$8,999'],['📱','iPhone 16','$6,499'],['🎮','PS5','$4,999']].map(([e, n, p]) => (
-        <div key={n} style={{ background: '#0d1117', border: '1px solid #21262d', borderRadius: 6, padding: '7px 5px', textAlign: 'center' }}>
-          <div style={{ fontSize: 16 }}>{e}</div>
-          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 3 }}>{n}</div>
-          <div style={{ color: '#60a5fa', fontSize: 9, fontWeight: 800, marginTop: 2 }}>TT{p}</div>
-          <div style={{ background: '#1d4ed8', borderRadius: 3, padding: '2px 4px', marginTop: 4, fontSize: 8 }}>Buy</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const P_pharmacy_health = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#f0fdf4', height: '100%', overflow: 'hidden', fontSize: 11 }}>
-    <div style={{ background: '#166534', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontWeight: 800, fontSize: 12 }}>+ CarePlus Pharmacy</span>
-      <div style={{ background: '#16a34a', borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Order Online</div>
-    </div>
-    <div style={{ background: 'linear-gradient(135deg,#166534,#15803d)', color: '#fff', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.2 }}>Your Health,<br />Our Priority</div>
-        <div style={{ opacity: 0.7, fontSize: 9, marginTop: 3 }}>Prescription · OTC · Wellness</div>
+    <div style={{ padding: '10px 14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: '#555' }}>Featured Products</span>
+        <span style={{ fontSize: 8, color: '#171717', fontWeight: 600 }}>View all →</span>
       </div>
-      <div style={{ background: '#fff', color: '#166534', borderRadius: 20, padding: '5px 12px', fontSize: 9, fontWeight: 800 }}>Upload Rx</div>
-    </div>
-    <div style={{ padding: '8px 14px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5, marginBottom: 7 }}>
-        {[['💊','Meds'],['🩺','Consult'],['🧴','Skincare'],['🌿','Natural']].map(([e, l]) => (
-          <div key={l} style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: 6, padding: '6px 4px', textAlign: 'center' }}>
-            <div style={{ fontSize: 13 }}>{e}</div>
-            <div style={{ fontSize: 8, fontWeight: 700, color: '#166534', marginTop: 2 }}>{l}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
+        {[['#f4f4f5','Tote Bag','TT$89','#171717'],['#fef3f2','T-Shirt','TT$120','#E61E2B'],['#f0fdf4','Water Bottle','TT$45','#16a34a']].map(([bg,n,p,ac],i) => (
+          <div key={i} style={{ background: bg, borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0' }}>
+            <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 24, height: 24, background: ac, borderRadius: 6, opacity: 0.18 }} />
+            </div>
+            <div style={{ padding: '5px 6px', background: '#fff' }}>
+              <div style={{ fontSize: 8, fontWeight: 700, color: '#171717' }}>{n}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                <span style={{ fontSize: 8, fontWeight: 800, color: '#171717' }}>{p}</span>
+                <div style={{ background: '#171717', color: '#fff', borderRadius: 4, padding: '1px 5px', fontSize: 7, fontWeight: 700 }}>Add</div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
-      {[['Metformin 500mg','$45/mo'],['Vitamin D3 2000IU','$38']].map(([n, p]) => (
-        <div key={n} style={{ background: '#fff', border: '1px solid #bbf7d0', borderRadius: 6, padding: '6px 10px', marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 9, fontWeight: 700 }}>{n}</span>
-          <span style={{ color: '#16a34a', fontWeight: 800, fontSize: 9 }}>TT{p}</span>
-        </div>
-      ))}
     </div>
   </div>
 );
 
-const P_bakery_desserts = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#fff0f6', height: '100%', overflow: 'hidden', fontSize: 11 }}>
-    <div style={{ background: 'linear-gradient(90deg,#be185d,#7c3aed)', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontWeight: 800, fontSize: 12 }}>Sweet Trini Bakes</span>
-      <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '3px 10px', fontSize: 9 }}>Order Custom</div>
-    </div>
-    <div style={{ background: 'linear-gradient(160deg,#fdf2f8,#ede9fe)', padding: '14px', textAlign: 'center' }}>
-      <div style={{ fontSize: 15, fontWeight: 900, color: '#831843', lineHeight: 1.2 }}>Baked with Love,<br />Made in Trinidad</div>
-      <div style={{ opacity: 0.55, fontSize: 9, marginTop: 3 }}>Custom cakes · Pastries · Catering</div>
-      <div style={{ marginTop: 8, display: 'flex', gap: 5, justifyContent: 'center' }}>
-        <div style={{ background: '#be185d', color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Order Now</div>
-        <div style={{ border: '1px solid #be185d', color: '#be185d', borderRadius: 20, padding: '4px 12px', fontSize: 9 }}>Gallery</div>
+const P_furniture_home_store = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#f8fafc', height: '100%', overflow: 'hidden', fontSize: 11, color: '#0f172a' }}>
+    <div style={{ background: '#0d9488', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 13 }}>Casa TT</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 600 }}>
+        <span>Living</span><span>Bedroom</span><span>Sale</span>
       </div>
     </div>
-    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 5 }}>
-      {[['🎂','Custom Cake','$380+','#fce7f3'],['🧁','Cupcakes','$8 ea','#ede9fe'],['🍩','Donuts','$6 ea','#fef3c7'],['🥐','Pastries','$12','#dcfce7']].map(([e, n, p, bg]) => (
-        <div key={n} style={{ background: bg, borderRadius: 8, padding: '7px 4px', textAlign: 'center' }}>
-          <div style={{ fontSize: 16 }}>{e}</div>
-          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 2, color: '#1a1a1a' }}>{n}</div>
-          <div style={{ fontSize: 8, color: '#be185d', fontWeight: 800, marginTop: 1 }}>TT{p}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const P_auto_parts = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#0f0f0f', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
-    <div style={{ background: '#1a1a1a', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f97316' }}>
-      <span style={{ fontWeight: 900, fontSize: 14, letterSpacing: 1 }}>AUTO KING TT</span>
-      <div style={{ background: '#f97316', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Find My Part</div>
-    </div>
-    <div style={{ background: 'linear-gradient(160deg,#1c0a00,#0f0f0f)', padding: '14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+    <div style={{ background: 'linear-gradient(135deg,#ccfbf1,#f0fdfa)', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ flex: 1 }}>
-        <div style={{ color: '#f97316', fontSize: 9, letterSpacing: 2, fontWeight: 700, marginBottom: 4 }}>PARTS & ACCESSORIES</div>
-        <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.1 }}>OEM & AFTERMARKET PARTS</div>
-        <div style={{ marginTop: 8, background: '#f97316', display: 'inline-flex', borderRadius: 3, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Search Parts</div>
+        <div style={{ fontSize: 8, letterSpacing: 2, color: '#0d9488', fontWeight: 700, marginBottom: 4 }}>NEW ARRIVALS</div>
+        <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.1 }}>Style your<br />island home.</div>
+        <div style={{ marginTop: 7, background: '#0d9488', color: '#fff', display: 'inline-flex', borderRadius: 6, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Shop Collection</div>
       </div>
-      <div style={{ fontSize: 36 }}>🚗</div>
+      <div style={{ fontSize: 30 }}>🛋️</div>
     </div>
-    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['🔧','Engine','$450+'],['🛞','Tyres','$299+'],['🔋','Battery','$380+'],['💡','Electrical','$120+'],['🪝','Body Parts','$200+'],['⚙️','Gearbox','$600+']].map(([e, n, p]) => (
-        <div key={n} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 5, padding: '6px 4px', textAlign: 'center' }}>
-          <div style={{ fontSize: 13 }}>{e}</div>
-          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 2 }}>{n}</div>
-          <div style={{ color: '#f97316', fontSize: 8, marginTop: 1 }}>{p}</div>
+    <div style={{ padding: '8px 14px', display: 'flex', gap: 5, marginBottom: 6 }}>
+      {[['🚚','Free Shipping'],['💰','Money Back'],['🔒','Secure Pay']].map(([e,l]) => (
+        <div key={l} style={{ flex: 1, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6, padding: '5px 4px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11 }}>{e}</div>
+          <div style={{ fontSize: 7, fontWeight: 700, color: '#0d9488', marginTop: 1 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ padding: '0 14px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+      {[['Accent Chair','TT$1,899','TT$2,499','#f4f4f5','★ 4.8'],['Coffee Table','TT$899','TT$1,200','#fef3f2','★ 4.6']].map(([n,p,op,bg,r]) => (
+        <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <div style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🪑</div>
+          <div style={{ padding: '5px 6px', background: '#fff' }}>
+            <div style={{ fontSize: 8, fontWeight: 700 }}>{n}</div>
+            <div style={{ fontSize: 7, color: '#94a3b8', textDecoration: 'line-through' }}>{op}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#0d9488' }}>{p}</span>
+              <div style={{ background: '#0d9488', color: '#fff', borderRadius: 4, padding: '1px 5px', fontSize: 7, fontWeight: 700 }}>Add</div>
+            </div>
+            <div style={{ fontSize: 6, color: '#f59e0b', marginTop: 2 }}>{r}</div>
+          </div>
         </div>
       ))}
     </div>
   </div>
 );
 
-const P_hardware_home = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#fafaf9', height: '100%', overflow: 'hidden', fontSize: 11 }}>
-    <div style={{ background: '#78350f', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontWeight: 800, fontSize: 12, letterSpacing: 0.5 }}>BUILD RIGHT HARDWARE</span>
-      <div style={{ background: '#FFD700', color: '#78350f', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 800 }}>Get Quote</div>
-    </div>
-    <div style={{ background: 'linear-gradient(135deg,#92400e,#78350f)', color: '#fff', padding: '14px' }}>
-      <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.2 }}>Everything You Need<br />to Build & Fix</div>
-      <div style={{ opacity: 0.7, fontSize: 9, marginTop: 3 }}>Tools · Lumber · Paint · Plumbing</div>
-      <div style={{ marginTop: 8, background: '#FFD700', color: '#78350f', display: 'inline-flex', borderRadius: 3, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Shop All</div>
-    </div>
-    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['🔨','Tools'],['🪚','Lumber'],['🪣','Paint'],['💡','Electrical'],['🚰','Plumbing'],['🏠','Roofing']].map(([e, n]) => (
-        <div key={n} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '7px 4px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: 14 }}>{e}</div>
-          <div style={{ fontSize: 8, fontWeight: 700, color: '#374151', marginTop: 3 }}>{n}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const P_gym_fitness = () => (
-  <div style={{ fontFamily: 'system-ui', background: '#000', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
-    <div style={{ background: '#111', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #E61E2B' }}>
-      <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1 }}>IRON TRINI GYM</span>
-      <div style={{ background: '#E61E2B', borderRadius: 3, padding: '3px 10px', fontSize: 9, fontWeight: 700 }}>Join Now</div>
-    </div>
-    <div style={{ background: 'linear-gradient(160deg,#3b0000,#000)', padding: '16px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 18, lineHeight: 1, color: '#E61E2B', fontWeight: 900 }}>TRAIN HARD.</div>
-        <div style={{ fontSize: 18, lineHeight: 1, fontWeight: 900 }}>STAY TRINI.</div>
-        <div style={{ opacity: 0.45, fontSize: 9, marginTop: 4 }}>24/7 Access · 50+ Classes · Expert Coaches</div>
-        <div style={{ marginTop: 8, background: '#E61E2B', display: 'inline-flex', borderRadius: 3, padding: '4px 14px', fontSize: 9, fontWeight: 800 }}>Start Free Trial</div>
-      </div>
-      <div style={{ fontSize: 32 }}>💪</div>
-    </div>
-    <div style={{ padding: '8px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['Basic','$299/mo','#1a1a1a','#666'],['Pro','$499/mo','#1a0000','#E61E2B'],['Elite','$799/mo','#1a1500','#FFD700']].map(([tier, price, bg, ac]) => (
-        <div key={tier} style={{ background: bg, border: `1px solid ${ac}`, borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
-          <div style={{ fontSize: 11, letterSpacing: 1, fontWeight: 700 }}>{tier}</div>
-          <div style={{ color: ac, fontSize: 9, fontWeight: 800, marginTop: 2 }}>TT{price}</div>
-          <div style={{ background: ac, borderRadius: 3, padding: '2px', marginTop: 4, fontSize: 8, fontWeight: 700, color: ac === '#FFD700' ? '#000' : '#fff' }}>Select</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const P_jewelry_luxury = () => (
-  <div style={{ fontFamily: 'Georgia, serif', background: '#080806', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
-    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,215,0,0.2)' }}>
-      <span style={{ fontStyle: 'italic', fontSize: 15, color: '#FFD700', letterSpacing: 1 }}>Aurum T&T</span>
-      <div style={{ display: 'flex', gap: 10, opacity: 0.45, fontFamily: 'system-ui', fontSize: 9 }}>
-        <span>Collections</span><span>Bespoke</span>
+const P_tech_gadgets_store = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#0f172a', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b' }}>
+      <span style={{ fontWeight: 800, fontSize: 13, color: '#60a5fa' }}>TechPort TT</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 600, color: '#94a3b8' }}>
+        <span>Phones</span><span>Laptops</span><span>Audio</span>
+        <div style={{ background: '#2563eb', color: '#fff', borderRadius: 4, padding: '2px 8px', fontSize: 8 }}>Compare</div>
       </div>
     </div>
-    <div style={{ textAlign: 'center', padding: '14px 14px 10px', borderBottom: '1px solid rgba(255,215,0,0.1)' }}>
-      <div style={{ color: '#FFD700', fontSize: 8, letterSpacing: 4, fontFamily: 'system-ui', fontWeight: 600, marginBottom: 6 }}>FINE JEWELLERY · PORT OF SPAIN</div>
-      <div style={{ fontSize: 16, fontStyle: 'italic', lineHeight: 1.2 }}>Crafted for<br />the Caribbean Soul</div>
-      <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center' }}>
-        <div style={{ border: '1px solid #FFD700', color: '#FFD700', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontSize: 9 }}>Browse</div>
-        <div style={{ background: '#FFD700', color: '#080806', padding: '4px 14px', borderRadius: 2, fontFamily: 'system-ui', fontWeight: 700, fontSize: 9 }}>Book Consult</div>
+    <div style={{ padding: '14px', background: 'linear-gradient(160deg,#1e3a5f,#0f172a)' }}>
+      <div style={{ fontSize: 8, letterSpacing: 2, color: '#60a5fa', fontWeight: 700, marginBottom: 4 }}>LATEST DROP</div>
+      <div style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.1 }}>Next-gen tech.<br />Island prices.</div>
+      <div style={{ marginTop: 7, display: 'flex', gap: 5 }}>
+        <div style={{ background: '#2563eb', borderRadius: 4, padding: '4px 12px', fontSize: 9, fontWeight: 700 }}>Shop Deals</div>
+        <div style={{ border: '1px solid #334155', borderRadius: 4, padding: '4px 12px', fontSize: 9, color: '#94a3b8' }}>Trade In</div>
       </div>
     </div>
     <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['💍','Rings','From $1,200'],['📿','Necklaces','From $800'],['⌚','Watches','From $2,500']].map(([e, n, p]) => (
-        <div key={n} style={{ background: '#110f08', border: '1px solid rgba(255,215,0,0.15)', borderRadius: 6, padding: '10px 5px', textAlign: 'center' }}>
-          <div style={{ fontSize: 18 }}>{e}</div>
-          <div style={{ fontSize: 9, fontStyle: 'italic', marginTop: 4 }}>{n}</div>
-          <div style={{ color: '#FFD700', fontFamily: 'system-ui', fontSize: 8, marginTop: 2 }}>{p}</div>
+      {[['📱','Pixel 9','TT$5,999','256GB'],['💻','MacBook Air','TT$8,499','M3'],['🎧','AirPods Pro','TT$1,899','USB-C']].map(([e,n,p,spec]) => (
+        <div key={n} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '7px 5px' }}>
+          <div style={{ fontSize: 16, textAlign: 'center' }}>{e}</div>
+          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 3, textAlign: 'center' }}>{n}</div>
+          <div style={{ fontSize: 7, color: '#64748b', textAlign: 'center', marginTop: 1 }}>{spec}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+            <span style={{ color: '#60a5fa', fontSize: 8, fontWeight: 800 }}>{p}</span>
+            <div style={{ background: '#2563eb', borderRadius: 3, padding: '1px 4px', fontSize: 7, fontWeight: 700 }}>Add</div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div style={{ margin: '0 14px', background: '#1e293b', borderRadius: 6, padding: '5px 8px', display: 'flex', justifyContent: 'space-between', border: '1px solid #334155' }}>
+      <span style={{ fontSize: 8, color: '#94a3b8' }}>⚡ Free delivery over TT$500</span>
+      <span style={{ fontSize: 8, color: '#16a34a', fontWeight: 700 }}>In stock</span>
+    </div>
+  </div>
+);
+
+const P_beauty_cosmetics_store = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#fdf2f8', height: '100%', overflow: 'hidden', fontSize: 11, color: '#1a1a1a' }}>
+    <div style={{ background: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #fce7f3' }}>
+      <span style={{ fontWeight: 800, fontSize: 13, color: '#ec4899' }}>Glow TT</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 600, color: '#666' }}>
+        <span>Makeup</span><span>Skincare</span>
+        <div style={{ background: '#ec4899', color: '#fff', borderRadius: 20, padding: '2px 9px', fontSize: 8, fontWeight: 700 }}>Bag 1</div>
+      </div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#fce7f3,#fbcfe8)', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 8, letterSpacing: 2, color: '#ec4899', fontWeight: 700, marginBottom: 4 }}>FREE GIFT ON ORDERS $200+</div>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.1, color: '#831843' }}>Glow like<br />a Trini sunset.</div>
+        <div style={{ marginTop: 7, display: 'flex', gap: 5 }}>
+          <div style={{ background: '#ec4899', color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Shop All</div>
+          <div style={{ border: '1px solid #ec4899', color: '#ec4899', borderRadius: 20, padding: '4px 12px', fontSize: 9, fontWeight: 700 }}>Shade Match</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 28 }}>💄</div>
+    </div>
+    <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['Lip Kit','TT$149','#fce7f3','★4.9'],['Serum','TT$189','#fef3c7','★4.7'],['Bundle','TT$299','#dcfce7','★5.0']].map(([n,p,bg,r]) => (
+        <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 18, height: 18, background: '#ec4899', borderRadius: '50%', opacity: 0.3 }} />
+          </div>
+          <div style={{ padding: '4px 5px', background: '#fff' }}>
+            <div style={{ fontSize: 8, fontWeight: 700 }}>{n}</div>
+            <div style={{ fontSize: 7, color: '#f59e0b' }}>{r}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+              <span style={{ fontSize: 8, fontWeight: 800, color: '#ec4899' }}>{p}</span>
+              <div style={{ background: '#ec4899', color: '#fff', borderRadius: 3, padding: '1px 4px', fontSize: 7, fontWeight: 700 }}>Add</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_sneaker_streetwear = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#ffffff', height: '100%', overflow: 'hidden', fontSize: 11, color: '#171717' }}>
+    <div style={{ background: '#171717', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 2 }}>SOLE TRINI</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 700 }}>
+        <span>Drops</span><span>Apparel</span>
+        <div style={{ background: '#E61E2B', borderRadius: 3, padding: '2px 8px', fontSize: 8 }}>Cart</div>
+      </div>
+    </div>
+    <div style={{ padding: '14px', background: '#171717', color: '#fff' }}>
+      <div style={{ fontSize: 8, letterSpacing: 3, color: '#E61E2B', fontWeight: 700, marginBottom: 4 }}>🔴 LIVE DROP</div>
+      <div style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.1 }}>Island Heat<br />Vol. 3.</div>
+      <div style={{ fontSize: 8, color: '#999', marginTop: 4, fontWeight: 600 }}>Drops in 02:14:33 · Limited stock</div>
+      <div style={{ marginTop: 7, display: 'flex', gap: 5 }}>
+        <div style={{ background: '#E61E2B', color: '#fff', borderRadius: 4, padding: '4px 14px', fontSize: 9, fontWeight: 800 }}>Shop Drop</div>
+        <div style={{ border: '1px solid #444', borderRadius: 4, padding: '4px 14px', fontSize: 9, color: '#aaa' }}>Notify Me</div>
+      </div>
+    </div>
+    <div style={{ padding: '10px 14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        {[['Trini Heat Tee','TT$199','#fef3f2'],['Sole Runner','TT$649','#f4f4f5']].map(([n,p,bg]) => (
+          <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden', border: '1px solid #f0f0f0' }}>
+            <div style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>👟</div>
+            <div style={{ padding: '4px 6px', background: '#fff' }}>
+              <div style={{ fontSize: 8, fontWeight: 700 }}>{n}</div>
+              <div style={{ fontSize: 8, fontWeight: 800, color: '#171717' }}>{p}</div>
+              <div style={{ display: 'flex', gap: 3, marginTop: 3 }}>
+                {['S','M','L','XL'].map(s => (
+                  <div key={s} style={{ border: '1px solid #e5e5e5', borderRadius: 3, padding: '1px 4px', fontSize: 7, fontWeight: 700, color: '#666' }}>{s}</div>
+                ))}
+              </div>
+              <div style={{ background: '#171717', color: '#fff', borderRadius: 3, padding: '2px', marginTop: 4, fontSize: 7, fontWeight: 700, textAlign: 'center' }}>Add to Cart</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+const P_wellness_supplements = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#f0fdf4', height: '100%', overflow: 'hidden', fontSize: 11, color: '#14532d' }}>
+    <div style={{ background: '#16a34a', color: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800, fontSize: 13 }}>VitalLife TT</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 600 }}>
+        <span>Supplements</span><span>Bundles</span>
+        <div style={{ background: '#fff', color: '#16a34a', borderRadius: 20, padding: '2px 9px', fontSize: 8, fontWeight: 800 }}>Cart 0</div>
+      </div>
+    </div>
+    <div style={{ background: 'linear-gradient(135deg,#dcfce7,#bbf7d0)', padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 8, letterSpacing: 2, color: '#16a34a', fontWeight: 700, marginBottom: 4 }}>SUBSCRIBE &amp; SAVE 15%</div>
+        <div style={{ fontSize: 15, fontWeight: 900, lineHeight: 1.1, color: '#14532d' }}>Fuel your<br />island hustle.</div>
+        <div style={{ marginTop: 7, display: 'flex', gap: 5 }}>
+          <div style={{ background: '#16a34a', color: '#fff', borderRadius: 6, padding: '4px 12px', fontSize: 9, fontWeight: 800 }}>Take the Quiz</div>
+          <div style={{ border: '1px solid #16a34a', color: '#16a34a', borderRadius: 6, padding: '4px 12px', fontSize: 9, fontWeight: 700 }}>Shop All</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 28 }}>🌿</div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'flex', gap: 5, marginBottom: 6 }}>
+      {[['🔬','Lab Tested'],['🚚','Free Delivery'],['♻️','Subscribe Save']].map(([e,l]) => (
+        <div key={l} style={{ flex: 1, background: '#fff', border: '1px solid #bbf7d0', borderRadius: 6, padding: '5px 4px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11 }}>{e}</div>
+          <div style={{ fontSize: 7, fontWeight: 700, color: '#16a34a', marginTop: 1 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ padding: '0 14px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+      {[['Whey Protein','TT$289/mo','#dcfce7'],['Multivitamin','TT$99/mo','#fef3c7']].map(([n,p,bg]) => (
+        <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden', border: '1px solid #bbf7d0' }}>
+          <div style={{ height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>💊</div>
+          <div style={{ padding: '4px 6px', background: '#fff' }}>
+            <div style={{ fontSize: 8, fontWeight: 700, color: '#14532d' }}>{n}</div>
+            <div style={{ fontSize: 7, color: '#16a34a', fontWeight: 600 }}>Subscribe</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+              <span style={{ fontSize: 9, fontWeight: 800, color: '#16a34a' }}>{p}</span>
+              <div style={{ background: '#16a34a', color: '#fff', borderRadius: 3, padding: '1px 5px', fontSize: 7, fontWeight: 700 }}>Add</div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const P_auto_accessories_store = () => (
+  <div style={{ fontFamily: 'system-ui', background: '#0f0f0f', height: '100%', overflow: 'hidden', fontSize: 11, color: '#fff' }}>
+    <div style={{ background: '#1a1a1a', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ea580c' }}>
+      <span style={{ fontWeight: 900, fontSize: 13, letterSpacing: 1 }}>AUTO ZONE TT</span>
+      <div style={{ display: 'flex', gap: 8, fontSize: 9, fontWeight: 600, color: '#aaa' }}>
+        <span>Parts</span><span>Accessories</span>
+        <div style={{ background: '#ea580c', color: '#fff', borderRadius: 3, padding: '2px 8px', fontSize: 8, fontWeight: 700 }}>Cart</div>
+      </div>
+    </div>
+    <div style={{ background: 'linear-gradient(160deg,#1c0a00,#0f0f0f)', padding: '14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ color: '#ea580c', fontSize: 8, letterSpacing: 2, fontWeight: 700, marginBottom: 4 }}>FIND PARTS FOR YOUR VEHICLE</div>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+          {['Toyota','2018','Corolla'].map(v => (
+            <div key={v} style={{ background: '#262626', border: '1px solid #404040', borderRadius: 3, padding: '2px 6px', fontSize: 8, color: '#fff' }}>{v} ▾</div>
+          ))}
+        </div>
+        <div style={{ background: '#ea580c', display: 'inline-flex', borderRadius: 3, padding: '4px 14px', fontSize: 9, fontWeight: 800 }}>Search Parts</div>
+      </div>
+      <div style={{ fontSize: 30 }}>🚗</div>
+    </div>
+    <div style={{ padding: '8px 14px', display: 'flex', gap: 5, marginBottom: 6 }}>
+      {[['⚡','Same-Day Delivery'],['🔧','Installation'],['✅','Compatibility Check']].map(([e,l]) => (
+        <div key={l} style={{ flex: 1, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 5, padding: '5px 4px', textAlign: 'center' }}>
+          <div style={{ fontSize: 11 }}>{e}</div>
+          <div style={{ fontSize: 7, fontWeight: 700, color: '#ea580c', marginTop: 1 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ padding: '0 14px 10px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
+      {[['Brake Pads','TT$280+'],['Air Filter','TT$95+'],['Phone Mount','TT$120+']].map(([n,p]) => (
+        <div key={n} style={{ background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 6, padding: '6px 5px' }}>
+          <div style={{ fontSize: 14, textAlign: 'center' }}>🔧</div>
+          <div style={{ fontSize: 8, fontWeight: 700, marginTop: 3, textAlign: 'center' }}>{n}</div>
+          <div style={{ color: '#ea580c', fontSize: 8, fontWeight: 800, textAlign: 'center', marginTop: 1 }}>{p}</div>
+          <div style={{ background: '#ea580c', borderRadius: 3, padding: '2px', marginTop: 4, fontSize: 7, fontWeight: 700, textAlign: 'center' }}>Add</div>
         </div>
       ))}
     </div>
@@ -444,13 +546,13 @@ const PREVIEWS: Record<string, React.FC> = {
   restaurant_premium:      P_restaurant_premium,
   clothing_store_pro:      P_clothing_store_pro,
   salon_barber_pro:        P_salon_barber_pro,
-  electronics_tech:        P_electronics_tech,
-  pharmacy_health:         P_pharmacy_health,
-  bakery_desserts:         P_bakery_desserts,
-  auto_parts:              P_auto_parts,
-  hardware_home:           P_hardware_home,
-  gym_fitness:             P_gym_fitness,
-  jewelry_luxury:          P_jewelry_luxury,
+  modern_market:           P_modern_market,
+  furniture_home_store:    P_furniture_home_store,
+  tech_gadgets_store:      P_tech_gadgets_store,
+  beauty_cosmetics_store:  P_beauty_cosmetics_store,
+  sneaker_streetwear:      P_sneaker_streetwear,
+  wellness_supplements:    P_wellness_supplements,
+  auto_accessories_store:  P_auto_accessories_store,
   multi_location_enterprise: P_multi_location_enterprise,
 };
 

@@ -29,6 +29,7 @@ import { Premium3ColumnTemplate } from '../components/templates/Premium3ColumnTe
 import { PremiumFashionTemplate } from '../components/templates/PremiumFashionTemplate';
 import { PremiumRestaurantTemplate } from '../components/templates/PremiumRestaurantTemplate';
 import { PremiumBeautyTemplate } from '../components/templates/PremiumBeautyTemplate';
+import { IslandCommerceTemplate } from '../components/templates/IslandCommerceTemplate';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -245,6 +246,15 @@ const BUSINESS_TYPES: BusinessType[] = [
 // ─── Templates (LAZY-LOADED for performance) ──────────────────────────
 
 const TEMPLATES: Template[] = [
+  {
+    id: 'island-commerce',
+    name: 'Island Commerce ⭐',
+    description: 'Vercel-grade storefront with real product variants (color/size), slide-out cart, and WhatsApp COD checkout.',
+    preview: '🏝️',
+    bestFor: ['Retail', 'Fashion', 'Electronics', 'Best Seller'],
+    componentLoader: () => Promise.resolve({ default: IslandCommerceTemplate as any }),
+    Component: IslandCommerceTemplate,
+  },
   {
     id: 'professional',
     name: 'Professional 3-Column',
@@ -656,8 +666,13 @@ const StoreBuilderV3: React.FC = () => {
                     delivery: 'Island-wide delivery available',
                   };
                   const sampleProducts = state.storeName ? [
-                    { id: 's1', name: `${state.storeName} Special`, description: 'Our signature product', price: 199.99, image_url: 'https://images.unsplash.com/photo-1607344645869-1993b5fd9c9c?w=640&q=80', status: 'active', stock: 10, category: 'Featured' },
-                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Best Seller' },
+                    { id: 's1', name: `${state.storeName} Tee`, description: 'Soft cotton, island-printed', price: 149.99, compare_at_price: 199.99, image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=640&q=80', status: 'active', stock: 12, category: 'Apparel', variants: [
+                      { id: 's1-rs', title: 'Red / S', options: { Color: 'Red', Size: 'S' }, price: 149.99 },
+                      { id: 's1-rm', title: 'Red / M', options: { Color: 'Red', Size: 'M' }, price: 149.99 },
+                      { id: 's1-bl', title: 'Blue / L', options: { Color: 'Blue', Size: 'L' }, price: 149.99 },
+                      { id: 's1-gm', title: 'Green / M', options: { Color: 'Green', Size: 'M' }, price: 149.99 },
+                    ] },
+                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Featured' },
                     { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=640&q=80', status: 'active', stock: 20, category: 'Value' },
                   ] : [];
                   return (
