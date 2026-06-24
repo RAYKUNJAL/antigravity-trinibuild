@@ -635,6 +635,7 @@ const StoreBuilderV3: React.FC = () => {
               </span>
             </div>
             <div className="rounded-lg overflow-hidden border border-gray-200 bg-white" style={{ maxHeight: '600px', overflow: 'auto' }}>
+              <div className="light-mode-preview">
               <SafeBoundary name="Step3Preview">
                 {(() => {
                   const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
@@ -669,6 +670,7 @@ const StoreBuilderV3: React.FC = () => {
                   );
                 })()}
               </SafeBoundary>
+              </div>
             </div>
             <p className="text-xs text-gray-500 mt-3 text-center">
               This is a live preview with sample data. Your real products will appear here.
