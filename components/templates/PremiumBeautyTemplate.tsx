@@ -8,6 +8,15 @@ import type { Product, Store } from '../../types';
  */
 
 import { getContrastColor } from './contrast';
+import { getPlaceholderImage } from './placeholderImage';
+
+/** Swap a broken image to the generic placeholder exactly once. */
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied) return;
+  img.dataset.fallbackApplied = '1';
+  img.src = getPlaceholderImage();
+};
 
 export const PremiumBeautyTemplate: React.FC<{
   storeName?: string;
@@ -104,11 +113,13 @@ export const PremiumBeautyTemplate: React.FC<{
               {services.map(service => (
                 <div key={service.id} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
                   <div className="aspect-[4/3] bg-gray-100 dark:bg-slate-800">
-                    {service.image_url ? (
-                      <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl">💅</div>
-                    )}
+                    <img
+                      src={service.image_url || getPlaceholderImage(service.category || 'beauty', service.id)}
+                      alt={service.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={onImgError}
+                    />
                   </div>
                   <div className="p-5">
                     <h3 className="font-medium mb-1">{service.name}</h3>

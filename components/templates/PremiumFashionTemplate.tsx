@@ -8,6 +8,15 @@ import type { Product, Store } from '../../types';
  */
 
 import { getContrastColor } from './contrast';
+import { getPlaceholderImage } from './placeholderImage';
+
+/** Swap a broken image to the generic placeholder exactly once. */
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied) return;
+  img.dataset.fallbackApplied = '1';
+  img.src = getPlaceholderImage();
+};
 
 export const PremiumFashionTemplate: React.FC<{
   storeName?: string;
@@ -115,11 +124,13 @@ export const PremiumFashionTemplate: React.FC<{
               {activeProducts.map(product => (
                 <div key={product.id} className="group bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
                   <div className="relative aspect-[3/4] bg-gray-100 dark:bg-slate-800">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl">👗</div>
-                    )}
+                    <img
+                      src={product.image_url || getPlaceholderImage(product.category || 'fashion', product.id)}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={onImgError}
+                    />
                     {product.stock > 0 && product.stock <= 4 && (
                       <div className="absolute top-2 left-2 px-2 py-1 bg-red-600 text-white text-xs rounded-lg font-medium">
                         Only {product.stock} left

@@ -8,6 +8,15 @@ import type { Product, Store } from '../../types';
  */
 
 import { getContrastColor } from './contrast';
+import { getPlaceholderImage } from './placeholderImage';
+
+/** Swap a broken image to the generic placeholder exactly once. */
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied) return;
+  img.dataset.fallbackApplied = '1';
+  img.src = getPlaceholderImage();
+};
 
 export const PremiumRestaurantTemplate: React.FC<{
   storeName?: string;
@@ -156,11 +165,13 @@ export const PremiumRestaurantTemplate: React.FC<{
               {filteredItems.map((item, idx) => (
                 <div key={item.id} className="flex items-center gap-4 p-3 md:p-4 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl hover:shadow-sm transition">
                   <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-2xl">🍴</span>
-                    )}
+                    <img
+                      src={item.image_url || getPlaceholderImage(item.category || 'food', item.id)}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={onImgError}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-sm md:text-base mb-0.5">{item.name}</h3>

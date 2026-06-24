@@ -14,6 +14,15 @@ import type { Product, Store } from '../../types';
  */
 
 import { getContrastColor } from './contrast';
+import { getPlaceholderImage } from './placeholderImage';
+
+/** Swap a broken image to the generic placeholder exactly once. */
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied) return;
+  img.dataset.fallbackApplied = '1';
+  img.src = getPlaceholderImage();
+};
 
 export const PremiumEcommerceTemplate: React.FC<{
   storeName?: string;
@@ -131,11 +140,13 @@ export const PremiumEcommerceTemplate: React.FC<{
             <div className="hidden md:grid grid-cols-3 gap-3">
               {filteredProducts.slice(0, 3).map(p => (
                 <div key={p.id} className="aspect-[4/5] bg-gray-100 dark:bg-slate-800 rounded-xl overflow-hidden relative">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
-                  )}
+                  <img
+                    src={p.image_url || getPlaceholderImage(p.category, p.id)}
+                    alt={p.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={onImgError}
+                  />
                   {p.stock <= 5 && p.stock > 0 && (
                     <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-600 text-white text-xs rounded-full font-medium">
                       Only {p.stock} left
@@ -263,16 +274,13 @@ export const PremiumEcommerceTemplate: React.FC<{
                 return (
                   <div key={product.id} className="group bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
                     <div className="relative aspect-square bg-gray-50 dark:bg-slate-800">
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
-                      )}
+                      <img
+                        src={product.image_url || getPlaceholderImage(product.category, product.id)}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={onImgError}
+                      />
                       {isLow && (
                         <div className="absolute top-2 left-2 px-2 py-1 bg-red-600 text-white text-xs rounded-lg font-medium shadow-sm">
                           Only {product.stock} left

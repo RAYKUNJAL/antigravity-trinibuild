@@ -10,6 +10,15 @@ import type { Product,Store } from '../../types';
  */
 
 import { getContrastColor } from './contrast';
+import { getPlaceholderImage } from './placeholderImage';
+
+/** Swap a broken image to the generic placeholder exactly once. */
+const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const img = e.currentTarget;
+  if (img.dataset.fallbackApplied) return;
+  img.dataset.fallbackApplied = '1';
+  img.src = getPlaceholderImage();
+};
 
 export const Premium3ColumnTemplate: React.FC<{
   storeName?: string;
@@ -179,15 +188,12 @@ export const Premium3ColumnTemplate: React.FC<{
             >
               <div className="space-y-4">
                 <div className="aspect-square bg-gray-100 dark:bg-slate-800 rounded-lg overflow-hidden flex items-center justify-center">
-                  {currentProduct.image_url ? (
-                    <img
-                      src={currentProduct.image_url}
-                      alt={currentProduct.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-9xl text-gray-300">📦</div>
-                  )}
+                  <img
+                    src={currentProduct.image_url || getPlaceholderImage(currentProduct.category ?? undefined, currentProduct.id)}
+                    alt={currentProduct.name}
+                    className="w-full h-full object-cover"
+                    onError={onImgError}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -213,11 +219,13 @@ export const Premium3ColumnTemplate: React.FC<{
                       }`}
                     >
                       <div className="w-12 h-12 rounded bg-gray-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-xl">📦</span>
-                        )}
+                        <img
+                          src={product.image_url || getPlaceholderImage(product.category ?? undefined, product.id)}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={onImgError}
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">{product.name}</div>
