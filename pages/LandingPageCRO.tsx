@@ -19,54 +19,32 @@ import { ServicesShowcase } from '../components/ServicesShowcase';
    ──────────────────────────────────────────────────────────────────────── */
 
 const TICKER_MERCHANTS = [
-  { name: "Maria's Boutique", location: 'San Fernando', avatar: 'https://randomuser.me/api/portraits/women/12.jpg' },
-  { name: "Kevin's Auto Parts", location: 'Chaguanas', avatar: 'https://randomuser.me/api/portraits/men/22.jpg' },
-  { name: 'Glow Beauty', location: 'Port of Spain', avatar: 'https://randomuser.me/api/portraits/women/28.jpg' },
-  { name: "Raj's Doubles", location: 'Arima', avatar: 'https://randomuser.me/api/portraits/men/35.jpg' },
-  { name: 'Isle Mode Fashion', location: 'San Fernando', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { name: 'Auto Zone TT', location: 'Chaguanas', avatar: 'https://randomuser.me/api/portraits/men/9.jpg' },
-  { name: 'Sweet Tings Bakery', location: 'Tobago', avatar: 'https://randomuser.me/api/portraits/women/18.jpg' },
-  { name: 'TechHub TT', location: 'Port of Spain', avatar: 'https://randomuser.me/api/portraits/men/41.jpg' },
+  { name: 'Roti shops', location: 'Food & drink', avatar: '🍛' },
+  { name: 'Boutiques', location: 'Fashion', avatar: '👗' },
+  { name: 'Barbers & salons', location: 'Services', avatar: '💈' },
+  { name: 'Auto parts', location: 'Automotive', avatar: '🔧' },
+  { name: 'Doubles vendors', location: 'Street food', avatar: '🫓' },
+  { name: 'Bakeries', location: 'Food & drink', avatar: '🧁' },
+  { name: 'Electronics', location: 'Retail', avatar: '📱' },
+  { name: 'Beauty supply', location: 'Beauty', avatar: '💄' },
 ];
 
 const STATS_ROW = [
-  { value: '500+', label: 'stores built' },
-  { value: 'TT$2M+', label: 'in orders' },
-  { value: '4.9★', label: 'merchant rating' },
+  { value: '14', label: 'store templates' },
+  { value: '5 min', label: 'to launch' },
+  { value: '🇹🇹', label: 'built in T&T' },
 ];
 
 const STORE_SHOWCASE = [
-  { name: "Maria's Boutique", category: 'Fashion & Apparel', location: 'San Fernando', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
-  { name: "Raj's Doubles", category: 'Food & Beverage', location: 'Arima', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  { name: 'TechHub TT', category: 'Electronics', location: 'Port of Spain', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
-  { name: 'Glow Beauty', category: 'Beauty & Cosmetics', location: 'Port of Spain', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
-  { name: 'Island Home Living', category: 'Furniture & Home', location: 'Tobago', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
-  { name: 'Auto Zone TT', category: 'Auto Parts', location: 'Chaguanas', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
+  { name: 'Fashion Boutique', category: 'Fashion & Apparel', location: 'Product grid · variants · lookbook', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
+  { name: 'Roti & Food Shop', category: 'Food & Beverage', location: 'Menu · WhatsApp ordering · COD', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
+  { name: 'Tech & Gadgets', category: 'Electronics', location: 'Specs · comparisons · warranty', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
+  { name: 'Beauty & Cosmetics', category: 'Beauty & Cosmetics', location: 'Shade match · bundles · subscribe', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
+  { name: 'Furniture & Home', category: 'Furniture & Home', location: 'Sale pricing · trust badges', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
+  { name: 'Auto & Accessories', category: 'Auto Parts', location: 'Part finder · vehicle match', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: 'TriniBuild helped me go from selling on Facebook to having my own real store in one afternoon.',
-    name: 'Alicia M.',
-    business: 'Glow Beauty',
-    location: 'POS',
-    avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-  },
-  {
-    quote: 'The COD checkout is exactly what my customers want. No PayPal drama.',
-    name: 'Ravi S.',
-    business: 'Auto Zone TT',
-    location: 'Chaguanas',
-    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-  },
-  {
-    quote: 'I was skeptical but the AI product lister saved me hours.',
-    name: 'Tamara W.',
-    business: 'Isle Mode Fashion',
-    location: 'San Fernando',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-  },
-];
+const TESTIMONIALS_REMOVED = true; // (Removed fabricated reviews — replaced by honest WHY_TRINIBUILD section above.)
 
 /* Robust fade-in: content is visible by default (opacity 1). Animation is
    purely additive — if framer-motion never fires whileInView, the element
@@ -95,7 +73,7 @@ const SocialProofTicker: React.FC = () => (
 
       {/* Marquee */}
       <div className="relative">
-        <p className="text-center text-xs uppercase tracking-widest text-gray-500 mb-4">Trusted by merchants across T&T</p>
+        <p className="text-center text-xs uppercase tracking-widest text-gray-500 mb-4">Built for every kind of T&T business</p>
         <div className="overflow-hidden relative">
           {/* Edge fade */}
           <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none" />
@@ -103,7 +81,7 @@ const SocialProofTicker: React.FC = () => (
           <div className="flex gap-6 animate-[ticker_30s_linear_infinite] w-max">
             {[...TICKER_MERCHANTS, ...TICKER_MERCHANTS].map((m, i) => (
               <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-4 py-2 flex-shrink-0">
-                <img src={m.avatar} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20" />
+                <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-lg flex-shrink-0" aria-hidden>{m.avatar}</span>
                 <span className="text-sm font-semibold whitespace-nowrap">
                   {m.name} <span className="text-gray-400 font-normal">· {m.location}</span>
                 </span>
@@ -121,8 +99,8 @@ const StoreShowcase: React.FC = () => (
   <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
     <div className="max-w-6xl mx-auto">
       <motion.div {...fadeInUp} className="text-center mb-14">
-        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Stores Built on TriniBuild</h2>
-        <p className="text-lg text-gray-600">Real businesses across Trinidad & Tobago are live right now.</p>
+        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">What You Can Build</h2>
+        <p className="text-lg text-gray-600">Real store designs ready for your business — pick a look and make it yours in minutes.</p>
       </motion.div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -138,17 +116,20 @@ const StoreShowcase: React.FC = () => (
               <span className="absolute top-3 left-3 text-[10px] font-black uppercase tracking-wider bg-white/90 text-gray-800 px-2 py-1 rounded-full">
                 {store.category}
               </span>
+              <span className="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider bg-trini-red text-white px-2 py-1 rounded-full">
+                Template
+              </span>
             </div>
             <div className="p-5">
               <h3 className="font-bold text-gray-900 text-lg">{store.name}</h3>
               <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
-                <span>📍</span> {store.location}
+                {store.location}
               </p>
               <a
-                href="#"
+                href="/templates"
                 className="inline-flex items-center gap-1.5 text-sm font-bold text-trini-red hover:underline"
               >
-                Visit Store <ExternalLink size={14} />
+                Preview Template <ExternalLink size={14} />
               </a>
             </div>
           </motion.div>
@@ -158,72 +139,74 @@ const StoreShowcase: React.FC = () => (
   </section>
 );
 
-/* ── Testimonials 3-col ── */
+/* ── Why merchants choose us (honest value props — no fabricated reviews) ── */
+const WHY_TRINIBUILD = [
+  {
+    icon: '🇹🇹',
+    title: 'Built right here',
+    body: 'Made in Trinidad & Tobago for T&T businesses — COD, WhatsApp ordering, and TT$ pricing baked in from day one.',
+  },
+  {
+    icon: '💸',
+    title: 'Free to start, no card',
+    body: 'Launch a real store on the free plan with no credit card. Test your business before you ever pay a cent.',
+  },
+  {
+    icon: '⚡',
+    title: 'Live in about 5 minutes',
+    body: 'Pick a template, add your products with the AI lister, and share your store link the same afternoon.',
+  },
+];
+
 const Testimonials: React.FC = () => (
   <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
     <div className="max-w-5xl mx-auto">
       <motion.div {...fadeInUp} className="text-center mb-14">
-        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Merchants Love TriniBuild</h2>
-        <p className="text-lg text-gray-600">Don't take our word for it — hear from the businesses using it daily.</p>
+        <span className="inline-block text-xs font-black uppercase tracking-widest text-trini-red mb-3">Founding Merchants · First 100</span>
+        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Be one of our first stores</h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          TriniBuild is brand-new and built in T&amp;T. We're looking for founding merchants to grow with — and rewarding them for being first.
+        </p>
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {TESTIMONIALS.map((t, idx) => (
+        {WHY_TRINIBUILD.map((item, idx) => (
           <motion.div
             key={idx}
             {...fadeInUp}
             transition={{ ...fadeInUp.transition, delay: idx * 0.1 }}
             className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col"
           >
-            <div className="flex items-center gap-1 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-gray-700 mb-6 flex-1 italic">"{t.quote}"</p>
-            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-              <img src={t.avatar} alt={t.name} loading="lazy" className="w-11 h-11 rounded-full object-cover" />
-              <div>
-                <p className="font-bold text-gray-900 text-sm">{t.name}</p>
-                <p className="text-xs text-gray-500">
-                  {t.business} · {t.location}
-                </p>
-              </div>
-            </div>
+            <div className="text-3xl mb-4">{item.icon}</div>
+            <h3 className="font-bold text-gray-900 text-lg mb-2">{item.title}</h3>
+            <p className="text-gray-600 text-sm flex-1 leading-relaxed">{item.body}</p>
           </motion.div>
         ))}
       </div>
+
+      <motion.div {...fadeInUp} className="text-center mt-10">
+        <a href="/create-store" className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors">
+          Start My Free Store <ArrowRight size={18} />
+        </a>
+      </motion.div>
     </div>
   </section>
 );
 
-/* ── Animated merchant counter (count up on scroll into view) ── */
+/* ── Founding-merchant banner (honest — no fabricated counts) ── */
 const MerchantCounter: React.FC = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.1 });
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (v) => Math.round(v).toLocaleString());
-  // Default to the final value so the counter is NEVER blank even if the
-  // inView trigger never fires — the count-up is purely an enhancement.
-  const [display, setDisplay] = useState('1,247');
-
-  useEffect(() => {
-    if (inView) {
-      // Reset to 0 then animate up to 1,247 (enhancement only).
-      setDisplay('0');
-      const controls = animate(count, 1247, { duration: 2, ease: 'easeOut' });
-      const unsub = rounded.on('change', (v) => setDisplay(v));
-      return () => { controls.stop(); unsub(); };
-    }
-  }, [inView, count, rounded]);
-
   return (
-    <section ref={ref} className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-trini-red to-orange-600 text-white">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-trini-red to-orange-600 text-white">
       <div className="max-w-3xl mx-auto text-center">
         <motion.div {...fadeInUp}>
-          <div className="text-5xl sm:text-6xl font-black mb-2">{display}</div>
-          <div className="text-xl sm:text-2xl font-bold">stores and counting</div>
-          <p className="text-white/80 mt-3 text-sm">Join hundreds of Trinidad & Tobago businesses already selling online.</p>
+          <div className="text-4xl sm:text-5xl font-black mb-3">Get in early. 🇹🇹</div>
+          <div className="text-xl sm:text-2xl font-bold">Founding merchant spots are open now</div>
+          <p className="text-white/85 mt-3 text-sm sm:text-base max-w-xl mx-auto">
+            TriniBuild just launched. Be one of the first Trinidad &amp; Tobago businesses to claim a free store — and help shape what we build next.
+          </p>
+          <a href="/create-store" className="inline-flex items-center gap-2 bg-white text-trini-red font-bold px-7 py-3.5 rounded-xl mt-6 hover:bg-gray-100 transition-colors">
+            Claim Your Free Store <ArrowRight size={18} />
+          </a>
         </motion.div>
       </div>
     </section>
