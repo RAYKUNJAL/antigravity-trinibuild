@@ -17,7 +17,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown } from 'lucide-react';
+import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown, X, Maximize2, Monitor, Smartphone } from 'lucide-react';
 import {
   Store as StoreIcon, Shirt, Utensils, ShoppingBag, Briefcase, MoreHorizontal,
   Check, EyeOff, AlertCircle, Sparkle
@@ -65,6 +65,21 @@ interface StoreBuilderState {
 }
 
 const DRAFT_KEY = 'trinibuild_store_draft_v3';
+
+// ─── Wizard Steps Definition ───────────────────────────────────────────
+
+interface StepDef {
+  num: 1 | 2 | 3 | 4;
+  label: string;
+  short: string;
+}
+
+const STEPS: StepDef[] = [
+  { num: 1, label: 'Business Type', short: 'Business' },
+  { num: 2, label: 'Pick a Template', short: 'Template' },
+  { num: 3, label: 'Customize Your Store', short: 'Customize' },
+  { num: 4, label: 'Review & Launch', short: 'Launch' },
+];
 
 // ─── Industry-Specific Design Systems (from UI/UX Pro Max skill) ──────
 
@@ -313,6 +328,35 @@ const COLOR_PRESETS = [
   { name: 'Gold', value: '#D97706' },
 ];
 
+// ─── Helper: build sample storeData for preview rendering ─────────────
+
+function buildSampleStoreData(storeName: string, primaryColor: string) {
+  return {
+    name: storeName || 'Your Store Name',
+    tagline: storeName ? `Welcome to ${storeName}` : 'Your Trinidad & Tobago storefront',
+    description: storeName ? `${storeName} — quality products and service in Trinidad & Tobago.` : 'Quality products and service in Trinidad & Tobago.',
+    phone: '8681234567',
+    whatsapp: '8681234567',
+    color_scheme: { primary: primaryColor },
+    address: 'Trinidad & Tobago',
+    delivery: 'Island-wide delivery available',
+  };
+}
+
+function buildSampleProducts(storeName: string) {
+  const name = storeName || 'Your Store';
+  return [
+    { id: 's1', name: `${name} Signature Tee`, description: 'Soft cotton, island-printed', price: 149.99, compare_at_price: 199.99, image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=640&q=80', status: 'active', stock: 12, category: 'Apparel', variants: [
+      { id: 's1-rs', title: 'Red / S', options: { Color: 'Red', Size: 'S' }, price: 149.99 },
+      { id: 's1-rm', title: 'Red / M', options: { Color: 'Red', Size: 'M' }, price: 149.99 },
+      { id: 's1-bl', title: 'Blue / L', options: { Color: 'Blue', Size: 'L' }, price: 149.99 },
+      { id: 's1-gm', title: 'Green / M', options: { Color: 'Green', Size: 'M' }, price: 149.99 },
+    ] },
+    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Featured' },
+    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=640&q=80', status: 'active', stock: 20, category: 'Value' },
+  ];
+}
+
 // ─── Main Component ────────────────────────────────────────────────────
 
 const StoreBuilderV3: React.FC = () => {
@@ -344,6 +388,10 @@ const StoreBuilderV3: React.FC = () => {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Full-size template preview modal state
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+
   // Auto-save draft to localStorage
   useEffect(() => {
     try {
@@ -352,6 +400,21 @@ const StoreBuilderV3: React.FC = () => {
       console.warn('Could not save draft:', e);
     }
   }, [state]);
+
+  // ESC key closes the full-size preview modal
+  useEffect(() => {
+    if (!previewTemplate) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewTemplate(null);
+    };
+    window.addEventListener('keydown', onKey);
+    // Lock body scroll while modal is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [previewTemplate]);
 
   const updateState = useCallback((updates: Partial<StoreBuilderState>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -362,6 +425,26 @@ const StoreBuilderV3: React.FC = () => {
     setState(prev => ({ ...prev, step }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // Determine which steps are "completed" (can navigate back to them via stepper)
+  const isStepComplete = useCallback((stepNum: 1 | 2 | 3 | 4): boolean => {
+    if (stepNum < state.step) return true;
+    if (stepNum === 1) return !!state.businessType;
+    if (stepNum === 2) return !!state.templateId;
+    if (stepNum === 3) return !!state.storeName.trim();
+    return false;
+  }, [state.step, state.businessType, state.templateId, state.storeName]);
+
+  // Can the user jump to this step via the stepper?
+  const canGoToStep = useCallback((stepNum: 1 | 2 | 3 | 4): boolean => {
+    // Always allow going back to a completed or current step
+    if (stepNum <= state.step) return true;
+    // Allow going forward only if prerequisites are met
+    if (stepNum === 2) return !!state.businessType;
+    if (stepNum === 3) return !!state.templateId;
+    if (stepNum === 4) return !!state.storeName.trim();
+    return false;
+  }, [state.step, state.businessType, state.templateId, state.storeName]);
 
   // ─── Step 1: Business Type ────────────────────────────────────────────
 
@@ -448,7 +531,7 @@ const StoreBuilderV3: React.FC = () => {
             Pick a template
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Don't worry — you can customize everything later
+            Don't worry — you can customize everything later. Click <span className="font-semibold text-red-600 dark:text-red-400">Preview Full Size</span> to see any template live.
           </p>
         </div>
 
@@ -457,11 +540,9 @@ const StoreBuilderV3: React.FC = () => {
             const isRecommended = recommendedType?.recommendedTemplate === template.id;
             const isSelected = state.templateId === template.id;
             return (
-              <button
+              <div
                 key={template.id}
-                type="button"
-                onClick={() => updateState({ templateId: template.id })}
-                className={`relative p-6 border-2 rounded-xl text-left transition-all ${
+                className={`relative p-6 border-2 rounded-xl transition-all ${
                   isSelected
                     ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -474,7 +555,7 @@ const StoreBuilderV3: React.FC = () => {
                 )}
                 <div className="flex items-start gap-4">
                   <div className="text-5xl flex-shrink-0">{template.preview}</div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {template.name}
@@ -484,7 +565,7 @@ const StoreBuilderV3: React.FC = () => {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       {template.description}
                     </p>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-3">
                       {template.bestFor.map((tag) => (
                         <span
                           key={tag}
@@ -494,9 +575,35 @@ const StoreBuilderV3: React.FC = () => {
                         </span>
                       ))}
                     </div>
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => updateState({ templateId: template.id })}
+                        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                          isSelected
+                            ? 'bg-red-600 text-white'
+                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-red-600 dark:hover:bg-red-600 dark:hover:text-white'
+                        }`}
+                      >
+                        <Check className="w-4 h-4" />
+                        {isSelected ? 'Selected' : 'Select'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewTemplate(template);
+                          setPreviewDevice('desktop');
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                        Preview Full Size
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -517,6 +624,121 @@ const StoreBuilderV3: React.FC = () => {
           >
             Continue <ArrowRight className="w-4 h-4" />
           </button>
+        </div>
+      </div>
+    );
+  };
+
+  // ─── Full-Size Template Preview Modal (#4) ──────────────────────────
+
+  const renderPreviewModal = () => {
+    if (!previewTemplate) return null;
+    const TemplateComponent = previewTemplate.Component;
+    const storeData = buildSampleStoreData(state.storeName || 'Sample Store', state.primaryColor);
+    const sampleProducts = buildSampleProducts(state.storeName || 'Sample Store');
+    const isMobile = previewDevice === 'mobile';
+
+    return (
+      <div
+        className="fixed inset-0 z-[9999] flex flex-col"
+        style={{ background: 'rgba(0,0,0,0.85)' }}
+      >
+        {/* Modal top bar */}
+        <div
+          className="flex items-center justify-between px-4 py-3 text-white flex-shrink-0"
+          style={{ background: '#111' }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-2xl flex-shrink-0">{previewTemplate.preview}</span>
+            <div className="min-w-0">
+              <div className="font-bold text-sm truncate">{previewTemplate.name}</div>
+              <div className="text-xs text-gray-400 truncate">Full-size template preview</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Desktop / Mobile toggle */}
+            <div className="flex items-center rounded-lg overflow-hidden border border-gray-600">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice('desktop')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  !isMobile ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Monitor className="w-4 h-4" /> Desktop
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice('mobile')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  isMobile ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Smartphone className="w-4 h-4" /> Mobile
+              </button>
+            </div>
+
+            {/* Use This Template */}
+            <button
+              type="button"
+              onClick={() => {
+                updateState({ templateId: previewTemplate.id });
+                setPreviewTemplate(null);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+            >
+              <Check className="w-4 h-4" /> Use This Template
+            </button>
+
+            {/* Close */}
+            <button
+              type="button"
+              onClick={() => setPreviewTemplate(null)}
+              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-white transition-colors"
+              aria-label="Close preview"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Preview area */}
+        <div
+          className="flex-1 overflow-auto"
+          style={{ background: '#f3f4f6' }}
+        >
+          <div
+            className={isMobile ? 'mx-auto my-4' : 'w-full'}
+            style={isMobile ? { width: '390px', maxWidth: '100%' } : {}}
+          >
+            <div
+              className="bg-white shadow-lg"
+              style={{
+                borderRadius: isMobile ? '16px' : '0',
+                overflow: 'hidden',
+              }}
+            >
+              <SafeBoundary name={`PreviewModal-${previewTemplate.id}`}>
+                <TemplateComponent
+                  storeName={state.storeName || 'Sample Store'}
+                  storeData={storeData}
+                  products={sampleProducts}
+                  primaryColor={state.primaryColor}
+                />
+              </SafeBoundary>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom hint bar */}
+        <div
+          className="flex items-center justify-center px-4 py-2 text-xs text-gray-400 flex-shrink-0"
+          style={{ background: '#111' }}
+        >
+          Press <kbd className="mx-1 px-1.5 py-0.5 bg-gray-700 rounded text-white">ESC</kbd> to close ·
+          Viewing {isMobile ? 'Mobile (390px)' : 'Desktop (full width)'} ·
+          Sample products shown — your real products will appear after launch
         </div>
       </div>
     );
@@ -672,26 +894,8 @@ const StoreBuilderV3: React.FC = () => {
                     </div>
                   );
                   const TemplateComponent = selectedTemplate.Component;
-                  const storeData = {
-                    name: state.storeName || 'Your Store Name',
-                    tagline: state.storeName ? `Welcome to ${state.storeName}` : '',
-                    description: state.storeName ? `${state.storeName} — quality products and service in Trinidad & Tobago.` : '',
-                    phone: '8681234567',
-                    whatsapp: '8681234567',
-                    color_scheme: { primary: state.primaryColor },
-                    address: 'Trinidad & Tobago',
-                    delivery: 'Island-wide delivery available',
-                  };
-                  const sampleProducts = state.storeName ? [
-                    { id: 's1', name: `${state.storeName} Tee`, description: 'Soft cotton, island-printed', price: 149.99, compare_at_price: 199.99, image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=640&q=80', status: 'active', stock: 12, category: 'Apparel', variants: [
-                      { id: 's1-rs', title: 'Red / S', options: { Color: 'Red', Size: 'S' }, price: 149.99 },
-                      { id: 's1-rm', title: 'Red / M', options: { Color: 'Red', Size: 'M' }, price: 149.99 },
-                      { id: 's1-bl', title: 'Blue / L', options: { Color: 'Blue', Size: 'L' }, price: 149.99 },
-                      { id: 's1-gm', title: 'Green / M', options: { Color: 'Green', Size: 'M' }, price: 149.99 },
-                    ] },
-                    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Featured' },
-                    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=640&q=80', status: 'active', stock: 20, category: 'Value' },
-                  ] : [];
+                  const storeData = buildSampleStoreData(state.storeName, state.primaryColor);
+                  const sampleProducts = buildSampleProducts(state.storeName);
                   return (
                     <TemplateComponent
                       storeName={state.storeName || 'Your Store Name'}
@@ -965,13 +1169,82 @@ const StoreBuilderV3: React.FC = () => {
     );
   };
 
+  // ─── Stepper Header ───────────────────────────────────────────────────
+
+  const renderStepper = () => (
+    <nav className="mb-6" aria-label="Wizard progress">
+      <ol className="flex items-center w-full">
+        {STEPS.map((stepDef, idx) => {
+          const isActive = state.step === stepDef.num;
+          const isComplete = isStepComplete(stepDef.num);
+          const isClickable = canGoToStep(stepDef.num);
+          const isLast = idx === STEPS.length - 1;
+
+          return (
+            <li
+              key={stepDef.num}
+              className={`flex items-center ${isLast ? 'flex-shrink-0' : 'flex-1'}`}
+            >
+              <button
+                type="button"
+                onClick={() => isClickable && goToStep(stepDef.num)}
+                disabled={!isClickable}
+                className={`flex items-center gap-2 group ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+              >
+                {/* Circle with number / checkmark */}
+                <span
+                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold flex-shrink-0 transition-all ${
+                    isActive
+                      ? 'bg-red-600 text-white ring-4 ring-red-100 dark:ring-red-950/40 scale-110'
+                      : isComplete
+                        ? 'bg-red-600 text-white group-hover:bg-red-700'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  {isComplete && !isActive ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    stepDef.num
+                  )}
+                </span>
+                {/* Label */}
+                <span
+                  className={`text-sm font-semibold hidden sm:inline transition-colors ${
+                    isActive
+                      ? 'text-gray-900 dark:text-white'
+                      : isComplete
+                        ? 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
+                        : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  {stepDef.short}
+                </span>
+              </button>
+
+              {/* Connector line */}
+              {!isLast && (
+                <div
+                  className={`flex-1 h-0.5 mx-2 transition-colors ${
+                    state.step > stepDef.num
+                      ? 'bg-red-500'
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+
   // ─── Render ────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
@@ -981,15 +1254,18 @@ const StoreBuilderV3: React.FC = () => {
               <Store className="w-4 h-4" /> TriniBuild
             </button>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Step {state.step} of 4
+              Step {state.step} of {STEPS.length} · {STEPS[state.step - 1].label}
             </div>
           </div>
+
+          {/* Stepper */}
+          {renderStepper()}
 
           {/* Progress bar */}
           <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-500"
-              style={{ width: `${(state.step / 4) * 100}%` }}
+              style={{ width: `${(state.step / STEPS.length) * 100}%` }}
             />
           </div>
         </div>
@@ -1009,6 +1285,9 @@ const StoreBuilderV3: React.FC = () => {
           Your progress is auto-saved. You can close this and come back later.
         </div>
       </div>
+
+      {/* Full-size template preview modal */}
+      {previewTemplate && renderPreviewModal()}
     </div>
   );
 };
