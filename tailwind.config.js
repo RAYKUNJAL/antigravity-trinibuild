@@ -42,6 +42,7 @@ export default {
         'bounce-slow': 'bounce 3s infinite',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'marquee': 'marquee 25s linear infinite',
+        'ticker': 'ticker 30s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -59,6 +60,10 @@ export default {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' },
+        },
+        ticker: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
         }
       },
       backgroundImage: {

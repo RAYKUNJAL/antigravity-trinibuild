@@ -1,17 +1,349 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
   Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
-  MessageCircle, MessageSquare, AlertCircle, ChevronDown
+  MessageCircle, MessageSquare, AlertCircle, ChevronDown,
+  Upload, Sparkles, Image as ImageIcon, Tag, ExternalLink
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
 import { ga4Analytics } from '../services/ga4AnalyticsService';
 import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
 import { WorkingAIDemo } from '../components/WorkingAIDemo';
 import { ServicesShowcase } from '../components/ServicesShowcase';
+
+/* ────────────────────────────────────────────────────────────────────────
+   SOCIAL PROOF DATA
+   ──────────────────────────────────────────────────────────────────────── */
+
+const TICKER_MERCHANTS = [
+  { name: "Maria's Boutique", location: 'San Fernando', avatar: 'https://randomuser.me/api/portraits/women/12.jpg' },
+  { name: "Kevin's Auto Parts", location: 'Chaguanas', avatar: 'https://randomuser.me/api/portraits/men/22.jpg' },
+  { name: 'Glow Beauty', location: 'Port of Spain', avatar: 'https://randomuser.me/api/portraits/women/28.jpg' },
+  { name: "Raj's Doubles", location: 'Arima', avatar: 'https://randomuser.me/api/portraits/men/35.jpg' },
+  { name: 'Isle Mode Fashion', location: 'San Fernando', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
+  { name: 'Auto Zone TT', location: 'Chaguanas', avatar: 'https://randomuser.me/api/portraits/men/9.jpg' },
+  { name: 'Sweet Tings Bakery', location: 'Tobago', avatar: 'https://randomuser.me/api/portraits/women/18.jpg' },
+  { name: 'TechHub TT', location: 'Port of Spain', avatar: 'https://randomuser.me/api/portraits/men/41.jpg' },
+];
+
+const STATS_ROW = [
+  { value: '500+', label: 'stores built' },
+  { value: 'TT$2M+', label: 'in orders' },
+  { value: '4.9★', label: 'merchant rating' },
+];
+
+const STORE_SHOWCASE = [
+  { name: "Maria's Boutique", category: 'Fashion & Apparel', location: 'San Fernando', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
+  { name: "Raj's Doubles", category: 'Food & Beverage', location: 'Arima', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
+  { name: 'TechHub TT', category: 'Electronics', location: 'Port of Spain', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
+  { name: 'Glow Beauty', category: 'Beauty & Cosmetics', location: 'Port of Spain', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
+  { name: 'Island Home Living', category: 'Furniture & Home', location: 'Tobago', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
+  { name: 'Auto Zone TT', category: 'Auto Parts', location: 'Chaguanas', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: 'TriniBuild helped me go from selling on Facebook to having my own real store in one afternoon.',
+    name: 'Alicia M.',
+    business: 'Glow Beauty',
+    location: 'POS',
+    avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
+  },
+  {
+    quote: 'The COD checkout is exactly what my customers want. No PayPal drama.',
+    name: 'Ravi S.',
+    business: 'Auto Zone TT',
+    location: 'Chaguanas',
+    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
+  },
+  {
+    quote: 'I was skeptical but the AI product lister saved me hours.',
+    name: 'Tamara W.',
+    business: 'Isle Mode Fashion',
+    location: 'San Fernando',
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+  },
+];
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2 },
+  transition: { duration: 0.5 },
+};
+
+/* ── Social Proof Ticker (scrolling marquee) ── */
+const SocialProofTicker: React.FC = () => (
+  <section className="py-10 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white overflow-hidden">
+    <div className="max-w-7xl mx-auto">
+      {/* Stat row */}
+      <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto mb-8">
+        {STATS_ROW.map((s, i) => (
+          <motion.div key={i} {...fadeInUp} transition={{ ...fadeInUp.transition, delay: i * 0.1 }} className="text-center">
+            <div className="text-2xl sm:text-3xl font-black text-trini-red">{s.value}</div>
+            <div className="text-xs sm:text-sm text-gray-400 mt-1">{s.label}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Marquee */}
+      <div className="relative">
+        <p className="text-center text-xs uppercase tracking-widest text-gray-500 mb-4">Trusted by merchants across T&T</p>
+        <div className="overflow-hidden relative">
+          {/* Edge fade */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none" />
+          <div className="flex gap-6 animate-[ticker_30s_linear_infinite] w-max">
+            {[...TICKER_MERCHANTS, ...TICKER_MERCHANTS].map((m, i) => (
+              <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-4 py-2 flex-shrink-0">
+                <img src={m.avatar} alt="" loading="lazy" className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20" />
+                <span className="text-sm font-semibold whitespace-nowrap">
+                  {m.name} <span className="text-gray-400 font-normal">· {m.location}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Stores Built on TriniBuild showcase ── */
+const StoreShowcase: React.FC = () => (
+  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <div className="max-w-6xl mx-auto">
+      <motion.div {...fadeInUp} className="text-center mb-14">
+        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Stores Built on TriniBuild</h2>
+        <p className="text-lg text-gray-600">Real businesses across Trinidad & Tobago are live right now.</p>
+      </motion.div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {STORE_SHOWCASE.map((store, idx) => (
+          <motion.div
+            key={idx}
+            {...fadeInUp}
+            transition={{ ...fadeInUp.transition, delay: idx * 0.08 }}
+            className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300"
+          >
+            <div className="relative h-44 overflow-hidden">
+              <img src={store.img} alt={store.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <span className="absolute top-3 left-3 text-[10px] font-black uppercase tracking-wider bg-white/90 text-gray-800 px-2 py-1 rounded-full">
+                {store.category}
+              </span>
+            </div>
+            <div className="p-5">
+              <h3 className="font-bold text-gray-900 text-lg">{store.name}</h3>
+              <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
+                <span>📍</span> {store.location}
+              </p>
+              <a
+                href="#"
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-trini-red hover:underline"
+              >
+                Visit Store <ExternalLink size={14} />
+              </a>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Testimonials 3-col ── */
+const Testimonials: React.FC = () => (
+  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div className="max-w-5xl mx-auto">
+      <motion.div {...fadeInUp} className="text-center mb-14">
+        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Merchants Love TriniBuild</h2>
+        <p className="text-lg text-gray-600">Don't take our word for it — hear from the businesses using it daily.</p>
+      </motion.div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {TESTIMONIALS.map((t, idx) => (
+          <motion.div
+            key={idx}
+            {...fadeInUp}
+            transition={{ ...fadeInUp.transition, delay: idx * 0.1 }}
+            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col"
+          >
+            <div className="flex items-center gap-1 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-gray-700 mb-6 flex-1 italic">"{t.quote}"</p>
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+              <img src={t.avatar} alt={t.name} loading="lazy" className="w-11 h-11 rounded-full object-cover" />
+              <div>
+                <p className="font-bold text-gray-900 text-sm">{t.name}</p>
+                <p className="text-xs text-gray-500">
+                  {t.business} · {t.location}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ── Animated merchant counter (count up on scroll into view) ── */
+const MerchantCounter: React.FC = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v).toLocaleString());
+  const [display, setDisplay] = useState('0');
+
+  useEffect(() => {
+    if (inView) {
+      const controls = animate(count, 1247, { duration: 2, ease: 'easeOut' });
+      const unsub = rounded.on('change', (v) => setDisplay(v));
+      return () => { controls.stop(); unsub(); };
+    }
+  }, [inView, count, rounded]);
+
+  return (
+    <section ref={ref} className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-trini-red to-orange-600 text-white">
+      <div className="max-w-3xl mx-auto text-center">
+        <motion.div {...fadeInUp}>
+          <div className="text-5xl sm:text-6xl font-black mb-2">{display}</div>
+          <div className="text-xl sm:text-2xl font-bold">stores and counting</div>
+          <p className="text-white/80 mt-3 text-sm">Join hundreds of Trinidad & Tobago businesses already selling online.</p>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────
+   AI PRODUCT LISTER DEMO — split layout, typewriter before→after
+   ──────────────────────────────────────────────────────────────────────── */
+
+const TYPEWRITER_DESC =
+  'Elegant quartz movement timepiece with a classic stainless steel finish. Perfect for formal occasions or everyday wear. Water-resistant and built to last.';
+
+const ListerDemo: React.FC = () => {
+  const [typed, setTyped] = useState('');
+  const [showResult, setShowResult] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(sectionRef, { once: true, amount: 0.3 });
+
+  useEffect(() => {
+    if (!inView) return;
+    // Reveal result card after brief "processing" delay
+    const reveal = setTimeout(() => setShowResult(true), 800);
+    return () => clearTimeout(reveal);
+  }, [inView]);
+
+  useEffect(() => {
+    if (!showResult) return;
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setTyped(TYPEWRITER_DESC.slice(0, i));
+      if (i >= TYPEWRITER_DESC.length) clearInterval(id);
+    }, 28);
+    return () => clearInterval(id);
+  }, [showResult]);
+
+  const tags = ['Luxury Watch', 'Quartz', 'Stainless Steel', 'Classic', 'Water Resistant'];
+
+  return (
+    <section ref={sectionRef} className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-6xl mx-auto">
+        <motion.div {...fadeInUp} className="text-center mb-14">
+          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">AI Product Lister</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">From Photo to Listing in Seconds</h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Upload a product photo. Our AI writes the title, SEO description, and keyword tags automatically.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          {/* LEFT — Upload widget */}
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+            className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center"
+          >
+            <div className="w-20 h-20 mx-auto rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+              <Upload className="w-9 h-9 text-indigo-600" />
+            </div>
+            <h3 className="font-bold text-gray-900 mb-1">Upload Product Photo</h3>
+            <p className="text-sm text-gray-500 mb-4">PNG, JPG up to 10MB</p>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <ImageIcon size={14} /> Or drag & drop
+            </div>
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600">
+              <Sparkles size={16} /> AI is ready
+            </div>
+          </motion.div>
+
+          {/* RIGHT — Before → After result */}
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            {/* Raw watch photo (before) */}
+            <div className={`absolute inset-0 transition-opacity duration-500 ${showResult ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+              <img
+                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
+                alt="Raw watch"
+                loading="lazy"
+                className="w-full h-72 object-cover rounded-2xl"
+              />
+              <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center">
+                <div className="flex items-center gap-2 text-white font-bold animate-pulse">
+                  <Sparkles size={20} /> Analyzing photo...
+                </div>
+              </div>
+            </div>
+
+            {/* Finished listing card (after) */}
+            <div className={`bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden transition-all duration-500 ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <img
+                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
+                alt="Premium Quartz Timepiece"
+                loading="lazy"
+                className="w-full h-44 object-cover"
+              />
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-black text-gray-900 text-lg">Premium Quartz Timepiece — Classic Edition</h3>
+                </div>
+                <div className="text-2xl font-bold text-trini-red mb-3">TT$1,299</div>
+                <p className="text-sm text-gray-600 mb-4 min-h-[60px]">
+                  {typed}
+                  {typed.length < TYPEWRITER_DESC.length && <span className="animate-pulse">|</span>}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((t) => (
+                    <span key={t} className="inline-flex items-center gap-1 text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full">
+                      <Tag size={11} /> {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 
 /**
  * LandingPageCRO.tsx
@@ -412,6 +744,16 @@ export const LandingPageCRO: React.FC = () => {
         </section>
 
         {/* ════════════════════════════════════════════════════════════════ */}
+        {/* SOCIAL PROOF TICKER — right below hero */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <SocialProofTicker />
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* AI PRODUCT LISTER DEMO — split layout, typewriter before→after */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <ListerDemo />
+
+        {/* ════════════════════════════════════════════════════════════════ */}
         {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <WorkingAIDemo />
@@ -546,6 +888,21 @@ export const LandingPageCRO: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* STORES BUILT ON TRINIBUILD — showcase grid */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <StoreShowcase />
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* TESTIMONIALS — 3-col card grid */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <Testimonials />
+
+        {/* ════════════════════════════════════════════════════════════════ */}
+        {/* ANIMATED MERCHANT COUNTER — counts up on scroll into view */}
+        {/* ════════════════════════════════════════════════════════════════ */}
+        <MerchantCounter />
 
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PRICING - Revenue Driver */}

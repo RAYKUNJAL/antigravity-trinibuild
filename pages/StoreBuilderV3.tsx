@@ -611,6 +611,23 @@ const StoreBuilderV3: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Brand Color
             </label>
+
+            {/* Full hex color picker (native color wheel) */}
+            <div className="flex items-center gap-3 mb-3">
+              <input
+                type="color"
+                value={state.primaryColor}
+                onChange={(e) => updateState({ primaryColor: e.target.value })}
+                className="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-700 cursor-pointer bg-transparent p-0"
+                aria-label="Pick a custom brand color"
+              />
+              <div>
+                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Hex</span>
+                <p className="font-mono text-sm font-bold text-gray-900 dark:text-white">{state.primaryColor}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 font-semibold uppercase tracking-wide">Quick picks</p>
             <div className="grid grid-cols-4 gap-2">
               {(DESIGN_SYSTEMS[state.businessType]?.colorPresets || COLOR_PRESETS).map((preset) => (
                 <button
