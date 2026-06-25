@@ -1,7 +1,11 @@
 import os
 import logging
+import time
+import threading
+from collections import defaultdict, deque
 import requests
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -29,6 +33,51 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Dependency-free per-IP sliding-window rate limiter ───────────────────────
+# Protects the expensive LLM/vision endpoints from cost-injection abuse.
+# Limits are per client IP, per rolling 60-second window.
+_RATE_LIMITS = {
+    "/analyze-product-image": 12,   # vision (most expensive) — 12/min/IP
+    "/island-chat": 30,             # chatbot — 30/min/IP
+    "/generate": 30,
+    "/chatbot-reply": 30,
+    "/generate-listing-description": 20,
+    "/generate-job-letter": 20,
+}
+_RATE_WINDOW = 60  # seconds
+_rate_hits = defaultdict(deque)  # key: (ip, path) -> deque[timestamps]
+_rate_lock = threading.Lock()
+
+def _client_ip(request: Request) -> str:
+    # Honor X-Forwarded-For (Caddy/Cloudflare sit in front), else peer IP.
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    path = request.url.path
+    limit = _RATE_LIMITS.get(path)
+    if limit:
+        ip = _client_ip(request)
+        key = (ip, path)
+        now = time.time()
+        with _rate_lock:
+            dq = _rate_hits[key]
+            while dq and dq[0] <= now - _RATE_WINDOW:
+                dq.popleft()
+            if len(dq) >= limit:
+                retry = int(_RATE_WINDOW - (now - dq[0])) + 1
+                logger.warning(f"Rate limit hit: {ip} {path} ({len(dq)}/{limit})")
+                return JSONResponse(
+                    status_code=429,
+                    content={"error": "Too many requests. Please slow down and try again shortly."},
+                    headers={"Retry-After": str(max(retry, 1))},
+                )
+            dq.append(now)
+    return await call_next(request)
 
 # Configuration
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
