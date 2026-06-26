@@ -4,6 +4,7 @@ import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, C
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
+import { trackAddToCart, trackOrderPlaced, trackProductView, trackStoreView } from '../services/eventTracker';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
@@ -60,6 +61,7 @@ export const StorefrontV2: React.FC = () => {
                 if (storeData) {
                     setStore(storeData);
                     setProducts(storeData.products || []);
+                    trackStoreView(storeData.id, storeData.name, (storeData as any).island || 'tt');
                 }
             } catch (error) {
                 console.error('Failed to load store:', error);
@@ -98,6 +100,11 @@ export const StorefrontV2: React.FC = () => {
             alert(`Sorry, only ${product.stock} items available!`);
             return;
         }
+
+        if (store) {
+            trackProductView(product.id, product.name, product.price, store.id);
+        }
+        trackAddToCart(product.id, product.name, product.price);
 
         setCart(prev => {
             const existing = prev.find(item => item.id === product.id);
@@ -238,6 +245,7 @@ export const StorefrontV2: React.FC = () => {
                     setOrderId(newOrderId);
                     setCheckoutStep('success');
                     setCart([]);
+                    trackOrderPlaced(newOrderId, finalTotal, paymentMethod);
                 } else {
                     alert(result.error || 'Payment failed');
                 }

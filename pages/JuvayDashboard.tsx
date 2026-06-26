@@ -5,6 +5,7 @@ import {
   TrendingUp, ShoppingBag, Eye, ArrowRight, Package, Bot,
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { track, trackPageView } from '../services/eventTracker';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,7 @@ export const JuvayDashboard: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    trackPageView('/dashboard');
     const load = async () => {
       setLoading(true);
       try {
@@ -138,6 +140,10 @@ export const JuvayDashboard: React.FC = () => {
           .order('created_at', { ascending: false })
           .limit(1);
         const store: StoreRow | null = storeRows && storeRows.length > 0 ? storeRows[0] : null;
+
+        if (store) {
+          track('dashboard_view', 'merchant', { store_id: store.id });
+        }
 
         // Defaults
         let productsCount = 0;

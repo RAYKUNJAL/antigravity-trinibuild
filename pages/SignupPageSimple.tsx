@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
+import { track } from '../services/eventTracker';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
 export const SignupPageSimple: React.FC = () => {
@@ -75,6 +76,8 @@ export const SignupPageSimple: React.FC = () => {
           role: 'user',
         };
         localStorage.setItem('user', JSON.stringify(user));
+
+        track('user_signup', 'auth', { method: 'email', island: selectedIsland });
 
         // If a session was returned (email confirmation disabled), navigate now
         if (data.session) {

@@ -5,6 +5,7 @@ import {
   UploadCloud, AlertCircle, Camera, MessageCircle,
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { track } from '../services/eventTracker';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -150,7 +151,14 @@ export const JuvayOnboarding: React.FC = () => {
   const canContinueStep2 = !!category;
   const canContinueStep3 = storeName.trim().length > 0;
 
-  const goNext = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  const goNext = () => {
+    if (step === 1) {
+      track('onboarding_step', 'onboarding', { step: 1, island });
+    } else if (step === 2) {
+      track('onboarding_step', 'onboarding', { step: 2, category });
+    }
+    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+  };
   const goBack = () => setStep((s) => Math.max(1, s - 1));
 
   const useSuggestion = () => setStoreName(aiSuggestion);
@@ -196,6 +204,7 @@ export const JuvayOnboarding: React.FC = () => {
       setStoreSlug(slug);
       setStoreId(data.id);
       setLive(true);
+      track('store_created', 'merchant', { store_id: data.id, category, island });
     } catch (err) {
       console.error('store creation error', err);
       setCreateError('Could not create store, try again');
@@ -283,6 +292,7 @@ export const JuvayOnboarding: React.FC = () => {
         status: 'active',
       });
       if (error) throw new Error(error.message);
+      track('product_published', 'merchant', { store_id: storeId, first_product: true });
       navigate('/store-builder');
     } catch (err: any) {
       setPublishError(err?.message || 'Could not publish product.');

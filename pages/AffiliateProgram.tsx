@@ -182,7 +182,7 @@ export const AffiliateProgram: React.FC = () => {
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                            <p className="text-xs text-gray-500 uppercase font-bold">Lifetime Earnings</p>
-                           <h3 className="text-3xl font-bold text-gray-900 mt-1">TT${stats.paidCommission}</h3>
+                           <h3 className="text-3xl font-bold text-gray-900 mt-1">{'TT$'}{stats.paidCommission.toFixed(2)}</h3>
                         </div>
                         <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg text-white relative overflow-hidden">
                            <Shield className="absolute top-4 right-4 h-16 w-16 opacity-20" />
@@ -190,14 +190,13 @@ export const AffiliateProgram: React.FC = () => {
                            <h3 className="text-3xl font-bold mt-1">{stats.tier}</h3>
                             <p className="text-xs mt-2 font-medium">Refer your first merchant to get started</p>
                         </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-80 flex items-center justify-center">
+                     </div>
+                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-80 flex items-center justify-center">
                          <div className="text-center">
                             <BarChart2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                             <h3 className="font-bold text-gray-700 mb-2">No performance data yet</h3>
                             <p className="text-gray-500 text-sm max-w-sm">Your affiliate stats will appear here once you start referring merchants.</p>
                          </div>
-                        </div>
                      </div>
                   </div>
                )}

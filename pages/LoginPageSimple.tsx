@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/supabaseClient';
+import { track } from '../services/eventTracker';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
@@ -48,6 +49,8 @@ export const LoginPage: React.FC = () => {
           role: 'user',
         };
         localStorage.setItem('user', JSON.stringify(user));
+
+        track('user_login', 'auth', { method: 'email' });
 
         // Success - redirect to dashboard
         navigate('/dashboard/ai');
