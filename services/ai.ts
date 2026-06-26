@@ -18,7 +18,10 @@ import { generateOptimizedListing, type ProductListingOptimized } from './aiList
  */
 
 const GPT_MODEL = 'gpt-4o-mini';
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+
+// NOTE: Browser-exposed API keys have been removed for security.
+// All LLM calls now route through the Juvay AI backend (server-side Groq),
+// which keeps secrets off the client. See VITE_AI_SERVER_URL.
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -441,9 +444,14 @@ async function callGPT(
 }
 
 /**
- * Multimodal GPT-4o-mini call. Accepts an image URL (publicly reachable) plus
- * a text prompt; the model sees the image and replies with text. Used by the
- * AI product lister: photo in → name/description/price/tags JSON out.
+ * Multimodal vision call. Accepts an image URL (publicly reachable) plus
+ * a text prompt; the backend model sees the image and replies with text.
+ * Used by the AI product lister: photo in → name/description/price/tags JSON out.
+ *
+ * SECURITY: This previously called OpenAI directly from the browser using a
+ * VITE_OPENAI_API_KEY, which leaked the secret key into the public bundle.
+ * It now routes through the Juvay AI backend /ai/analyze-product-image endpoint,
+ * which keeps the key server-side. The backend returns strict JSON.
  *
  * The model is instructed to reply with strict JSON. We parse it here and
  * throw if the response is malformed so callers can fall back gracefully.
@@ -453,43 +461,26 @@ async function callGPTVisionJSON(
     userPrompt: string,
     systemPrompt: string,
 ): Promise<any> {
-    // Vision calls still use OpenAI directly (Groq doesn't support vision yet)
-    // Falls back gracefully if no key
-    if (!OPENAI_API_KEY) {
-        throw new Error('No OpenAI API key configured for vision — set VITE_OPENAI_API_KEY');
-    }
+    const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+    const startTime = Date.now();
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // The backend /ai/analyze-product-image endpoint runs the vision model
+    // server-side and returns { content: <json string>, model_used }.
+    const response = await fetch(`${AI_SERVER}/analyze-product-image`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
-        body: JSON.stringify({
-            model: GPT_MODEL,
-            response_format: { type: 'json_object' },
-            messages: [
-                { role: 'system', content: systemPrompt },
-                {
-                    role: 'user',
-                    content: [
-                        { type: 'text', text: userPrompt },
-                        { type: 'image_url', image_url: { url: imageUrl, detail: 'low' } },
-                    ],
-                },
-            ],
-            max_tokens: 800,
-            temperature: 0.5,
-        }),
+        body: JSON.stringify({ image_url: imageUrl }),
     });
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');
-        throw new Error(`OpenAI vision error ${response.status}: ${errText}`);
+        throw new Error(`AI vision backend error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
+    const text = data.content;
     if (!text) throw new Error('Empty response from vision model');
 
     try {

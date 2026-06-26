@@ -28,7 +28,7 @@ app = FastAPI(
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=['https://juvay.app', 'https://www.juvay.app', 'https://trinibuild.com', 'http://localhost:5173', 'http://localhost:5174'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,11 +50,15 @@ _rate_hits = defaultdict(deque)  # key: (ip, path) -> deque[timestamps]
 _rate_lock = threading.Lock()
 
 def _client_ip(request: Request) -> str:
-    # Honor X-Forwarded-For (Caddy/Cloudflare sit in front), else peer IP.
-    xff = request.headers.get("x-forwarded-for")
+    # Honor X-Forwarded-For set by trusted proxy (Caddy). Caddy appends the
+    # real client IP LAST, so the rightmost entry is the one we trust.
+    xff = request.headers.get('x-forwarded-for', '')
     if xff:
-        return xff.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+        # Caddy appends the real client IP last
+        ips = [ip.strip() for ip in xff.split(',')]
+        # Return the rightmost non-empty IP (set by trusted proxy)
+        return ips[-1] if ips[-1] else request.client.host
+    return request.client.host
 
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -84,6 +88,18 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 # Groq vision-capable model for the product scanner. Override via env if Groq renames it.
 VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+
+# Security: restrict which models a client may request via /generate.
+# Prevents model-name injection (e.g. billing/pricing abuse).
+ALLOWED_MODELS = {
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'llama-3.2-3b-preview',
+    'meta-llama/llama-4-scout-17b-16e-instruct',
+}
+
+# Security: cap prompt length to bound cost and prevent prompt-stuffing abuse.
+MAX_PROMPT_CHARS = 4000
 
 if not GROQ_API_KEY:
     logger.warning("GROQ_API_KEY not found in environment variables. AI features will fail.")
@@ -204,6 +220,9 @@ async def generate_listing_description(request: ListingDescriptionRequest):
 
 @app.post("/chatbot-reply", response_model=AIResponse)
 async def chatbot_reply(request: ChatbotRequest):
+    # Security: input length cap — bound cost and prevent prompt stuffing.
+    if len(request.message or '') > MAX_PROMPT_CHARS:
+        raise HTTPException(status_code=400, detail='Input too long')
     system_prompt = request.system_prompt
     
     if not system_prompt:
@@ -242,6 +261,12 @@ async def chatbot_reply(request: ChatbotRequest):
 @app.post("/generate")
 async def generate_text(request: GenerateRequest):
     try:
+        # Security: model allowlist — reject arbitrary/untrusted model names.
+        if request.model and request.model not in ALLOWED_MODELS:
+            raise HTTPException(status_code=400, detail='Model not allowed')
+        # Security: input length cap — bound cost and prevent prompt stuffing.
+        if len(request.prompt or '') > MAX_PROMPT_CHARS:
+            raise HTTPException(status_code=400, detail='Input too long')
         response = query_groq(
             request.prompt,
             model=request.model or DEFAULT_MODEL,
@@ -249,6 +274,8 @@ async def generate_text(request: GenerateRequest):
             max_tokens=request.max_tokens or 2000
         )
         return {"content": response, "model_used": request.model or DEFAULT_MODEL}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Generation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
