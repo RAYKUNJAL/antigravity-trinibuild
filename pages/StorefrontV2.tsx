@@ -6,6 +6,7 @@ import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
 import { trackAddToCart, trackOrderPlaced, trackProductView, trackStoreView } from '../services/eventTracker';
 import { paymentService, PaymentMethod } from '../services/paymentService';
+import { notifyMerchantNewOrder, notifyCustomerOrderConfirmed } from '../services/whatsappService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import { ChatWidget } from '../components/ChatWidget';
@@ -246,6 +247,25 @@ export const StorefrontV2: React.FC = () => {
                     setCheckoutStep('success');
                     setCart([]);
                     trackOrderPlaced(newOrderId, finalTotal, paymentMethod);
+
+                    // Fire WhatsApp notifications (non-blocking — never await)
+                    if (store?.whatsapp) {
+                        notifyMerchantNewOrder({
+                            merchantPhone: store.whatsapp,
+                            merchantName: store.name,
+                            storeName: store.name,
+                            orderNumber: newOrderId,
+                            customerName: shippingInfo.name,
+                            customerPhone: shippingInfo.phone,
+                            items: cart.map(item => ({ name: item.name, qty: item.quantity, price: item.price })),
+                            total: cartTotal,
+                            paymentMethod: paymentMethod,
+                            deliveryAddress: `${shippingInfo.address}, ${shippingInfo.city}`
+                        }); // intentionally NOT awaited — never block checkout
+                    }
+                    if (shippingInfo.phone) {
+                        notifyCustomerOrderConfirmed(shippingInfo.phone, newOrderId, store?.name || 'the store');
+                    }
                 } else {
                     alert(result.error || 'Payment failed');
                 }

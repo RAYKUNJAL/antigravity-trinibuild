@@ -335,19 +335,13 @@ export const notificationService = {
             return;
         }
 
-        // WhatsApp Business API integration
-        // Using Twilio WhatsApp API as example
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
+        // Route through our AI backend — Twilio keys are server-side only
+        const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'https://juvay.app/ai';
+        const phone = String(message.phone_number || '').replace(/[^0-9]/g, '');
+        const response = await fetch(`${AI_SERVER}/send-whatsapp`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                From: `whatsapp:${import.meta.env.VITE_TWILIO_WHATSAPP_NUMBER}`,
-                To: `whatsapp:${message.phone_number}`,
-                Body: message.message
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: phone, message: message.message })
         });
 
         if (!response.ok) {
@@ -355,6 +349,10 @@ export const notificationService = {
         }
 
         const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(`WhatsApp send failed: ${data.error || 'Unknown error'}`);
+        }
 
         // Update with WhatsApp message ID
         await supabase
@@ -430,18 +428,13 @@ export const notificationService = {
             return;
         }
 
-        // Twilio SMS API
-        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${import.meta.env.VITE_TWILIO_ACCOUNT_SID}/Messages.json`, {
+        // Route through our AI backend — Twilio keys are server-side only
+        const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'https://juvay.app/ai';
+        const phone = String(message.phone_number || '').replace(/[^0-9]/g, '');
+        const response = await fetch(`${AI_SERVER}/send-whatsapp`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Basic ${btoa(`${import.meta.env.VITE_TWILIO_ACCOUNT_SID}:${import.meta.env.VITE_TWILIO_AUTH_TOKEN}`)}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                From: import.meta.env.VITE_TWILIO_PHONE_NUMBER,
-                To: message.phone_number,
-                Body: message.message
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to: phone, message: message.message })
         });
 
         if (!response.ok) {
@@ -449,6 +442,10 @@ export const notificationService = {
         }
 
         const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(`SMS send failed: ${data.error || 'Unknown error'}`);
+        }
 
         await supabase
             .from('sms_queue')
