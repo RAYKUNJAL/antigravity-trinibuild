@@ -24,7 +24,7 @@ export const Footer: React.FC = () => {
               <MapPin className="h-4 w-4 mr-2 flex-shrink-0" /> Port of Spain, Trinidad & Tobago
             </div>
             <div className="flex items-center text-gray-500 text-sm mb-4">
-              <Mail className="h-4 w-4 mr-2 flex-shrink-0" /> support@trinibuild.com
+              <Mail className="h-4 w-4 mr-2 flex-shrink-0" /> support@juvay.com
             </div>
             <div className="flex gap-3">
               <a href="https://facebook.com/trinibuild" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Facebook">
@@ -143,7 +143,7 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
-              <span>&copy; {new Date().getFullYear()} TriniBuild — A product of R&R Digital Solutions. All rights reserved.</span>
+              <span>&copy; {new Date().getFullYear()} Juvay — A product of R&R Digital Solutions. All rights reserved.</span>
               <span className="hidden md:inline">•</span>
               <span>Trinidad & Tobago</span>
               <span className="hidden md:inline">•</span>

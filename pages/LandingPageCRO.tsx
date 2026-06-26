@@ -94,7 +94,7 @@ const SocialProofTicker: React.FC = () => (
   </section>
 );
 
-/* ── Stores Built on TriniBuild showcase ── */
+/* ── Stores Built on Juvay showcase ── */
 const StoreShowcase: React.FC = () => (
   <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
     <div className="max-w-6xl mx-auto">
@@ -165,7 +165,7 @@ const Testimonials: React.FC = () => (
         <span className="inline-block text-xs font-black uppercase tracking-widest text-trini-red mb-3">Founding Merchants · First 100</span>
         <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Be one of our first stores</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          TriniBuild is brand-new and built in T&amp;T. We're looking for founding merchants to grow with — and rewarding them for being first.
+          Juvay is brand-new and built in T&amp;T. We're looking for founding merchants to grow with — and rewarding them for being first.
         </p>
       </motion.div>
 
@@ -202,7 +202,7 @@ const MerchantCounter: React.FC = () => {
           <div className="text-4xl sm:text-5xl font-black mb-3">Get in early. 🇹🇹</div>
           <div className="text-xl sm:text-2xl font-bold">Founding merchant spots are open now</div>
           <p className="text-white/85 mt-3 text-sm sm:text-base max-w-xl mx-auto">
-            TriniBuild just launched. Be one of the first Trinidad &amp; Tobago businesses to claim a free store — and help shape what we build next.
+            Juvay just launched. Be one of the first Trinidad &amp; Tobago businesses to claim a free store — and help shape what we build next.
           </p>
           <a href="/create-store" className="inline-flex items-center gap-2 bg-white text-trini-red font-bold px-7 py-3.5 rounded-xl mt-6 hover:bg-gray-100 transition-colors">
             Claim Your Free Store <ArrowRight size={18} />
@@ -369,7 +369,7 @@ const FOUNDING_OFFER = {
   bullet_points: [
     'Free Pro plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
     'Direct WhatsApp line to the founding team — you get heard, fast',
-    'Featured placement on the TriniBuild marketplace when it launches',
+    'Featured placement on the Juvay marketplace when it launches',
     'Your feedback shapes what we build next'
   ],
   caveat: 'Why the offer? We\'re a brand-new Trinidad-built platform. We want founding merchants who help us get it right, and we want to reward them for being first.'
@@ -605,14 +605,14 @@ export const LandingPageCRO: React.FC = () => {
     <>
       <Helmet>
         {/* SEO Title & Description (Cold Traffic) */}
-        <title>Free Online Store for Trinidad & Tobago | COD Selling Made Easy | TriniBuild</title>
+        <title>Free Online Store for Trinidad & Tobago | COD Selling Made Easy | Juvay</title>
         <meta
           name="description"
           content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 10 free products, no credit card required. Built in T&T."
         />
         <meta
           name="keywords"
-          content="online store Trinidad, sell online T&T, cash on delivery Trinidad, free store builder, Trinidad business, Tobago online selling, TriniBuild, SME platform"
+          content="online store Trinidad, sell online T&T, cash on delivery Trinidad, free store builder, Trinidad business, Tobago online selling, Juvay, SME platform"
         />
         <link rel="canonical" href="https://trinibuild.com/landing" />
 
@@ -636,7 +636,7 @@ export const LandingPageCRO: React.FC = () => {
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
-            name: 'TriniBuild',
+            name: 'Juvay',
             description: 'Free online store builder for Trinidad & Tobago businesses with cash on delivery support',
             url: 'https://trinibuild.com/',
             applicationCategory: 'ECommerce',
@@ -685,7 +685,7 @@ export const LandingPageCRO: React.FC = () => {
               <span className="bg-gradient-to-r from-trini-red to-orange-500 bg-clip-text text-transparent">
                 Cash on Delivery
               </span>
-              {' — No Credit Card'}
+              {' — No Credit Card — Powered by Juvay'}
             </motion.h1>
 
             {/* Subheadline */}
@@ -827,7 +827,7 @@ export const LandingPageCRO: React.FC = () => {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                How TriniBuild Works for Your Business
+                How Juvay Works for Your Business
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 Four simple steps from store creation to your first sale.
@@ -1080,7 +1080,7 @@ export const LandingPageCRO: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="https://wa.me/1868-YOUR-NUMBER?text=I%20have%20questions%20about%20TriniBuild"
+                  href="https://wa.me/1868-YOUR-NUMBER?text=I%20have%20questions%20about%20Juvay"
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
                 >
                   <MessageCircle className="w-5 h-5" />

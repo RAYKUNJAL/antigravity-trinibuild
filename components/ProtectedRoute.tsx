@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { authService } from '../services/authService';
+import { supabase } from '../services/supabaseClient';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -12,8 +12,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const authenticated = await authService.isAuthenticated();
-            setIsAuthenticated(authenticated);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setIsAuthenticated(!!session);
+            } catch (err) {
+                console.error('ProtectedRoute: session check failed', err);
+                setIsAuthenticated(false);
+            }
         };
         checkAuth();
     }, []);

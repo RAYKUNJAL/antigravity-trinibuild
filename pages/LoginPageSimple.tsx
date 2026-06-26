@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { simpleAuthService } from '../services/simpleAuthService';
+import { supabase } from '../services/supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
@@ -17,14 +17,46 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setError('');
 
-    const result = await simpleAuthService.login(email, password);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (result.success) {
-      // Success - redirect to dashboard
-      navigate('/dashboard');
-    } else {
-      // Show error
-      setError(result.error || 'Login failed. Please try again.');
+      if (signInError) {
+        // Handle 'Email not confirmed' error gracefully
+        if (
+          signInError.message.includes('Email not confirmed') ||
+          signInError.message.includes('email_not_confirmed')
+        ) {
+          setError(
+            'Your email is not confirmed yet. Please check your inbox for the confirmation link and try again.'
+          );
+        } else {
+          setError(signInError.message || 'Login failed. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Store user in localStorage for compatibility with existing code
+        const user = {
+          id: data.user.id,
+          email: data.user.email || email,
+          name: (data.user.user_metadata?.full_name as string) || email.split('@')[0],
+          role: 'user',
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Success - redirect to dashboard
+        navigate('/dashboard/ai');
+      } else {
+        setError('Login failed. Please try again.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Login failed. Please try again.');
       setLoading(false);
     }
   };
@@ -57,7 +89,7 @@ export const LoginPage: React.FC = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-black text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-lg text-gray-600">Sign in to your TriniBuild account</p>
+            <p className="text-lg text-gray-600">Sign in to your Juvay account</p>
           </div>
 
           {/* Error Message */}
@@ -158,7 +190,7 @@ export const LoginPage: React.FC = () => {
           {/* Trust Badges */}
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-center text-sm text-gray-500 mb-4 font-semibold">
-              Trusted by Trinidad businesses
+              Trusted by Caribbean businesses
             </p>
             <div className="flex items-center justify-center gap-6 text-gray-400">
               <div className="flex items-center gap-2">

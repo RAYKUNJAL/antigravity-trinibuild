@@ -98,11 +98,11 @@ export const Auth: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center font-bold text-xl">TB</div>
-            <span className="text-2xl font-bold tracking-tight">TriniBuild</span>
+            <span className="text-2xl font-bold tracking-tight">Juvay</span>
           </div>
 
           <h1 className="text-5xl font-extrabold mb-6 leading-tight">
-            Build your Trini empire <br />
+            Build your Caribbean empire <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
               in minutes.
             </span>
@@ -133,7 +133,7 @@ export const Auth: React.FC = () => {
         </div>
 
         <div className="relative z-10 text-sm text-gray-500">
-          © 2025 TriniBuild Ltd. Port of Spain.
+          © 2025 Juvay Ltd. Port of Spain.
         </div>
       </div>
 

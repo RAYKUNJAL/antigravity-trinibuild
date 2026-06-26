@@ -68,15 +68,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
     const greeting = ttHour < 12 ? 'Good morning' : ttHour < 17 ? 'Good afternoon' : ttHour < 22 ? 'Good evening' : 'Good night';
     
     const initialMessage = mode === 'platform'
-      ? `🇹🇹 ${greeting}! I'm yuh TriniBuild AI Concierge. I know everything about Trinidad & Tobago — business, banking, visa, legal, you name it. I could help yuh:\n\n• **Open a free online store** with COD\n• **Generate documents** — job letters, visa letters, proof of income\n• **Answer T&T business questions** — banking, BIR, NIS, VAT\n• **Find services & professionals** across T&T\n• **Get a ride** anywhere in Trinidad\n\nWhat yuh need help with today?`
+      ? `🇹🇹 ${greeting}! I'm yuh Juvay AI Concierge. I know everything about Trinidad & Tobago — business, banking, visa, legal, you name it. I could help yuh:\n\n• **Open a free online store** with COD\n• **Generate documents** — job letters, visa letters, proof of income\n• **Answer T&T business questions** — banking, BIR, NIS, VAT\n• **Find services & professionals** across T&T\n• **Get a ride** anywhere in Trinidad\n\nWhat yuh need help with today?`
       : mode === 'real_estate'
-        ? `🏠 ${greeting}! I'm yuh TriniBuild Real Estate Concierge. I know every area in T&T — from Westmoorings to Tobago, pricing, mortgage rates, the works. Looking to buy, rent, or sell?`
+        ? `🏠 ${greeting}! I'm yuh Juvay Real Estate Concierge. I know every area in T&T — from Westmoorings to Tobago, pricing, mortgage rates, the works. Looking to buy, rent, or sell?`
         : mode === 'service_expert'
           ? `🔧 ${greeting}! Need a professional? I know the rates for every trade in T&T — plumbers, electricians, AC techs, painters, mechanics. Who yuh looking for?`
           : mode === 'rides'
             ? `🚗 ${greeting}! Where yuh heading? I know every road, maxi route, and shortcut in Trinidad & Tobago. Leh meh help yuh get there.`
             : mode === 'paperwork_assistant'
-              ? `📄 ${greeting}! I'm yuh TriniBuild Document Assistant. I could generate job letters, visa support letters, proof of income, contractor agreements — all formatted for T&T banks, embassies, and government offices. What document yuh need?`
+              ? `📄 ${greeting}! I'm yuh Juvay Document Assistant. I could generate job letters, visa support letters, proof of income, contractor agreements — all formatted for T&T banks, embassies, and government offices. What document yuh need?`
               : `${greeting}! Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about we products or services!`;
 
     setMessages([{ id: '1', text: initialMessage, sender: 'ai' }]);
@@ -113,7 +113,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
       const historyContext = messages.slice(-5).map(m => `${m.sender === 'user' ? 'User' : 'Bot'}: ${m.text}`).join('\n');
 
       // Enhanced AI Concierge system prompts
-      let systemPrompt = `You are TriniBuild AI Concierge - a smart, friendly assistant for Trinidad & Tobago's leading local business platform.
+      let systemPrompt = `You are Juvay AI Concierge - a smart, friendly assistant for the Caribbean's leading local business platform.
 
 PERSONALITY:
 - Warm, helpful, with slight Trini vibes (use "wah goin on", "lime", "fete" naturally)
@@ -121,27 +121,27 @@ PERSONALITY:
 - Knowledgeable about Trinidad locations, culture, and business landscape
 
 PLATFORM KNOWLEDGE:
-- TriniBuild helps locals sell online with FREE stores (10 items free)
+- Juvay helps locals sell online with FREE stores (10 items free)
 - Services: Marketplace, Jobs, Real Estate, Rides, Events/Tickets, Classifieds
 - Routes: /classifieds (shop), /jobs (find work), /real-estate (housing), /rides (transport), /tickets (events)
 - /create-store - start selling, /earn - affiliate program, /blog - tips & guides
 
 ALWAYS:
 1. Answer the question directly first
-2. Then suggest 1-2 relevant TriniBuild features/pages
+2. Then suggest 1-2 relevant Juvay features/pages
 3. Be concise but helpful
 4. Format with markdown (bold, lists) for readability
 
-Current user is browsing TriniBuild.`;
+Current user is browsing Juvay.`;
 
       if (mode === 'real_estate') {
-        systemPrompt = `You are TriniBuild Real Estate Concierge. Help users find properties, understand the T&T market, connect with agents. Know Port of Spain, San Fernando, Chaguanas, Arima, etc. Always suggest /real-estate for listings.`;
+        systemPrompt = `You are Juvay Real Estate Concierge. Help users find properties, understand the T&T market, connect with agents. Know Port of Spain, San Fernando, Chaguanas, Arima, etc. Always suggest /real-estate for listings.`;
       } else if (mode === 'service_expert') {
-        systemPrompt = `You are TriniBuild Service Expert. Recommend vetted professionals - plumbers, electricians, mechanics, painters, cleaners. Know T&T service landscape. Suggest /jobs for hiring.`;
+        systemPrompt = `You are Juvay Service Expert. Recommend vetted professionals - plumbers, electricians, mechanics, painters, cleaners. Know T&T service landscape. Suggest /jobs for hiring.`;
       } else if (mode === 'rides') {
-        systemPrompt = `You are TriniBuild Rides Concierge. Help with transportation - PH taxis, maxi routes, airport drops. Know T&T geography. Suggest /rides for booking.`;
+        systemPrompt = `You are Juvay Rides Concierge. Help with transportation - PH taxis, maxi routes, airport drops. Know T&T geography. Suggest /rides for booking.`;
       } else if (mode === 'paperwork_assistant') {
-        systemPrompt = `You are TriniBuild Paperwork Assistant. Generate professional visa support letters, job offer letters, proof of income, contractor agreements. Be formal but helpful. These documents help Trinis with bank applications and visa requirements.`;
+        systemPrompt = `You are Juvay Paperwork Assistant. Generate professional visa support letters, job offer letters, proof of income, contractor agreements. Be formal but helpful. These documents help Trinis with bank applications and visa requirements.`;
       } else if (vendorContext) {
         systemPrompt = botSettings?.bot_system_prompt || `You are a sales assistant for ${vendorContext.name}. ${vendorContext.description}. Products: ${JSON.stringify(vendorContext.products)}`;
       }
@@ -171,7 +171,7 @@ Current user is browsing TriniBuild.`;
       // This should rarely happen now since aiService has fallback
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
-        text: `I apologize, but I'm having trouble right now. Please try:\n\n• Refreshing the page\n• Checking your internet connection\n• Contacting support@trinibuild.com\n\nI'm here to help once we're back online!`,
+        text: `I apologize, but I'm having trouble right now. Please try:\n\n• Refreshing the page\n• Checking your internet connection\n• Contacting support@juvay.com\n\nI'm here to help once we're back online!`,
         sender: 'ai'
       }]);
     } finally {
@@ -204,11 +204,11 @@ Current user is browsing TriniBuild.`;
               </div>
               <div>
                 <h3 className="font-bold text-sm">
-                  {mode === 'platform' ? 'TriniBot 🇹🇹' :
-                    mode === 'real_estate' ? 'TriniBot • Property' :
-                      mode === 'service_expert' ? 'TriniBot • Services' :
-                        mode === 'rides' ? 'TriniBot • Rides' :
-                          mode === 'paperwork_assistant' ? 'TriniBot • Documents' :
+                  {mode === 'platform' ? 'Juvay Bot 🇹🇹' :
+                    mode === 'real_estate' ? 'Juvay Bot • Property' :
+                      mode === 'service_expert' ? 'Juvay Bot • Services' :
+                        mode === 'rides' ? 'Juvay Bot • Rides' :
+                          mode === 'paperwork_assistant' ? 'Juvay Bot • Documents' :
                             `${botSettings?.bot_name || 'Store Assistant'}`}
                 </h3>
                 <span className="flex items-center text-[10px] opacity-80">
@@ -280,7 +280,7 @@ Current user is browsing TriniBuild.`;
               </button>
             </div>
             <div className="text-center mt-2">
-              <span className="text-[10px] text-gray-400">TriniBot by R&R Digital Solutions 🇹🇹</span>
+              <span className="text-[10px] text-gray-400">Juvay Bot by R&R Digital Solutions 🇹🇹</span>
             </div>
           </div>
         </div>

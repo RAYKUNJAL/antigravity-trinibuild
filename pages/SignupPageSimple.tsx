@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { simpleAuthService } from '../services/simpleAuthService';
+import { supabase } from '../services/supabaseClient';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
 export const SignupPageSimple: React.FC = () => {
@@ -10,13 +10,25 @@ export const SignupPageSimple: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmationMsg, setConfirmationMsg] = useState('');
+  const [selectedIsland, setSelectedIsland] = useState('T&T');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const redirect = searchParams.get('redirect') || '/dashboard/ai';
+
+  const islandOptions = [
+    'T&T 🇹🇹',
+    'Jamaica 🇯🇲',
+    'Barbados 🇧🇧',
+    'Guyana 🇬🇾',
+    'Eastern Caribbean 🌴',
+    'Other',
+  ];
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setConfirmationMsg('');
     setLoading(true);
 
     if (!email || !password || !fullName) {
@@ -31,17 +43,60 @@ export const SignupPageSimple: React.FC = () => {
       return;
     }
 
-    console.log('🔐 Starting signup:', { email, name: fullName });
-    const result = await simpleAuthService.signup(email, password, fullName);
-    console.log('📝 Signup result:', result);
-    setLoading(false);
+    try {
+      console.log('🔐 Starting signup:', { email, name: fullName, island: selectedIsland });
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: fullName,
+            island: selectedIsland,
+          },
+        },
+      });
 
-    if (result.success) {
-      console.log('✅ Signup successful, redirecting to:', redirect);
-      navigate(redirect);
-    } else {
-      console.error('❌ Signup failed:', result.error);
-      setError(result.error || 'Signup failed');
+      if (signUpError) {
+        console.error('❌ Signup failed:', signUpError.message);
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      console.log('📝 Signup result:', data);
+
+      if (data.user) {
+        // Store user in localStorage for compatibility with existing code
+        const user = {
+          id: data.user.id,
+          email: data.user.email || email,
+          name: fullName,
+          role: 'user',
+        };
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // If a session was returned (email confirmation disabled), navigate now
+        if (data.session) {
+          console.log('✅ Signup successful (session active), redirecting to:', redirect);
+          navigate(redirect);
+          return;
+        }
+
+        // No session → email confirmation required. Show confirmation message.
+        console.log('✅ Signup successful — email confirmation required');
+        setConfirmationMsg(
+          'Account created! Check your email for a confirmation link to activate your account. ' +
+          'After confirming, you can sign in.'
+        );
+      } else {
+        setError('Signup failed — no user returned. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('❌ Signup exception:', err);
+      setError(err?.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,7 +107,7 @@ export const SignupPageSimple: React.FC = () => {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl font-black text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join TriniBuild and start selling online</p>
+            <p className="text-gray-600">Join Juvay and start selling online</p>
           </div>
 
           {/* Error Message */}
@@ -65,6 +120,14 @@ export const SignupPageSimple: React.FC = () => {
                   <p className="text-sm text-red-700 mt-1">Try a different email address</p>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Email Confirmation Message */}
+          {confirmationMsg && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="text-green-600 text-xl">✅</div>
+              <p className="font-semibold text-green-900">{confirmationMsg}</p>
             </div>
           )}
 
@@ -133,6 +196,24 @@ export const SignupPageSimple: React.FC = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+            </div>
+
+            {/* Island Selector */}
+            <div>
+              <label htmlFor="island" className="block text-sm font-semibold text-gray-700 mb-2">
+                Your Island / Region
+              </label>
+              <select
+                id="island"
+                value={selectedIsland}
+                onChange={(e) => setSelectedIsland(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent bg-white text-gray-900"
+              >
+                {islandOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
             </div>
 
             {/* Submit Button */}

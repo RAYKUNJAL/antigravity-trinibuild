@@ -126,7 +126,7 @@ function getTriniGreeting(): string {
 
 const SYSTEM_PROMPTS: Record<string, string> = {
 
-    platform: `You are the TriniBuild AI Concierge — main assistant for T&T's leading digital business platform by R&R Digital Solutions.
+    platform: `You are the Juvay AI Concierge — main assistant for the Caribbean's leading digital business platform by R&R Digital Solutions.
 
 ${TRINI_PERSONALITY}
 

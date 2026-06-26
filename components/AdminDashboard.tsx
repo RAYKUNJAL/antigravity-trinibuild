@@ -223,7 +223,7 @@ export const AdminDashboard: React.FC = () => {
               </h2>
 
               <div className="space-y-4">
-                {/* TriniBuild.com */}
+                {/* Juvay.com */}
                 <DomainOptionCard
                   title="TriniBuild Subdomain"
                   description="Free forever on our platform"
