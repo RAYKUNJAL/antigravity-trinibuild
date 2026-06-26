@@ -392,6 +392,122 @@ async def send_whatsapp(req: WhatsAppMessage):
     else:
         return {'success': False, 'error': resp.text}
 
+# Meta Ads API Integration
+META_API_BASE = 'https://graph.facebook.com/v21.0'
+
+class MetaCampaignCreate(BaseModel):
+    name: str
+    objective: str  # OUTCOME_TRAFFIC, OUTCOME_LEADS, OUTCOME_SALES
+    daily_budget_cents: int  # in USD cents e.g. 500 = $5/day
+    status: str = 'PAUSED'  # Start paused for safety
+
+class MetaAdSetCreate(BaseModel):
+    campaign_id: str
+    name: str
+    targeting_country: str = 'TT'  # Default T&T
+    targeting_age_min: int = 18
+    targeting_age_max: int = 65
+    daily_budget_cents: int = 500
+    optimization_goal: str = 'LINK_CLICKS'
+
+class MetaAdCreate(BaseModel):
+    adset_id: str
+    name: str
+    page_id: str
+    headline: str
+    body: str
+    link_url: str
+    image_url: Optional[str] = None
+
+@app.get('/meta/campaigns')
+async def get_meta_campaigns():
+    token = os.environ.get('META_ACCESS_TOKEN')
+    account_id = os.environ.get('META_AD_ACCOUNT_ID')
+    if not token or not account_id:
+        return {'success': False, 'error': 'Meta not configured', 'campaigns': []}
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f'{META_API_BASE}/act_{account_id}/campaigns',
+            params={'access_token': token, 'fields': 'id,name,status,objective,daily_budget,insights{impressions,clicks,spend,ctr}'}
+        )
+    return {'success': True, 'campaigns': r.json().get('data', [])}
+
+@app.post('/meta/campaigns')
+async def create_meta_campaign(req: MetaCampaignCreate):
+    token = os.environ.get('META_ACCESS_TOKEN')
+    account_id = os.environ.get('META_AD_ACCOUNT_ID')
+    if not token or not account_id:
+        return {'success': False, 'error': 'Meta not configured'}
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            f'{META_API_BASE}/act_{account_id}/campaigns',
+            data={
+                'name': req.name,
+                'objective': req.objective,
+                'status': req.status,
+                'special_ad_categories': [],
+                'access_token': token
+            }
+        )
+    data = r.json()
+    if 'id' in data:
+        return {'success': True, 'campaign_id': data['id']}
+    return {'success': False, 'error': data.get('error', {}).get('message', 'Unknown error')}
+
+@app.get('/meta/insights')
+async def get_meta_insights():
+    token = os.environ.get('META_ACCESS_TOKEN')
+    account_id = os.environ.get('META_AD_ACCOUNT_ID')
+    if not token or not account_id:
+        return {'success': False, 'error': 'Meta not configured', 'data': {}}
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f'{META_API_BASE}/act_{account_id}/insights',
+            params={
+                'access_token': token,
+                'fields': 'impressions,clicks,spend,ctr,cpm,reach,frequency,actions',
+                'date_preset': 'last_30d',
+                'level': 'account'
+            }
+        )
+    return {'success': True, 'data': r.json().get('data', [{}])[0] if r.json().get('data') else {}}
+
+@app.post('/meta/generate-ad-copy')
+async def generate_ad_copy(req: dict):
+    """Use Groq to generate Facebook ad copy for a Caribbean business"""
+    business_type = req.get('business_type', 'retail')
+    product = req.get('product', 'products')
+    island = req.get('island', 'Trinidad')
+    objective = req.get('objective', 'sales')
+
+    prompt = f"""Write 3 Facebook ad variations for a {business_type} business in {island} promoting {product}.
+
+Objective: {objective}
+Target: Caribbean people aged 18-45
+Platform: Facebook & Instagram
+
+For each variation provide:
+- Headline (max 40 chars)
+- Primary text (max 125 chars, Trini-friendly tone)
+- CTA: (Shop Now / Learn More / Sign Up)
+
+Format as JSON array with fields: headline, body, cta"""
+
+    result = query_groq(prompt, model=DEFAULT_MODEL)
+    try:
+        import json
+        # Try to extract JSON from response
+        start = result.find('[')
+        end = result.rfind(']') + 1
+        if start >= 0 and end > start:
+            ads = json.loads(result[start:end])
+        else:
+            ads = [{'headline': 'Shop Local on Juvay', 'body': result[:125], 'cta': 'Shop Now'}]
+    except:
+        ads = [{'headline': 'Discover Caribbean Businesses', 'body': result[:125], 'cta': 'Learn More'}]
+
+    return {'success': True, 'ads': ads}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
