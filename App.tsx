@@ -72,6 +72,8 @@ import { AffiliateProgram } from './pages/AffiliateProgram';
 import { CROSignupFlow } from './pages/CROSignupFlow';
 import { SignupPageSimple } from './pages/SignupPageSimple';
 import { SmartOnboarding } from './pages/SmartOnboarding';
+import { JuvayOnboarding } from './pages/JuvayOnboarding';
+import { JuvayDashboard } from './pages/JuvayDashboard';
 
 // Landing Pages (NLP Optimized)
 import { MarketplaceLanding } from './pages/landing/MarketplaceLanding';
@@ -181,7 +183,7 @@ const App: React.FC = () => {
               <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />
               <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
               <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<ProtectedRoute><JuvayDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
 
@@ -214,7 +216,7 @@ const App: React.FC = () => {
 
               {/* Core Flows */}
               <Route path="/signup" element={<SignupPageSimple />} />
-              <Route path="/get-started" element={<SmartOnboarding />} />
+              <Route path="/get-started" element={<ProtectedRoute><JuvayOnboarding /></ProtectedRoute>} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<AdminSignup />} />
