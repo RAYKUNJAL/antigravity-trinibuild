@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Plus, Store as StoreIcon, Share2, MessageCircle, Crown, Loader2,
-  TrendingUp, ShoppingBag, Eye, ArrowRight, Package, Bot,
+  TrendingUp, ShoppingBag, Eye, ArrowRight, Package, Bot, Compass,
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { track, trackPageView } from '../services/eventTracker';
@@ -460,6 +460,7 @@ export const JuvayDashboard: React.FC = () => {
             <QuickAction icon={Plus} label="Add Product" onClick={() => navigate('/store-builder')} />
             <QuickAction icon={StoreIcon} label="View Store" onClick={() => navigate(`/store/${store.slug}`)} />
             <QuickAction icon={Share2} label="Share Link" onClick={copyStoreLink} />
+            <QuickAction icon={Compass} label="Explore Market" onClick={() => navigate('/explore')} />
             <QuickAction icon={Bot} label="Bot Settings" onClick={() => navigate('/dashboard/bot-settings')} />
           </div>
           {copied && (

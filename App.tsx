@@ -74,6 +74,7 @@ import { SignupPageSimple } from './pages/SignupPageSimple';
 import { SmartOnboarding } from './pages/SmartOnboarding';
 import { JuvayOnboarding } from './pages/JuvayOnboarding';
 import { JuvayDashboard } from './pages/JuvayDashboard';
+import { ExplorePage } from './pages/ExplorePage';
 
 // Landing Pages (NLP Optimized)
 import { MarketplaceLanding } from './pages/landing/MarketplaceLanding';
@@ -176,6 +177,9 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/stores" element={<Directory />} />
+              {/* Explore — Caribbean marketplace (consumer-facing) */}
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/explore/:island" element={<ExplorePage />} />
               {/* All store creation routes use StoreBuilderV3 (single source of truth) */}
               <Route path="/create-store" element={<StoreBuilderV3 />} />
               <Route path="/create-store-simple" element={<Navigate to="/create-store" replace />} />

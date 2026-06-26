@@ -43,6 +43,7 @@ const DIGITAL_DROPDOWN: DropdownItem[] = [
 
 const MOBILE_LINKS = [
   { name: 'Directory', path: '/directory', icon: Store },
+  { name: 'Explore', path: '/explore', icon: ShoppingBag },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
   { name: 'Game Pass & Streaming', path: '/digital', icon: Gamepad2 },
   { name: 'Gift Cards', path: '/gift-cards', icon: Gift },
@@ -203,6 +204,9 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex md:items-center md:gap-1">
             <Link to="/directory" className={lc('/directory')}>
               Directory
+            </Link>
+            <Link to="/explore" className={lc('/explore')}>
+              Explore
             </Link>
             <Link to="/classifieds" className={lc('/classifieds')}>
               Market
