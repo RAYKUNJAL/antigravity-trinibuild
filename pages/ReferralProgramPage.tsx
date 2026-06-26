@@ -50,10 +50,10 @@ export const ReferralProgramPage: React.FC = () => {
   ];
 
   const stats = [
-    { label: 'Active Referrers', value: '2,340+' },
-    { label: 'Total Referrals', value: '12,450+' },
-    { label: 'Commissions Paid', value: 'TT$4.2M+' },
-    { label: 'Avg Commission', value: 'TT$1,800/mo' }
+    { label: 'Per Merchant Referral', value: 'TT$150' },
+    { label: 'Referral Cap', value: 'None' },
+    { label: 'Payout Schedule', value: 'Monthly' },
+    { label: 'Cost to Join', value: 'Free' }
   ];
 
   const howitworks = [
@@ -256,30 +256,10 @@ export const ReferralProgramPage: React.FC = () => {
             Top Referrers This Month
           </motion.h2>
           <div className="space-y-4">
-            {[
-              { rank: 1, name: 'Rajesh M.', referrals: 47, earnings: 'TT$8,460' },
-              { rank: 2, name: 'Maria S.', referrals: 38, earnings: 'TT$6,840' },
-              { rank: 3, name: 'Ahmed P.', referrals: 32, earnings: 'TT$5,760' },
-              { rank: 4, name: 'Jessica L.', referrals: 29, earnings: 'TT$5,220' },
-              { rank: 5, name: 'David T.', referrals: 25, earnings: 'TT$4,500' }
-            ].map((referrer, idx) => (
-              <motion.div 
-                key={idx}
-                variants={item}
-                className="bg-gray-50 rounded-lg p-4 flex items-center justify-between hover:bg-gray-100 transition"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-[#E61E2B] text-white rounded-full flex items-center justify-center font-bold">
-                    #{referrer.rank}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{referrer.name}</p>
-                    <p className="text-sm text-gray-600">{referrer.referrals} referrals</p>
-                  </div>
-                </div>
-                <p className="text-lg font-black text-green-600">{referrer.earnings}</p>
-              </motion.div>
-            ))}
+             <motion.div variants={item} className="bg-gray-50 rounded-lg p-8 text-center">
+               <p className="text-gray-600 italic mb-2">Leaderboard coming soon — be the first on it.</p>
+               <p className="text-sm text-gray-500">Refer your first merchant to claim the #1 spot.</p>
+             </motion.div>
           </div>
         </div>
       </motion.section>
@@ -300,7 +280,7 @@ export const ReferralProgramPage: React.FC = () => {
             {[
               {
                 q: 'How much can I earn?',
-                a: 'It depends on your tier. Bronze earners average TT$1,800/month, Silver TT$4,500/month, and Gold referrers make TT$8,000+/month.'
+                 a: 'You earn TT$150 for every merchant you refer who signs up. There is no cap — refer more, earn more. We do not publish average earnings because the program is brand new and there is no data yet.'
               },
               {
                 q: 'When do I get paid?',
@@ -338,7 +318,7 @@ export const ReferralProgramPage: React.FC = () => {
       >
         <h2 className="text-4xl font-black mb-4">Start Earning Today</h2>
         <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-          Join 2,340+ referrers already making passive income with TriniBuild
+           Earn TT$150 for every merchant you refer who signs up. No cap.
         </p>
         <button className="bg-white text-[#E61E2B] px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
           Become a Referrer

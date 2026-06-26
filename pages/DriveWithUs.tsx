@@ -38,9 +38,9 @@ export const DriveWithUs: React.FC = () => {
     ];
 
     const stats = [
-        { number: '500+', label: 'Active Drivers', icon: Users },
-        { number: '$800', label: 'Avg Weekly Earnings', icon: DollarSign },
-        { number: '4.9', label: 'Driver Rating', icon: Star },
+        { number: 'Be First', label: 'Founding Drivers Wanted', icon: Users },
+        { number: 'Set Rates', label: 'You Decide Your Fare', icon: DollarSign },
+        { number: 'Keep 80%+', label: 'Of Every Fare', icon: Star },
         { number: '24/7', label: 'Support Available', icon: Zap }
     ];
 
@@ -333,7 +333,7 @@ export const DriveWithUs: React.FC = () => {
                         Ready to Start Earning?
                     </h2>
                     <p className="text-2xl mb-8 text-white/90">
-                        Join thousands of drivers already making money on TriniBuild Go
+                         Be among the first drivers on Juvay. Set your own rates. Keep more of every fare.
                     </p>
 
                     <button

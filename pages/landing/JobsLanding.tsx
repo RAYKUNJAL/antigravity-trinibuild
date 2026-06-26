@@ -35,19 +35,11 @@ export const JobsLanding: React.FC = () => {
                </div>
                <div className="flex-1 w-full max-w-lg">
                   <div className="bg-white rounded-2xl p-6 shadow-2xl text-gray-900">
-                     <div className="flex items-center mb-6">
-                        <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=200&auto=format&fit=crop" className="w-16 h-16 rounded-full mr-4 border-4 border-purple-100 object-cover" alt="Pro" />
-                        <div>
-                           <h3 className="font-bold text-lg">Amanda K.</h3>
-                           <p className="text-purple-600 text-sm font-bold">Graphic Designer</p>
-                           <div className="flex text-yellow-400 text-xs">★★★★★ (42 Reviews)</div>
-                        </div>
-                     </div>
-                     <p className="text-gray-600 italic mb-4">"Within 24 hours of creating my profile, I landed a contract with a major retailer in POS. This platform actually works."</p>
-                     <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                        <span className="text-xs text-gray-400">Member since 2025</span>
-                        <span className="text-green-600 font-bold text-sm">Verified Pro ✅</span>
-                     </div>
+                      <div className="text-center py-6">
+                         <Star className="h-10 w-10 text-purple-300 mx-auto mb-4" />
+                         <p className="text-gray-700 italic mb-2">Be the first professional to build their reputation on Juvay.</p>
+                         <p className="text-sm text-gray-500 mt-4">Reviews, verified badges, and rankings appear here once you start.</p>
+                      </div>
                   </div>
                </div>
             </div>

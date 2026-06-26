@@ -51,16 +51,16 @@ const verticalConfig: Record<string, { icon: React.ReactNode; color: string; bgC
 const allPosts: BlogPost[] = [
   // Featured posts
   {
-    id: '1',
-    title: "How 'Roti King' Increased Sales by 300% with TriniBuild",
-    excerpt: "From a small roadside stall to shipping frozen roti to Tobago. Learn how digital tools transformed this local business.",
-    category: "Success Stories",
-    author: "Ray Kunjal",
-    date: "Dec 05, 2025",
-    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800",
-    readTime: 5,
-    slug: "roti-king-success-story",
-    isFeatured: true
+     id: 'welcome',
+     title: 'Welcome to Juvay — The Caribbean Commerce Platform',
+     excerpt: 'Juvay is built for Caribbean entrepreneurs. Here is what we are building and why.',
+     category: 'News',
+     author: 'Ray Kunjal',
+     date: '2026-06-26',
+     image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800',
+     readTime: 3,
+     slug: 'welcome',
+     isFeatured: true
   },
   {
     id: '2',

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { DollarSign, Users, BarChart2, Link as LinkIcon, Copy, CheckCircle, Download, ArrowRight, Globe, TrendingUp, Shield } from 'lucide-react';
+import { DollarSign, Users, BarChart2, Link as LinkIcon, Copy, Download, ArrowRight, Globe, Shield } from 'lucide-react';
 import { AffiliateStats, Payout, MarketingAsset } from '../types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const AffiliateProgram: React.FC = () => {
    const [isRegistered, setIsRegistered] = useState(false);
@@ -9,22 +8,12 @@ export const AffiliateProgram: React.FC = () => {
 
    // Mock Data
    const stats: AffiliateStats = {
-      totalClicks: 1245,
-      conversions: 84,
-      pendingCommission: 450,
-      paidCommission: 1200,
+       totalClicks: 0,
+       conversions: 0,
+       pendingCommission: 0,
+       paidCommission: 0,
       tier: 'Silver'
    };
-
-   const chartData = [
-      { name: 'Mon', clicks: 40, sales: 2 },
-      { name: 'Tue', clicks: 55, sales: 4 },
-      { name: 'Wed', clicks: 30, sales: 1 },
-      { name: 'Thu', clicks: 70, sales: 8 },
-      { name: 'Fri', clicks: 95, sales: 12 },
-      { name: 'Sat', clicks: 120, sales: 15 },
-      { name: 'Sun', clicks: 85, sales: 9 },
-   ];
 
    const assets: MarketingAsset[] = [
       { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with TriniBuild! 🇹🇹 10 Free Listings. No Credit Card. Link in bio! #TriniBusiness" },
@@ -32,11 +21,7 @@ export const AffiliateProgram: React.FC = () => {
       { id: '3', title: 'Web Banner (300x250)', type: 'Banner', url: 'https://via.placeholder.com/300x250/CE1126/FFFFFF?text=Start+Selling+Free', copy: "" },
    ];
 
-   const payouts: Payout[] = [
-      { id: 'TX-992', date: 'Oct 01, 2025', amount: 450, status: 'Paid' },
-      { id: 'TX-884', date: 'Sep 01, 2025', amount: 320, status: 'Paid' },
-      { id: 'TX-771', date: 'Aug 01, 2025', amount: 430, status: 'Paid' },
-   ];
+   const payouts: Payout[] = [];
 
    const handleRegister = () => {
       // Simulate signup
@@ -188,12 +173,12 @@ export const AffiliateProgram: React.FC = () => {
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                            <p className="text-xs text-gray-500 uppercase font-bold">Total Clicks</p>
                            <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.totalClicks}</h3>
-                           <span className="text-xs text-green-600 font-bold flex items-center mt-2"><TrendingUp className="h-3 w-3 mr-1" /> +12% this week</span>
+                            <span className="text-xs text-gray-400 font-medium flex items-center mt-2">No data yet</span>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                            <p className="text-xs text-gray-500 uppercase font-bold">Conversions</p>
                            <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.conversions}</h3>
-                           <span className="text-xs text-green-600 font-bold flex items-center mt-2"><CheckCircle className="h-3 w-3 mr-1" /> 6.7% Conv. Rate</span>
+                            <span className="text-xs text-gray-400 font-medium flex items-center mt-2">No data yet</span>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                            <p className="text-xs text-gray-500 uppercase font-bold">Lifetime Earnings</p>
@@ -203,27 +188,16 @@ export const AffiliateProgram: React.FC = () => {
                            <Shield className="absolute top-4 right-4 h-16 w-16 opacity-20" />
                            <p className="text-xs uppercase font-bold opacity-90">Current Tier</p>
                            <h3 className="text-3xl font-bold mt-1">{stats.tier}</h3>
-                           <p className="text-xs mt-2 font-medium">16 sales to Gold (30% comm)</p>
+                            <p className="text-xs mt-2 font-medium">Refer your first merchant to get started</p>
                         </div>
-                     </div>
-
-                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-80">
-                        <h3 className="font-bold text-gray-900 mb-6">Performance</h3>
-                        <ResponsiveContainer width="100%" height="100%">
-                           <AreaChart data={chartData}>
-                              <defs>
-                                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#CE1126" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#CE1126" stopOpacity={0} />
-                                 </linearGradient>
-                              </defs>
-                              <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                              <YAxis axisLine={false} tickLine={false} />
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                              <Tooltip />
-                              <Area type="monotone" dataKey="sales" stroke="#CE1126" fillOpacity={1} fill="url(#colorSales)" />
-                           </AreaChart>
-                        </ResponsiveContainer>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-80 flex items-center justify-center">
+                         <div className="text-center">
+                            <BarChart2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                            <h3 className="font-bold text-gray-700 mb-2">No performance data yet</h3>
+                            <p className="text-gray-500 text-sm max-w-sm">Your affiliate stats will appear here once you start referring merchants.</p>
+                         </div>
+                        </div>
                      </div>
                   </div>
                )}
@@ -265,13 +239,13 @@ export const AffiliateProgram: React.FC = () => {
                               <tr>
                                  <td className="px-6 py-4 font-bold">Default</td>
                                  <td className="px-6 py-4 text-blue-600 text-sm">trinibuild.com/?ref=TB-8821</td>
-                                 <td className="px-6 py-4">842</td>
+                                  <td className="px-6 py-4">0</td>
                                  <td className="px-6 py-4 text-right"><button className="text-gray-400 hover:text-gray-600"><Copy className="h-4 w-4" /></button></td>
                               </tr>
                               <tr>
                                  <td className="px-6 py-4 font-bold">Instagram Bio</td>
                                  <td className="px-6 py-4 text-blue-600 text-sm">trinibuild.com/create-store?ref=TB-8821</td>
-                                 <td className="px-6 py-4">403</td>
+                                  <td className="px-6 py-4">0</td>
                                  <td className="px-6 py-4 text-right"><button className="text-gray-400 hover:text-gray-600"><Copy className="h-4 w-4" /></button></td>
                               </tr>
                            </tbody>
@@ -324,29 +298,10 @@ export const AffiliateProgram: React.FC = () => {
                      </div>
 
                      <h3 className="font-bold text-lg mb-4">Payout History</h3>
-                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                           <thead className="bg-gray-50">
-                              <tr>
-                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Transaction ID</th>
-                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
-                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Amount</th>
-                                 <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Status</th>
-                              </tr>
-                           </thead>
-                           <tbody className="divide-y divide-gray-200">
-                              {payouts.map(p => (
-                                 <tr key={p.id}>
-                                    <td className="px-6 py-4 font-mono text-sm text-gray-600">{p.id}</td>
-                                    <td className="px-6 py-4 text-sm">{p.date}</td>
-                                    <td className="px-6 py-4 font-bold text-gray-900">TT${p.amount}</td>
-                                    <td className="px-6 py-4 text-right">
-                                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-bold">{p.status}</span>
-                                    </td>
-                                 </tr>
-                              ))}
-                           </tbody>
-                        </table>
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                         <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                         <h3 className="font-bold text-gray-700 mb-2">No payouts yet</h3>
+                         <p className="text-gray-500 text-sm">Refer your first merchant to get started.</p>
                      </div>
                   </div>
                )}

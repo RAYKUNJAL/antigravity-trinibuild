@@ -97,23 +97,9 @@ export const FoodServicesLanding: React.FC = () => {
                             </div>
 
                             {/* Trinidad Food Stats */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                                    <div className="text-3xl font-bold mb-1">200+</div>
-                                    <div className="text-sm text-white/80">Food Businesses</div>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                                    <div className="text-3xl font-bold mb-1">5K+</div>
-                                    <div className="text-sm text-white/80">Daily Orders</div>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                                    <div className="text-3xl font-bold mb-1">TT$500K+</div>
-                                    <div className="text-sm text-white/80">Monthly Sales</div>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                                    <div className="text-3xl font-bold mb-1">4.9★</div>
-                                    <div className="text-sm text-white/80">Avg Rating</div>
-                                </div>
+                            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 max-w-2xl mx-auto">
+                                <p className="text-lg font-bold text-white mb-2">Be one of the first food businesses on Juvay.</p>
+                                <p className="text-sm text-white/80">Founding members get 6 months free Pro access.</p>
                             </div>
                         </div>
                     </div>
@@ -207,37 +193,24 @@ export const FoodServicesLanding: React.FC = () => {
                 </section>
 
                 {/* Success Stories - Trinidad Food Businesses */}
+                {/* Success Stories - Trinidad Food Businesses */}
                 <section className="py-20 bg-gradient-to-br from-orange-50 to-yellow-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">
-                                Real Trinidad Food Businesses Using TriniBuild
+                                 Be the First Success Story
                             </h2>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <TestimonialCard
-                                quote="We selling more doubles than ever! People ordering from work, home, everywhere. TriniBuild change the game for we."
-                                author="Uncle Ravi"
-                                business="Ravi's Doubles, Curepe"
-                                increase="+150% orders"
-                                rating={5}
-                            />
-                            <TestimonialCard
-                                quote="The COD option is perfect for Trinidad. Customers trust it and we getting paid. Plus the delivery drivers always on time!"
-                                author="Michelle Chen"
-                                business="Golden Dragon Restaurant, San Fernando"
-                                increase="+TT$20K/month"
-                                rating={5}
-                            />
-                            <TestimonialCard
-                                quote="I set up my bakery online in 10 minutes! Now people ordering cakes and pastries 24/7. Best decision I ever make."
-                                author="Sarah Mohammed"
-                                business="Sweet Treats Bakery, Port of Spain"
-                                increase="+200% revenue"
-                                rating={5}
-                            />
-                        </div>
+                         <div className="max-w-xl mx-auto">
+                             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center">
+                                 <Star className="h-8 w-8 text-gray-300 mx-auto mb-4" />
+                                 <p className="text-gray-700 italic mb-2">No reviews yet — we just launched.</p>
+                                 <p className="text-gray-700 italic mb-4">Yours could be the first.</p>
+                                 <div className="border-t pt-4">
+                                     <div className="text-sm text-gray-500">Founding food merchants wanted.</div>
+                                 </div>
+                             </div>
+                         </div>
                     </div>
                 </section>
 
@@ -338,24 +311,6 @@ const FeatureCard: React.FC<{ icon: string; title: string; description: string; 
         <div className="text-5xl mb-4">{icon}</div>
         <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
         <p className="text-gray-700">{description}</p>
-    </div>
-);
-
-const TestimonialCard: React.FC<{ quote: string; author: string; business: string; increase: string; rating: number }> = ({ quote, author, business, increase, rating }) => (
-    <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-        <div className="flex mb-4">
-            {[...Array(rating)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-            ))}
-        </div>
-        <p className="text-gray-700 mb-6 italic">"{quote}"</p>
-        <div className="border-t pt-4">
-            <div className="font-bold text-gray-900">{author}</div>
-            <div className="text-sm text-gray-600">{business}</div>
-            <div className="mt-2 inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
-                {increase}
-            </div>
-        </div>
     </div>
 );
 

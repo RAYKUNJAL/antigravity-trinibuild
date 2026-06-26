@@ -8,38 +8,38 @@ export const BlogPost: React.FC = () => {
 
   // In a real app, fetch this by ID. For now, we simulate dynamic content.
   const post = {
-    title: "How 'Roti King' Increased Sales by 300% with TriniBuild",
-    date: "Oct 12, 2025",
+    title: "Welcome to Juvay — The Caribbean Commerce Platform",
+    date: "2026-06-26",
     author: "Ray Kunjal",
-    category: "Success Stories",
+    category: "News",
     image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=1200",
     content: `
       <p class="lead text-xl text-gray-600 mb-6 font-medium">
-        From a small roadside stall to shipping frozen roti to Tobago. Learn how digital tools transformed this local business.
-      </p>
-      
-      <h2>The Struggle of Cash Only</h2>
-      <p class="mb-4">
-        For 15 years, Mr. Singh ran his shop on a cash-only basis. While the food was excellent, he missed out on corporate orders and customers who didn't carry cash. "People would call and ask if they could transfer money, and I had to say no," Singh recalls.
+        Juvay is built for Caribbean entrepreneurs. Here is what we are building and why.
       </p>
 
-      <h2>The Digital Pivot</h2>
+      <h2>Why Juvay Exists</h2>
       <p class="mb-4">
-        Singh discovered TriniBuild's <strong>Community Plan</strong>. Within minutes, he had a digital menu. He didn't need a credit card processor; he simply used the <strong>WhatsApp Checkout</strong> feature.
+        The Caribbean has no shortage of talent, hustle, or ideas. What it has lacked is a single platform built specifically for how we do business — cash on delivery, WhatsApp orders, local delivery drivers, and community trust. Juvay exists to fix that.
       </p>
-      
+
+      <h2>What We Are Building</h2>
+      <p class="mb-4">
+        Juvay brings together online stores, food ordering, ride-hailing, job matching, event ticketing, and real estate — all under one roof, all designed for Trinidad & Tobago and the wider Caribbean. No foreign payment gateways that reject our cards. No tools that ignore how Trinis actually transact.
+      </p>
+
       <blockquote class="border-l-4 border-trini-red pl-4 italic my-6 text-gray-700 bg-gray-50 p-4 rounded-r-lg">
-        "The first day I posted my TriniBuild link on Facebook, I got 20 orders for lunch delivery. I couldn't believe it."
+        "We are not a copy of a Silicon Valley product. We are built here, for here."
       </blockquote>
 
-      <h2>Scaling Up</h2>
+      <h2>Where We Are Now</h2>
       <p class="mb-4">
-        With the revenue tracking in his dashboard, Singh realized his "Boneless Curry Goat" was his bestseller. He used TriniBuild Go to hire drivers for deliveries, expanding his reach from just San Juan to Port of Spain and Chaguanas.
+        Juvay is in its founding stage. We do not have thousands of merchants or millions in sales — and we will not pretend we do. What we have is a working platform, a clear roadmap, and an open invitation for the first merchants, drivers, and professionals to help us shape it.
       </p>
 
-      <h2>Conclusion</h2>
+      <h2>Join Us</h2>
       <p>
-        Today, Roti King is on the Enterprise plan, shipping frozen packs nationwide. It started with a free account.
+        If you run a business, drive for a living, or offer a professional service in the Caribbean, we want you as a founding member. Founding members get priority onboarding, direct access to our team, and preferential rates. Let us build the Caribbean's commerce platform together.
       </p>
     `
   };
@@ -93,7 +93,7 @@ export const BlogPost: React.FC = () => {
 
            <div className="bg-trini-black text-white p-8 rounded-xl shadow-lg text-center">
               <h3 className="text-xl font-bold mb-2">Start Your Own Story</h3>
-              <p className="text-gray-400 mb-6 text-sm">Join Roti King and thousands of others.</p>
+              <p className="text-gray-400 mb-6 text-sm">Be a founding merchant on Juvay.</p>
               <Link to="/create-store" className="block w-full bg-trini-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors">
                  Build Free Store
               </Link>

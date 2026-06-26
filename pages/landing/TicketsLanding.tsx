@@ -56,7 +56,7 @@ export const TicketsLanding: React.FC = () => {
                   </Link>
                </div>
                <p className="mt-6 text-xs text-gray-500 uppercase font-bold tracking-widest">
-                  Trusted by 50+ Promoters • 24/7 Local Support
+                   Now accepting founding promoters. Launch your next event on Juvay.
                </p>
             </div>
          </div>
