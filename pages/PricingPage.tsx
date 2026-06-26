@@ -149,7 +149,7 @@ export default function PricingPage() {
                       <div>
                         <span className="text-4xl font-black text-gray-900">TT${Math.round(monthly_price)}</span>
                         <span className="text-gray-500">/month</span>
-                        <span className="ml-2 text-xs text-gray-400">(≈ USD${plan.slug === 'pro' ? '44' : '88'}/mo)</span>
+                        <p className="text-sm text-gray-400 mt-1">≈ USD${(monthly_price * 0.147).toFixed(0)}/mo</p>
                         {billingMonths > 1 && (
                           <p className="text-sm text-gray-500 mt-1">TT${Math.round(total_price)} total for {billingMonths} months</p>
                         )}

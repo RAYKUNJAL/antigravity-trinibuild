@@ -7,6 +7,7 @@ import { supabase } from '../services/supabaseClient';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
+import { ChatWidget } from '../components/ChatWidget';
 import type { Store, Product } from '../types';
 
 // Lazy load heavy components
@@ -903,6 +904,19 @@ export const StorefrontV2: React.FC = () => {
                         <span className="font-bold">{cartCount}</span>
                         <span className="text-sm">TT${cartTotal.toFixed(2)}</span>
                     </button>
+                )}
+
+                {/* AI Store Chatbot */}
+                {store && store.bot_enabled && (
+                    <ChatWidget
+                        mode="vendor"
+                        vendorContext={{
+                            id: store.id,
+                            name: store.name,
+                            description: store.description || '',
+                            products: products.slice(0, 10).map(p => ({ name: p.name, price: p.price }))
+                        }}
+                    />
                 )}
             </div>
         </>

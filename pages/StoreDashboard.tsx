@@ -150,6 +150,8 @@ export const StoreDashboard: React.FC = () => {
   });
   const [showProductModal, setShowProductModal] = useState(false);
   const [maxProducts, setMaxProducts] = useState<number>(5);
+  const [planSlug, setPlanSlug] = useState<string>('free');
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -206,6 +208,7 @@ export const StoreDashboard: React.FC = () => {
       if (user) {
         const { plan } = await subscriptionService.getUserPlan(user.id);
         setMaxProducts(plan?.max_products ?? 5);
+        setPlanSlug(plan?.slug ?? 'free');
       }
 
     } catch (err: any) {
@@ -231,8 +234,10 @@ export const StoreDashboard: React.FC = () => {
         const { plan } = await subscriptionService.getUserPlan(user.id);
         const limit = plan?.max_products ?? 5;
         setMaxProducts(limit);
-        if (products.length >= limit) {
-          alert('Upgrade plan to add more products');
+        setPlanSlug(plan?.slug ?? 'free');
+        // -1 means unlimited
+        if (limit !== -1 && products.length >= limit) {
+          setShowLimitModal(true);
           return;
         }
       }
@@ -599,6 +604,24 @@ export const StoreDashboard: React.FC = () => {
         {/* ===== Main Content ===== */}
         <main className="flex-1 overflow-y-auto md:ml-0 pt-16 md:pt-0 pb-24 md:pb-0">
           <div className="max-w-6xl mx-auto p-4 md:p-8">
+            {/* Plan Badge */}
+            {planSlug === 'free' && (
+              <div className="mb-6 flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-gray-100 to-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <span className="text-lg">🆓</span>
+                  <span className="font-medium">
+                    Free Plan · {products.length}{maxProducts !== -1 ? ` of ${maxProducts}` : ''} products used
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="text-sm font-semibold text-red-600 hover:text-red-700 whitespace-nowrap"
+                >
+                  Upgrade to Pro →
+                </button>
+              </div>
+            )}
+
             {/* Alerts */}
             {error && error !== 'No store found' && (
               <div className="mb-6 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -1349,6 +1372,35 @@ export const StoreDashboard: React.FC = () => {
                 className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Product'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Product Limit Modal ===== */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Product Limit Reached</h3>
+            <p className="text-gray-600 mb-6">
+              You've reached your {maxProducts} product limit on the {planSlug === 'free' ? 'Free' : planSlug} plan. Upgrade to Pro to add unlimited products. TT$300/mo.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLimitModal(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+              >
+                Not now
+              </button>
+              <button
+                onClick={() => { setShowLimitModal(false); navigate('/pricing'); }}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg"
+              >
+                Upgrade to Pro
               </button>
             </div>
           </div>

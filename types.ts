@@ -129,6 +129,12 @@ export interface Store {
 
   status: 'pending' | 'active' | 'suspended';
   created_at: string;
+
+  // Bot fields
+  bot_name?: string | null;
+  bot_persona?: string | null;
+  bot_system_prompt?: string | null;
+  bot_enabled?: boolean;
 }
 
 // -- ENHANCED PRODUCT INTERFACES --
