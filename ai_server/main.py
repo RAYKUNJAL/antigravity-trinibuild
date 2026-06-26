@@ -2,6 +2,7 @@ import os
 import logging
 import time
 import threading
+import httpx
 from collections import defaultdict, deque
 import requests
 from fastapi import FastAPI, HTTPException, Depends, Request
@@ -361,6 +362,35 @@ async def island_chat(request: IslandChatRequest):
             content="Aye, sorry — meh brain hiccup just now. Try me again in a moment, or reach support@trinibuild.com.",
             model_used=DEFAULT_MODEL,
         )
+
+class WhatsAppMessage(BaseModel):
+    to: str  # phone number with country code, no +
+    message: str
+    order_id: Optional[str] = None
+
+@app.post('/send-whatsapp')
+async def send_whatsapp(req: WhatsAppMessage):
+    # Use Twilio REST API server-side (keys are in ai_server/.env)
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+    from_number = os.environ.get('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+
+    if not account_sid or not auth_token:
+        return {'success': False, 'error': 'Twilio not configured'}
+
+    url = f'https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json'
+    data = {
+        'From': from_number,
+        'To': f'whatsapp:{req.to}',
+        'Body': req.message
+    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, data=data, auth=(account_sid, auth_token))
+
+    if resp.status_code == 201:
+        return {'success': True, 'sid': resp.json().get('sid')}
+    else:
+        return {'success': False, 'error': resp.text}
 
 if __name__ == "__main__":
     import uvicorn
