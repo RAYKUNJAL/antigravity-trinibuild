@@ -92,6 +92,7 @@ import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
 import { AdsPortal } from './pages/AdsPortal';
+import { CaribAdsLanding } from './pages/CaribAdsLanding';
 import { DriverSignupAI } from './pages/DriverSignupAI';
 import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
@@ -229,6 +230,8 @@ const App: React.FC = () => {
               <Route path="/admin" element={<AdminSignup />} />
               <Route path="/admin/bypass" element={<AdminBypass />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
+              <Route path="/carib-ads" element={<CaribAdsLanding />} />
+              <Route path="/advertise" element={<CaribAdsLanding />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
