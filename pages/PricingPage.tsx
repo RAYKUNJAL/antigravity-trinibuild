@@ -149,6 +149,7 @@ export default function PricingPage() {
                       <div>
                         <span className="text-4xl font-black text-gray-900">TT${Math.round(monthly_price)}</span>
                         <span className="text-gray-500">/month</span>
+                        <span className="ml-2 text-xs text-gray-400">(≈ USD${plan.slug === 'pro' ? '44' : '88'}/mo)</span>
                         {billingMonths > 1 && (
                           <p className="text-sm text-gray-500 mt-1">TT${Math.round(total_price)} total for {billingMonths} months</p>
                         )}
@@ -177,7 +178,7 @@ export default function PricingPage() {
                     <div className="space-y-2">
                       {/* PayPal button */}
                       <a
-                        href={`https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=${plan.slug === 'pro' ? import.meta.env.VITE_PAYPAL_PLAN_GROWTH : import.meta.env.VITE_PAYPAL_PLAN_ENTERPRISE}`}
+                        href={`https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=${plan.slug === 'pro' ? import.meta.env.VITE_PAYPAL_PLAN_PRO : import.meta.env.VITE_PAYPAL_PLAN_PREMIUM}`}
                         target="_blank" rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-white text-sm font-semibold transition-colors"
                         style={{ backgroundColor: color }}

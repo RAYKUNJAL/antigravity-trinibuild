@@ -209,13 +209,22 @@ export const StorefrontV2: React.FC = () => {
 
                 let result;
                 switch (paymentMethod) {
-                    case 'wipay':
-                        result = await paymentService.processWiPayPayment(paymentConfig);
-                        if (result.redirectUrl) {
-                            window.location.href = result.redirectUrl;
-                            return;
+                    case 'paypal': {
+                        // Record order as pending, open PayPal payment in new tab
+                        result = await paymentService.processCashPayment({
+                            ...paymentConfig,
+                            method: 'cod' as any
+                        });
+                        if (result.success) {
+                            const amountUSD = (cartTotal * 0.147).toFixed(2);
+                            const itemName = encodeURIComponent(`TriniBuild Order #${newOrderId}`);
+                            window.open(
+                                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=ray%40kunjaldigital.com&amount=${amountUSD}&currency_code=USD&item_name=${itemName}&no_shipping=1`,
+                                '_blank'
+                            );
                         }
                         break;
+                    }
                     case 'cod':
                     case 'cash':
                         result = await paymentService.processCashPayment(paymentConfig);
@@ -738,36 +747,19 @@ export const StorefrontV2: React.FC = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => setPaymentMethod('wipay')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'wipay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                                onClick={() => setPaymentMethod('paypal')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
                                                     <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
                                                     <div className="text-left">
-                                                        <p className="font-bold text-gray-900">WiPay</p>
-                                                        <p className="text-xs text-gray-500">Credit/Debit Card & Linx</p>
+                                                        <p className="font-bold text-gray-900">PayPal / Card</p>
+                                                        <p className="text-xs text-gray-500">Credit, Debit or PayPal balance</p>
                                                     </div>
                                                 </div>
-                                                {paymentMethod === 'wipay' && <Check className="h-5 w-5 text-blue-600" />}
+                                                {paymentMethod === 'paypal' && <Check className="h-5 w-5 text-blue-600" />}
                                             </button>
-
-                                            <Suspense fallback={<div>Loading Google Pay...</div>}>
-                                                <button
-                                                    onClick={() => setPaymentMethod('google_pay')}
-                                                    className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'google_pay' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
-                                                        }`}
-                                                >
-                                                    <div className="flex items-center">
-                                                        <Smartphone className="h-6 w-6 text-purple-600 mr-3" />
-                                                        <div className="text-left">
-                                                            <p className="font-bold text-gray-900">Google Pay</p>
-                                                            <p className="text-xs text-gray-500">Fast & Secure</p>
-                                                        </div>
-                                                    </div>
-                                                    {paymentMethod === 'google_pay' && <Check className="h-5 w-5 text-purple-600" />}
-                                                </button>
-                                            </Suspense>
 
                                             <button
                                                 onClick={() => setPaymentMethod('bank_transfer')}
