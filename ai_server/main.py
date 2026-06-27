@@ -11,7 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from dotenv import load_dotenv
-from groq import Groq
 
 # Load environment variables
 load_dotenv()
@@ -22,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="TriniBuild AI Server",
-    description="AI-powered backend for TriniBuild using Groq API",
-    version="1.0.0"
+    description="AI-powered backend for TriniBuild using self-hosted Ollama",
+    version="2.0.0"
 )
 
 # Add CORS Middleware
@@ -84,29 +83,22 @@ async def rate_limit_middleware(request: Request, call_next):
             dq.append(now)
     return await call_next(request)
 
-# Configuration
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
-# Groq vision-capable model for the product scanner. Override via env if Groq renames it.
-VISION_MODEL = os.getenv("GROQ_VISION_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+# Configuration — self-hosted Ollama (no API key needed, completely free)
+OLLAMA_URL = os.environ.get('OLLAMA_URL', 'http://deer-flow-ollama-1:11434')
+DEFAULT_MODEL = os.environ.get('DEFAULT_MODEL', 'qwen2.5:7b')
+VISION_MODEL = os.environ.get('VISION_MODEL', 'qwen3-vl:8b')
 
 # Security: restrict which models a client may request via /generate.
 # Prevents model-name injection (e.g. billing/pricing abuse).
 ALLOWED_MODELS = {
-    'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant',
-    'llama-3.2-3b-preview',
-    'meta-llama/llama-4-scout-17b-16e-instruct',
+    'qwen2.5:7b',
+    'qwen3:4b',
+    'llama3.2:3b',
+    'qwen3-vl:8b',
 }
 
 # Security: cap prompt length to bound cost and prevent prompt-stuffing abuse.
 MAX_PROMPT_CHARS = 4000
-
-if not GROQ_API_KEY:
-    logger.warning("GROQ_API_KEY not found in environment variables. AI features will fail.")
-
-# Initialize Groq Client
-client = Groq(api_key=GROQ_API_KEY)
 
 # --- Pydantic Models ---
 
@@ -155,34 +147,70 @@ class IslandChatRequest(BaseModel):
 
 # --- Helper Functions ---
 
-def query_groq(prompt: str, system_prompt: str = "", model: str = DEFAULT_MODEL, max_tokens: int = 2000) -> str:
-    """
-    Sends a prompt to the Groq API.
-    """
-    try:
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        
-        messages.append({"role": "user", "content": prompt})
-
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=model,
-            temperature=0.7,
-            max_tokens=max_tokens,
+async def ollama_chat(messages: list, model: str = None, temperature: float = 0.7, max_tokens: int = 1000) -> str:
+    """Call self-hosted Ollama — no API key needed, completely free"""
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f'{OLLAMA_URL}/api/chat',
+            json={
+                'model': model or DEFAULT_MODEL,
+                'messages': messages,
+                'stream': False,
+                'options': {
+                    'temperature': temperature,
+                    'num_predict': max_tokens,
+                }
+            }
         )
-        
-        return chat_completion.choices[0].message.content
+        resp.raise_for_status()
+        return resp.json()['message']['content']
+
+async def ollama_vision(image_url: str, prompt: str, model: str = None) -> str:
+    """Call self-hosted Ollama vision model — qwen3-vl:8b"""
+    # Download the image and convert to base64
+    import base64
+    async with httpx.AsyncClient(timeout=60.0) as http:
+        img_resp = await http.get(image_url)
+        img_resp.raise_for_status()
+        img_b64 = base64.b64encode(img_resp.content).decode()
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f'{OLLAMA_URL}/api/chat',
+            json={
+                'model': model or VISION_MODEL,
+                'messages': [{
+                    'role': 'user',
+                    'content': prompt,
+                    'images': [img_b64]
+                }],
+                'stream': False,
+                'options': {'temperature': 0.3, 'num_predict': 800}
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()['message']['content']
+
+def query_groq(prompt: str, system_prompt: str = "", model: str = None, max_tokens: int = 2000) -> str:
+    """
+    Backward-compat wrapper — now calls Ollama instead of Groq.
+    """
+    import asyncio
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+    try:
+        return asyncio.run(ollama_chat(messages, model=model, max_tokens=max_tokens))
     except Exception as e:
-        logger.error(f"Groq API error: {e}")
+        logger.error(f"Ollama API error: {e}")
         return "I apologize, but I'm currently having trouble connecting to my brain. Please try again in a moment."
 
 # --- Endpoints ---
 
 @app.get("/")
 async def health_check():
-    return {"status": "ok", "service": "TriniBuild AI Server (Groq Powered)"}
+    return {"status": "ok", "service": "TriniBuild AI Server (Ollama Self-Hosted)"}
 
 @app.post("/generate-job-letter", response_model=AIResponse)
 async def generate_job_letter(request: JobLetterRequest):
@@ -199,7 +227,10 @@ async def generate_job_letter(request: JobLetterRequest):
         f"Key skills: {', '.join(request.skills)}."
     )
 
-    generated_text = query_groq(prompt, system_prompt=system_prompt)
+    generated_text = await ollama_chat([
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ], model=DEFAULT_MODEL)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
@@ -217,7 +248,10 @@ async def generate_listing_description(request: ListingDescriptionRequest):
         f"{f'Price: TT${request.price}' if request.price else ''}"
     )
 
-    generated_text = query_groq(prompt, system_prompt=system_prompt)
+    generated_text = await ollama_chat([
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ], model=DEFAULT_MODEL)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
@@ -257,7 +291,11 @@ async def chatbot_reply(request: ChatbotRequest):
     if request.context:
         full_prompt = f"Context: {request.context}\n\nUser Message: {request.message}"
 
-    generated_text = query_groq(full_prompt, system_prompt=system_prompt)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": full_prompt},
+    ]
+    generated_text = await ollama_chat(messages, model=DEFAULT_MODEL)
     
     return AIResponse(content=generated_text, model_used=DEFAULT_MODEL)
 
@@ -270,10 +308,13 @@ async def generate_text(request: GenerateRequest):
         # Security: input length cap — bound cost and prevent prompt stuffing.
         if len(request.prompt or '') > MAX_PROMPT_CHARS:
             raise HTTPException(status_code=400, detail='Input too long')
-        response = query_groq(
-            request.prompt,
+        messages = []
+        if request.system_prompt:
+            messages.append({"role": "system", "content": request.system_prompt})
+        messages.append({"role": "user", "content": request.prompt})
+        response = await ollama_chat(
+            messages,
             model=request.model or DEFAULT_MODEL,
-            system_prompt=request.system_prompt or "",
             max_tokens=request.max_tokens or 2000
         )
         return {"content": response, "model_used": request.model or DEFAULT_MODEL}
@@ -328,19 +369,7 @@ async def analyze_product_image(request: AnalyzeImageRequest):
         if request.user_prompt:
             instruction_text = f"{instruction_text}\n\n{request.user_prompt}"
 
-        completion = client.chat.completions.create(
-            model=VISION_MODEL,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": instruction_text},
-                    {"type": "image_url", "image_url": {"url": request.image_url}},
-                ],
-            }],
-            temperature=0.4,
-            max_tokens=800,
-        )
-        content = completion.choices[0].message.content or ''
+        content = await ollama_vision(request.image_url, instruction_text)
         # Strip markdown code fences if model wraps output (e.g. ```json ... ```)
         stripped = content.strip()
         if stripped.startswith('```'):
@@ -370,13 +399,8 @@ async def island_chat(request: IslandChatRequest):
                     messages.append({"role": role, "content": content})
         messages.append({"role": "user", "content": request.message})
 
-        chat_completion = client.chat.completions.create(
-            messages=messages,
-            model=DEFAULT_MODEL,
-            temperature=0.8,
-            max_tokens=600,
-        )
-        return AIResponse(content=chat_completion.choices[0].message.content, model_used=DEFAULT_MODEL)
+        content = await ollama_chat(messages, model=DEFAULT_MODEL, temperature=0.8, max_tokens=600)
+        return AIResponse(content=content, model_used=DEFAULT_MODEL)
     except Exception as e:
         logger.error(f"Island chat error: {e}")
         return AIResponse(
@@ -495,7 +519,7 @@ async def get_meta_insights():
 
 @app.post('/meta/generate-ad-copy')
 async def generate_ad_copy(req: dict):
-    """Use Groq to generate Facebook ad copy for a Caribbean business"""
+    """Use Ollama to generate Facebook ad copy for a Caribbean business"""
     business_type = req.get('business_type', 'retail')
     product = req.get('product', 'products')
     island = req.get('island', 'Trinidad')
@@ -514,7 +538,7 @@ For each variation provide:
 
 Format as JSON array with fields: headline, body, cta"""
 
-    result = query_groq(prompt, model=DEFAULT_MODEL)
+    result = await ollama_chat([{"role": "user", "content": prompt}], model=DEFAULT_MODEL)
     try:
         import json
         # Try to extract JSON from response
