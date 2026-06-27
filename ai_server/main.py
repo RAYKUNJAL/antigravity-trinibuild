@@ -145,6 +145,8 @@ class GenerateRequest(BaseModel):
 
 class AnalyzeImageRequest(BaseModel):
     image_url: str  # public URL of the uploaded product photo
+    system_prompt: Optional[str] = None  # optional override of the default analysis prompt
+    user_prompt: Optional[str] = None    # optional extra user instructions/hints
 
 class IslandChatRequest(BaseModel):
     message: str
@@ -310,18 +312,28 @@ ISLAND_BOT_MODES = {
 async def analyze_product_image(request: AnalyzeImageRequest):
     """Vision: turn a product photo into a ready-to-publish listing (name, price TTD, category, description, tags)."""
     try:
+        # Default product-analysis prompt; client may override via system_prompt/user_prompt.
+        default_instruction = (
+            "You are a product listing assistant for a Trinidad & Tobago online store. "
+            "Look at this product photo and return ONLY valid JSON (no markdown, no backticks) with keys: "
+            '{"name": "concise product name max 80 chars", "price": number in TTD (your best estimate), '
+            '"category": "one short category", "description": "2-3 short persuasive sentences for T&T shoppers", '
+            '"tags": ["tag1","tag2","tag3","tag4","tag5"]}'
+        )
+
+        # If the client supplies its own system_prompt, use it (keeps the eBay-class
+        # optimizer's richer schema available); otherwise use the default above.
+        instruction_text = request.system_prompt if request.system_prompt else default_instruction
+        # Append any extra user hints (store name, category, merchant notes).
+        if request.user_prompt:
+            instruction_text = f"{instruction_text}\n\n{request.user_prompt}"
+
         completion = client.chat.completions.create(
             model=VISION_MODEL,
             messages=[{
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": (
-                        "You are a product listing assistant for a Trinidad & Tobago online store. "
-                        "Look at this product photo and return ONLY valid JSON (no markdown, no backticks) with keys: "
-                        '{"name": "concise product name max 80 chars", "price": number in TTD (your best estimate), '
-                        '"category": "one short category", "description": "2-3 short persuasive sentences for T&T shoppers", '
-                        '"tags": ["tag1","tag2","tag3","tag4","tag5"]}'
-                    )},
+                    {"type": "text", "text": instruction_text},
                     {"type": "image_url", "image_url": {"url": request.image_url}},
                 ],
             }],

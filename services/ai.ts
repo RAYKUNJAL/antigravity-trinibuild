@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { generateOptimizedListing, type ProductListingOptimized } from './aiListingOptimizer';
 
 /**
- * TriniBuild AI Service v4 — GPT-4o mini
+ * Juvay AI Service v4 — GPT-4o mini
  * 
  * Cost: $0.15/MTok input, $0.60/MTok output — ~$0.0004 per chat message
  * That's roughly $12/month for 1,000 messages/day
@@ -193,7 +193,7 @@ DOCUMENTS TRINIDADIANS COMMONLY NEED:
 - Proof of Income: for bank loans, mortgages (TTMF, HMB, commercial banks), rental applications, visa applications
 - Job Letters / Employment Verification: for visa applications, bank accounts, rental agreements
 - Business Reference Letters: for suppliers, tenders, government contracts
-- Contractor Agreements: for freelancers, gig workers, TriniBuild service providers
+- Contractor Agreements: for freelancers, gig workers, Juvay service providers
 - VAT Certificates: for BIR compliance, business-to-business transactions
 
 ═══ T&T LEGAL BASICS ═══
@@ -205,15 +205,15 @@ DOCUMENTS TRINIDADIANS COMMONLY NEED:
 - Small Claims Court: Disputes up to TT$15,000. Fast, no lawyer needed.
 
 ═══ T&T AFFILIATE & EARNING ═══
-TRINIBUILD AFFILIATE PROGRAM (/earn):
+Juvay Affiliate Program (/earn):
 - Earn commissions referring businesses and customers
 - Referral link: unique tracking URL for each user
 - Commission structure: percentage of referred merchant's subscription fees
 - Payout: via bank transfer or digital wallet
-- Requirements: active TriniBuild account, share your link, earn when referrals sign up
+- Requirements: active Juvay account, share your link, earn when referrals sign up
 - Best for: influencers, business consultants, accountants who advise SMEs, community leaders
 
-WAYS TO EARN ON TRINIBUILD:
+WAYS TO EARN ON JUVAY:
 1. Sell products/services through your store (COD, bank transfer, PayPal)
 2. Affiliate referrals — earn from every business you bring to the platform
 3. TriniRides driver — deliver orders and earn per delivery
@@ -239,7 +239,7 @@ WORK PERMITS (for non-nationals):
 
 ═══ COD BUSINESS OPERATIONS ═══
 How COD works for Trinidad businesses:
-1. Customer browses store on TriniBuild
+1. Customer browses store on Juvay
 2. Customer places order — no payment needed upfront
 3. Merchant gets WhatsApp notification with order details
 4. Merchant confirms order and prepares items
@@ -248,9 +248,9 @@ How COD works for Trinidad businesses:
 7. Merchant marks order complete in dashboard
 8. Cash reconciled — merchant keeps product amount, delivery fee goes to driver
 
-RULES: Answer directly FIRST with real specific T&T information. Suggest 1-2 relevant TriniBuild features. Keep it concise. Use markdown. Give real numbers not vague answers. When unsure of current regulations, say "check the latest at [relevant government website]" rather than guessing.`,
+RULES: Answer directly FIRST with real specific T&T information. Suggest 1-2 relevant Juvay features. Keep it concise. Use markdown. Give real numbers not vague answers. When unsure of current regulations, say "check the latest at [relevant government website]" rather than guessing.`,
 
-    paperwork_assistant: `You are TriniBuild's AI Document Assistant — you help people get paperwork done fast.
+    paperwork_assistant: `You are Juvay's AI Document Assistant — you help people get paperwork done fast.
 
 ${TRINI_PERSONALITY}
 
@@ -273,7 +273,7 @@ DOCUMENT FORMAT:
 - TT$ for all currency amounts
 - NIS number field where applicable
 - Signature lines with printed name, title, date, and company stamp line
-- Footer: "Generated via TriniBuild — A product of R&R Digital Solutions"
+- Footer: "Generated via Juvay — A product of R&R Digital Solutions"
 - Disclaimer: "This document should be verified before official submission"
 
 VISA LETTER SPECIFICS:
@@ -290,7 +290,7 @@ BANKING DOCUMENT SPECIFICS:
 CHAT STYLE: "Aight, leh we get that job letter sorted for yuh" / "I go need the company name and salary to make this bess" / "No scene, this go take about 30 seconds"
 Never generate fraudulent documents. If something seems sketchy, decline firmly but kindly.`,
 
-    real_estate: `You are TriniBuild's Real Estate Concierge — you know every corner of T&T property.
+    real_estate: `You are Juvay's Real Estate Concierge — you know every corner of T&T property.
 ${TRINI_PERSONALITY}
 
 AREA PRICING (2025-2026 estimates):
@@ -330,7 +330,7 @@ RENTAL MARKET:
 
 Suggest /real-estate for listings. Parent: R&R Digital Solutions.`,
 
-    rides: `You are TriniBuild's Ride Assistant — you know every road in Trinidad and Tobago.
+    rides: `You are Juvay's Ride Assistant — you know every road in Trinidad and Tobago.
 ${TRINI_PERSONALITY}
 
 GEOGRAPHY & ROUTES:
@@ -358,7 +358,7 @@ TRINIRRIDES:
 
 Suggest /rides for booking. Parent: R&R Digital Solutions.`,
 
-    service_expert: `You are TriniBuild's Service Expert — you connect people with professionals across T&T.
+    service_expert: `You are Juvay's Service Expert — you connect people with professionals across T&T.
 ${TRINI_PERSONALITY}
 
 SERVICE CATEGORIES & TYPICAL RATES (2025-2026):
@@ -383,7 +383,7 @@ HIRING TIPS FOR T&T:
 - Pay in stages: 30% deposit, 40% midway, 30% on completion
 - Get a written agreement even for small jobs
 - Use WhatsApp to document agreements and progress photos
-- Check TriniBuild directory for verified professionals with reviews
+- Check Juvay directory for verified professionals with reviews
 
 RED FLAGS:
 - Asking for full payment upfront
@@ -394,7 +394,7 @@ RED FLAGS:
 
 Suggest /directory for verified professionals. Parent: R&R Digital Solutions.`,
 
-    store_assistant: `You are a Store Sales Assistant on TriniBuild.
+    store_assistant: `You are a Store Sales Assistant on Juvay.
 ${TRINI_PERSONALITY}
 Use the store's product catalog, hours, and policies from conversation context.
 Answer product questions, suggest related items, help with orders.
@@ -471,7 +471,11 @@ async function callGPTVisionJSON(
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image_url: imageUrl }),
+        body: JSON.stringify({
+            image_url: imageUrl,
+            system_prompt: systemPrompt,
+            user_prompt: userPrompt,
+        }),
     });
 
     if (!response.ok) {
@@ -483,10 +487,27 @@ async function callGPTVisionJSON(
     const text = data.content;
     if (!text) throw new Error('Empty response from vision model');
 
+    // Backend returns { content: JSON_STRING } where the JSON string has:
+    // { name, price, category, description, tags }
+    // (or { productType, brand, ... } if the client supplied a custom system_prompt)
+    // Map to the shape callers (ProductListingOptimized) expect.
     try {
-        return JSON.parse(text);
+        const parsed = JSON.parse(text);
+        return {
+            ...parsed,  // pass through ALL backend fields (productType, brand, etc.)
+            title: parsed.name || parsed.title || 'Unnamed Product',
+            name: parsed.name || parsed.title || 'Unnamed Product',
+            suggested_price_ttd: parsed.suggested_price_ttd || parsed.price || 0,
+            price: parsed.price || parsed.suggested_price_ttd || 0,
+            category: parsed.category || 'other',
+            description: parsed.description || '',
+            tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+            confidence: 'high' as const,
+            item_specifics: {},
+            seo_keywords: Array.isArray(parsed.tags) ? parsed.tags : [],
+        };
     } catch (e) {
-        throw new Error('Model did not return valid JSON: ' + text.slice(0, 200));
+        throw new Error('Model did not return valid JSON: ' + String(text).slice(0, 200));
     }
 }
 
@@ -501,7 +522,7 @@ function buildStorePrompt(storeData: any): string {
 
 STORE: ${storeData.name}
 CATEGORY: ${storeData.category || 'General'}
-DESCRIPTION: ${storeData.description || 'A local T&T business on TriniBuild'}
+DESCRIPTION: ${storeData.description || 'A local T&T business on Juvay'}
 LOCATION: ${storeData.location || 'Trinidad & Tobago'}
 WHATSAPP: ${storeData.whatsapp || 'Not listed'}
 
@@ -520,8 +541,8 @@ function getTriniFallback(message: string, mode?: string): string {
     if (msg.match(/\b(hi|hello|hey|good morning|good afternoon|wah|yo|sup|good evening|good night)\b/)) {
         const greeting = getTriniGreeting();
         const greetings = [
-            `${greeting} Wah goin on! I'm yuh TriniBuild AI assistant. How I could help yuh today?`,
-            `${greeting} Welcome to TriniBuild — T&T's own platform. Leh me know what yuh need, I right here for yuh.`,
+            `${greeting} Wah goin on! I'm yuh Juvay AI assistant. How I could help yuh today?`,
+            `${greeting} Welcome to Juvay — built for the Caribbean. Leh me know what yuh need, I right here for yuh.`,
             `${greeting} Good to see yuh! I could help with stores, documents, banking questions, visa letters, finding services — just ask meh anything about T&T.`
         ];
         return greetings[Math.floor(Math.random() * greetings.length)];
@@ -532,7 +553,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**TriniBuild Pricing:**\n\n🆓 **Hustle (Free forever):** 10 products, basic store, directory listing\n💎 **Pro ($199 TTD/mo):** Unlimited products, AI tools, store chatbot\n🏆 **Premium ($399 TTD/mo):** Custom domain, priority support\n🏢 **Business ($799 TTD/mo):** Multi-location, API access\n\nDoh even need a credit card to start. Check [/pricing](/pricing) for the full breakdown!";
+        return "**Juvay Pricing:**\n\n🆓 **Hustle (Free forever):** 10 products, basic store, directory listing\n💎 **Pro ($199 TTD/mo):** Unlimited products, AI tools, store chatbot\n🏆 **Premium ($399 TTD/mo):** Custom domain, priority support\n🏢 **Business ($799 TTD/mo):** Multi-location, API access\n\nDoh even need a credit card to start. Check [/pricing](/pricing) for the full breakdown!";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {
@@ -540,7 +561,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {
-        return "**How COD works on TriniBuild:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange delivery (TriniRides or yuh own driver)\n4. Driver delivers and collects cash or Linx payment\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
+        return "**How COD works on Juvay:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange delivery (TriniRides or yuh own driver)\n4. Driver delivers and collects cash or Linx payment\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
     }
 
     if (msg.match(/\b(ride|taxi|transport|driver|maxi)\b/)) {
@@ -556,7 +577,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(what|who|tell me about|explain).*(trinibuild|platform|website|this)\b/)) {
-        return "**TriniBuild** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🎮 Digital services (Game Pass, Netflix, etc.)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n🎫 Events & tickets\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
+        return "**Juvay** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🎮 Digital services (Game Pass, Netflix, etc.)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n🎫 Events & tickets\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
     }
 
     return "I here to help! I could assist with:\n\n• 🏪 **Stores** — create and manage yuh online shop\n• 📄 **Documents** — job letters, visa letters, proof of income\n• 🔍 **Directory** — find any business or service in T&T\n• 🚗 **Rides** — book transportation\n• 🏠 **Real Estate** — property listings\n• 💰 **COD selling** — how cash on delivery works\n\nJust tell meh what yuh need, pardner!";
@@ -566,14 +587,14 @@ function getTriniFallback(message: string, mode?: string): string {
 
 function generateLocalDoc(docType: string, formData: Record<string, string>): string {
     const date = new Date().toLocaleDateString('en-TT', { year: 'numeric', month: 'long', day: 'numeric' });
-    const footer = '\n\n---\n*Generated via TriniBuild — A product of R&R Digital Solutions*\n*This document should be verified before official submission.*';
+    const footer = '\n\n---\n*Generated via Juvay — A product of R&R Digital Solutions*\n*This document should be verified before official submission.*';
 
     switch (docType) {
         case 'job_letter':
             return `**${formData.employer_name || 'Company Name'}**\nRepublic of Trinidad and Tobago\n\nDate: ${date}\n\n**LETTER OF EMPLOYMENT**\n\nTo Whom It May Concern,\n\nThis confirms that **${formData.employee_name || 'Employee Name'}** is offered the position of **${formData.position || 'Position'}** at ${formData.employer_name || 'Company Name'}, effective ${formData.start_date || 'TBD'}.\n\n**Employment Details:**\n- Position: ${formData.position || 'N/A'}\n- Monthly Salary: TT$${formData.salary || 'N/A'}\n- Start Date: ${formData.start_date || 'N/A'}\n- Employment Type: Full-time\n- NIS Number: _______________\n- Probation Period: Three (3) months\n\nSincerely,\n\n_________________________\nAuthorized Representative\n${formData.employer_name || 'Company Name'}${footer}`;
 
         case 'proof_of_income':
-            return `**PROOF OF INCOME STATEMENT**\nRepublic of Trinidad and Tobago\n\nDate: ${date}\n\nBusiness: ${formData.business_name || 'N/A'}\nOwner: ${formData.owner_name || 'N/A'}\n\nThis certifies that ${formData.owner_name || 'the undersigned'} earns an average monthly income of **TT$${formData.monthly_income || 'N/A'}** from ${formData.source || 'business operations'} during ${formData.period || 'the current fiscal year'}.\n\nVerified by: TriniBuild / R&R Digital Solutions\n\n_________________________\nDigital Verification${footer}`;
+            return `**PROOF OF INCOME STATEMENT**\nRepublic of Trinidad and Tobago\n\nDate: ${date}\n\nBusiness: ${formData.business_name || 'N/A'}\nOwner: ${formData.owner_name || 'N/A'}\n\nThis certifies that ${formData.owner_name || 'the undersigned'} earns an average monthly income of **TT$${formData.monthly_income || 'N/A'}** from ${formData.source || 'business operations'} during ${formData.period || 'the current fiscal year'}.\n\nVerified by: Juvay / R&R Digital Solutions\n\n_________________________\nDigital Verification${footer}`;
 
         case 'visa_letter':
             return `**VISA SUPPORT LETTER**\nRepublic of Trinidad and Tobago\n\nDate: ${date}\n\nTo: The Visa Officer, Embassy of ${formData.destination || '[Country]'}\n\nRe: ${formData.applicant_name || '[Name]'}\n\nI, ${formData.sponsor_name || '[Sponsor]'}, confirm that ${formData.applicant_name || '[Name]'} will visit ${formData.destination || '[Country]'} for ${formData.purpose || '[Purpose]'}, duration ${formData.duration || '[Duration]'}. All expenses will be covered.\n\nPassport Number: _______________\n\n_________________________\n${formData.sponsor_name || 'Sponsor'}${footer}`;
@@ -607,7 +628,7 @@ export const aiService = {
 
     /**
      * "Lime" — the dedicated Trini-accent island chatbot for support + onboarding.
-     * Calls the server-side /island-chat endpoint (tuned persona, accurate TriniBuild
+     * Calls the server-side /island-chat endpoint (tuned persona, accurate Juvay
      * facts, no fabricated claims). Falls back to the Trini canned responses on failure.
      */
     async islandChat(message: string, history: { role: string; content: string }[] = [], mode: 'support' | 'onboarding' | 'sales' = 'support'): Promise<AIResponse> {
@@ -685,7 +706,7 @@ export const aiService = {
     async generateListingDescription(data: ListingDescriptionRequest): Promise<AIResponse> {
         try {
             return await callGPT(
-                `Write a compelling product listing for TriniBuild marketplace.\nTitle: ${data.title}\nCategory: ${data.category}\nFeatures: ${data.features.join(', ')}\nCondition: ${data.condition}\n${data.price ? `Price: TT$${data.price}` : ''}\nTone: ${data.tone}\n\n2-3 paragraphs, use emojis, Trinidad audience.`,
+                `Write a compelling product listing for Juvay marketplace.\nTitle: ${data.title}\nCategory: ${data.category}\nFeatures: ${data.features.join(', ')}\nCondition: ${data.condition}\n${data.price ? `Price: TT$${data.price}` : ''}\nTone: ${data.tone}\n\n2-3 paragraphs, use emojis, Trinidad audience.`,
                 SYSTEM_PROMPTS.platform
             );
         } catch {
@@ -701,14 +722,14 @@ export const aiService = {
             const r = await callGPT(prompt, system_prompt || SYSTEM_PROMPTS.platform);
             return r.content;
         } catch {
-            return "I having a lil technical issue. Try again in a minute nah, or contact support@trinibuild.com.";
+            return "I having a lil technical issue. Try again in a minute nah, or contact support@juvay.app.";
         }
     },
 
     async searchQuery(query: string): Promise<AIResponse> {
         try {
             return await callGPT(
-                `User searched: "${query}". Suggest the most relevant TriniBuild page/feature. 2-3 sentences with route link.`,
+                `User searched: "${query}". Suggest the most relevant Juvay page/feature. 2-3 sentences with route link.`,
                 SYSTEM_PROMPTS.platform
             );
         } catch {
@@ -735,7 +756,7 @@ export const aiService = {
         const prompts: Record<string, string> = {
             description: `Write a 2-sentence business description for "${storeName}" (${category}) in Trinidad. ${context || ''} Professional but warm, slight Trini flavor.`,
             tagline: `Generate 3 catchy taglines for "${storeName}" (${category}) in Trinidad. Short, memorable, Trini-flavored. Just the 3 taglines numbered.`,
-            seo: `SEO meta description (max 155 chars) for "${storeName}" — a ${category} store on TriniBuild, Trinidad.`
+            seo: `SEO meta description (max 155 chars) for "${storeName}" — a ${category} store on Juvay, Trinidad.`
         };
         try {
             const r = await callGPT(prompts[type], SYSTEM_PROMPTS.platform);
@@ -743,7 +764,7 @@ export const aiService = {
         } catch {
             return type === 'tagline'
                 ? `1. ${storeName} — Real quality, real value\n2. ${storeName} — Trini to de bone\n3. ${storeName} — Where quality meets community`
-                : `${storeName} — your ${category} destination in Trinidad & Tobago. Powered by TriniBuild.`;
+                : `${storeName} — your ${category} destination in Trinidad & Tobago. Powered by Juvay.`;
         }
     },
 

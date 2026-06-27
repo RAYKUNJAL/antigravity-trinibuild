@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Listing Optimizer — eBay-Class Production System
+ * Juvay AI Listing Optimizer — eBay-Class Production System
  * 
  * Built from deep research on eBay's "Magical Listing" AI, 3Dsellers, Frooition,
  * Cavio AI, and professional eBay SEO guides (2026).
@@ -16,7 +16,7 @@
  *   - Returns structured attributes (not just a description)
  * 
  * Stage 2: CATEGORY INTELLIGENCE
- *   - Maps visual attributes → precise TriniBuild category taxonomy
+ *   - Maps visual attributes → precise Juvay category taxonomy
  *   - Deep categorization: not "Food" but "Food > Snacks > Chips > Plantain"
  *   - Category-specific required fields (Size for apparel, Brand for electronics)
  * 
@@ -26,7 +26,7 @@
  *   - Fills ALL optional fields when detectable — incomplete specs = invisible listing
  * 
  * Stage 4: SEO TITLE OPTIMIZATION
- *   - 80-character max (TriniBuild standard)
+ *   - 80-character max (Juvay standard)
  *   - Front-loaded keywords (first 60 chars = highest weight)
  *   - Format: [BRAND] [Product Name] [Model] [Size/Color] [Key Feature]
  *   - NO filler words ("WOW", "RARE", "L@@K", "AMAZING") — Cassini penalizes these
@@ -73,8 +73,7 @@
  * Target: First billion-dollar Caribbean SaaS
  */
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const GPT_VISION_MODEL = 'gpt-4o';  // Full GPT-4o for vision (not mini — needs accuracy)
+// Routes through Juvay AI backend — no client-side API keys needed.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -137,7 +136,7 @@ export interface ListingGenerationHints {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CATEGORY TAXONOMY (TriniBuild-specific, eBay-inspired depth)
+// CATEGORY TAXONOMY (Juvay-specific, eBay-inspired depth)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const CATEGORY_TAXONOMY: Record<string, string[]> = {
@@ -800,7 +799,7 @@ function generateWarnings(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// OPENAI API HELPERS
+// AI HELPERS — Routes through Juvay AI backend (keeps API keys server-side)
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function callGPTVisionJSON(
@@ -808,80 +807,75 @@ async function callGPTVisionJSON(
   userPrompt: string,
   systemPrompt: string
 ): Promise<any> {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured');
-  }
+  const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'https://juvay.app/ai';
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Route through Juvay AI backend — keeps API keys server-side
+  const response = await fetch(`${AI_SERVER}/analyze-product-image`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: GPT_VISION_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: userPrompt },
-            { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } },
-          ],
-        },
-      ],
-      max_tokens: 1000,
-      temperature: 0.3,  // Low temp for structured output
+      image_url: imageUrl,
+      system_prompt: systemPrompt,
+      user_prompt: userPrompt
     }),
   });
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`OpenAI Vision API error: ${response.status} ${errorBody}`);
+    const errText = await response.text().catch(() => '');
+    throw new Error(`Juvay AI vision error ${response.status}: ${errText}`);
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '{}';
+  const text = data.content;
+  if (!text) throw new Error('Empty response from vision model');
 
-  // GPT-4o sometimes wraps JSON in markdown fences — strip them
-  const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
+  // Backend returns JSON string in content field
+  // Map backend field names to what ProductListingOptimized expects
   try {
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(text);
+    // Backend returns: { name, price, category, description, tags }
+    // (or { productType, brand, ... } if the client supplied a custom system_prompt)
+    // Frontend expects: { title, suggested_price_ttd, category, description, tags }
+    return {
+      ...parsed,  // pass through ALL backend fields (productType, brand, etc.)
+      title: parsed.name || parsed.title || 'Unnamed Product',
+      name: parsed.name || parsed.title || 'Unnamed Product',
+      suggested_price_ttd: parsed.suggested_price_ttd || parsed.price || 0,
+      price: parsed.price || parsed.suggested_price_ttd || 0,
+      category: parsed.category || 'other',
+      description: parsed.description || '',
+      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+      confidence: 'high' as const,
+      // Fill optional fields with sensible defaults
+      item_specifics: {},
+      seo_keywords: Array.isArray(parsed.tags) ? parsed.tags : [],
+    };
   } catch (e) {
-    console.error('Failed to parse GPT Vision JSON:', cleaned);
-    throw new Error('AI returned invalid JSON');
+    throw new Error('Vision model returned invalid JSON: ' + String(text).slice(0, 200));
   }
 }
 
 async function callGPT(userPrompt: string, systemPrompt: string): Promise<{ content: string }> {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured');
-  }
+  const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'https://juvay.app/ai';
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Route through Juvay AI backend /generate endpoint — keeps API keys server-side
+  const response = await fetch(`${AI_SERVER}/generate`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',  // Cheaper model for text generation
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+      prompt: userPrompt,
+      system_prompt: systemPrompt,
       max_tokens: 500,
-      temperature: 0.7,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    const errText = await response.text().catch(() => '');
+    throw new Error(`Juvay AI text error ${response.status}: ${errText}`);
   }
 
   const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
+  const content = data.content || '';
 
   return { content };
 }
