@@ -2,7 +2,7 @@ import React from 'react';
 import { Facebook, Twitter, Instagram, Mail, MapPin, Youtube, Lock, ShieldCheck, Truck, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const LOGO_URL = "/trinibuild-logo.png";
+const LOGO_URL = "/juvay-logo.png";
 
 export const Footer: React.FC = () => {
   return (
@@ -24,19 +24,19 @@ export const Footer: React.FC = () => {
               <MapPin className="h-4 w-4 mr-2 flex-shrink-0" /> Port of Spain, Trinidad & Tobago
             </div>
             <div className="flex items-center text-gray-500 text-sm mb-4">
-              <Mail className="h-4 w-4 mr-2 flex-shrink-0" /> support@juvay.com
+              <Mail className="h-4 w-4 mr-2 flex-shrink-0" /> support@juvay.app
             </div>
             <div className="flex gap-3">
-              <a href="https://facebook.com/trinibuild" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Facebook">
+              <a href="https://facebook.com/juvayapp" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Facebook">
                 <Facebook size={18} className="text-gray-400" />
               </a>
-              <a href="https://instagram.com/trinibuild" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Instagram">
+              <a href="https://instagram.com/juvayapp" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Instagram">
                 <Instagram size={18} className="text-gray-400" />
               </a>
-              <a href="https://twitter.com/trinibuild" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Twitter">
+              <a href="https://twitter.com/juvayapp" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="Twitter">
                 <Twitter size={18} className="text-gray-400" />
               </a>
-              <a href="https://youtube.com/@trinibuild" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="YouTube">
+              <a href="https://youtube.com/@juvayapp" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" aria-label="YouTube">
                 <Youtube size={18} className="text-gray-400" />
               </a>
             </div>

@@ -17,7 +17,9 @@ COPY . .
 EXPOSE 8000
 
 # Define environment variable
-ENV OLLAMA_BASE_URL="http://host.docker.internal:11434"
+ENV OLLAMA_URL="http://deer-flow-ollama-1:11434"
+ENV DEFAULT_MODEL="qwen2.5:7b"
+ENV VISION_MODEL="qwen3-vl:8b"
 
 # Run app.py when the container launches
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
