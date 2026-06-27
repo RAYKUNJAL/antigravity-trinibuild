@@ -832,7 +832,12 @@ async function callGPTVisionJSON(
   // Backend returns JSON string in content field
   // Map backend field names to what ProductListingOptimized expects
   try {
-    const parsed = JSON.parse(text);
+    // Strip markdown code fences if backend wraps output
+    let cleanText = text.trim();
+    if (cleanText.startsWith('```')) {
+      cleanText = cleanText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+    }
+    const parsed = JSON.parse(cleanText);
     // Backend returns: { name, price, category, description, tags }
     // (or { productType, brand, ... } if the client supplied a custom system_prompt)
     // Frontend expects: { title, suggested_price_ttd, category, description, tags }

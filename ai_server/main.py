@@ -340,7 +340,16 @@ async def analyze_product_image(request: AnalyzeImageRequest):
             temperature=0.4,
             max_tokens=800,
         )
-        content = completion.choices[0].message.content
+        content = completion.choices[0].message.content or ''
+        # Strip markdown code fences if model wraps output (e.g. ```json ... ```)
+        stripped = content.strip()
+        if stripped.startswith('```'):
+            lines = stripped.split('\n')
+            # Remove first line (```json or ```) and last line (```)
+            inner = lines[1:] if len(lines) > 1 else lines
+            if inner and inner[-1].strip() == '```':
+                inner = inner[:-1]
+            content = '\n'.join(inner).strip()
         return AIResponse(content=content, model_used=VISION_MODEL)
     except Exception as e:
         logger.error(f"Vision analyze error: {e}")
