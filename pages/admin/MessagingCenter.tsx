@@ -13,7 +13,7 @@ export const MessagingCenter: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Search conversations..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-trini-red"
+                            className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-juvay-red"
                         />
                     </div>
                 </div>
@@ -63,7 +63,7 @@ export const MessagingCenter: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <div className="bg-trini-red text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[70%]">
+                        <div className="bg-juvay-red text-white p-3 rounded-lg rounded-tr-none shadow-sm max-w-[70%]">
                             <p className="text-sm">Hi there! I can help with that. Are you getting any specific error message?</p>
                             <span className="text-xs text-white/70 mt-1 block">10:31 AM</span>
                         </div>
@@ -76,9 +76,9 @@ export const MessagingCenter: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Type a message..."
-                            className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-trini-red"
+                            className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-juvay-red"
                         />
-                        <button className="p-2 bg-trini-red text-white rounded-lg hover:bg-red-700 transition-colors">
+                        <button className="p-2 bg-juvay-red text-white rounded-lg hover:bg-red-700 transition-colors">
                             <Send className="h-5 w-5" />
                         </button>
                     </div>

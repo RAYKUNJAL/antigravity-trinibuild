@@ -28,7 +28,7 @@ export const BlogPost: React.FC = () => {
         Juvay brings together online stores, food ordering, ride-hailing, job matching, event ticketing, and real estate — all under one roof, all designed for Trinidad & Tobago and the wider Caribbean. No foreign payment gateways that reject our cards. No tools that ignore how Trinis actually transact.
       </p>
 
-      <blockquote class="border-l-4 border-trini-red pl-4 italic my-6 text-gray-700 bg-gray-50 p-4 rounded-r-lg">
+      <blockquote class="border-l-4 border-juvay-red pl-4 italic my-6 text-gray-700 bg-gray-50 p-4 rounded-r-lg">
         "We are not a copy of a Silicon Valley product. We are built here, for here."
       </blockquote>
 
@@ -55,7 +55,7 @@ export const BlogPost: React.FC = () => {
             <Link to="/blog" className="text-white/80 hover:text-white flex items-center mb-4 text-sm font-bold uppercase tracking-wider">
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
             </Link>
-            <span className="bg-trini-red text-white px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 inline-block">
+            <span className="bg-juvay-red text-white px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 inline-block">
               {post.category}
             </span>
             <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
@@ -91,10 +91,10 @@ export const BlogPost: React.FC = () => {
               </div>
            </div>
 
-           <div className="bg-trini-black text-white p-8 rounded-xl shadow-lg text-center">
+           <div className="bg-juvay-black text-white p-8 rounded-xl shadow-lg text-center">
               <h3 className="text-xl font-bold mb-2">Start Your Own Story</h3>
               <p className="text-gray-400 mb-6 text-sm">Be a founding merchant on Juvay.</p>
-              <Link to="/create-store" className="block w-full bg-trini-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors">
+              <Link to="/create-store" className="block w-full bg-juvay-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors">
                  Build Free Store
               </Link>
            </div>

@@ -129,7 +129,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             {/* Logo */}
             <div className="p-4 border-b border-gray-800">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-trini-red to-orange-500 rounded-xl flex-shrink-0">
+                    <div className="p-2 bg-gradient-to-r from-juvay-red to-orange-500 rounded-xl flex-shrink-0">
                         <LayoutDashboard className="h-5 w-5" />
                     </div>
                     {!collapsed && (
@@ -157,7 +157,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                                         to={section.id === 'overview' ? '/admin/command-center' : `/admin/command-center/${section.id.replace(/_/g, '-')}`}
                                         end={section.id === 'overview'}
                                         className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
-                                            ? 'bg-trini-red text-white'
+                                            ? 'bg-juvay-red text-white'
                                             : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                             }`}
                                         title={collapsed ? section.label : undefined}

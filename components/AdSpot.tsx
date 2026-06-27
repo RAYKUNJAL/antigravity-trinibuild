@@ -44,7 +44,7 @@ export const AdSpot: React.FC<AdSpotProps> = ({ page, slot, className = '' }) =>
                     Sponsored
                 </span>
                 {ad.isPaidClient && (
-                    <span className="bg-trini-red text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center">
+                    <span className="bg-juvay-red text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center">
                         <Info className="w-3 h-3 mr-1" /> Featured Partner
                     </span>
                 )}

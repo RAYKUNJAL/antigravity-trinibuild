@@ -65,7 +65,7 @@ const allPosts: BlogPost[] = [
   {
     id: '2',
     title: "5 Tips for Local SEO in Trinidad & Tobago",
-    excerpt: "Getting found on Google Maps is crucial. Here are 5 easy steps to optimize your TriniBuild profile.",
+    excerpt: "Getting found on Google Maps is crucial. Here are 5 easy steps to optimize your Juvay profile.",
     category: "Guides",
     author: "Sarah Lee",
     date: "Dec 01, 2025",
@@ -77,10 +77,10 @@ const allPosts: BlogPost[] = [
   // Location-specific AI-generated blogs
   {
     id: '3',
-    title: "Jobs in Port of Spain: Find Work & Gigs Using TriniBuild",
+    title: "Jobs in Port of Spain: Find Work & Gigs Using Juvay",
     excerpt: "Discover job opportunities and gig work in Port of Spain, Trinidad. Learn how locals are finding work and building careers.",
     category: "Jobs & Gigs",
-    author: "TriniBuild AI",
+    author: "Juvay AI",
     date: "Dec 05, 2025",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800",
     location: "Port of Spain",
@@ -94,7 +94,7 @@ const allPosts: BlogPost[] = [
     title: "Start Your Store in San Fernando: The Complete Guide",
     excerpt: "Learn how entrepreneurs in San Fernando are building successful online stores without credit cards or complex tech.",
     category: "Stores & Business",
-    author: "TriniBuild AI",
+    author: "Juvay AI",
     date: "Dec 04, 2025",
     image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=800",
     location: "San Fernando",
@@ -106,9 +106,9 @@ const allPosts: BlogPost[] = [
   {
     id: '5',
     title: "Real Estate in Arima: Buy, Sell & Rent Properties",
-    excerpt: "The complete guide to navigating the Arima property market using TriniBuild's free tools.",
+    excerpt: "The complete guide to navigating the Arima property market using Juvay's free tools.",
     category: "Real Estate",
-    author: "TriniBuild AI",
+    author: "Juvay AI",
     date: "Dec 03, 2025",
     image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800",
     location: "Arima",
@@ -122,7 +122,7 @@ const allPosts: BlogPost[] = [
     title: "Chaguanas Events & Tickets: Find Local Entertainment",
     excerpt: "From fetes to community events, discover what's happening in Chaguanas and how to sell or buy tickets easily.",
     category: "Events & Tickets",
-    author: "TriniBuild AI",
+    author: "Juvay AI",
     date: "Dec 02, 2025",
     image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=800",
     location: "Chaguanas",
@@ -134,9 +134,9 @@ const allPosts: BlogPost[] = [
   {
     id: '7',
     title: "Rideshare & Delivery in Scarborough, Tobago",
-    excerpt: "How Tobagonians are earning extra income with rideshare and delivery services through TriniBuild.",
+    excerpt: "How Tobagonians are earning extra income with rideshare and delivery services through Juvay.",
     category: "Rideshare",
-    author: "TriniBuild AI",
+    author: "Juvay AI",
     date: "Dec 01, 2025",
     image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800",
     location: "Scarborough",
@@ -150,7 +150,7 @@ const allPosts: BlogPost[] = [
     title: "Introducing TriniRides: The Future of Transport",
     excerpt: "We are expanding! Learn about our new rideshare features and how drivers can earn more.",
     category: "Platform News",
-    author: "TriniBuild Team",
+    author: "Juvay Team",
     date: "Nov 25, 2025",
     image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800",
     readTime: 4,
@@ -208,12 +208,12 @@ export const Blog: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-trini-red/90 text-white py-16 md:py-24">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-juvay-red/90 text-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="h-5 w-5 text-yellow-400" />
-              <span className="text-sm font-medium text-yellow-400">TriniBuild Blog</span>
+              <span className="text-sm font-medium text-yellow-400">Juvay Blog</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
               Insights, Stories & Guides for
@@ -247,7 +247,7 @@ export const Blog: React.FC = () => {
               key={cat.key}
               onClick={() => setActiveCategory(cat.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === cat.key
-                  ? 'bg-trini-red text-white shadow-md'
+                  ? 'bg-juvay-red text-white shadow-md'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             >
@@ -262,7 +262,7 @@ export const Blog: React.FC = () => {
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 text-trini-red" />
+                <TrendingUp className="h-6 w-6 text-juvay-red" />
                 Featured Stories
               </h2>
             </div>
@@ -282,7 +282,7 @@ export const Blog: React.FC = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <span className="inline-block px-3 py-1 bg-trini-red text-white text-xs font-bold rounded-full mb-3">
+                      <span className="inline-block px-3 py-1 bg-juvay-red text-white text-xs font-bold rounded-full mb-3">
                         {post.category}
                       </span>
                       <h3 className="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-yellow-300 transition-colors">
@@ -310,12 +310,12 @@ export const Blog: React.FC = () => {
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <MapPin className="h-6 w-6 text-trini-red" />
+                <MapPin className="h-6 w-6 text-juvay-red" />
                 Explore by Location
               </h2>
               <button
                 onClick={() => setActiveCategory('location')}
-                className="text-trini-red font-medium text-sm flex items-center gap-1 hover:underline"
+                className="text-juvay-red font-medium text-sm flex items-center gap-1 hover:underline"
               >
                 View all <ChevronRight className="h-4 w-4" />
               </button>
@@ -344,14 +344,14 @@ export const Blog: React.FC = () => {
                       </div>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-gray-900 group-hover:text-trini-red transition-colors line-clamp-2 mb-2">
+                      <h3 className="font-bold text-gray-900 group-hover:text-juvay-red transition-colors line-clamp-2 mb-2">
                         {post.title}
                       </h3>
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" /> {post.readTime} min
                         </span>
-                        <span className="flex items-center gap-1 text-trini-red font-medium">
+                        <span className="flex items-center gap-1 text-juvay-red font-medium">
                           Read <ArrowRight className="h-3 w-3" />
                         </span>
                       </div>
@@ -401,7 +401,7 @@ export const Blog: React.FC = () => {
                             </span>
                           )}
                           {!post.isLocationBlog && (
-                            <span className="px-2 py-1 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-trini-red">
+                            <span className="px-2 py-1 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-juvay-red">
                               {post.category}
                             </span>
                           )}
@@ -420,7 +420,7 @@ export const Blog: React.FC = () => {
                       </div>
 
                       <Link to={post.isLocationBlog ? `/blog/location/${post.slug}` : `/blog/${post.slug}`}>
-                        <h3 className="font-bold text-lg text-gray-900 group-hover:text-trini-red transition-colors mb-2 line-clamp-2">
+                        <h3 className="font-bold text-lg text-gray-900 group-hover:text-juvay-red transition-colors mb-2 line-clamp-2">
                           {post.title}
                         </h3>
                         <p className="text-gray-600 text-sm line-clamp-2 mb-4">{post.excerpt}</p>
@@ -432,7 +432,7 @@ export const Blog: React.FC = () => {
                         </span>
                         <Link
                           to={post.isLocationBlog ? `/blog/location/${post.slug}` : `/blog/${post.slug}`}
-                          className="text-trini-red font-bold text-sm flex items-center gap-1 hover:underline"
+                          className="text-juvay-red font-bold text-sm flex items-center gap-1 hover:underline"
                         >
                           Read <ArrowRight className="h-4 w-4" />
                         </Link>
@@ -447,7 +447,7 @@ export const Blog: React.FC = () => {
 
         {/* CTA Section */}
         <section className="mt-20 relative overflow-hidden">
-          <div className="bg-gradient-to-br from-trini-red to-orange-600 rounded-3xl p-12 md:p-16 text-white text-center relative z-10">
+          <div className="bg-gradient-to-br from-juvay-red to-orange-600 rounded-3xl p-12 md:p-16 text-white text-center relative z-10">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
 
@@ -455,12 +455,12 @@ export const Blog: React.FC = () => {
               <TrendingUp className="h-16 w-16 mx-auto mb-6 opacity-80" />
               <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Have a Success Story?</h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                If TriniBuild has helped your business grow, we'd love to feature you on our blog and share your journey with the community.
+                If Juvay has helped your business grow, we'd love to feature you on our blog and share your journey with the community.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/contact"
-                  className="inline-flex items-center justify-center gap-2 bg-white text-trini-red px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors shadow-lg"
+                  className="inline-flex items-center justify-center gap-2 bg-white text-juvay-red px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors shadow-lg"
                 >
                   Submit Your Story
                 </Link>

@@ -102,7 +102,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
         Upload Payment Proof
       </h2>
       <p className="text-sm text-gray-600 mb-6">
-        Amount to pay: <span className="font-bold text-trini-red">TTD ${amount.toFixed(2)}</span>
+        Amount to pay: <span className="font-bold text-juvay-red">TTD ${amount.toFixed(2)}</span>
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,7 +123,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
           
           <label
             htmlFor="proof-upload"
-            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-trini-red transition-colors"
+            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-juvay-red transition-colors"
           >
             {preview ? (
               <img
@@ -156,7 +156,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
             value={referenceNumber}
             onChange={(e) => setReferenceNumber(e.target.value)}
             placeholder="e.g., TXN123456789"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-juvay-red focus:border-transparent"
           />
         </div>
 
@@ -169,7 +169,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
           <select
             value={bankName}
             onChange={(e) => setBankName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-juvay-red focus:border-transparent"
           >
             <option value="">Select bank</option>
             <option value="First Citizens Bank">First Citizens Bank</option>
@@ -192,7 +192,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
             onChange={(e) => setAccountLastFour(e.target.value.replace(/\D/g, '').slice(0, 4))}
             placeholder="1234"
             maxLength={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-juvay-red focus:border-transparent"
           />
         </div>
 
@@ -213,7 +213,7 @@ export const BankTransferUpload: React.FC<BankTransferUploadProps> = ({
           className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${
             !file || uploading
               ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-trini-red hover:bg-red-700'
+              : 'bg-juvay-red hover:bg-red-700'
           }`}
         >
           {uploading ? (

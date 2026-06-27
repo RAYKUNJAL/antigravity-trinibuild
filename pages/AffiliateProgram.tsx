@@ -16,8 +16,8 @@ export const AffiliateProgram: React.FC = () => {
    };
 
    const assets: MarketingAsset[] = [
-      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with TriniBuild! 🇹🇹 10 Free Listings. No Credit Card. Link in bio! #TriniBusiness" },
-      { id: '2', title: 'WhatsApp Status (Driver)', type: 'Social', url: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800', copy: "Drive and earn on your own schedule. Keep 85% of fares with TriniBuild Go. DM me for signup link!" },
+      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with Juvay! 🇹🇹 10 Free Listings. No Credit Card. Link in bio! #JuvayBusiness" },
+      { id: '2', title: 'WhatsApp Status (Driver)', type: 'Social', url: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800', copy: "Drive and earn on your own schedule. Keep 85% of fares with Juvay Go. DM me for signup link!" },
       { id: '3', title: 'Web Banner (300x250)', type: 'Banner', url: 'https://via.placeholder.com/300x250/CE1126/FFFFFF?text=Start+Selling+Free', copy: "" },
    ];
 
@@ -32,17 +32,17 @@ export const AffiliateProgram: React.FC = () => {
       return (
          <div className="min-h-screen bg-white font-sans">
             {/* Hero */}
-            <div className="bg-trini-black text-white py-24 relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-trini-red/20 to-transparent"></div>
+            <div className="bg-juvay-black text-white py-24 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-juvay-red/20 to-transparent"></div>
                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                  <span className="text-yellow-400 font-bold tracking-widest uppercase text-sm mb-4 block">TriniBuild Partner Program</span>
+                  <span className="text-yellow-400 font-bold tracking-widest uppercase text-sm mb-4 block">Juvay Partner Program</span>
                   <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-                     Turn Your Network <br /> Into <span className="text-trini-red">Passive Income.</span>
+                     Turn Your Network <br /> Into <span className="text-juvay-red">Passive Income.</span>
                   </h1>
                   <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
                      Earn <strong>20% recurring commissions</strong> on every store you refer. Plus TT$100 for every verified driver. The most lucrative affiliate program in the Caribbean.
                   </p>
-                  <button onClick={handleRegister} className="bg-white text-trini-black px-10 py-4 rounded-full font-extrabold text-lg hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all">
+                  <button onClick={handleRegister} className="bg-white text-juvay-black px-10 py-4 rounded-full font-extrabold text-lg hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all">
                      Start Earning Now
                   </button>
                </div>
@@ -78,7 +78,7 @@ export const AffiliateProgram: React.FC = () => {
                         <h3 className="text-xl font-bold text-center mb-2">Expand Globally</h3>
                         <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">Coming Soon</p>
                         <p className="text-center text-gray-500 text-sm mb-6">New Markets</p>
-                        <p className="text-gray-600 text-sm text-center">As TriniBuild expands, so do your opportunities. Get early access to new market referral programs.</p>
+                        <p className="text-gray-600 text-sm text-center">As Juvay expands, so do your opportunities. Get early access to new market referral programs.</p>
                      </div>
                   </div>
                </div>
@@ -87,20 +87,20 @@ export const AffiliateProgram: React.FC = () => {
             {/* Features */}
             <div className="py-20 bg-white">
                <div className="max-w-6xl mx-auto px-4">
-                  <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">Why Partner with TriniBuild?</h2>
+                  <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">Why Partner with Juvay?</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                      <div className="text-center p-6 rounded-xl">
-                        <DollarSign className="h-12 w-12 text-trini-red mx-auto mb-4" />
+                        <DollarSign className="h-12 w-12 text-juvay-red mx-auto mb-4" />
                         <h3 className="text-xl font-bold mb-2">Highest Commissions</h3>
                         <p className="text-gray-600">We offer the most competitive recurring commissions in the Caribbean market.</p>
                      </div>
                      <div className="text-center p-6 rounded-xl">
-                        <BarChart2 className="h-12 w-12 text-trini-red mx-auto mb-4" />
+                        <BarChart2 className="h-12 w-12 text-juvay-red mx-auto mb-4" />
                         <h3 className="text-xl font-bold mb-2">Real-time Tracking</h3>
                         <p className="text-gray-600">Monitor your clicks, conversions, and earnings with our intuitive dashboard.</p>
                      </div>
                      <div className="text-center p-6 rounded-xl">
-                        <Download className="h-12 w-12 text-trini-red mx-auto mb-4" />
+                        <Download className="h-12 w-12 text-juvay-red mx-auto mb-4" />
                         <h3 className="text-xl font-bold mb-2">Marketing Assets</h3>
                         <p className="text-gray-600">Access a library of banners, social media posts, and copy to boost your referrals.</p>
                      </div>
@@ -109,10 +109,10 @@ export const AffiliateProgram: React.FC = () => {
             </div>
 
             {/* CTA */}
-            <div className="bg-trini-black text-white py-20 text-center">
+            <div className="bg-juvay-black text-white py-20 text-center">
                <h2 className="text-4xl font-extrabold mb-4">Ready to Start Earning?</h2>
-               <p className="text-xl text-gray-300 mb-8">Join the TriniBuild Partner Program today and unlock your earning potential.</p>
-               <button onClick={handleRegister} className="bg-trini-red text-white px-10 py-4 rounded-full font-extrabold text-lg hover:bg-red-700 shadow-2xl transform hover:scale-105 transition-all">
+               <p className="text-xl text-gray-300 mb-8">Join the Juvay Partner Program today and unlock your earning potential.</p>
+               <button onClick={handleRegister} className="bg-juvay-red text-white px-10 py-4 rounded-full font-extrabold text-lg hover:bg-red-700 shadow-2xl transform hover:scale-105 transition-all">
                   Sign Up Now <ArrowRight className="inline-block ml-2 h-5 w-5" />
                </button>
             </div>
@@ -124,9 +124,9 @@ export const AffiliateProgram: React.FC = () => {
       <div className="min-h-screen bg-gray-100 font-sans">
          <div className="flex">
             {/* Sidebar */}
-            <div className="w-64 bg-trini-black text-white fixed h-full hidden md:block">
+            <div className="w-64 bg-juvay-black text-white fixed h-full hidden md:block">
                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-1">Partner<span className="text-trini-red">Hub</span></h2>
+                  <h2 className="text-2xl font-bold mb-1">Partner<span className="text-juvay-red">Hub</span></h2>
                   <p className="text-gray-400 text-xs">Affiliate ID: #TB-8821</p>
                </div>
                <nav className="mt-6">
@@ -141,7 +141,7 @@ export const AffiliateProgram: React.FC = () => {
                         <button
                            key={item.id}
                            onClick={() => setActiveTab(item.id as any)}
-                           className={`w-full flex items-center px-6 py-4 transition-colors border-l-4 ${activeTab === item.id ? 'bg-gray-800 border-trini-red text-white' : 'border-transparent text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+                           className={`w-full flex items-center px-6 py-4 transition-colors border-l-4 ${activeTab === item.id ? 'bg-gray-800 border-juvay-red text-white' : 'border-transparent text-gray-400 hover:bg-gray-800 hover:text-white'}`}
                         >
                            <Icon className="h-5 w-5 mr-3" /> {item.label}
                         </button>
@@ -214,12 +214,12 @@ export const AffiliateProgram: React.FC = () => {
                               <option>Pricing Page</option>
                            </select>
                            <div className="flex-grow relative">
-                              <input type="text" readOnly value="https://trinibuild.com/?ref=TB-8821" className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" />
+                              <input type="text" readOnly value="https://juvay.app/?ref=TB-8821" className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" />
                               <button className="absolute right-2 top-2 p-1.5 hover:bg-gray-200 rounded text-gray-500" onClick={() => alert("Copied!")}>
                                  <Copy className="h-5 w-5" />
                               </button>
                            </div>
-                           <button className="bg-trini-red text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700">Generate</button>
+                           <button className="bg-juvay-red text-white px-6 py-3 rounded-lg font-bold hover:bg-red-700">Generate</button>
                         </div>
                      </div>
 
@@ -237,13 +237,13 @@ export const AffiliateProgram: React.FC = () => {
                            <tbody className="divide-y divide-gray-200">
                               <tr>
                                  <td className="px-6 py-4 font-bold">Default</td>
-                                 <td className="px-6 py-4 text-blue-600 text-sm">trinibuild.com/?ref=TB-8821</td>
+                                 <td className="px-6 py-4 text-blue-600 text-sm">juvay.app/?ref=TB-8821</td>
                                   <td className="px-6 py-4">0</td>
                                  <td className="px-6 py-4 text-right"><button className="text-gray-400 hover:text-gray-600"><Copy className="h-4 w-4" /></button></td>
                               </tr>
                               <tr>
                                  <td className="px-6 py-4 font-bold">Instagram Bio</td>
-                                 <td className="px-6 py-4 text-blue-600 text-sm">trinibuild.com/create-store?ref=TB-8821</td>
+                                 <td className="px-6 py-4 text-blue-600 text-sm">juvay.app/create-store?ref=TB-8821</td>
                                   <td className="px-6 py-4">0</td>
                                  <td className="px-6 py-4 text-right"><button className="text-gray-400 hover:text-gray-600"><Copy className="h-4 w-4" /></button></td>
                               </tr>

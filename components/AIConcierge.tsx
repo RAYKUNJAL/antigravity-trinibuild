@@ -81,7 +81,7 @@ export const AIConcierge: React.FC<AIConciergeProps> = ({
             const welcomeMsg: ConversationMessage = {
                 id: 'welcome',
                 role: 'assistant',
-                content: "Hey there! 👋 I'm your TriniBuild Concierge. How can I help you today? I can help you find jobs, rentals, events, services, and more across Trinidad & Tobago!",
+                content: "Hey there! 👋 I'm your Juvay Concierge. How can I help you today? I can help you find jobs, rentals, events, services, and more across Trinidad & Tobago!",
                 timestamp: new Date().toISOString(),
                 metadata: {
                     suggestions: [
@@ -176,7 +176,7 @@ export const AIConcierge: React.FC<AIConciergeProps> = ({
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`${positionClasses[position]} bg-gradient-to-r from-trini-red to-orange-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 ${className}`}
+                className={`${positionClasses[position]} bg-gradient-to-r from-juvay-red to-orange-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 ${className}`}
                 aria-label="Open AI Concierge"
             >
                 <MessageCircle className="h-6 w-6" />
@@ -191,7 +191,7 @@ export const AIConcierge: React.FC<AIConciergeProps> = ({
             <div className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all ${isMinimized ? 'w-72 h-14' : 'w-96 h-[600px]'
                 }`}>
                 {/* Header */}
-                <div className="bg-gradient-to-r from-trini-red to-orange-500 text-white p-3 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-juvay-red to-orange-500 text-white p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-lg">
                             <Sparkles className="h-5 w-5" />
@@ -274,13 +274,13 @@ export const AIConcierge: React.FC<AIConciergeProps> = ({
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     placeholder="Ask me anything..."
-                                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-trini-red"
+                                    className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-juvay-red"
                                     disabled={isLoading}
                                 />
                                 <button
                                     type="submit"
                                     disabled={!inputValue.trim() || isLoading}
-                                    className="p-2 bg-trini-red text-white rounded-full hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 bg-juvay-red text-white rounded-full hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Send message"
                                 >
                                     <Send className="h-5 w-5" />
@@ -317,14 +317,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 {/* Avatar */}
                 <div className={`flex items-start gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
                     <div className={`p-2 rounded-full flex-shrink-0 ${isUser
-                            ? 'bg-trini-red text-white'
-                            : 'bg-gradient-to-r from-trini-red to-orange-500 text-white'
+                            ? 'bg-juvay-red text-white'
+                            : 'bg-gradient-to-r from-juvay-red to-orange-500 text-white'
                         }`}>
                         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     </div>
 
                     <div className={`rounded-2xl px-4 py-2 ${isUser
-                            ? 'bg-trini-red text-white'
+                            ? 'bg-juvay-red text-white'
                             : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                         }`}>
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -347,7 +347,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                             <button
                                 key={i}
                                 onClick={() => onQuickAction(action)}
-                                className="px-3 py-1.5 bg-trini-red/10 text-trini-red rounded-full text-xs font-medium hover:bg-trini-red/20 flex items-center gap-1"
+                                className="px-3 py-1.5 bg-juvay-red/10 text-juvay-red rounded-full text-xs font-medium hover:bg-juvay-red/20 flex items-center gap-1"
                             >
                                 {action.label} <ChevronRight className="h-3 w-3" />
                             </button>
@@ -416,7 +416,7 @@ const ResultCard: React.FC<{ result: ConciergeResult }> = ({ result }) => {
                             </span>
                         )}
                         {result.price && (
-                            <span className="text-xs font-bold text-trini-red">{result.price}</span>
+                            <span className="text-xs font-bold text-juvay-red">{result.price}</span>
                         )}
                     </div>
                 </div>

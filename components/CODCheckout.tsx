@@ -1,6 +1,6 @@
 /**
  * CODCheckout.tsx
- * Full Cash-on-Delivery checkout system for TriniBuild
+ * Full Cash-on-Delivery checkout system for Juvay
  * Includes TriniRides delivery integration as a shipping option
  */
 
@@ -558,7 +558,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
       if (store.whatsapp) {
         const driver = form.delivery === 'trinirides' && selectedDriver ? selectedDriver : null;
         const msg = [
-          `🛒 *New Order from TriniBuild*`,
+          `🛒 *New Order from Juvay*`,
           `Order: ${order.order_number || 'TRN-' + Date.now()}`,
           `Customer: ${form.name} · ${form.phone}`,
           `Deliver to: ${form.address}, ${form.city}`,
@@ -1060,7 +1060,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
           />
           <div className="mt-4 flex items-center gap-2 text-xs text-gray-400 justify-center">
             <Shield size={12} />
-            Secure checkout by TriniBuild
+            Secure checkout by Juvay
           </div>
         </div>
       </div>

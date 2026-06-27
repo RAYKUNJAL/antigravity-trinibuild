@@ -3,7 +3,7 @@ import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
 
-const LOGO_URL = "/trinibuild-logo.png";
+const LOGO_URL = "/juvay-logo.png";
 
 /* ────────────────────────────────────────────────────────────────────────
    DESKTOP DROPDOWN DATA
@@ -89,8 +89,8 @@ const DropdownPanel: React.FC<{ items: DropdownItem[]; onClose: () => void; widt
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group"
           >
-            <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-trini-red/10 flex items-center justify-center flex-shrink-0">
-              <Icon size={18} className="text-gray-500 group-hover:text-trini-red" />
+            <div className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-juvay-red/10 flex items-center justify-center flex-shrink-0">
+              <Icon size={18} className="text-gray-500 group-hover:text-juvay-red" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export const Navbar: React.FC = () => {
   const isTransparent = isHome && !scrolled;
   const lc = (path: string) =>
     `px-3 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
-      isTransparent ? 'text-white/90 hover:bg-white/10' : 'text-gray-700 hover:text-trini-red hover:bg-gray-50'
+      isTransparent ? 'text-white/90 hover:bg-white/10' : 'text-gray-700 hover:text-juvay-red hover:bg-gray-50'
     }`;
 
   return (
@@ -189,12 +189,12 @@ export const Navbar: React.FC = () => {
             <div className={`transition-all p-1 rounded ${isTransparent ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
               <img
                 src={LOGO_URL}
-                alt="TriniBuild"
+                alt="Juvay"
                 className="h-9 w-auto object-contain"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.parentElement!.innerHTML =
-                    '<span class="font-bold text-xl text-trini-red">TriniBuild</span>';
+                    '<span class="font-bold text-xl text-juvay-red">Juvay</span>';
                 }}
               />
             </div>
@@ -286,9 +286,9 @@ export const Navbar: React.FC = () => {
                     <Link to="/loyalty" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
                       <Star size={16} /> My Rewards
                     </Link>
-                    <Link to="/spin-wheel" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-bold text-trini-red hover:bg-red-50">
+                    <Link to="/spin-wheel" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-bold text-juvay-red hover:bg-red-50">
                       <Gift size={16} /> Spin to Win
-                      <span className="ml-auto text-[9px] bg-trini-red text-white px-1.5 py-0.5 rounded-full font-black">FREE</span>
+                      <span className="ml-auto text-[9px] bg-juvay-red text-white px-1.5 py-0.5 rounded-full font-black">FREE</span>
                     </Link>
                     <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100">
                       <LogOut size={16} /> Sign Out
@@ -304,7 +304,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/create-store"
                   className={`ml-1 px-4 py-2 rounded-lg text-sm font-black shadow-lg transition-all hover:-translate-y-0.5 flex items-center gap-1 ${
-                    isTransparent ? 'bg-white text-gray-900' : 'bg-trini-red text-white hover:bg-red-700'
+                    isTransparent ? 'bg-white text-gray-900' : 'bg-juvay-red text-white hover:bg-red-700'
                   }`}
                 >
                   Start Free <ArrowRight size={14} />
@@ -350,11 +350,11 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-2">
             <img
               src={LOGO_URL}
-              alt="TriniBuild"
+              alt="Juvay"
               className="h-8 w-auto"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-xl text-trini-red">TriniBuild</span>';
+                e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-xl text-juvay-red">Juvay</span>';
               }}
             />
           </div>
@@ -392,10 +392,10 @@ export const Navbar: React.FC = () => {
                   to={link.path}
                   onClick={() => setDrawerOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
-                    active ? 'bg-red-50 text-trini-red' : 'text-gray-700 hover:bg-gray-50'
+                    active ? 'bg-red-50 text-juvay-red' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon size={18} className={active ? 'text-trini-red' : 'text-gray-400'} />
+                  <Icon size={18} className={active ? 'text-juvay-red' : 'text-gray-400'} />
                   {link.name}
                 </Link>
               );
@@ -449,7 +449,7 @@ export const Navbar: React.FC = () => {
           <Link
             to="/create-store"
             onClick={() => setDrawerOpen(false)}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-trini-red text-white font-black text-base shadow-lg hover:bg-red-700 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-juvay-red text-white font-black text-base shadow-lg hover:bg-red-700 transition-colors"
           >
             Start Free <ArrowRight size={18} />
           </Link>
@@ -462,7 +462,7 @@ export const Navbar: React.FC = () => {
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-trini-red hover:text-white transition-colors"
+                  className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-juvay-red hover:text-white transition-colors"
                   aria-label={s.name}
                 >
                   <Icon size={16} />

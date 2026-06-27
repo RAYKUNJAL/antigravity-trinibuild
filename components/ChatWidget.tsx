@@ -171,7 +171,7 @@ Current user is browsing Juvay.`;
       // This should rarely happen now since aiService has fallback
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
-        text: `I apologize, but I'm having trouble right now. Please try:\n\n• Refreshing the page\n• Checking your internet connection\n• Contacting support@juvay.com\n\nI'm here to help once we're back online!`,
+        text: `I apologize, but I'm having trouble right now. Please try:\n\n• Refreshing the page\n• Checking your internet connection\n• Contacting support@juvay.app\n\nI'm here to help once we're back online!`,
         sender: 'ai'
       }]);
     } finally {
@@ -186,12 +186,12 @@ Current user is browsing Juvay.`;
       {isOpen && (
         <div className="bg-white rounded-2xl shadow-2xl w-80 sm:w-96 h-[500px] flex flex-col mb-4 border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-10 fade-in">
           {/* Header */}
-          <div className={`p-4 text-white flex justify-between items-center ${mode === 'platform' ? 'bg-trini-black' :
+          <div className={`p-4 text-white flex justify-between items-center ${mode === 'platform' ? 'bg-juvay-black' :
             mode === 'real_estate' ? 'bg-green-700' :
               mode === 'service_expert' ? 'bg-blue-600' :
                 mode === 'rides' ? 'bg-yellow-500' :
                   mode === 'paperwork_assistant' ? 'bg-indigo-600' :
-                    'bg-trini-teal'
+                    'bg-juvay-teal'
             }`}>
             <div className="flex items-center gap-2">
               <div className="bg-white/20 p-1.5 rounded-full">
@@ -232,7 +232,7 @@ Current user is browsing Juvay.`;
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user'
-                  ? 'bg-trini-red text-white rounded-br-none'
+                  ? 'bg-juvay-red text-white rounded-br-none'
                   : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'
                   }`}>
                   {msg.sender === 'ai' ? (
@@ -268,12 +268,12 @@ Current user is browsing Juvay.`;
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask meh anything..."
-                className="flex-grow bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-trini-red/20 focus:bg-white transition-all outline-none"
+                className="flex-grow bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-juvay-red/20 focus:bg-white transition-all outline-none"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
-                className="bg-trini-red text-white p-2 rounded-full hover:bg-red-700 disabled:opacity-50 disabled:scale-90 transition-all"
+                className="bg-juvay-red text-white p-2 rounded-full hover:bg-red-700 disabled:opacity-50 disabled:scale-90 transition-all"
                 aria-label="Send message"
               >
                 <Send className="h-5 w-5 ml-0.5" />
@@ -290,7 +290,7 @@ Current user is browsing Juvay.`;
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className={`${mode === 'real_estate' ? 'bg-green-600' : mode === 'service_expert' ? 'bg-blue-600' : mode === 'rides' ? 'bg-yellow-500' : mode === 'paperwork_assistant' ? 'bg-indigo-600' : 'bg-trini-black'} text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center group border-2 border-white/20`}
+          className={`${mode === 'real_estate' ? 'bg-green-600' : mode === 'service_expert' ? 'bg-blue-600' : mode === 'rides' ? 'bg-yellow-500' : mode === 'paperwork_assistant' ? 'bg-indigo-600' : 'bg-juvay-black'} text-white p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center group border-2 border-white/20`}
         >
           {mode === 'real_estate' ? (
             <Home className="h-8 w-8 group-hover:scale-110 transition-transform" />

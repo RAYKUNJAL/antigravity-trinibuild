@@ -59,7 +59,7 @@ export const AdminLayout: React.FC = () => {
                             <input
                                 type="text"
                                 placeholder="Search admin..."
-                                className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-trini-red w-64"
+                                className="pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-juvay-red w-64"
                             />
                         </div>
                     </div>
@@ -74,7 +74,7 @@ export const AdminLayout: React.FC = () => {
                                 <p className="text-sm font-bold text-gray-900 dark:text-white">{user.email?.split('@')[0]}</p>
                                 <p className="text-xs text-gray-500 capitalize">{user.role}</p>
                             </div>
-                            <div className="h-8 w-8 bg-trini-red rounded-full flex items-center justify-center text-white font-bold">
+                            <div className="h-8 w-8 bg-juvay-red rounded-full flex items-center justify-center text-white font-bold">
                                 {user.email?.[0].toUpperCase()}
                             </div>
                         </div>

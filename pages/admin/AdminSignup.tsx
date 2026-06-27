@@ -38,7 +38,7 @@ export const AdminSignup: React.FC = () => {
         <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
             {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-trini-red/20 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-juvay-red/20 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-500" />
             </div>
@@ -51,14 +51,14 @@ export const AdminSignup: React.FC = () => {
                 <div className="w-full max-w-md">
                     {/* Logo & Header */}
                     <div className="text-center mb-8 animate-in fade-in slide-in-from-top duration-700">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-trini-red to-red-700 rounded-2xl shadow-2xl shadow-trini-red/50 mb-6 transform hover:scale-110 transition-transform duration-300">
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-juvay-red to-red-700 rounded-2xl shadow-2xl shadow-juvay-red/50 mb-6 transform hover:scale-110 transition-transform duration-300">
                             <Shield className="h-10 w-10 text-white" />
                         </div>
                         <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                             Admin Command Center
                         </h1>
                         <p className="text-gray-400 flex items-center justify-center gap-2">
-                            <Sparkles className="h-4 w-4 text-trini-red" />
+                            <Sparkles className="h-4 w-4 text-juvay-red" />
                             Secure Access Portal
                         </p>
                     </div>
@@ -68,8 +68,8 @@ export const AdminSignup: React.FC = () => {
                         <div className="text-center py-8">
                             {status === 'loading' ? (
                                 <>
-                                    <div className="w-20 h-20 bg-trini-red/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <Loader2 className="h-10 w-10 text-trini-red animate-spin" />
+                                    <div className="w-20 h-20 bg-juvay-red/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <Loader2 className="h-10 w-10 text-juvay-red animate-spin" />
                                     </div>
                                     <h2 className="text-2xl font-bold text-white mb-2">Authenticating</h2>
                                     <p className="text-gray-400">Granting admin access...</p>
@@ -84,9 +84,9 @@ export const AdminSignup: React.FC = () => {
                                     <p className="text-sm text-gray-500">Redirecting to command center...</p>
                                     <div className="mt-6 flex justify-center">
                                         <div className="flex gap-1">
-                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce" />
-                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce delay-100" />
-                                            <div className="w-2 h-2 bg-trini-red rounded-full animate-bounce delay-200" />
+                                            <div className="w-2 h-2 bg-juvay-red rounded-full animate-bounce" />
+                                            <div className="w-2 h-2 bg-juvay-red rounded-full animate-bounce delay-100" />
+                                            <div className="w-2 h-2 bg-juvay-red rounded-full animate-bounce delay-200" />
                                         </div>
                                     </div>
                                 </div>
@@ -104,7 +104,7 @@ export const AdminSignup: React.FC = () => {
                     {/* Footer */}
                     <div className="mt-8 text-center animate-in fade-in duration-700 delay-300">
                         <p className="text-xs text-gray-600">
-                            Protected by TriniBuild SiteGuardian™ • Secure Authentication
+                            Protected by Juvay SiteGuardian™ • Secure Authentication
                         </p>
                     </div>
                 </div>

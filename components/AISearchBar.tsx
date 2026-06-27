@@ -213,8 +213,8 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                     onKeyDown={handleKeyDown}
                     placeholder={placeholder}
                     autoFocus={autoFocus}
-                    className={`w-full h-full ${config.input} pr-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-trini-red/50 focus:border-trini-red transition-all text-gray-900 dark:text-white placeholder-gray-400`}
-                    aria-label="Search TriniBuild"
+                    className={`w-full h-full ${config.input} pr-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg focus:outline-none focus:ring-2 focus:ring-juvay-red/50 focus:border-juvay-red transition-all text-gray-900 dark:text-white placeholder-gray-400`}
+                    aria-label="Search Juvay"
                 />
 
                 {query && (
@@ -229,7 +229,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
 
                 <button
                     onClick={() => handleSearch(query)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-trini-red to-orange-500 text-white rounded-xl font-medium text-sm hover:shadow-md transition-all flex items-center gap-1"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-gradient-to-r from-juvay-red to-orange-500 text-white rounded-xl font-medium text-sm hover:shadow-md transition-all flex items-center gap-1"
                     aria-label="Search"
                 >
                     <Sparkles className="h-4 w-4" />
@@ -277,7 +277,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                                         <button
                                             key={loc.slug}
                                             onClick={() => handleSearch(`in ${loc.name}`)}
-                                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-trini-red/10 hover:text-trini-red transition-colors"
+                                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-juvay-red/10 hover:text-juvay-red transition-colors"
                                         >
                                             {loc.name}
                                         </button>
@@ -296,7 +296,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                                     onClick={() => handleSearch(`in ${loc}`)}
                                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
                                 >
-                                    <MapPin className="h-4 w-4 text-trini-red" />
+                                    <MapPin className="h-4 w-4 text-juvay-red" />
                                     <span className="text-gray-800 dark:text-gray-200">Search in <strong>{loc}</strong></span>
                                 </button>
                             ))}
@@ -317,15 +317,15 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                     {quickResults && quickResults.blocks.length > 0 && (
                         <div className="p-4">
                             <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Sparkles className="h-3 w-3 text-trini-red" />
+                                <Sparkles className="h-3 w-3 text-juvay-red" />
                                 {quickResults.total_results} Results Found
                             </div>
 
                             {/* How-to Answer */}
                             {quickResults.how_to_answer && (
-                                <div className="mb-4 p-4 bg-gradient-to-r from-trini-red/5 to-orange-500/5 rounded-xl border border-trini-red/10">
+                                <div className="mb-4 p-4 bg-gradient-to-r from-juvay-red/5 to-orange-500/5 rounded-xl border border-juvay-red/10">
                                     <div className="flex items-start gap-3">
-                                        <Sparkles className="h-5 w-5 text-trini-red flex-shrink-0 mt-0.5" />
+                                        <Sparkles className="h-5 w-5 text-juvay-red flex-shrink-0 mt-0.5" />
                                         <p className="text-gray-700 dark:text-gray-300 text-sm">{quickResults.how_to_answer}</p>
                                     </div>
                                 </div>
@@ -341,7 +341,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                                         </span>
                                         <button
                                             onClick={() => navigate(block.see_more_url)}
-                                            className="text-xs text-trini-red hover:underline flex items-center gap-1"
+                                            className="text-xs text-juvay-red hover:underline flex items-center gap-1"
                                         >
                                             See all <ChevronRight className="h-3 w-3" />
                                         </button>
@@ -362,7 +362,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                                                     <div className="text-sm text-gray-500 truncate">{result.subtitle}</div>
                                                 </div>
                                                 {result.price_label && (
-                                                    <span className="text-sm font-bold text-trini-red">{result.price_label}</span>
+                                                    <span className="text-sm font-bold text-juvay-red">{result.price_label}</span>
                                                 )}
                                             </button>
                                         ))}
@@ -373,7 +373,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                             {/* View All Results */}
                             <button
                                 onClick={() => handleSearch(query)}
-                                className="w-full mt-2 py-3 bg-gradient-to-r from-trini-red to-orange-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                                className="w-full mt-2 py-3 bg-gradient-to-r from-juvay-red to-orange-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all"
                             >
                                 View All Results <ArrowRight className="h-4 w-4" />
                             </button>
@@ -383,7 +383,7 @@ export const AISearchBar: React.FC<AISearchBarProps> = ({
                     {/* Loading State */}
                     {isSearching && !quickResults && (
                         <div className="p-8 text-center">
-                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-trini-red" />
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-juvay-red" />
                             <p className="mt-2 text-sm text-gray-500">Searching...</p>
                         </div>
                     )}

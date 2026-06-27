@@ -56,7 +56,7 @@
     }
 
     .text-gradient {
-        @apply bg-clip-text text-transparent bg-gradient-to-r from-trini-red to-trini-teal;
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-juvay-red to-juvay-teal;
     }
 
     /* Animations */

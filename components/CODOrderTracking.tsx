@@ -84,7 +84,7 @@ export const CODOrderTracking: React.FC<CODOrderTrackingProps> = ({ orderId }) =
           <p className="text-red-600 mb-4">{error || 'Order not found'}</p>
           <button
             onClick={loadTracking}
-            className="px-6 py-2 bg-trini-red text-white rounded-lg hover:bg-red-700"
+            className="px-6 py-2 bg-juvay-red text-white rounded-lg hover:bg-red-700"
           >
             Try Again
           </button>
@@ -131,14 +131,14 @@ export const CODOrderTracking: React.FC<CODOrderTrackingProps> = ({ orderId }) =
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-r from-trini-red to-red-700 rounded-2xl p-6 text-white shadow-sm"
+            className="bg-gradient-to-r from-juvay-red to-red-700 rounded-2xl p-6 text-white shadow-sm"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h2 className="text-lg font-black mb-1">Your Driver</h2>
                 <p className="text-xl font-bold text-white/90">{driver.name}</p>
                 <div className="flex items-center gap-1 mt-2">
-                  <Star className="w-4 h-4 fill-trini-gold text-trini-gold" />
+                  <Star className="w-4 h-4 fill-juvay-gold text-juvay-gold" />
                   <span className="text-sm font-semibold">{driver.rating.toFixed(1)}</span>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export const CODOrderTracking: React.FC<CODOrderTrackingProps> = ({ orderId }) =
               <div className="flex flex-col gap-2">
                 <a
                   href={`tel:${driver.phone}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-white text-trini-red rounded-lg font-bold hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-juvay-red rounded-lg font-bold hover:bg-gray-100 transition-colors"
                 >
                   <Phone className="w-4 h-4" />
                   Call
@@ -193,7 +193,7 @@ export const CODOrderTracking: React.FC<CODOrderTrackingProps> = ({ orderId }) =
                 className="flex gap-4"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-trini-red flex items-center justify-center text-white">
+                  <div className="w-10 h-10 rounded-full bg-juvay-red flex items-center justify-center text-white">
                     {getStatusIcon(event.status.toLowerCase().replace(/ /g, '_'))}
                   </div>
                   {index < timeline.length - 1 && (
@@ -244,7 +244,7 @@ export const CODOrderTracking: React.FC<CODOrderTrackingProps> = ({ orderId }) =
               Order Delivered! 🎉
             </h2>
             <p className="text-green-700">
-              Thank you for shopping with TriniBuild. We hope you enjoy your order!
+              Thank you for shopping with Juvay. We hope you enjoy your order!
             </p>
           </motion.div>
         )}

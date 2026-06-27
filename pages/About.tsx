@@ -8,7 +8,7 @@ export const About: React.FC = () => {
             <section className="relative py-20 px-4">
                 <div className="max-w-6xl mx-auto text-center">
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                        About TriniBuild
+                        About Juvay
                     </h1>
                     <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
                         Trinidad & Tobago's Premier Digital Business Platform
@@ -25,7 +25,7 @@ export const About: React.FC = () => {
                             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Our Mission</h2>
                         </div>
                         <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                            TriniBuild is dedicated to empowering Trinidad & Tobago's businesses and entrepreneurs
+                            Juvay is dedicated to empowering Trinidad & Tobago's businesses and entrepreneurs
                             with cutting-edge digital tools. We provide a comprehensive platform that enables anyone
                             to build, grow, and scale their business online—from small vendors to established enterprises.
                         </p>
@@ -148,7 +148,7 @@ export const About: React.FC = () => {
                         Ready to Build Your Business?
                     </h2>
                     <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
-                        Join thousands of Trinidad & Tobago businesses already growing with TriniBuild
+                        Join thousands of Trinidad & Tobago businesses already growing with Juvay
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <a

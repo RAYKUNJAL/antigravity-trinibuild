@@ -18,6 +18,13 @@ export default {
           teal: '#008080', // Secondary accent
           gold: '#D4AF37', // Premium accent
         },
+        juvay: {
+          red: '#DC2626', // red-600
+          black: '#000000',
+          white: '#FFFFFF',
+          teal: '#008080',
+          gold: '#D4AF37',
+        },
         gray: {
           50: '#F9FAFB',
           100: '#F3F4F6',
