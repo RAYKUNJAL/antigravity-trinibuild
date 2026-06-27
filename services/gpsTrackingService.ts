@@ -5,12 +5,12 @@
  * Features:
  * - Real-time location capture (every 10 seconds)
  * - Supabase real-time subscriptions
- * - ETA calculation using Google Maps API
+ * - ETA calculation using straight-line distance (Google Maps API removed)
  * - Route tracking and history
  * - Battery-efficient geolocation
  */
 
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 
 export interface GPSLocation {
   latitude: number;
@@ -214,7 +214,9 @@ export class GPSTrackingService {
   }
 
   /**
-   * Calculate ETA using Google Maps Distance Matrix API
+   * Calculate ETA using straight-line distance (Haversine formula)
+   * Google Maps Distance Matrix API removed — uses calculateDistance() as a stub.
+   * TODO: Optionally integrate OpenRouteService for driving distance/duration.
    */
   async calculateETA(
     fromLat: number,
@@ -223,32 +225,10 @@ export class GPSTrackingService {
     toLng: number
   ): Promise<{ distance: number; duration: number } | null> {
     try {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      
-      if (!apiKey) {
-        console.warn('Google Maps API key not configured');
-        // Fallback to basic calculation
-        const distance = this.calculateDistance(fromLat, fromLng, toLat, toLng);
-        const duration = Math.ceil((distance / 30) * 60); // Assume 30 km/h average
-        return { distance: Math.round(distance * 1000), duration };
-      }
-
-      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${fromLat},${fromLng}&destinations=${toLat},${toLng}&key=${apiKey}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.rows?.[0]?.elements?.[0]) {
-        const element = data.rows[0].elements[0];
-        if (element.status === 'OK') {
-          return {
-            distance: element.distance.value, // in meters
-            duration: Math.ceil(element.duration.value / 60) // in minutes
-          };
-        }
-      }
-
-      return null;
+      // Straight-line distance fallback (no external API key needed)
+      const distance = this.calculateDistance(fromLat, fromLng, toLat, toLng);
+      const duration = Math.ceil((distance / 30) * 60); // Assume 30 km/h average
+      return { distance: Math.round(distance * 1000), duration }; // distance in meters, duration in minutes
     } catch (err) {
       console.error('Error calculating ETA:', err);
       return null;

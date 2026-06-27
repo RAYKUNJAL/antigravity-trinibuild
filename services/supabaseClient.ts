@@ -1,4 +1,4 @@
-
+// Self-hosted Supabase at api.juvay.app — do not use cloud supabase.co URL
 import { createClient } from '@supabase/supabase-js';
 
 // These environment variables will need to be set in your .env file
