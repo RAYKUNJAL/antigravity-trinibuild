@@ -3,7 +3,7 @@
  * Handles ride requests, driver matching, pricing, and trip lifecycle
  */
 
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 import { gpsTrackingService } from './gpsTrackingService';
 
 export interface TripRequest {

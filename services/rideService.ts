@@ -196,14 +196,17 @@ class RideService {
     }
 
     /**
-     * Calculate fare estimate
+     * Calculate fare estimate — island-aware, pulled from island_config table.
+     * Falls back to documented TriniRides pricing (TT$25 base + TT$4/km).
      */
-    async calculateFare(distance: number, duration: number, vehicleType: string = 'standard') {
-        const baseFare = 5.00; // Base fare in TTD
-        const perKmRate = vehicleType === 'premium' ? 12.00 : vehicleType === 'xl' ? 15.00 : 8.00;
-        const perMinRate = 2.00;
-
-        const fare = baseFare + (distance * perKmRate) + (duration * perMinRate);
+    async calculateFare(distance: number, duration: number, vehicleType: string = 'standard', islandCode: string = 'TT') {
+        let base = 25, perKm = 4, perMin = 0.5;
+        try {
+            const { data } = await supabase.from('island_config').select('ride_base_fare,ride_per_km,ride_per_min').eq('code', islandCode).single();
+            if (data) { base = Number(data.ride_base_fare); perKm = Number(data.ride_per_km); perMin = Number(data.ride_per_min); }
+        } catch { /* fall back to TT defaults */ }
+        const multiplier = vehicleType === 'premium' ? 1.5 : vehicleType === 'xl' ? 1.8 : 1;
+        const fare = (base + distance * perKm + duration * perMin) * multiplier;
         return Math.round(fare * 100) / 100; // Round to 2 decimal places
     }
 
