@@ -1,6 +1,7 @@
 import AIListingDashboard from './pages/AIListingDashboard';
 import AISiteBuilder from './pages/AISiteBuilder';
 import PublishedSite from './pages/PublishedSite';
+import DriverPassPage from './pages/DriverPassPage';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
@@ -178,6 +179,8 @@ const App: React.FC = () => {
             <Route path="/ai-builder" element={<AISiteBuilder />} />
             <Route path="/build-my-site" element={<AISiteBuilder />} />
             <Route path="/site/:slug" element={<PublishedSite />} />
+            <Route path="/driver-pass" element={<DriverPassPage />} />
+            <Route path="/driver/pass" element={<DriverPassPage />} />
 
             {/* Pages with padding */}
             <Route element={<PageLayout />}>

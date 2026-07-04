@@ -1,19 +1,8 @@
 import { supabase } from './supabaseClient';
 
-// Commission rates by job type
-const COMMISSION_RATES = {
-    rideshare: 0.15,      // 15%
-    delivery: 0.20,       // 20%
-    courier: 0.15,        // 15%
-    rideshare_premium: 0.10  // 10% for H-Cars
-};
-
-// Subscription discounts
-const SUBSCRIPTION_DISCOUNTS = {
-    free: 0,
-    pro: 0.05,   // 5% discount
-    elite: 0.08  // 8% discount
-};
+// ZERO-COMMISSION MODEL (2026): per-ride commission removed.
+// Platform revenue comes from the Driver Pass (see driverPassService.ts).
+// Drivers keep 100% of rideshare & courier fares. Legacy constants removed.
 
 export interface Driver {
     id: string;
@@ -162,7 +151,9 @@ export const driverService = {
         if (error) throw error;
     },
 
-    // Calculate earnings for a job (with monetization logic)
+    // Calculate earnings for a job — ZERO-COMMISSION trust-pass model.
+    // Rideshare/courier: driver keeps 100% of fare + tips (platform revenue = driver pass).
+    // Delivery: small platform fee retained (digital-order category, easier to collect).
     calculateJobEarnings(
         basePrice: number,
         jobType: 'rideshare' | 'delivery' | 'courier',
@@ -170,19 +161,9 @@ export const driverService = {
         surgeMultiplier: number = 1.0,
         tipAmount: number = 0
     ) {
-        // Start with base commission rate
-        let commissionRate = COMMISSION_RATES[jobType];
+        // Zero commission on rides & courier — the driver-pass replaces per-ride cuts
+        const commissionRate = jobType === 'delivery' ? 0.05 : 0;
 
-        // Premium service (H-Car) gets lower commission
-        if (jobType === 'rideshare' && driver.is_h_car) {
-            commissionRate = COMMISSION_RATES.rideshare_premium;
-        }
-
-        // Apply subscription discount
-        const subscriptionDiscount = SUBSCRIPTION_DISCOUNTS[driver.subscription_tier] || 0;
-        commissionRate = Math.max(0, commissionRate - subscriptionDiscount);
-
-        // Calculate totals
         const totalPrice = basePrice * surgeMultiplier;
         const commission = totalPrice * commissionRate;
         const driverEarnings = totalPrice - commission + tipAmount;
@@ -191,7 +172,7 @@ export const driverService = {
             base_price: basePrice,
             surge_multiplier: surgeMultiplier,
             total_price: totalPrice,
-            commission_rate: commissionRate * 100, // Convert to percentage
+            commission_rate: commissionRate * 100, // 0% for rides — driver keeps 100%
             trinibuild_commission: Math.round(commission * 100) / 100,
             driver_earnings: Math.round(driverEarnings * 100) / 100,
             tip_amount: tipAmount
