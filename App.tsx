@@ -1,4 +1,6 @@
 import AIListingDashboard from './pages/AIListingDashboard';
+import AISiteBuilder from './pages/AISiteBuilder';
+import PublishedSite from './pages/PublishedSite';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
@@ -170,6 +172,12 @@ const App: React.FC = () => {
             <Route path="/" element={<LandingPageCRO />} />
             <Route path="/welcome" element={<WelcomeScreen />} />
             <Route path="/landing" element={<LandingPageCRO />} />
+
+            {/* AI Website Builder (Wix-style) — full-bleed layout */}
+            <Route path="/website-builder" element={<AISiteBuilder />} />
+            <Route path="/ai-builder" element={<AISiteBuilder />} />
+            <Route path="/build-my-site" element={<AISiteBuilder />} />
+            <Route path="/site/:slug" element={<PublishedSite />} />
 
             {/* Pages with padding */}
             <Route element={<PageLayout />}>
