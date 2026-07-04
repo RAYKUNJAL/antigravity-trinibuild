@@ -148,6 +148,13 @@ export default function DriverPassPage() {
                                     <div>
                                         <p className="font-extrabold">{p.name} {p.tier === 'pro' && <span className="text-[#FFD700] text-xs font-bold ml-1">POPULAR</span>}</p>
                                         <p className="text-2xl font-black mt-0.5">TT${Number(p.price_ttd).toFixed(0)}<span className="text-sm text-gray-500 font-semibold">/{p.period}</span></p>
+                                        <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                                            {((p as any).services || []).map((s: string) => (
+                                                <span key={s} className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">
+                                                    {s === 'rideshare' ? '🚗 Rides' : s === 'delivery' ? '🛵 Delivery' : '📦 Courier'}
+                                                </span>
+                                            ))}
+                                        </div>
                                         {p.free_ride_threshold != null && <p className="text-xs text-emerald-400 font-semibold mt-1">Free until {p.free_ride_threshold} rides/week</p>}
                                     </div>
                                     <div className="flex flex-col gap-2 shrink-0">

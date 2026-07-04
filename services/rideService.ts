@@ -188,6 +188,16 @@ class RideService {
                 .single();
 
             if (error) throw error;
+
+            // Earn-Before-You-Pay: every completed job counts toward the weekly
+            // threshold (rides, deliveries, and courier jobs count equally).
+            if (status === 'completed' && (data as any)?.driver_id) {
+                supabase.rpc('record_driver_completed_ride', { p_driver: (data as any).driver_id })
+                    .then(({ data: r }: any) => {
+                        if (r?.payment_due) console.log('🔔 Driver hit weekly threshold — pass due by Sunday');
+                    });
+            }
+
             return data;
         } catch (error: any) {
             console.error('Update ride status error:', error);

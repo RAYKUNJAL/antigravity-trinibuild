@@ -14,6 +14,7 @@ export interface PassPlan {
     slug: string; name: string; price_ttd: number;
     period: 'trial' | 'day' | 'week' | 'month';
     tier: 'basic' | 'pro' | 'fleet'; features: string[]; sort: number;
+    services?: JobType[]; free_ride_threshold?: number | null;
 }
 
 export interface DriverPass {
@@ -254,4 +255,32 @@ export async function completePickup(orderId: string, code: string) {
         .eq('id', orderId).select().single();
     if (ue) throw ue;
     return data;
+}
+
+// ---------- 3-in-1 service access (rideshare | delivery | courier) ----------
+export type JobType = 'rideshare' | 'delivery' | 'courier';
+
+// Which of the 3 services can this driver work right now?
+// One pass, tier decides scope: Basic = rides + delivery, Pro/Fleet = + courier.
+export async function checkServiceAccess(jobType: JobType): Promise<{ allowed: boolean; reason?: string }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { allowed: false, reason: 'Please log in.' };
+    const { data, error } = await supabase.rpc('driver_can_accept_job', { p_driver: user.id, p_job_type: jobType });
+    if (error) return { allowed: false, reason: error.message };
+    if (data === true) return { allowed: true };
+    const access = await checkDriverAccess();
+    if (!access.canDrive) return { allowed: false, reason: access.message };
+    return {
+        allowed: false,
+        reason: jobType === 'courier'
+            ? 'Courier jobs need the Weekly Pro pass (TT$100/wk) — upgrade to unlock packages, airport queue, and scheduled rides.'
+            : 'This service is not included in your current pass.',
+    };
+}
+
+// Courier booking fee (added to the CUSTOMER price at job creation — never
+// deducted from the driver). Per-island from island_config.
+export async function getCourierBookingFee(islandCode = 'TT'): Promise<{ fee: number; symbol: string }> {
+    const { data } = await supabase.from('island_config').select('courier_booking_fee,currency_symbol').eq('code', islandCode).single();
+    return { fee: Number(data?.courier_booking_fee ?? 10), symbol: data?.currency_symbol ?? 'TT$' };
 }
