@@ -5,29 +5,44 @@
 // =============================================================
 import { BuilderSite, BusinessBrief, generateSiteLocal } from './siteBuilderService';
 
+// OPEN-SOURCE FIRST: your self-hosted Ollama server (VITE_AI_SERVER_URL,
+// OpenAI-compatible /v1/chat/completions) is tried first. Groq is an
+// OPTIONAL cloud fallback. Local engine is the guaranteed last resort.
+const AI_SERVER = ((import.meta as any).env?.VITE_AI_SERVER_URL || '').replace(/\/$/, '');
+const OLLAMA_MODEL = (import.meta as any).env?.VITE_AI_MODEL || 'llama3.1';
 const GROQ_KEY = (import.meta as any).env?.VITE_GROQ_API_KEY || '';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.3-70b-versatile';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-export const aiAvailable = () => !!GROQ_KEY;
+export const aiAvailable = () => !!AI_SERVER || !!GROQ_KEY;
 
-async function groqChat(system: string, user: string, json = false): Promise<string | null> {
-    if (!GROQ_KEY) return null;
+async function chatCompletion(url: string, model: string, key: string, system: string, user: string, json: boolean, timeoutMs: number): Promise<string | null> {
     try {
-        const res = await fetch(GROQ_URL, {
+        const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_KEY}` },
+            headers: { 'Content-Type': 'application/json', ...(key ? { Authorization: `Bearer ${key}` } : {}) },
             body: JSON.stringify({
-                model: MODEL, temperature: 0.7, max_tokens: 1200,
+                model, temperature: 0.7, max_tokens: 1200,
                 messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
                 ...(json ? { response_format: { type: 'json_object' } } : {}),
             }),
-            signal: AbortSignal.timeout(25000),
+            signal: AbortSignal.timeout(timeoutMs),
         });
         if (!res.ok) return null;
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
     } catch { return null; }
+}
+
+async function groqChat(system: string, user: string, json = false): Promise<string | null> {
+    // 1) Your open-source Ollama server on the VPS
+    if (AI_SERVER) {
+        const r = await chatCompletion(`${AI_SERVER}/v1/chat/completions`, OLLAMA_MODEL, '', system, user, json, 30000);
+        if (r) return r;
+    }
+    // 2) Optional hosted fallback (Groq)
+    if (GROQ_KEY) return chatCompletion(GROQ_URL, GROQ_MODEL, GROQ_KEY, system, user, json, 25000);
+    return null;
 }
 
 const CARIBBEAN_SYSTEM = `You are Juvay Assistant, the built-in AI for a Caribbean website builder. You help small business owners (Trinidad, Jamaica, Barbados, and the wider Caribbean) build professional online stores. Key market facts you always respect: most customers pay CASH ON DELIVERY or cash on pickup — never assume card payments; WhatsApp is the main business channel; keep language warm, plain, and confident — professional but with Caribbean warmth, no corporate jargon. Currency is local (TT$, J$, Bds$, EC$).`;
