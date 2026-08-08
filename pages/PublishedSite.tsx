@@ -20,9 +20,44 @@ export default function PublishedSite() {
 
     useEffect(() => {
         if (!site) return;
-        document.title = site.seo?.title || site.business_name;
-        const meta = document.querySelector('meta[name="description"]');
-        if (meta && site.seo?.description) meta.setAttribute('content', site.seo.description);
+        const title = site.seo?.title || `${site.business_name} | ${site.island}`;
+        const desc = site.seo?.description || `Shop ${site.business_name} online — cash on delivery available in ${site.island}.`;
+        const url = `https://juvay.app/site/${site.slug}`;
+
+        document.title = title;
+        const setMeta = (selector: string, attr: string, content: string) => {
+            let el = document.querySelector(selector) as HTMLMetaElement | HTMLLinkElement | null;
+            if (!el) {
+                el = document.createElement(selector.startsWith('link') ? 'link' : 'meta');
+                if (selector.includes('property=')) el.setAttribute('property', selector.match(/property="([^"]+)"/)?.[1] || '');
+                else if (selector.includes('name=')) el.setAttribute('name', selector.match(/name="([^"]+)"/)?.[1] || '');
+                else if (selector.includes('rel=')) el.setAttribute('rel', selector.match(/rel="([^"]+)"/)?.[1] || '');
+                document.head.appendChild(el);
+            }
+            el.setAttribute(attr, content);
+        };
+        setMeta('meta[name="description"]', 'content', desc);
+        setMeta('link[rel="canonical"]', 'href', url);
+        setMeta('meta[property="og:title"]', 'content', title);
+        setMeta('meta[property="og:description"]', 'content', desc);
+        setMeta('meta[property="og:url"]', 'content', url);
+        setMeta('meta[property="og:type"]', 'content', 'business.business');
+        setMeta('meta[name="twitter:title"]', 'content', title);
+        setMeta('meta[name="twitter:description"]', 'content', desc);
+
+        // JSON-LD LocalBusiness — this is what gets merchants into Google's
+        // local pack / maps results, not just blue-link search.
+        const contact = site.sections.find((s) => s.type === 'contact')?.data || {};
+        let ld = document.getElementById('ld-json-store') as HTMLScriptElement | null;
+        if (!ld) { ld = document.createElement('script'); ld.id = 'ld-json-store'; ld.type = 'application/ld+json'; document.head.appendChild(ld); }
+        ld.textContent = JSON.stringify({
+            '@context': 'https://schema.org', '@type': 'LocalBusiness',
+            name: site.business_name, description: desc, url,
+            address: { '@type': 'PostalAddress', addressLocality: contact.address || site.island, addressCountry: site.island },
+            telephone: contact.phone || contact.whatsapp || undefined,
+            priceRange: '$$',
+            areaServed: site.island,
+        });
     }, [site]);
 
     if (loading) {

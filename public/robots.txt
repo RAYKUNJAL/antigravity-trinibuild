@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /merchant/pickups
+Disallow: /driver-pass
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://juvay.app/sitemap.xml

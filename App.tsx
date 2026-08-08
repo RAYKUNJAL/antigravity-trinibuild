@@ -1,6 +1,7 @@
 import AIListingDashboard from './pages/AIListingDashboard';
 import AISiteBuilder from './pages/AISiteBuilder';
 import { IslandProvider } from './components/IslandFilter';
+import SitemapXml from './pages/SitemapXml';
 import PublishedSite from './pages/PublishedSite';
 import DriverPassPage from './pages/DriverPassPage';
 import AdminPaymentsVerify from './pages/AdminPaymentsVerify';
@@ -183,6 +184,7 @@ const App: React.FC = () => {
             <Route path="/ai-builder" element={<AISiteBuilder />} />
             <Route path="/build-my-site" element={<AISiteBuilder />} />
             <Route path="/site/:slug" element={<PublishedSite />} />
+            <Route path="/sitemap.xml" element={<SitemapXml />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
             <Route path="/admin/payments" element={<AdminPaymentsVerify />} />
             <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
