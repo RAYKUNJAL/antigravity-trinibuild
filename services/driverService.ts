@@ -106,6 +106,17 @@ export const driverService = {
 
     // Update driver status (online/offline/busy)
     async updateStatus(status: 'offline' | 'online' | 'busy' | 'on_break') {
+        // Pass gate: going online requires an active trial/pass (earn-first weeks count).
+        if (status === 'online') {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: ok } = await supabase.rpc('driver_can_accept_rides', { p_driver: user.id });
+                if (ok === false) {
+                    throw new Error('Your Driver Pass is not active. Start your free 30-day trial or renew at /driver-pass — you always keep 100% of your fares.');
+                }
+            }
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
 
