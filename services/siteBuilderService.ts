@@ -10,7 +10,7 @@ import { supabase } from './supabaseClient';
 // ---------- Types ----------
 export type SectionType =
     | 'hero' | 'about' | 'features' | 'products' | 'gallery'
-    | 'testimonials' | 'hours' | 'faq' | 'contact' | 'cta';
+    | 'testimonials' | 'hours' | 'faq' | 'contact' | 'cta' | 'payments';
 
 export interface SiteSection {
     id: string;
@@ -30,6 +30,7 @@ export interface SiteTheme {
     headingFont: string;
     bodyFont: string;
     radius: string;
+    heroStyle?: 'gradient' | 'split' | 'minimal';
 }
 
 export interface BuilderSite {
@@ -90,6 +91,25 @@ export const THEME_PRESETS: Record<string, SiteTheme> = {
         headingFont: "'Inter', sans-serif", bodyFont: "'Inter', sans-serif", radius: '24px',
     },
 };
+
+// ---------- COMMERCIAL TEMPLATES (full presets: theme + typography + hero style) ----------
+export interface CommercialTemplate {
+    name: string; tier: 'free' | 'pro'; category: string; theme: SiteTheme; heroStyle: 'gradient' | 'split' | 'minimal';
+}
+export const COMMERCIAL_TEMPLATES: CommercialTemplate[] = [
+    { name: 'Island Kitchen', tier: 'free', category: 'Food & Restaurant', heroStyle: 'gradient',
+      theme: { preset: 'islandKitchen', primary: '#D9432C', secondary: '#F5A524', background: '#141210', surface: '#1E1B17', text: '#FBF7F0', muted: '#A89F92', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '18px' } },
+    { name: 'Runway Noir', tier: 'free', category: 'Fashion & Clothing', heroStyle: 'minimal',
+      theme: { preset: 'runwayNoir', primary: '#111111', secondary: '#C9A96A', background: '#FAFAF8', surface: '#FFFFFF', text: '#111111', muted: '#6E6A63', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '2px' } },
+    { name: 'Coconut Luxe', tier: 'pro', category: 'Beauty & Wellness', heroStyle: 'split',
+      theme: { preset: 'coconutLuxe', primary: '#8C5E3C', secondary: '#D9B896', background: '#FBF6F0', surface: '#FFFFFF', text: '#2E2118', muted: '#8A7563', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '26px' } },
+    { name: 'Tech Slate', tier: 'free', category: 'Electronics', heroStyle: 'gradient',
+      theme: { preset: 'techSlate', primary: '#3B82F6', secondary: '#22D3EE', background: '#0A0F1A', surface: '#111827', text: '#F1F5F9', muted: '#7C8AA0', headingFont: "'Inter', sans-serif", bodyFont: "'Inter', sans-serif", radius: '12px' } },
+    { name: 'Trade Pro', tier: 'free', category: 'Services', heroStyle: 'split',
+      theme: { preset: 'tradePro', primary: '#166534', secondary: '#EAB308', background: '#FCFDF9', surface: '#FFFFFF', text: '#14201A', muted: '#5F6F66', headingFont: "'Inter', sans-serif", bodyFont: "'Inter', sans-serif", radius: '10px' } },
+    { name: 'Carnival Nights', tier: 'pro', category: 'Events', heroStyle: 'gradient',
+      theme: { preset: 'carnivalNights', primary: '#E61E2B', secondary: '#FFD700', background: '#0B0508', surface: '#171015', text: '#FFF8F0', muted: '#A08D96', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '16px' } },
+];
 
 const VIBE_TO_PRESET: Record<BusinessBrief['vibe'], string> = {
     vibrant: 'carnival', premium: 'midnightPremium', beachy: 'oceanBreeze',
@@ -232,6 +252,17 @@ export function generateSiteLocal(brief: BusinessBrief): BuilderSite {
         },
         { id: uid(), type: 'faq', enabled: true, data: { title: 'Common Questions', items: copy.faq.map(([q, a]) => ({ id: uid(), q, a: fill(a, brief) })) } },
         {
+            id: uid(), type: 'payments', enabled: true, data: {
+                title: 'How You Can Pay',
+                subtitle: 'Cash-friendly, always. No card needed.',
+                methods: [
+                    { id: uid(), icon: '💵', name: 'Cash on Delivery', detail: 'Pay when your order reaches you' },
+                    { id: uid(), icon: '🏪', name: 'Cash on Pickup', detail: 'Reserve online, pay at the counter' },
+                    { id: uid(), icon: '🏦', name: 'Bank Transfer', detail: 'Pay ahead by transfer or deposit' },
+                ],
+            },
+        },
+        {
             id: uid(), type: 'contact', enabled: true, data: {
                 title: 'Get In Touch',
                 phone: brief.phone || '', whatsapp: brief.whatsapp || '', email: brief.email || '',
@@ -350,6 +381,17 @@ export async function saveSite(site: BuilderSite): Promise<BuilderSite> {
 }
 
 export async function publishSite(site: BuilderSite): Promise<BuilderSite> {
+    // Plan gate: Free plan = 1 published site; Pro/Premium = unlimited
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        const { data: plan } = await supabase.from('user_plan_subscriptions').select('plan_slug').eq('user_id', user.id).maybeSingle();
+        const isFree = !plan || plan.plan_slug === 'free';
+        if (isFree) {
+            const { count } = await supabase.from('builder_sites').select('id', { count: 'exact', head: true })
+                .eq('owner_id', user.id).eq('status', 'published').neq('id', site.id || '00000000-0000-0000-0000-000000000000');
+            if ((count || 0) >= 1) throw new Error('Free plan includes 1 published website. Upgrade to Pro (TT$199/mo) for unlimited sites + premium templates + unlimited AI.');
+        }
+    }
     let slug = site.slug || slugify(site.business_name);
     // ensure slug uniqueness (append suffix on collision)
     const { data: clash } = await supabase.from('builder_sites').select('id').eq('slug', slug).neq('id', site.id || '00000000-0000-0000-0000-000000000000').maybeSingle();

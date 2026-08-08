@@ -19,7 +19,7 @@ export default function SiteSectionRenderer({ section, theme, storeId, preview }
 
     const S: Record<string, React.CSSProperties> = {
         wrap: { background: t.background, color: t.text, fontFamily: t.bodyFont },
-        h2: { fontFamily: t.headingFont, fontWeight: 900, fontSize: 'clamp(26px,4vw,40px)', margin: 0, lineHeight: 1.15 },
+        h2: { fontFamily: t.headingFont, fontWeight: 800, fontSize: 'clamp(26px,4vw,40px)', margin: 0, lineHeight: 1.15 },
         muted: { color: t.muted, lineHeight: 1.65 },
         card: { background: t.surface, borderRadius: t.radius, border: `1px solid ${t.muted}22` },
         btn: {
@@ -168,6 +168,25 @@ export default function SiteSectionRenderer({ section, theme, storeId, preview }
                 </section>
             );
         }
+
+        case 'payments':
+            return (
+                <section style={sectionStyle}>
+                    <div style={{ textAlign: 'center', marginBottom: 34 }}>
+                        <h2 style={S.h2}>{d.title}</h2>
+                        {d.subtitle && <p style={{ ...S.muted, marginTop: 10, fontWeight: 600 }}>{d.subtitle}</p>}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18, maxWidth: 900, margin: '0 auto' }}>
+                        {(d.methods || []).map((m: any, i: number) => (
+                            <div key={m.id || i} style={{ ...S.card, padding: 26, textAlign: 'center', borderTop: `3px solid ${t.primary}` }}>
+                                <div style={{ fontSize: 34, marginBottom: 12 }}>{m.icon}</div>
+                                <h3 style={{ fontFamily: t.headingFont, fontWeight: 800, fontSize: 17, margin: '0 0 7px' }}>{m.name}</h3>
+                                <p style={{ ...S.muted, fontSize: 14, margin: 0 }}>{m.detail}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
 
         case 'cta':
             return (

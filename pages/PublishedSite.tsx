@@ -48,8 +48,18 @@ export default function PublishedSite() {
         );
     }
 
+    const contact = site.sections.find((s) => s.type === 'contact')?.data || {};
+    const wa = String(contact.whatsapp || '').replace(/\D/g, '');
+
     return (
         <div style={{ background: site.theme.background, minHeight: '100vh' }}>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap" />
+            {wa && (
+                <a href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi! I want to place an order 🛍️')}`} target="_blank" rel="noreferrer"
+                    style={{ position: 'fixed', bottom: 22, right: 22, zIndex: 50, background: '#25D366', color: '#fff', fontWeight: 800, padding: '14px 22px', borderRadius: 999, textDecoration: 'none', boxShadow: '0 8px 28px rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                    💬 Order on WhatsApp
+                </a>
+            )}
             {site.sections.filter((s) => s.enabled).map((sec) => (
                 <SiteSectionRenderer key={sec.id} section={sec} theme={site.theme} storeId={site.store_id || undefined} />
             ))}

@@ -14,6 +14,9 @@ import {
     generateSiteAI, regenerateSectionCopy, saveSite, publishSite, listMySites, getMyStores,
 } from '../services/siteBuilderService';
 import SiteSectionRenderer from '../components/SiteSectionRenderer';
+import BuilderAIAssistant from '../components/BuilderAIAssistant';
+import { generateSiteWithAI, improveText } from '../services/groqAgent';
+import { COMMERCIAL_TEMPLATES } from '../services/siteBuilderService';
 
 const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 
@@ -58,7 +61,7 @@ export default function AISiteBuilder() {
     const generate = async () => {
         setStep('generating'); setError('');
         try {
-            const generated = await generateSiteAI(brief);
+            const generated = await generateSiteWithAI(brief);
             if (stores.length === 1) generated.store_id = stores[0].id;
             setSite(generated);
             setTimeout(() => setStep('editor'), 1400);
@@ -284,11 +287,24 @@ export default function AISiteBuilder() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Left panel */}
                 <div className="w-full max-w-xs border-r border-gray-800 bg-black overflow-y-auto p-4 hidden lg:block">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Theme</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Commercial Templates</p>
+                    <div className="space-y-2 mb-5">
+                        {COMMERCIAL_TEMPLATES.map((tpl) => (
+                            <button key={tpl.name} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
+                                className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition-all ${site.theme.preset === tpl.theme.preset ? 'border-white bg-gray-900' : 'border-gray-800 hover:border-gray-600'}`}>
+                                <div className="w-10 h-10 rounded-lg shrink-0" style={{ background: `linear-gradient(135deg, ${tpl.theme.primary}, ${tpl.theme.secondary})` }} />
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-bold truncate">{tpl.name} {tpl.tier === 'pro' && <span className="text-[9px] font-black text-[#FFD700] ml-1">PRO</span>}</p>
+                                    <p className="text-[11px] text-gray-500 truncate">{tpl.category}</p>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Quick Colours</p>
                     <div className="grid grid-cols-5 gap-2 mb-6">
                         {Object.values(THEME_PRESETS).map((t) => (
                             <button key={t.preset} title={t.preset} onClick={() => setSite({ ...site, theme: { ...t } })}
-                                className={`h-10 rounded-lg border-2 transition-transform hover:scale-110 ${site.theme.preset === t.preset ? 'border-white' : 'border-transparent'}`}
+                                className={`h-9 rounded-lg border-2 transition-transform hover:scale-110 ${site.theme.preset === t.preset ? 'border-white' : 'border-transparent'}`}
                                 style={{ background: `linear-gradient(135deg, ${t.primary}, ${t.secondary})` }} />
                         ))}
                     </div>
@@ -328,7 +344,13 @@ export default function AISiteBuilder() {
                                     <div className="mt-3 space-y-2 border-t border-gray-800 pt-3">
                                         {Object.entries(sec.data).filter(([, v]) => typeof v === 'string').map(([k, v]) => (
                                             <div key={k}>
-                                                <label className="text-[10px] uppercase tracking-wide text-gray-500">{k}</label>
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] uppercase tracking-wide text-gray-500">{k}</label>
+                                                    <button title="Improve with AI" className="text-[10px] text-[#FFD700] hover:text-yellow-300 font-bold"
+                                                        onClick={async () => { const better = await improveText(String(v), k, brief); updateSectionData(sec.id, k, better); }}>
+                                                        ✨ improve
+                                                    </button>
+                                                </div>
                                                 {(v as string).length > 60
                                                     ? <textarea value={v as string} rows={3} onChange={(e) => updateSectionData(sec.id, k, e.target.value)} className="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-2 text-sm mt-0.5" />
                                                     : <input value={v as string} onChange={(e) => updateSectionData(sec.id, k, e.target.value)} className="w-full bg-black border border-gray-700 rounded-lg px-2.5 py-2 text-sm mt-0.5" />}
@@ -352,6 +374,7 @@ export default function AISiteBuilder() {
                     </div>
                 </div>
             </div>
+            <BuilderAIAssistant siteContext={{ name: site.business_name, category: site.business_category || brief.category, island: site.island }} />
         </div>
     );
 }
