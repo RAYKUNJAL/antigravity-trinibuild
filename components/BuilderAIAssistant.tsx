@@ -12,7 +12,10 @@ export default function BuilderAIAssistant({ siteContext }: { siteContext?: { na
     const [open, setOpen] = useState(false);
     const [msgs, setMsgs] = useState<Msg[]>([{
         role: 'ai',
-        text: `I'm your Juvay Assistant 🏝️ Ask me anything — "write a better headline", "how do I get my first sale", "what should I charge for delivery" — and I'll help you build a store that sells.`,
+        // EU AI Act Article 50 (in force 2 Aug 2026): must disclose AI interaction
+        // explicitly at first contact — "Assistant" alone isn't sufficient per the
+        // Commission's 20 Jul 2026 guidelines on the "obviously AI" exemption.
+        text: `👋 I'm Juvay Assistant, an AI chatbot (not a person) built into this website builder. Ask me anything — "write a better headline", "how do I get my first sale", "what should I charge for delivery" — and I'll help you build a store that sells.`,
     }]);
     const [input, setInput] = useState('');
     const [busy, setBusy] = useState(false);
@@ -43,7 +46,7 @@ export default function BuilderAIAssistant({ siteContext }: { siteContext?: { na
                         <div className="flex items-center justify-between px-4 py-3 bg-black border-b border-gray-800">
                             <div className="flex items-center gap-2">
                                 <Sparkles size={16} className="text-[#FFD700]" />
-                                <span className="font-extrabold text-sm text-white">Juvay Assistant</span>
+                                <span className="font-extrabold text-sm text-white">Juvay Assistant <span className="text-gray-500 font-semibold">· AI</span></span>
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aiAvailable() ? 'bg-emerald-950 text-emerald-400' : 'bg-gray-800 text-gray-400'}`}>
                                     {aiAvailable() ? 'AI LIVE' : 'OFFLINE MODE'}
                                 </span>

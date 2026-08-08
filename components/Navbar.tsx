@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Truck, CalendarDays, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { IslandSelector } from './IslandFilter';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
 
@@ -298,6 +299,7 @@ export const Navbar: React.FC = () => {
               </div>
             ) : (
               <>
+                <IslandSelector compact />
                 <Link to="/login" className={lc('/login')}>
                   Log In
                 </Link>

@@ -1,5 +1,6 @@
 import AIListingDashboard from './pages/AIListingDashboard';
 import AISiteBuilder from './pages/AISiteBuilder';
+import { IslandProvider } from './components/IslandFilter';
 import PublishedSite from './pages/PublishedSite';
 import DriverPassPage from './pages/DriverPassPage';
 import AdminPaymentsVerify from './pages/AdminPaymentsVerify';
@@ -164,6 +165,7 @@ const App: React.FC = () => {
   useGamificationInit();
   
   return (
+    <IslandProvider>
     <Router>
       <ScrollToTop />
       <div className="flex flex-col min-h-screen font-sans text-gray-900 bg-white">
@@ -425,6 +427,7 @@ const App: React.FC = () => {
         <ChatWidget mode="platform" />
       </div>
     </Router>
+    </IslandProvider>
   );
 };
 
