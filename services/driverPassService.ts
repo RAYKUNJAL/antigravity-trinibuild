@@ -120,7 +120,20 @@ export function generatePassReference(userId: string, planSlug: string): string 
 }
 
 // Step 1: driver picks a plan + method → gets deposit details + reference code
-export async function requestPassPayment(planSlug: string, method: 'wam' | 'bank' | 'card' | 'credit', periods = 1) {
+const TTD_TO_USD = 6.8; // PayPal has no TTD support — charge USD equivalent
+export const PAYPAL_BUSINESS = 'raykunjal@gmail.com';
+
+export function buildPayPalUrl(referenceCode: string, amountTtd: number, itemLabel: string): string {
+    const usd = (amountTtd / TTD_TO_USD).toFixed(2);
+    const params = new URLSearchParams({
+        cmd: '_xclick', business: PAYPAL_BUSINESS,
+        item_name: `${itemLabel} — ${referenceCode}`,
+        amount: usd, currency_code: 'USD', no_shipping: '1',
+    });
+    return `https://www.paypal.com/cgi-bin/webscr?${params.toString()}`;
+}
+
+export async function requestPassPayment(planSlug: string, method: 'wam' | 'bank' | 'card' | 'credit' | 'paypal', periods = 1) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Please log in first.');
     const { data: plan, error: pe } = await supabase.from('driver_pass_plans').select('*').eq('slug', planSlug).single();
@@ -133,7 +146,10 @@ export async function requestPassPayment(planSlug: string, method: 'wam' | 'bank
     if (error) throw error;
     return {
         payment: data,
-        instructions: method === 'wam'
+        paypalUrl: method === 'paypal' ? buildPayPalUrl(reference_code, amount_ttd, plan.name) : undefined,
+        instructions: method === 'paypal'
+            ? `Pay US$${(amount_ttd / TTD_TO_USD).toFixed(2)} (≈ TT$${amount_ttd.toFixed(2)}) via PayPal — your reference ${reference_code} is in the item name. After paying, upload your PayPal receipt screenshot here.`
+            : method === 'wam'
             ? `Send ${amount_ttd.toFixed(2)} TTD via WAM and put ${reference_code} in the payment note. Then upload your WAM screenshot here.`
             : method === 'bank'
                 ? `Deposit exactly ${amount_ttd.toFixed(2)} TTD at any branch to the R&R Digital Solutions Ltd account and write ${reference_code} as the narration. Then upload your teller slip here.`
