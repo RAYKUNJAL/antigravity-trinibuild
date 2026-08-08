@@ -3,6 +3,7 @@ import AISiteBuilder from './pages/AISiteBuilder';
 import PublishedSite from './pages/PublishedSite';
 import DriverPassPage from './pages/DriverPassPage';
 import AdminPaymentsVerify from './pages/AdminPaymentsVerify';
+import MerchantPickupQueue from './pages/MerchantPickupQueue';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
@@ -182,6 +183,8 @@ const App: React.FC = () => {
             <Route path="/site/:slug" element={<PublishedSite />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
             <Route path="/admin/payments" element={<AdminPaymentsVerify />} />
+            <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
+            <Route path="/pickups" element={<MerchantPickupQueue />} />
             <Route path="/driver/pass" element={<DriverPassPage />} />
 
             {/* Pages with padding */}
