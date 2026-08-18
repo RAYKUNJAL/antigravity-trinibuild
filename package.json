@@ -1,0 +1,14 @@
+{
+  "name": "caribbean-ai-trade-network",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Caribbean AI Trade Network — trustworthy B2B trade infrastructure. Vertical slice: source-backed business discovery, claim, verification, product publish, RFQ.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check server.js && node --check src/store.js && node --check src/domain.js && node --check seed.js"
+  },
+  "engines": { "node": ">=18" }
+}
