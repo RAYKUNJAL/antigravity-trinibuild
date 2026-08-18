@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const domain = require('./domain');
+const pg = require('./pg');
 const D = domain;
 
 const ROOT = path.resolve(__dirname, '..');
@@ -19,7 +20,27 @@ function blank() {
 }
 let db = (() => { try { return fs.existsSync(DB_FILE) ? JSON.parse(fs.readFileSync(DB_FILE,'utf8')) : blank(); } catch { return blank(); } })();
 let _t;
-function persist() { clearTimeout(_t); _t = setTimeout(()=>{ fs.mkdirSync(path.dirname(DB_FILE),{recursive:true}); fs.writeFileSync(DB_FILE, JSON.stringify(db,null,2)); }, 40); }
+function persist() {
+  clearTimeout(_t);
+  _t = setTimeout(()=>{
+    try { fs.mkdirSync(path.dirname(DB_FILE),{recursive:true}); fs.writeFileSync(DB_FILE, JSON.stringify(db,null,2)); } catch(e){}
+    pg.flushAll(db).catch(err=>console.error('pg flush error:', err && err.message));
+  }, 40);
+}
+async function initPg(){
+  await pg.migrate();
+  const has = await pg.count('businesses');
+  if (has > 0){
+    const fresh = blank();
+    await pg.hydrate(fresh);
+    Object.keys(db).forEach(k=>{ db[k]=[]; });
+    Object.assign(db, fresh);
+    console.log('pg hydrate: businesses =', db.businesses.length, 'sources =', db.sources.length);
+  } else {
+    await pg.flushAll(db);
+    console.log('pg seeded from db.json: businesses =', db.businesses.length);
+  }
+}
 const nowIso = () => new Date().toISOString();
 function log(action, actor, target, detail) {
   db.activity.unshift({ id: D.id('evt'), action, actor: actor||'system', target: target||null, detail: detail||{}, at: nowIso() });
@@ -27,11 +48,11 @@ function log(action, actor, target, detail) {
 }
 
 // ---- Users / organizations / memberships ----
-function createUser({ email, name, password_hash, role='owner', org_name, island='tt', currency, buyer_external, buyer_destination }) {
+function createUser({ email, name, password_hash, role='owner', org_name, island='tt', currency, buyer_external, buyer_destination, consents }) {
   const norm = String(email||'').trim().toLowerCase();
   if (db.users.some(u=>u.email===norm)) throw new Error('A user with that email already exists');
   const u = { id: D.id('usr'), email: norm, name, password_hash, role, island: island||'tt', currency: currency||'TTD',
-    buyer_external: !!buyer_external, buyer_destination: buyer_destination||null, created_at: nowIso() };
+    buyer_external: !!buyer_external, buyer_destination: buyer_destination||null, consents: consents||null, created_at: nowIso() };
   db.users.push(u);
   // org (default one per user for MVP)
   const org = { id: D.id('org'), name: org_name || name + "'s Company", island: island||'tt', currency: currency||'TTD', created_at: nowIso() };
@@ -225,5 +246,5 @@ module.exports = {
   createOrder, getOrder, listOrders, addMilestone, addOrderDocument,
   createPaymentIntent, markPayment, markPaymentByWamRef, listPayments, saveLandedCost, listLandedCosts,
   addTradeRule, addHsCandidate, tradeRulesFor, listActivity, reset,
-  _db: ()=>db, id: D.id,
+  _db: ()=>db, id: D.id, initPg,
 };

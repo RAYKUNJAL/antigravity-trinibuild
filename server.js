@@ -1,6 +1,8 @@
 // server.js — full commercial B2B trade platform HTTP server (zero deps)
 'use strict';
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
 const domain = require('./src/domain');
 const store = require('./src/store');
 const auth = require('./src/auth');
@@ -9,7 +11,11 @@ const wam = require('./src/services/wam');
 const ui = require('./src/ui');
 const concierge = require('./src/services/concierge');
 const CATS = require('./data/sources/categories.json');
+const pg = require('./src/pg');
+const landedCostEngine = require('./src/services/landed-cost');
+const legal = require('./src/legal');
 const PORT = Number(process.env.PORT || 4000);
+function round2(n){ return Math.round((Number(n)+Number.EPSILON)*100)/100; }
 
 function json(res, status, v) { const b = JSON.stringify(v, null, 2); res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(b); }
 function html(res, status, h) { res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(h); }
@@ -36,6 +42,14 @@ const signup = (active, role) => page('Start free', '<h1>Start free</h1><p class
 async function handle(req, res) {
   const url = new URL(req.url, 'http://x'); const p = url.pathname; const q = url.searchParams;
 
+  // Static assets from /public
+  if (req.method === 'GET' && p.startsWith('/public/')) {
+    const file = path.join(__dirname, 'public', p.replace('/public/', ''));
+    const mime = {'.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon','.gif':'image/gif','.css':'text/css','.js':'application/javascript'};
+    if (fs.existsSync(file) && fs.statSync(file).isFile()) { res.writeHead(200, {'Content-Type': mime[path.extname(file)]||'application/octet-stream','Cache-Control':'public,max-age=86400'}); res.end(fs.readFileSync(file)); return; }
+    return json(res, 404, { ok:false, error:'not_found' });
+  }
+
   if (req.method === 'GET' && p === '/') return html(res, 200, ui.marketplace(store.listBusinesses(), store._db().products));
   if (req.method === 'GET' && p === '/browse') {
     const countries = [...new Set(store.listBusinesses().map(b=>b.country))].filter(Boolean).sort();
@@ -52,6 +66,12 @@ async function handle(req, res) {
   if (req.method === 'GET' && p === '/landed-cost') return html(res, 200, ui.landedCostPage());
   if (req.method === 'GET' && p === '/trade-info') return html(res, 200, ui.tradeInfoPage());
   if (req.method === 'GET' && p === '/plans') return html(res, 200, ui.plansPage(auth.auth(req)?.name));
+  if (req.method === 'GET' && p === '/privacy') return html(res, 200, legal.render('privacy'));
+  if (req.method === 'GET' && p === '/terms') return html(res, 200, legal.render('terms'));
+  if (req.method === 'GET' && p === '/cookies') return html(res, 200, legal.render('cookies'));
+  if (req.method === 'GET' && p === '/dpa') return html(res, 200, legal.render('dpa'));
+  if (req.method === 'GET' && p === '/acceptable-use') return html(res, 200, legal.render('acceptable-use'));
+  if (req.method === 'GET' && p === '/advertise') return html(res, 200, ui.advertisePage());
   if (req.method === 'GET' && p === '/login') return html(res, 200, ui.loginPage(auth.auth(req)?.name));
   if (req.method === 'GET' && p === '/signup') return html(res, 200, ui.signupPage(auth.auth(req)?.name, q.get('role')));
 
@@ -71,6 +91,18 @@ async function handle(req, res) {
 
   if (req.method === 'GET' && p === '/api/businesses') return json(res, 200, { ok: true, data: store.listBusinesses() });
   if (req.method === 'GET' && p === '/api/search') { const data = store.searchBusinesses({ q:q.get('q'), category:q.get('category'), country:q.get('country'), city:q.get('city') }); return json(res, 200, { ok: true, count: data.length, data }); }
+  if (req.method === 'GET' && p === '/api/suggest') {
+    const term=(q.get('q')||'').toLowerCase().trim();
+    const all = store.listBusinesses();
+    const names=[], cities=new Set(), countries=new Set(), categories=new Set();
+    for (const b of all){
+      if (names.length<8 && (!term || (b.name||'').toLowerCase().includes(term))) names.push(b.name);
+      if (b.city && (b.city||'').toLowerCase().includes(term)) cities.add(b.city);
+      if (b.country && (b.country||'').toLowerCase().includes(term)) countries.add(b.country);
+      if (b.category && (b.category||'').toLowerCase().includes(term)) categories.add(b.category);
+    }
+    return json(res,200,{ ok:true, names, cities:[...cities].slice(0,6), countries:[...countries].slice(0,10), categories:[...categories].slice(0,6) });
+  }
   let m = p.match(/^\/api\/businesses\/([^/]+)$/);
   if (req.method === 'GET' && m) { const b = store.getBusiness(m[1]); return b ? json(res, 200, { ok: true, data: store.publicBusiness(b), products: store.listProducts(b.id) }) : json(res, 404, { ok: false, error: 'not_found' }); }
 
@@ -150,9 +182,115 @@ async function handle(req, res) {
   if (req.method === 'GET' && p === '/api/admin/activity') return json(res, 200, { ok: true, data: store.listActivity(q.get('limit')) });
   if (req.method === 'GET' && p === '/api/admin/stats') { const d = store._db(); return json(res, 200, { ok: true, data: { users: d.users.length, organizations: d.organizations.length, businesses: d.businesses.length, products: d.products.length, rfqs: d.rfqs.length, quotes: d.quotes.length, orders: d.orders.length, payments: d.payments.length, activity: d.activity.length } }); }
 
+
+  // ---- Trade engine: Landed Cost & Escrow & Settlement (Postgres) ----
+  if (req.method === 'GET' && p === '/api/v1/countries'){ try { return json(res, 200, { ok:true, data: await pg.listCountryProfiles() }); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+  if (req.method === 'GET' && p === '/api/v1/tariffs'){ try { return json(res, 200, { ok:true, data: await pg.listTariffs() }); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+  if (req.method === 'GET' && p === '/api/v1/freight'){ try { return json(res, 200, { ok:true, data: await pg.listFreight() }); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+
+  if (req.method === 'POST' && p === '/api/v1/landed-cost/quote'){
+    const body = await readBody(req);
+    try { const res2 = await landedCostEngine.computeLandedCost(body); return json(res, 200, { ok:true, data: res2 }); }
+    catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+
+  if (req.method === 'POST' && p === '/api/v1/trade-orders'){
+    const body = await readBody(req);
+    try {
+      const lc = await landedCostEngine.computeLandedCost(body);
+      const id = require('node:crypto').randomUUID();
+      const order = await pg.createTradeOrder({
+        id, order_number: 'ORD-' + Date.now().toString(36).toUpperCase(),
+        buyer_org_id: body.buyer_org_id||null, supplier_org_id: body.supplier_org_id||null,
+        product: body.product||'Trade order', quantity: body.line_items && body.line_items[0] ? body.line_items[0].quantity : 1,
+        price_usd: lc.base_goods_total_usd, currency: body.currency||'USD', incoterm: lc.incoterm,
+        origin_country: lc.origin_country, destination_country: lc.destination_country, has_caricom_coo: lc.has_caricom_coo,
+        base_goods_total_usd: lc.base_goods_total_usd, freight_charge_usd: lc.freight_charge_usd, insurance_charge_usd: lc.insurance_charge_usd,
+        cif_value_usd: lc.cif_value_usd, import_duty_usd: lc.import_duty_usd, customs_service_charge_usd: lc.customs_service_charge_usd,
+        environmental_levy_usd: lc.environmental_levy_usd, vat_gct_usd: lc.vat_gct_usd, port_handling_usd: lc.port_handling_usd,
+        final_landed_total_usd: lc.final_landed_total_usd, duty_rate_applied: lc.duty_rate_applied, vat_rate_applied: lc.vat_rate_applied,
+      });
+      return json(res, 201, { ok:true, order, landed_cost: lc });
+    } catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+
+  if (req.method === 'POST' && p === '/api/v1/escrow/initiate'){
+    const body = await readBody(req);
+    try {
+      const order = await pg.getTradeOrder(body.order_id);
+      if(!order) return json(res,404,{ok:false,error:'order_not_found'});
+      const amount = Number(order.final_landed_total_usd) || Number(order.price_usd) || 0;
+      const platform_fee = round2(amount * 0.03);
+      const seller_net = round2(amount - platform_fee);
+      const fx = 6.78; // example corridor FX (TTD per USD)
+      const checkout_url = 'https://pay.example.com/' + body.order_id;
+      const expires = new Date(Date.now() + 60*60*1000).toISOString();
+      const escrow = await pg.createEscrow({
+        order_id: order.id, buyer_id: order.buyer_org_id||null, seller_id: order.supplier_org_id||null,
+        amount_total_usd: amount, platform_fee_usd: platform_fee, seller_net_payout_usd: seller_net,
+        inbound_rail: body.payment_rail || 'WIPAY', payment_currency: body.payment_currency || 'USD',
+        fx_rate: fx, checkout_url, expires_at: expires,
+      });
+      return json(res, 201, { ok:true, escrow_id: escrow.id, order_id: order.id, status: escrow.status,
+        required_deposit: { amount_usd: amount, amount_local: round2(amount*fx), currency: body.payment_currency||'USD', fx_rate: fx },
+        payment_payload: { checkout_url, expires_at: expires } });
+    } catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+
+  let esc = p.match(/^\/api\/v1\/escrow\/([^/]+)\/(confirm-deposit|update-milestone|release)$/);
+  if (req.method === 'POST' && esc){
+    const body = await readBody(req);
+    try {
+      const escrowId = esc[1]; const action = esc[2];
+      if (action === 'confirm-deposit'){
+        const tr = await pg.transitionEscrow(escrowId, 'HELD_IN_ESCROW', { tx_ref: body.tx_ref, rail: body.payment_rail, funded_at: new Date().toISOString(), actor_role:'SYSTEM', metadata:{amount_received_usd: body.amount_received_usd} });
+        return tr.ok ? json(res,200,{ok:true, escrow_id:escrowId, status:'HELD_IN_ESCROW', funded_at:new Date().toISOString()}) : json(res,404,{ok:false,error:tr.error});
+      }
+      if (action === 'update-milestone'){
+        const allowed = ['IN_TRANSIT','CUSTOMS_CLEARED'];
+        const to = String(body.milestone||'').toUpperCase();
+        if(!allowed.includes(to)) return json(res,400,{ok:false,error:'bad_milestone'});
+        const tr = await pg.transitionEscrow(escrowId, to, { actor_role:'SYSTEM', metadata:{tracking_code: body.tracking_code, document_url: body.document_url} });
+        return tr.ok ? json(res,200,{ok:true, escrow_id:escrowId, status:to, updated_at:new Date().toISOString()}) : json(res,404,{ok:false,error:tr.error});
+      }
+      if (action === 'release'){
+        if(!body.buyer_signoff) return json(res,400,{ok:false,error:'buyer_signoff_required'});
+        const tr = await pg.transitionEscrow(escrowId, 'COMPLETED', { rail: body.payout_rail||'MERCURY_ACH', released_at: new Date().toISOString(), actor_role:'SYSTEM', notes:'buyer signoff' });
+        if(!tr.ok) return json(res,404,{ok:false,error:tr.error});
+        const esc = tr.escrow;
+        return json(res,200,{ok:true, escrow_id:escrowId, status:'COMPLETED', payout:{ seller_id: esc.seller_id, net_amount_usd: Number(esc.seller_net_payout_usd), platform_fee_usd: Number(esc.platform_fee_usd), payout_rail: esc.outbound_rail||body.payout_rail||'MERCURY_ACH', payout_tx_ref: 'ach_'+Date.now(), released_at: new Date().toISOString() }});
+      }
+    } catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+  let escGet = p.match(/^\/api\/v1\/escrow\/([^/]+)$/);
+  if (req.method === 'GET' && escGet){ try { const e=await pg.getEscrow(escGet[1]); return e ? json(res,200,{ok:true,escrow:e,events:await pg.escrowEvents(escGet[1])}) : json(res,404,{ok:false,error:'not_found'}); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+
+
+  // ---- Advertising platform ----
+  if (req.method === 'GET' && p === '/api/v1/ads') { try { const data = await pg.listActiveAds(q.get('placement')); return json(res,200,{ok:true,data}); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+  if (req.method === 'GET' && p === '/api/v1/ads/manage') { try { const data = await pg.listAds(); return json(res,200,{ok:true,data}); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+  if (req.method === 'POST' && p === '/api/v1/ads') {
+    const b = await readBody(req);
+    try {
+      const ad = await pg.createAd(b);
+      const activated = await pg.setAdStatus(ad.id, 'active');
+      return json(res, 201, { ok:true, ad: activated, payment: { status:'paid', note:'Payment rail stubbed for demo — wire Wam/PayPal/card here in production.' } });
+    } catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+  let adev = p.match(/^\/api\/v1\/ads\/([^/]+)\/(impression|click)$/);
+  if (req.method === 'POST' && adev){ try { await pg.recordAdEvent(adev[1], adev[2]); return json(res,200,{ok:true}); } catch(e){ return json(res,500,{ok:false,error:e.message}); } }
+  let adact = p.match(/^\/api\/v1\/ads\/([^/]+)\/activate$/);
+  if (req.method === 'POST' && adact){ const ad=await pg.setAdStatus(adact[1],'active'); return ad ? json(res,200,{ok:true,ad}) : json(res,404,{ok:false,error:'not_found'}); }
+
   return json(res, 404, { ok: false, error: 'not_found' });
 }
 
+
+
 const server = http.createServer((req, res) => { handle(req, res).catch(e => { console.error(e); json(res, 500, { ok: false, error: 'server_error' }); }); });
-if (require.main === module) { server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT)); }
+if (require.main === module) {
+  store.initPg()
+    .then(()=>{ server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT + ' (Postgres-backed)')); })
+    .catch(err=>{ console.error('initPg failed:', err && err.message); server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT)); });
+}
 module.exports = { server, handle, page, esc };

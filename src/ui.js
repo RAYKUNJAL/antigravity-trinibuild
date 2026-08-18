@@ -1,11 +1,11 @@
 // src/ui.js — IslandProcure design system (Glassmorphism 2.0, Sea & Sand)
 'use strict';
 const IMG = {
-  hero: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApWoV0rvqb9QGv2t5RvliGdNnSa1wvALIsiQ4Im2d85ujS9L1sUqIq225CSD66C7Gy532XReAVetLPjH0xdGNQ30QAXEvYUb9NOIQTGT_OrjUzXFv6ukwau5D5CFxgDN9VZAK3zTptji95YAkkzNLHgA-bDQjatEoZo8Ch3dqoRK2y_WZ_nPzojo_ik4WVL7ITLlSd6qWprSiblWI1ILzvnly4CqTbm9PU5doQKvh9aOVI7uK2LQjd',
-  choc: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXPbE4V7eodpeCuRRgZCUUkAuczYmvsOVlWDwyVghvhAs0SmuzjrLADKo1CBKnvfEHaZ5BYJGUEwGtliZ2ihHfsFBrUK3d85Ois2qi4rdpeMtmFgp-Zl0reraUyCST9TmTIgMtBXMTZ1fTXE2L84k86Rq00tObPyH1ohndlJCGi6Tt25odB-v8KTnJs1gAHFN347KY9dybbR5k-DqQvsF7DajPvyhvX3_3MdXEeTCSy24zL-x-p6Sj',
-  coffee: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAft7wG5PpZ6AzQ4tEFW4Vf1s6QfnHMfr1jOS1S2cwNzUFoG6XAyG1iFMBJl-SDI1xuhyx-_hCHxNgsxtnzzQkg8ikA-W6Vr1tab6tLRLk-yJ3EJRQSI51F6FXyHHGBSxCVJkj3f5lcJ6HOxwRFzdAwe8mwVv65DGQRaENcbgRJywMGGlSI7fjeVwTRt6gA5sXZKPZFzHJTNi-xultlw8ObC2-Pyxu5zl6PluTxjcgUGhh7mXf008kD',
-  nutmeg: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3Qnz1Th6Fg7-777HseIazMRJ6Tiza9npcwBYB-3Vx6Tho-tSGem6RXm8-CHCvu9DLzWx4Bdk3kErz2B-icfaDOTMBupiGqRQx7r5Is_PF7oTGE6KBpC6DgfWjmNcR5h_5zrpps39AMD_O0wfVx8WPuqxZ5eknIzXdwraxJKO6rejp5GOV3f7dVtbV12l4d__gaajD65eo0EHKC4hx6qd6VHcV3wLvcuFO1BzR5PvEztEBL61QpYhz',
-  seamos: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6mU0QQH6e8Nxvp-xleZrrnAakgbpw9IEwZx1QrZJ02niQu7ZyaZ9oO1qh8kNAMkF-yw9aam661kv-dLvJbnLb0qlhyZjH544dUgivGLrXzCb_2SoaziDnap3FW6ikEXLK6QAB0dYmuTMelgXe2ByEa5tXRVFZlS14UW-gj9YlCIV9NV25NQ-Bb1pSp1ErqBJQ16IS5TvC70JddVj9kWtxmrFIAlJIixu0SCgYbrIAjCi0N0lQnjrW',
+  hero: '/public/images/hero.png',
+  choc: '/public/images/choc.png',
+  coffee: '/public/images/coffee.png',
+  nutmeg: '/public/images/nutmeg.png',
+  seamos: '/public/images/seamos.png',
 };
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function stateBadge(s){const m={TRADE_VERIFIED:['Verified','verified'],TRANSACTION_VERIFIED:['Transaction Verified','verified'],IDENTITY_VERIFIED:['Identity Verified','verified'],CLAIMED:['Claimed','claimed'],CLAIM_PENDING:['Claim Pending','claimed'],UNCLAIMED_PUBLIC_PROFILE:['Public - Unclaimed','unclaimed']};const l=m[s]||[s,'unclaimed'];return `<span class="state-badge ${l[1]}">${esc(l[0])}</span>`;}
@@ -13,6 +13,8 @@ function stateBadge(s){const m={TRADE_VERIFIED:['Verified','verified'],TRANSACTI
 function shell(title, bodyHtml, active) {
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="/public/favicon.svg"/>
+<meta name="theme-color" content="#006D77"/>
 <title>${esc(title)} · Caribbean Trade Network</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
@@ -40,20 +42,41 @@ body{font-family:Geist,system-ui,sans-serif;color:var(--on-surface);background:v
 table{width:100%;border-collapse:collapse;margin-top:12px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--outline-variant);font-size:14px}th{color:var(--on-surface-variant);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
 footer{margin-top:48px;background:var(--surface-container-lowest);border-top:1px solid rgba(190,200,202,0.3)}.foot{max-width:1200px;margin:0 auto;padding:48px 24px;display:flex;flex-direction:column;gap:24px;justify-content:space-between}@media(min-width:768px){.foot{flex-direction:row;align-items:center}}.foot .brand{font-size:20px;margin-bottom:4px}.foot .copy{color:var(--on-surface-variant);font-size:14px}.foot-links{display:flex;gap:24px;flex-wrap:wrap}.foot-links a{color:var(--on-surface-variant);text-decoration:none;font-size:14px;font-weight:600}.foot-links a:hover{color:var(--primary)}
 .ms{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;display:inline-block;line-height:1;letter-spacing:normal;text-transform:none;vertical-align:middle;-webkit-font-smoothing:antialiased}
+.brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;color:var(--primary);text-decoration:none}.brand-mark{display:block;border-radius:7px;box-shadow:0 2px 8px rgba(0,83,91,.25)}.brand-word{letter-spacing:-0.01em}.bimg{height:130px;border-radius:12px;background-size:cover;background-position:center;margin-bottom:12px;position:relative}.bimg .btag{position:absolute;left:10px;bottom:10px;background:rgba(0,20,24,.72);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;backdrop-filter:blur(4px)}.cookie-banner{position:fixed;left:0;right:0;bottom:0;z-index:200;background:rgba(11,23,27,.96);backdrop-filter:blur(8px);color:#e8f6f8;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,109,119,.4);box-shadow:0 -4px 24px rgba(0,0,0,.3)}.cookie-banner p{margin:0;font-size:13px;max-width:640px}.cookie-banner .cookie-btns{display:flex;gap:8px}.ac-wrap{position:relative}.ac-list{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:120;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);display:none;overflow:hidden}.ac-item{display:flex;align-items:center;gap:9px;padding:11px 14px;cursor:pointer;font-size:14px;border-bottom:1px solid #f1f5f9}.ac-item:hover{background:#ecf5f8}.ac-item:last-child{border-bottom:none}
 </style></head><body>
 <div class="mesh"></div>
 <nav class="nav"><div class="nav-inner">
-<a class="brand" href="/"><span class="ms" style="color:var(--primary-container);font-variation-settings:'FILL' 1">public</span> Caribbean Trade</a>
+<a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Caribbean Trade"><rect width="64" height="64" rx="15" fill="#006D77"/><circle cx="46" cy="17" r="6" fill="#f4b942"/><path d="M13 30 Q20 24 28 30 T43 30" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".95"/><path d="M15 40 Q23 34 31 40 T47 40" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".72"/><path d="M17 50 Q25 44 33 50 T49 50" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".45"/></svg><span class="brand-word">Caribbean Trade</span></a>
 <div class="nav-links">
-<a href="/" class="${active==='/'?'active':''}">Marketplace</a><a href="/browse" class="${active==='/browse'?'active':''}">Directory</a><a href="/sourcing" class="${active==='/sourcing'?'active':''}">Sourcing</a><a href="/landed-cost" class="${active==='/landed-cost'?'active':''}">Landed Cost</a><a href="/trade-info" class="${active==='/trade-info'?'active':''}">Trade Info</a><a href="/plans" class="${active==='/plans'?'active':''}">Plans</a>
+<a href="/" class="${active==='/'?'active':''}">Marketplace</a><a href="/browse" class="${active==='/browse'?'active':''}">Directory</a><a href="/sourcing" class="${active==='/sourcing'?'active':''}">Sourcing</a><a href="/landed-cost" class="${active==='/landed-cost'?'active':''}">Landed Cost</a><a href="/trade-info" class="${active==='/trade-info'?'active':''}">Trade Info</a><a href="/plans" class="${active==='/plans'?'active':''}">Plans</a><a href="/advertise" class="${active==='/advertise'?'active':''}">Advertise</a>
 </div>
 <div class="nav-cta">${active?`<a class="btn btn-glass" href="/logout">${esc(active)}</a>`:`<a class="btn btn-glass" href="/login">Sign in</a><a class="btn btn-primary" href="/signup">Get Started</a>`}</div>
 </div></nav>
 <main>${bodyHtml}</main>
 <footer><div class="foot">
-<div><div class="brand"><span class="ms" style="color:var(--primary-container);font-variation-settings:'FILL' 1">public</span> Caribbean Trade</div><p class="copy">© ${new Date().getFullYear()} Caribbean AI Trade Network. All rights reserved.</p></div>
-<div class="foot-links"><a href="/browse">Logistics Network</a><a href="/trade-info">Trade Hub Stats</a><a href="/plans">Digital Passports</a><a href="/privacy">Privacy Policy</a></div>
-</div></footer></body></html>`;
+<div><div class="brand"><svg class="brand-mark" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Caribbean Trade"><rect width="64" height="64" rx="15" fill="#006D77"/><circle cx="46" cy="17" r="6" fill="#f4b942"/><path d="M13 30 Q20 24 28 30 T43 30" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".95"/><path d="M15 40 Q23 34 31 40 T47 40" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".72"/><path d="M17 50 Q25 44 33 50 T49 50" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".45"/></svg><span class="brand-word">Caribbean Trade</span></div><p class="copy">© ${new Date().getFullYear()} Caribbean AI Trade Network. All rights reserved.</p><p class="copy" style="margin-top:4px">Powered by <strong>R&amp;R Digital Platform Solutions Ltd.</strong></p></div>
+<div class="foot-links"><a href="/browse">Logistics Network</a><a href="/trade-info">Trade Hub Stats</a><a href="/plans">Digital Passports</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a><a href="/cookies">Cookie Policy</a><a href="/dpa">Data Processing</a><a href="/acceptable-use">Acceptable Use</a><a href="/advertise">Advertise</a></div>
+</div></footer>
+<div id="cookieBanner" class="cookie-banner"><p>We use cookies to operate this platform and, with your consent, to improve your experience, measure usage, and show relevant advertising. <a href="/cookies" style="color:#22d3ee">Cookie Policy</a> · <a href="/privacy" style="color:#22d3ee">Privacy Policy</a></p><div class="cookie-btns"><button class="btn btn-glass" onclick="ctPref('essential')">Essential only</button><button class="btn btn-primary" onclick="ctPref('all')">Accept all</button></div></div>
+<script>(function(){ if(localStorage.getItem('ct_consent')){ var b=document.getElementById('cookieBanner'); if(b) b.style.display='none'; } })(); function ctPref(p){ localStorage.setItem('ct_consent', p); var b=document.getElementById('cookieBanner'); if(b) b.style.display='none'; }</script>
+<script>function adEscH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function loadAds(){document.querySelectorAll('[data-ad-slot]').forEach(function(slot){var placement=slot.getAttribute('data-ad-slot');fetch('/api/v1/ads?placement='+encodeURIComponent(placement)).then(function(r){return r.json();}).then(function(j){if(!j.data||!j.data.length){slot.style.display='none';return;}
+var ads=j.data.slice(0,3);slot.style.display='block';
+slot.innerHTML='<div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.05em;margin-bottom:8px">SPONSORED</div>'+ads.map(function(a){var img=a.image_url||'/public/images/coffee.png';return '<div class="glass" style="padding:14px;display:flex;gap:12px;align-items:center;margin-bottom:10px"><img src="'+adEscH(img)+'" width="64" height="64" style="border-radius:8px;object-fit:cover"/><div style="flex:1"><div style="font-weight:600">'+adEscH(a.title)+'</div>'+(a.body?'<div class="muted" style="font-size:13px">'+adEscH(a.body)+'</div>':'')+'</div>'+(a.target_url?'<a class="btn btn-primary" style="padding:8px 14px" href="'+adEscH(a.target_url)+'" target="_blank" rel="noopener" onclick="fetch('/api/v1/ads/'+a.id+'/click',{method:'POST'})">Visit</a>':'')+'</div>';}).join('');
+ads.forEach(function(a){fetch('/api/v1/ads/'+a.id+'/impression',{method:'POST'}).catch(function(){});});}).catch(function(){});});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadAds);else loadAds();</script>
+<script>(function(){function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function init(input){var box=document.createElement('div');box.className='ac-wrap';input.parentNode.insertBefore(box,input.nextSibling);var list=document.createElement('div');list.className='ac-list';box.appendChild(list);var cur='',t;
+input.addEventListener('input',function(){var v=input.value.trim();clearTimeout(t);if(!v){list.style.display='none';return;}t=setTimeout(function(){load(v);},140);});
+function load(v){if(v===cur)return;cur=v;fetch('/api/suggest?q='+encodeURIComponent(v)).then(function(r){return r.json();}).then(function(j){if(input.value.trim()!==v)return;var items=[];
+(j.names||[]).forEach(function(n){items.push({t:n,i:'business'});});(j.categories||[]).forEach(function(c){items.push({t:'Category: '+c,i:'category'});});(j.countries||[]).forEach(function(c){items.push({t:'Country: '+c,i:'place'});});(j.cities||[]).forEach(function(c){items.push({t:'City: '+c,i:'location_on'});});
+if(!items.length){list.style.display='none';return;}list.innerHTML=items.slice(0,10).map(function(it){return '<div class="ac-item" data-v="'+escH(it.t)+'"><span class="ms" style="font-size:16px;color:var(--primary)">'+escH(it.i)+'</span><span>'+escH(it.t)+'</span></div>';}).join('');list.style.display='block';
+list.querySelectorAll('.ac-item').forEach(function(el){el.addEventListener('click',function(){input.value=el.getAttribute('data-v');list.style.display='none';if(input.form)input.form.submit();});});}).catch(function(){});
+}
+document.addEventListener('click',function(e){if(!box.contains(e.target)&&e.target!==input)list.style.display='none';});}
+function boot(){document.querySelectorAll('input[data-autocomplete]').forEach(function(i){if(!i.dataset.bound){i.dataset.bound='1';init(i);}});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();})();</script>
+</body></html>`;
 }
 
 function marketplace(biz, products) {
@@ -64,7 +87,7 @@ function marketplace(biz, products) {
       <h1>Beyond commodities.<br/>A $6.5B digital trade ecosystem.</h1>
       <p class="hero-sub">Find, verify, and trade across the Caribbean — and sell to global buyers. Powered by value-added sovereignty.</p>
       <form method="get" action="/search" style="display:flex;gap:10px;max-width:560px;margin:0 auto 20px;flex-wrap:wrap">
-        <input name="q" placeholder="Find eco-certified cocoa suppliers in Grenada…" style="flex:1;min-width:220px"/>
+        <input name="q" placeholder="Find eco-certified cocoa suppliers in Grenada…" data-autocomplete="1" style="flex:1;min-width:220px"/>
         <button class="btn btn-primary" type="submit"><span class="ms" style="font-variation-settings:'FILL' 1">search</span> Explore</button>
       </form>
       <div class="hero-actions">
@@ -74,6 +97,7 @@ function marketplace(biz, products) {
       </div>
     </div>
   </section>
+  <section class="section"><div data-ad-slot="home" style="margin:0 0 8px"></div></section>
   <section class="section"><div class="section-head"><h2>Economic Evolution</h2><p>Pivoting from raw materials to high-margin, specialized exports via the CARICOM Digital Single Market.</p></div>
     <div class="bento">
       <div class="glass bento-8"><div class="bento-icon"><span class="ms" style="font-variation-settings:'FILL' 1">account_tree</span></div>
@@ -105,6 +129,10 @@ function marketplace(biz, products) {
 function directory(list, filters = {}) {
   const { q='', category='', country='', countries=[], categories=[], total=0, page=1, per=60 } = filters;
   const catLabel = s => (categories.find(c=>c.slug===s)||{}).label || s || 'uncategorized';
+  const CAT_IMG = { food_beverage:'/public/images/coffee.png', food_tourism:'/public/images/tourism.png', agriculture:'/public/images/farm.png',
+    beauty_wellness:'/public/images/nutmeg.png', crafts_artisanal:'/public/images/crafts.png', construction:'/public/images/construction.png',
+    packaging_supplies:'/public/images/packaging.png', transport_logistics:'/public/images/hero.png', textile_apparel:'/public/images/textile.png' };
+  const catImg = s => CAT_IMG[s] || '/public/images/hero.png';
   const enc = v => encodeURIComponent(v||'');
   const qs = (extra) => { const p=new URLSearchParams({q, category, country, per}); for (const k in extra) p.set(k, extra[k]); return p.toString(); };
   const pages = Math.max(1, Math.ceil(total/per));
@@ -114,15 +142,17 @@ function directory(list, filters = {}) {
   const body = `<section class="section">
     <div class="section-head"><h2>Business Directory</h2><p>Search &amp; filter source-backed profiles across the Caribbean. Unclaimed profiles are clearly labeled and never presented as verified.</p></div>
     <form class="glass" method="get" action="/browse" style="padding:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
-      <div style="flex:2;min-width:220px"><label>Search</label><input name="q" value="${esc(q)}" placeholder="Business name, city, keyword…"/></div>
+      <div style="flex:2;min-width:220px"><label>Search</label><input name="q" value="${esc(q)}" placeholder="Business name, city, keyword…" data-autocomplete="1"/></div>
       <div style="flex:1;min-width:180px"><label>Category</label><select name="category"><option value="">All categories</option>${catOptions}</select></div>
       <div style="flex:1;min-width:160px"><label>Country</label><select name="country"><option value="">All countries</option>${countryOptions}</select></div>
       <button class="btn btn-primary" type="submit"><span class="ms" style="font-variation-settings:'FILL' 1">search</span> Filter</button>
       ${filtered?`<a class="btn btn-glass" href="/browse">Clear</a>`:''}
     </form>
+    <div data-ad-slot="directory" style="margin:14px 0"></div>
     <p class="on-surface-variant" style="margin:14px 0;color:var(--on-surface-variant)">${total.toLocaleString()} business${total===1?'':'es'} found</p>
     <div class="dir">${list.map(b=>`
       <div class="glass bcard">
+        <div class="bimg" style="background-image:url('${catImg(b.category)}')"><span class="btag">${esc(catLabel(b.category))}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h3>${esc(b.name)}</h3>${stateBadge(b.state)}</div>
         <div class="bloc"><span class="ms" style="font-size:16px">place</span>${esc(b.country)}${b.city?' · '+esc(b.city):''}</div>
         <div class="bloc"><span class="ms" style="font-size:16px">category</span>${esc(catLabel(b.category))}</div>
@@ -146,9 +176,52 @@ function sourcing(rfqs) {
   return shell('Sourcing / RFQ', body, '/sourcing');
 }
 function landedCostPage() {
-  const body = `<section class="section"><div class="section-head"><h2>Estimate True Delivered Cost</h2><p>A deterministic engine — every component shown, no hidden arithmetic.</p></div>
-  <form class="glass form" method="get" action="/api/landed-cost"><div><label>Product value (USD)</label><input name="product_value" type="number" value="100"/></div><div><label>Origin charges (USD)</label><input name="origin_charges" type="number" value="5"/></div><div><label>Freight (USD)</label><input name="freight" type="number" value="20"/></div><div><label>Insurance (USD)</label><input name="insurance" type="number" value="5"/></div><div><label>Duty (USD)</label><input name="applicable_duty" type="number" value="0"/></div><div><label>Taxes &amp; levies (USD)</label><input name="taxes_and_levies" type="number" value="0"/></div><div><label>Destination port charges (USD)</label><input name="destination_port_charges" type="number" value="10"/></div><div><label>Brokerage (USD)</label><input name="brokerage" type="number" value="15"/></div><div><label>Inland delivery (USD)</label><input name="inland_delivery" type="number" value="10"/></div><button class="btn btn-primary" type="submit"><span class="ms" style="font-variation-settings:'FILL' 1">calculate</span> Calculate</button></form></section>`;
-  return shell('Landed Cost Estimator', body, '/landed-cost');
+  const ctry = [['TT','Trinidad & Tobago'],['BB','Barbados'],['GY','Guyana'],['JM','Jamaica'],['BS','The Bahamas'],['HT','Haiti'],['DO','Dominican Republic'],['LC','Saint Lucia'],['VC','St Vincent & Grenadines'],['GD','Grenada'],['DM','Dominica'],['KN','St Kitts & Nevis'],['AG','Antigua & Barbuda'],['SR','Suriname'],['CW','Curaçao'],['SX','Sint Maarten'],['GP','Guadeloupe'],['MQ','Martinique'],['KY','Cayman Islands'],['BM','Bermuda'],['PR','Puerto Rico'],['VG','Virgin Islands (UK)'],['VI','Virgin Islands (US)'],['US','United States'],['CA','Canada'],['GB','United Kingdom']].map(c=>`<option value="${c[0]}">${esc(c[1])}</option>`).join('');
+  const body = `<section class="section"><div class="section-head"><h2>Landed Cost Engine</h2><p>Deterministic, sourced from CARICOM CET schedules &amp; live freight routes. Every component shown.</p></div>
+  <div class="glass" style="padding:24px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+      <div><label>Origin</label><select id="lc_origin" style="width:100%">${ctry}</select></div>
+      <div><label>Destination</label><select id="lc_dest" style="width:100%">${ctry}</select></div>
+      <div><label>Incoterm</label><select id="lc_inc" style="width:100%"><option value="CIF">CIF</option><option value="FOB">FOB</option><option value="EXW">EXW</option><option value="DDP">DDP</option></select></div>
+      <div><label><input type="checkbox" id="lc_coo" checked style="vertical-align:middle"/> CARICOM COO</label></div>
+      <div><label>HS Code</label><input id="lc_hs" value="1806.32.00" style="width:100%"/></div>
+      <div><label>Unit price (USD)</label><input id="lc_up" type="number" value="4.50" step="0.01" style="width:100%"/></div>
+      <div><label>Quantity</label><input id="lc_qty" type="number" value="1000" style="width:100%"/></div>
+      <div><label>Weight (kg)</label><input id="lc_w" type="number" value="500" style="width:100%"/></div>
+      <div><label>Volume (cbm)</label><input id="lc_v" type="number" value="1.2" step="0.1" style="width:100%"/></div>
+    </div>
+    <div style="margin-top:16px"><button class="btn btn-primary" onclick="lcCalc()"><span class="ms" style="font-variation-settings:'FILL' 1">calculate</span> Calculate Landed Cost</button></div>
+    <div id="lc_res" style="margin-top:20px"></div>
+  </div>
+  <script>
+  function escH(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  async function lcCalc(){
+    const body = { origin_country:document.getElementById('lc_origin').value, destination_country:document.getElementById('lc_dest').value,
+      incoterm:document.getElementById('lc_inc').value, has_caricom_coo:document.getElementById('lc_coo').checked,
+      line_items:[{ hs_code:document.getElementById('lc_hs').value, unit_price_usd:parseFloat(document.getElementById('lc_up').value)||0,
+        quantity:parseFloat(document.getElementById('lc_qty').value)||1, weight_kg:parseFloat(document.getElementById('lc_w').value)||0,
+        volume_cbm:parseFloat(document.getElementById('lc_v').value)||0 }] };
+    const res=document.getElementById('lc_res'); res.innerHTML='<p class="muted">Calculating…</p>';
+    try {
+      const r=await fetch('/api/v1/landed-cost/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json();
+      if(!j.ok){ res.innerHTML='<p>Error: '+escH(j.error)+'</p>'; return; }
+      const d=j.data; const f=n=>'US$ '+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2});
+      res.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px"><div style="grid-column:1/-1"><h3 style="margin:0 0 4px">Landed Cost — '+escH(d.origin_country)+' → '+escH(d.destination_country)+'</h3><p class="muted" style="margin:0">'+(d.carrier?escH(d.carrier)+' · '+escH(d.transit_mode)+' · ~'+d.est_transit_days+' days':'No freight route on file')+'</p></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Goods value</b></div><div class="muted">'+f(d.base_goods_total_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Freight</b></div><div class="muted">'+f(d.freight_charge_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Insurance (1%)</b></div><div class="muted">'+f(d.insurance_charge_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>CIF value</b></div><div class="muted">'+f(d.cif_value_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Import duty @ '+((d.duty_rate_applied*100).toFixed(1))+'%</b></div><div class="muted">'+f(d.import_duty_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Customs charge</b></div><div class="muted">'+f(d.customs_service_charge_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Environmental levy</b></div><div class="muted">'+f(d.environmental_levy_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>VAT / GCT @ '+((d.vat_rate_applied*100).toFixed(1))+'%</b></div><div class="muted">'+f(d.vat_gct_usd)+'</div></div>'+
+      '<div class="glass" style="padding:14px"><div class="bloc"><b>Port handling</b></div><div class="muted">'+f(d.port_handling_usd)+'</div></div>'+
+      '<div class="glass" style="padding:16px;grid-column:1/-1;border:2px solid var(--primary)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><b>Final landed total</b><span style="font-size:26px;font-weight:700;color:var(--primary)">'+f(d.final_landed_total_usd)+'</span></div>'+(d.notes?'<p class="muted" style="margin:8px 0 0">'+escH(d.notes)+'</p>':'')+'</div></div>';
+    } catch(e){ res.innerHTML='<p>Error: '+escH(e.message)+'</p>'; }
+  }
+  </script></section>`;
+  return shell('Landed Cost Engine', body, '/landed-cost');
 }
 function tradeInfoPage() {
   const body = `<section class="section"><div class="section-head"><h2>Trade Requirements &amp; Knowledge</h2><p>Decision-support only. Confirm with the relevant authority before relying on any rule.</p></div>
@@ -170,7 +243,46 @@ function loginPage(active) {
   return shell('Sign in', body, active);
 }
 function signupPage(active, role) {
-  const body = `<section class="section"><div class="glass form" style="max-width:460px"><div class="section-head" style="margin:0 0 20px"><h2>Start Free</h2><p>${role==='buyer_external'?'For global &amp; diaspora buyers sourcing Caribbean-origin goods.':'Free directory + RFQ access. Upgrade anytime.'}</p></div><form method="post" action="/api/register" style="display:grid;gap:14px"><input type="hidden" name="buyer_external" value="${role==='buyer_external'?'true':''}"/><div><label>Name</label><input name="name" required/></div><div><label>Email</label><input name="email" required/></div><div><label>Company (optional)</label><input name="org_name"/></div><div><label>Password (8+ chars)</label><input name="password" type="password" required/></div><div><label>Island / currency</label><select name="island"><option value="tt">Trinidad &amp; Tobago (TTD)</option><option value="jm">Jamaica (JMD)</option><option value="bb">Barbados (BBD)</option><option value="gy">Guyana (GYD)</option><option value="us">United States (USD)</option><option value="ca">Canada (CAD)</option><option value="gb">United Kingdom (GBP)</option></select></div><div><label>Role</label><select name="role"><option value="buyer">Buyer</option><option value="supplier">Supplier</option></select></div><button class="btn btn-primary btn-block" type="submit">Create Free Account</button></form></div></section>`;
+  const body = `<section class="section"><div class="glass form" style="max-width:460px"><div class="section-head" style="margin:0 0 20px"><h2>Start Free</h2><p>${role==='buyer_external'?'For global &amp; diaspora buyers sourcing Caribbean-origin goods.':'Free directory + RFQ access. Upgrade anytime.'}</p></div><form method="post" action="/api/register" style="display:grid;gap:14px"><input type="hidden" name="buyer_external" value="${role==='buyer_external'?'true':''}"/><div><label>Name</label><input name="name" required/></div><div><label>Email</label><input name="email" required/></div><div><label>Company (optional)</label><input name="org_name"/></div><div><label>Password (8+ chars)</label><input name="password" type="password" required/></div><div><label>Island / currency</label><select name="island"><option value="tt">Trinidad &amp; Tobago (TTD)</option><option value="jm">Jamaica (JMD)</option><option value="bb">Barbados (BBD)</option><option value="gy">Guyana (GYD)</option><option value="us">United States (USD)</option><option value="ca">Canada (CAD)</option><option value="gb">United Kingdom (GBP)</option></select></div><div><label>Role</label><select name="role"><option value="buyer">Buyer</option><option value="supplier">Supplier</option></select></div><div style="font-size:13px;display:grid;gap:8px;padding:6px 0"><label><input type="checkbox" name="consent_processing" value="yes" required style="vertical-align:middle"/> I consent to my personal data being processed as described in the <a href="/privacy" target="_blank">Privacy Policy</a> (GDPR / UK GDPR compliant).</label><label><input type="checkbox" name="consent_tos" value="yes" required style="vertical-align:middle"/> I accept the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/acceptable-use" target="_blank">Acceptable Use Policy</a>.</label><label><input type="checkbox" name="consent_marketing" value="yes" style="vertical-align:middle"/> I consent to receive occasional marketing communications (optional; withdrawable anytime).</label></div><button class="btn btn-primary btn-block" type="submit">Create Free Account</button></form></div></section>`;
   return shell('Start Free', body, active);
 }
-module.exports = { shell, esc, IMG, marketplace, directory, sourcing, landedCostPage, tradeInfoPage, plansPage, loginPage, signupPage };
+
+function advertisePage(active) {
+  const body = `<section class="section">
+    <div class="section-head"><h2>Advertise on Caribbean Trade</h2><p>Reach verified suppliers and buyers across the Caribbean with targeted placements on our marketplace and directory.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px">
+      <div class="glass" style="padding:18px"><h3 style="margin:0 0 6px">Directory</h3><p class="muted" style="margin:0">Featured cards beside organic listings. Best for broad supplier visibility.</p></div>
+      <div class="glass" style="padding:18px"><h3 style="margin:0 0 6px">Homepage</h3><p class="muted" style="margin:0">High-traffic sponsored strip on the marketplace landing page.</p></div>
+      <div class="glass" style="padding:18px"><h3 style="margin:0 0 6px">Both</h3><p class="muted" style="margin:0">Maximum reach across the highest-traffic pages.</p></div>
+    </div>
+    <div class="glass" style="padding:24px;max-width:620px">
+      <h3 style="margin:0 0 16px">Create a campaign</h3>
+      <form method="post" action="/api/v1/ads" style="display:grid;gap:14px">
+        <div><label>Business / advertiser name</label><input name="advertiser" required placeholder="e.g. Blue Mountain Coffee Traders"/></div>
+        <div><label>Headline</label><input name="title" required placeholder="Premium single-origin coffee, shipped island-wide"/></div>
+        <div><label>Body (optional)</label><textarea name="body" rows="2" placeholder="Short description shown on the card."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label>Placement</label><select name="placement"><option value="directory">Directory</option><option value="home">Homepage</option><option value="both">Both</option></select></div>
+          <div><label>Budget (USD)</label><input name="budget_usd" type="number" value="100" step="1"/></div>
+        </div>
+        <div><label>Image URL (optional — leave blank to use your category image)</label><input name="image_url" placeholder="https://… or /public/images/coffee.png"/></div>
+        <div><label>Destination link</label><input name="target_url" placeholder="https://your-site.com"/></div>
+        <div><label>Image (choose one)</label><div style="display:flex;flex-wrap:wrap;gap:8px" id="adimgpicker">
+          ${['coffee','choc','tourism','farm','nutmeg','textile','hero'].map(k=>`<label style="cursor:pointer;position:relative"><input type="radio" name="image_url" value="/public/images/${k}.png" style="position:absolute;opacity:0"/><img src="/public/images/${k}.png" width="64" height="64" style="border-radius:8px;object-fit:cover;border:2px solid transparent" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='transparent'"/></label>`).join('')}
+        </div>
+        <button class="btn btn-primary" type="submit"><span class="ms" style="font-variation-settings:'FILL' 1">campaign</span> Create &amp; Activate Campaign</button>
+      </form>
+    </div>
+    <div class="section-head" style="margin-top:40px"><h2>Your campaigns</h2></div>
+    <div id="ads_list" class="glass" style="padding:20px"><p class="muted">Loading…</p></div>
+  </section>
+  <script>
+  (function(){ fetch('/api/v1/ads/manage').then(r=>r.json()).then(j=>{
+    const d=document.getElementById('ads_list'); if(!d) return;
+    if(!j.data||!j.data.length){ d.innerHTML='<p class="muted">No campaigns yet. Create your first above.</p>'; return; }
+    d.innerHTML=j.data.map(a=>'<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eef2f5;flex-wrap:wrap"><div><b>'+a.title+'</b> · <span class="muted">'+a.placement+'</span><div class="muted">'+(a.impressions||0)+' impressions · '+(a.clicks||0)+' clicks · US$'+(a.budget_usd||0)+'</div></div><span class="badge '+(a.status==='active'?'trade':'unclaimed')+'">'+a.status+'</span></div>').join('');
+  }).catch(()=>{}); })();
+  </script>`;
+  return shell('Advertise', body, active||'/advertise');
+}
+module.exports = { shell, esc, IMG, marketplace, directory, sourcing, landedCostPage, tradeInfoPage, plansPage, loginPage, signupPage, advertisePage };

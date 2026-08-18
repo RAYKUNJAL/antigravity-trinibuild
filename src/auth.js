@@ -30,11 +30,14 @@ async function verifyPassword(pw, encoded){
   }catch{ return false; }
 }
 
-async function register({ email, name, password, org_name, island='tt', currency, role='owner', buyer_external=false, buyer_destination=null }) {
+async function register({ email, name, password, org_name, island='tt', currency, role='owner', buyer_external=false, buyer_destination=null, consent_processing, consent_tos, consent_marketing }) {
   if(!validEmail(email)) throw new Error('A valid email is required');
   if(!isNonEmpty(password)||password.length<8) throw new Error('Password must be at least 8 characters');
+  if(consent_processing !== 'yes') throw new Error('Consent to data processing is required (see Privacy Policy)');
+  if(consent_tos !== 'yes') throw new Error('You must accept the Terms of Service');
   const hash = await hashPassword(password);
-  return store.createUser({ email, name, password_hash: hash, role, org_name, island, currency, buyer_external, buyer_destination });
+  return store.createUser({ email, name, password_hash: hash, role, org_name, island, currency, buyer_external, buyer_destination,
+    consents: { processing: true, terms: true, marketing: consent_marketing==='yes', at: new Date().toISOString() } });
 }
 
 async function login({ email, password }) {
