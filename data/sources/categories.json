@@ -1,0 +1,244 @@
+[
+  {
+    "slug": "food_beverage",
+    "label": "Food & Beverage",
+    "osm_tags": [
+      "shop=supermarket",
+      "shop=convenience",
+      "shop=bakery",
+      "shop=butcher",
+      "shop=greengrocer",
+      "shop=seafood",
+      "amenity=restaurant",
+      "amenity=cafe",
+      "amenity=bar",
+      "amenity=fast_food",
+      "amenity=pub",
+      "craft=beer",
+      "craft=distillery",
+      "shop=wine"
+    ],
+    "keywords": [
+      "food",
+      "beverage",
+      "restaurant",
+      "cafe",
+      "bakery",
+      "rum",
+      "chocolate",
+      "coffee",
+      "spices",
+      "jerk",
+      "produce",
+      "snacks",
+      "juice",
+      "distiller",
+      "sauce"
+    ]
+  },
+  {
+    "slug": "agriculture",
+    "label": "Agriculture & Agro-Processing",
+    "osm_tags": [
+      "shop=farm",
+      "landuse=farmland",
+      "shop=garden_centre",
+      "craft=agricultural_engines"
+    ],
+    "keywords": [
+      "farm",
+      "agriculture",
+      "agro",
+      "cacao",
+      "cocoa",
+      "vanilla",
+      "pepper",
+      "nutmeg",
+      "sea moss",
+      "produce",
+      "fertilizer",
+      "crop",
+      "plantation",
+      "fishery",
+      "aquaculture"
+    ]
+  },
+  {
+    "slug": "beauty_wellness",
+    "label": "Beauty, Personal Care & Wellness",
+    "osm_tags": [
+      "shop=beauty",
+      "shop=hairdresser",
+      "shop=cosmetics",
+      "shop=chemist",
+      "amenity=spa",
+      "amenity=doctor",
+      "amenity=dentist",
+      "leisure=fitness_centre"
+    ],
+    "keywords": [
+      "beauty",
+      "cosmetics",
+      "spa",
+      "wellness",
+      "nutmeg oil",
+      "sea moss gel",
+      "soap",
+      "hair",
+      "skincare",
+      "essential oil"
+    ]
+  },
+  {
+    "slug": "crafts_artisanal",
+    "label": "Crafts, Artisanal & Cultural",
+    "osm_tags": [
+      "shop=gift",
+      "shop=art",
+      "craft=painter",
+      "craft=pottery",
+      "craft=jeweller",
+      "craft=woodcutter",
+      "craft=carpenter",
+      "shop=jewelry",
+      "shop=antiques"
+    ],
+    "keywords": [
+      "craft",
+      "artisan",
+      "art",
+      "jewelry",
+      "pottery",
+      "carving",
+      "weaving",
+      "souvenir",
+      "basket",
+      "ceramic",
+      "calabash"
+    ]
+  },
+  {
+    "slug": "construction",
+    "label": "Construction & Building Materials",
+    "osm_tags": [
+      "shop=hardware",
+      "shop=doityourself",
+      "shop=trade",
+      "craft=electrician",
+      "craft=plumber",
+      "craft=carpenter",
+      "shop=building_materials",
+      "craft=builder"
+    ],
+    "keywords": [
+      "construction",
+      "building",
+      "hardware",
+      "lumber",
+      "cement",
+      "aggregate",
+      "tiles",
+      "steel",
+      "wood",
+      "electrical",
+      "plumbing"
+    ]
+  },
+  {
+    "slug": "packaging_supplies",
+    "label": "Packaging & Business Supplies",
+    "osm_tags": [
+      "shop=packaging",
+      "shop=office_equipment",
+      "shop=stationery",
+      "shop=printing"
+    ],
+    "keywords": [
+      "packaging",
+      "labels",
+      "boxes",
+      "bottles",
+      "jars",
+      "bags",
+      "stationery",
+      "printing",
+      "cartons",
+      "tubes"
+    ]
+  },
+  {
+    "slug": "transport_logistics",
+    "label": "Transport & Logistics",
+    "osm_tags": [
+      "shop=car",
+      "shop=car_repair",
+      "amenity=ferry_terminal",
+      "amenity=bus_station",
+      "amenity=car_rental",
+      "shop=rental",
+      "amenity=charging_station"
+    ],
+    "keywords": [
+      "logistics",
+      "shipping",
+      "freight",
+      "transport",
+      "customs broker",
+      "freight forwarder",
+      "courier",
+      "trucking",
+      "warehouse",
+      "terminal",
+      "port"
+    ]
+  },
+  {
+    "slug": "textile_apparel",
+    "label": "Textile & Apparel",
+    "osm_tags": [
+      "shop=clothes",
+      "shop=fabric",
+      "shop=shoes",
+      "craft=tailor",
+      "shop=tailor",
+      "shop=leather"
+    ],
+    "keywords": [
+      "textile",
+      "apparel",
+      "clothing",
+      "fabric",
+      "leather",
+      "tailor",
+      "uniform",
+      "garment",
+      "boutique"
+    ]
+  },
+  {
+    "slug": "food_tourism",
+    "label": "Tourism, Hospitality & Experiences",
+    "osm_tags": [
+      "tourism=hotel",
+      "tourism=guest_house",
+      "tourism=hostel",
+      "tourism=information",
+      "tourism=attraction",
+      "amenity=events_venue",
+      "leisure=marina",
+      "tourism=caravan_site"
+    ],
+    "keywords": [
+      "tourism",
+      "hotel",
+      "guest house",
+      "tour",
+      "excursion",
+      "ecotourism",
+      "hotel",
+      "resort",
+      "experience",
+      "attraction"
+    ]
+  }
+]

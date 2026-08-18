@@ -102,9 +102,41 @@ function marketplace(biz, products) {
   <section class="section" style="text-align:center"><h2 style="color:var(--primary);font-size:32px;font-weight:600;letter-spacing:-0.02em">${biz.length} businesses across the Caribbean</h2><p style="color:var(--on-surface-variant);max-width:560px;margin:12px auto 24px">Source-backed supplier profiles with explicit verification — unclaimed, claimed, and trade-verified.</p><a class="btn btn-primary" href="/browse">Browse the Directory</a></section>`;
   return shell('Marketplace', body, '/');
 }
-function directory(list) {
-  const body = `<section class="section"><div class="section-head"><h2>Business Directory</h2><p>Source-backed profiles across the Caribbean. Unclaimed profiles are clearly labeled and never presented as verified.</p></div>
-  <div class="dir">${list.map(b=>`<div class="glass bcard"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h3>${esc(b.name)}</h3>${stateBadge(b.state)}</div><div class="bloc"><span class="ms" style="font-size:16px">place</span>${esc(b.country)}${b.city?' · '+esc(b.city):''}</div><div class="bloc"><span class="ms" style="font-size:16px">category</span>${esc(b.category||'uncategorized')}</div>${b.disclaimer?`<div class="bdisclaimer">${esc(b.disclaimer)}</div>`:''}<div class="mono">${b.id}</div></div>`).join('')||'<p>No businesses yet.</p>'}</div></section>`;
+function directory(list, filters = {}) {
+  const { q='', category='', country='', countries=[], categories=[], total=0, page=1, per=60 } = filters;
+  const catLabel = s => (categories.find(c=>c.slug===s)||{}).label || s || 'uncategorized';
+  const enc = v => encodeURIComponent(v||'');
+  const qs = (extra) => { const p=new URLSearchParams({q, category, country, per}); for (const k in extra) p.set(k, extra[k]); return p.toString(); };
+  const pages = Math.max(1, Math.ceil(total/per));
+  const catOptions = categories.map(c=>`<option value="${esc(c.slug)}"${c.slug===category?' selected':''}>${esc(c.label)}</option>`).join('');
+  const countryOptions = countries.map(c=>`<option value="${esc(c)}"${c===country?' selected':''}>${esc(c)}</option>`).join('');
+  const filtered = !!(q||category||country);
+  const body = `<section class="section">
+    <div class="section-head"><h2>Business Directory</h2><p>Search &amp; filter source-backed profiles across the Caribbean. Unclaimed profiles are clearly labeled and never presented as verified.</p></div>
+    <form class="glass" method="get" action="/browse" style="padding:18px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+      <div style="flex:2;min-width:220px"><label>Search</label><input name="q" value="${esc(q)}" placeholder="Business name, city, keyword…"/></div>
+      <div style="flex:1;min-width:180px"><label>Category</label><select name="category"><option value="">All categories</option>${catOptions}</select></div>
+      <div style="flex:1;min-width:160px"><label>Country</label><select name="country"><option value="">All countries</option>${countryOptions}</select></div>
+      <button class="btn btn-primary" type="submit"><span class="ms" style="font-variation-settings:'FILL' 1">search</span> Filter</button>
+      ${filtered?`<a class="btn btn-glass" href="/browse">Clear</a>`:''}
+    </form>
+    <p class="on-surface-variant" style="margin:14px 0;color:var(--on-surface-variant)">${total.toLocaleString()} business${total===1?'':'es'} found</p>
+    <div class="dir">${list.map(b=>`
+      <div class="glass bcard">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h3>${esc(b.name)}</h3>${stateBadge(b.state)}</div>
+        <div class="bloc"><span class="ms" style="font-size:16px">place</span>${esc(b.country)}${b.city?' · '+esc(b.city):''}</div>
+        <div class="bloc"><span class="ms" style="font-size:16px">category</span>${esc(catLabel(b.category))}</div>
+        ${b.phone?`<div class="bloc"><span class="ms" style="font-size:16px">call</span>${esc(b.phone)}</div>`:''}
+        ${b.address?`<div class="bloc"><span class="ms" style="font-size:16px">location_on</span>${esc(b.address)}</div>`:''}
+        ${b.website?`<div class="bloc"><span class="ms" style="font-size:16px">link</span><a href="${esc(b.website)}" target="_blank" rel="noopener">${esc(b.website)}</a></div>`:''}
+        ${b.disclaimer?`<div class="bdisclaimer">${esc(b.disclaimer)}</div>`:''}
+      </div>`).join('')||'<p>No businesses match those filters.</p>'}</div>
+    ${pages>1?`<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:24px">
+      ${page>1?`<a class="btn btn-glass" href="/browse?${esc(qs({page:page-1}))}">← Prev</a>`:'<span class="btn btn-glass" style="opacity:.4">← Prev</span>'}
+      <span class="on-surface-variant" style="color:var(--on-surface-variant)">Page ${page} of ${pages}</span>
+      ${page<pages?`<a class="btn btn-glass" href="/browse?${esc(qs({page:page+1}))}">Next →</a>`:'<span class="btn btn-glass" style="opacity:.4">Next →</span>'}
+    </div>`:''}
+  </section>`;
   return shell('Business Directory', body, '/browse');
 }
 function sourcing(rfqs) {

@@ -1,6 +1,7 @@
 // seed.js — load source-backed businesses, trade rules, HS candidates
 'use strict';
 const store = require('./src/store');
+const loader = require('./load-scraped');
 
 function seed() {
   store.reset();
@@ -22,6 +23,8 @@ function seed() {
   store.addHsCandidate({ hs: '1806', description: 'Chocolate and other food preparations containing cocoa', jurisdiction: 'world', confidence: 0.8, source_url: 'https://asycuda.org/' });
   store.addHsCandidate({ hs: '0901', description: 'Coffee, roasted or unroasted', jurisdiction: 'world', confidence: 0.8 });
   console.log('Seeded source:', src.name, '| businesses:', store.listBusinesses().length);
+  // Populate the full public directory from scraped OSM data (if present).
+  loader.main();
 }
 if (require.main === module) seed();
 module.exports = { seed };

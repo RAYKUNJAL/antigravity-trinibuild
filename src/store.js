@@ -69,10 +69,10 @@ function addSource({ name, url, tier, owner, terms }) {
 }
 
 // ---- Businesses ----
-function addBusiness({ source_id, name, legal_name, country, city, category, website, address, source_url }) {
+function addBusiness({ source_id, name, legal_name, country, city, category, website, address, source_url, phone, email }) {
   const b = {
     id: D.id('biz'), state: D.PROFILE_STATES.UNCLAIMED_PUBLIC_PROFILE, name, legal_name: legal_name||name,
-    country, city, category, website, address,
+    country, city, category, website, address, phone: phone||null, email: email||null,
     verification: D.blankVerification(),
     provenance: { name: D.provenance(source_id, source_url, nowIso()), country: D.provenance(source_id, source_url, nowIso()), category: D.provenance(source_id, source_url, nowIso()) },
     claimed_by: null, claimed_at: null, owner_org_id: null, created_at: nowIso(), updated_at: nowIso(),
@@ -82,7 +82,7 @@ function addBusiness({ source_id, name, legal_name, country, city, category, web
 function getBusiness(id) { return db.businesses.find(b=>b.id===id)||null; }
 function publicBusiness(b) {
   const s=b.state;
-  const pub={ id:b.id,name:b.name,country:b.country,city:b.city,category:b.category,website:b.website,address:b.address,
+  const pub={ id:b.id,name:b.name,country:b.country,city:b.city,category:b.category,website:b.website,address:b.address,phone:b.phone||null,email:b.email||null,
     state:s,label:D.PUBLIC_LABEL[s]||s,
     verified_dimensions:Object.fromEntries(Object.entries(b.verification).filter(([,v])=>v.status==='verified').map(([k])=>[k,true])),
     provenance:b.provenance, can_publish_products:D.canPublishProducts(s), can_receive_rfq:D.canReceiveRfq(s) };
@@ -90,6 +90,19 @@ function publicBusiness(b) {
   return pub;
 }
 function listBusinesses(){ return db.businesses.map(publicBusiness); }
+function searchBusinesses({ q, category, country, city, limit } = {}){
+  const term=(q||'').toLowerCase().trim();
+  const cityT=(city||'').toLowerCase().trim();
+  let out = db.businesses.map(publicBusiness).filter(b=>{
+    if (category && b.category!==category) return false;
+    if (country && b.country!==country) return false;
+    if (cityT && !(b.city||'').toLowerCase().includes(cityT)) return false;
+    if (term){ const hay=[b.name,b.country,b.city||'',b.category].join(' ').toLowerCase(); if(!hay.includes(term)) return false; }
+    return true;
+  });
+  if (limit && out.length>limit) out = out.slice(0, limit);
+  return out;
+}
 function businessesForOrg(orgId){ return db.businesses.filter(b=>b.owner_org_id===orgId); }
 
 function claimBusiness(bizId, repId, orgId) {
@@ -206,7 +219,7 @@ function reset(){ db=blank(); persist(); }
 module.exports = {
   createUser, getUserByEmail, getUserById, setPasswordHash, listOrgUsers,
   getSubscription, setPlan, planAccess, addSource,
-  addBusiness, getBusiness, publicBusiness, listBusinesses, businessesForOrg,
+  addBusiness, getBusiness, publicBusiness, listBusinesses, searchBusinesses, businessesForOrg,
   claimBusiness, approveClaim, submitEvidence, approveEvidence,
   addProduct, listProducts, createRfq, listRfqs, getRfq, submitQuote, listQuotesForRfq,
   createOrder, getOrder, listOrders, addMilestone, addOrderDocument,

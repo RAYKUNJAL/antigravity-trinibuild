@@ -1,0 +1,198 @@
+[
+  {
+    "code": "TT",
+    "name": "Trinidad & Tobago",
+    "region": "CARICOM",
+    "currency": "TTD",
+    "phone": "+1-868"
+  },
+  {
+    "code": "JM",
+    "name": "Jamaica",
+    "region": "CARICOM",
+    "currency": "JMD",
+    "phone": "+1-876"
+  },
+  {
+    "code": "BB",
+    "name": "Barbados",
+    "region": "CARICOM",
+    "currency": "BBD",
+    "phone": "+1-246"
+  },
+  {
+    "code": "GY",
+    "name": "Guyana",
+    "region": "CARICOM",
+    "currency": "GYD",
+    "phone": "+592"
+  },
+  {
+    "code": "BS",
+    "name": "The Bahamas",
+    "region": "CARICOM",
+    "currency": "BSD",
+    "phone": "+1-242"
+  },
+  {
+    "code": "LC",
+    "name": "Saint Lucia",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-758"
+  },
+  {
+    "code": "VC",
+    "name": "St Vincent & Grenadines",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-784"
+  },
+  {
+    "code": "GD",
+    "name": "Grenada",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-473"
+  },
+  {
+    "code": "DM",
+    "name": "Dominica",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-767"
+  },
+  {
+    "code": "KN",
+    "name": "St Kitts & Nevis",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-869"
+  },
+  {
+    "code": "AG",
+    "name": "Antigua & Barbuda",
+    "region": "CARICOM",
+    "currency": "XCD",
+    "phone": "+1-268"
+  },
+  {
+    "code": "SR",
+    "name": "Suriname",
+    "region": "CARICOM",
+    "currency": "SRD",
+    "phone": "+597"
+  },
+  {
+    "code": "HT",
+    "name": "Haiti",
+    "region": "CARICOM",
+    "currency": "HTG",
+    "phone": "+509"
+  },
+  {
+    "code": "DO",
+    "name": "Dominican Republic",
+    "region": "DR-CAFTA",
+    "currency": "DOP",
+    "phone": "+1-809"
+  },
+  {
+    "code": "CW",
+    "name": "Cura\u00e7ao",
+    "region": "Dutch Kingdom",
+    "currency": "ANG",
+    "phone": "+599"
+  },
+  {
+    "code": "SX",
+    "name": "Sint Maarten",
+    "region": "Dutch Kingdom",
+    "currency": "ANG",
+    "phone": "+1-721"
+  },
+  {
+    "code": "GP",
+    "name": "Guadeloupe",
+    "region": "France",
+    "currency": "EUR",
+    "phone": "+590"
+  },
+  {
+    "code": "MQ",
+    "name": "Martinique",
+    "region": "France",
+    "currency": "EUR",
+    "phone": "+596"
+  },
+  {
+    "code": "BL",
+    "name": "Saint Barth\u00e9lemy",
+    "region": "France",
+    "currency": "EUR",
+    "phone": "+590"
+  },
+  {
+    "code": "MF",
+    "name": "Saint Martin",
+    "region": "France",
+    "currency": "EUR",
+    "phone": "+590"
+  },
+  {
+    "code": "KY",
+    "name": "Cayman Islands",
+    "region": "Overseas Territory",
+    "currency": "KYD",
+    "phone": "+1-345"
+  },
+  {
+    "code": "TC",
+    "name": "Turks & Caicos",
+    "region": "Overseas Territory",
+    "currency": "USD",
+    "phone": "+1-649"
+  },
+  {
+    "code": "AI",
+    "name": "Anguilla",
+    "region": "Overseas Territory",
+    "currency": "XCD",
+    "phone": "+1-264"
+  },
+  {
+    "code": "MS",
+    "name": "Montserrat",
+    "region": "Overseas Territory",
+    "currency": "XCD",
+    "phone": "+1-664"
+  },
+  {
+    "code": "VG",
+    "name": "Virgin Islands (UK)",
+    "region": "Overseas Territory",
+    "currency": "USD",
+    "phone": "+1-284"
+  },
+  {
+    "code": "VI",
+    "name": "Virgin Islands (US)",
+    "region": "US Territory",
+    "currency": "USD",
+    "phone": "+1-340"
+  },
+  {
+    "code": "PR",
+    "name": "Puerto Rico",
+    "region": "US Territory",
+    "currency": "USD",
+    "phone": "+1-787"
+  },
+  {
+    "code": "BM",
+    "name": "Bermuda",
+    "region": "Atlantic",
+    "currency": "BMD",
+    "phone": "+1-441"
+  }
+]

@@ -15,7 +15,7 @@ Alibaba-style B2B trade infrastructure for the Caribbean and global buyers. Zero
 
 ## Run
 ```bash
-npm run seed   # loads source-backed businesses + trade rules
+npm run seed   # seeds samples + loads full scraped directory (8.7k+ businesses from OSM)-backed businesses + trade rules
 npm start      # http://localhost:4000
 npm test       # 11 tests
 ```

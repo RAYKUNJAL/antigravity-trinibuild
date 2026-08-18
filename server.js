@@ -8,6 +8,7 @@ const trade = require('./src/services/trade');
 const wam = require('./src/services/wam');
 const ui = require('./src/ui');
 const concierge = require('./src/services/concierge');
+const CATS = require('./data/sources/categories.json');
 const PORT = Number(process.env.PORT || 4000);
 
 function json(res, status, v) { const b = JSON.stringify(v, null, 2); res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(b); }
@@ -36,7 +37,17 @@ async function handle(req, res) {
   const url = new URL(req.url, 'http://x'); const p = url.pathname; const q = url.searchParams;
 
   if (req.method === 'GET' && p === '/') return html(res, 200, ui.marketplace(store.listBusinesses(), store._db().products));
-  if (req.method === 'GET' && p === '/browse') return html(res, 200, ui.directory(store.listBusinesses()));
+  if (req.method === 'GET' && p === '/browse') {
+    const countries = [...new Set(store.listBusinesses().map(b=>b.country))].filter(Boolean).sort();
+    const all = store.searchBusinesses({ q:q.get('q'), category:q.get('category'), country:q.get('country') });
+    const per = Math.max(1, Math.min(Number(q.get('per'))||60, 200));
+    const page = Math.max(1, Number(q.get('page'))||1);
+    const list = all.slice((page-1)*per, page*per);
+    return html(res, 200, ui.directory(list, {
+      q:q.get('q')||'', category:q.get('category')||'', country:q.get('country')||'',
+      countries, categories: CATS, total: all.length, page, per,
+    }));
+  }
   if (req.method === 'GET' && p === '/sourcing') return html(res, 200, ui.sourcing(store.listRfqs()));
   if (req.method === 'GET' && p === '/landed-cost') return html(res, 200, ui.landedCostPage());
   if (req.method === 'GET' && p === '/trade-info') return html(res, 200, ui.tradeInfoPage());
@@ -59,6 +70,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && p === '/api/me') { const s = auth.auth(req); return json(res, s ? 200 : 401, s ? { ok: true, data: s } : { ok: false, error: 'unauthenticated' }); }
 
   if (req.method === 'GET' && p === '/api/businesses') return json(res, 200, { ok: true, data: store.listBusinesses() });
+  if (req.method === 'GET' && p === '/api/search') { const data = store.searchBusinesses({ q:q.get('q'), category:q.get('category'), country:q.get('country'), city:q.get('city') }); return json(res, 200, { ok: true, count: data.length, data }); }
   let m = p.match(/^\/api\/businesses\/([^/]+)$/);
   if (req.method === 'GET' && m) { const b = store.getBusiness(m[1]); return b ? json(res, 200, { ok: true, data: store.publicBusiness(b), products: store.listProducts(b.id) }) : json(res, 404, { ok: false, error: 'not_found' }); }
 
