@@ -48,7 +48,7 @@ footer{margin-top:48px;background:var(--surface-container-lowest);border-top:1px
 <nav class="nav"><div class="nav-inner">
 <a class="brand" href="/"><svg class="brand-mark" viewBox="0 0 64 64" width="28" height="28" role="img" aria-label="Caribbean Trade"><rect width="64" height="64" rx="15" fill="#006D77"/><circle cx="46" cy="17" r="6" fill="#f4b942"/><path d="M13 30 Q20 24 28 30 T43 30" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".95"/><path d="M15 40 Q23 34 31 40 T47 40" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".72"/><path d="M17 50 Q25 44 33 50 T49 50" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".45"/></svg><span class="brand-word">Caribbean Trade</span></a>
 <div class="nav-links">
-<a href="/" class="${active==='/'?'active':''}">Marketplace</a><a href="/browse" class="${active==='/browse'?'active':''}">Directory</a><a href="/sourcing" class="${active==='/sourcing'?'active':''}">Sourcing</a><a href="/landed-cost" class="${active==='/landed-cost'?'active':''}">Landed Cost</a><a href="/trade-info" class="${active==='/trade-info'?'active':''}">Trade Info</a><a href="/plans" class="${active==='/plans'?'active':''}">Plans</a><a href="/advertise" class="${active==='/advertise'?'active':''}">Advertise</a>
+<a href="/" class="${active==='/'?'active':''}">Marketplace</a><a href="/browse" class="${active==='/browse'?'active':''}">Directory</a><a href="/sourcing" class="${active==='/sourcing'?'active':''}">Sourcing</a><a href="/landed-cost" class="${active==='/landed-cost'?'active':''}">Landed Cost</a><a href="/trade-info" class="${active==='/trade-info'?'active':''}">Trade Info</a><a href="/plans" class="${active==='/plans'?'active':''}">Plans</a><a href="/advertise" class="${active==='/advertise'?'active':''}">Advertise</a><a href="/admin" class="${active==='/admin'?'active':''}">AI Team</a>
 </div>
 <div class="nav-cta">${active?`<a class="btn btn-glass" href="/logout">${esc(active)}</a>`:`<a class="btn btn-glass" href="/login">Sign in</a><a class="btn btn-primary" href="/signup">Get Started</a>`}</div>
 </div></nav>
@@ -285,4 +285,45 @@ function advertisePage(active) {
   </script>`;
   return shell('Advertise', body, active||'/advertise');
 }
-module.exports = { shell, esc, IMG, marketplace, directory, sourcing, landedCostPage, tradeInfoPage, plansPage, loginPage, signupPage, advertisePage };
+
+function aiTeamPage(active) {
+  const body = String.raw`<section class="section">
+    <div class="section-head"><h2>AI Operations Team</h2><p>Agentic agents that run day-to-day platform operations — supplier acquisition, demand matching, data quality, verification, moderation, ads, and daily reporting. Agents act on live platform data. Goose AI powers the generative layer when a provider has credits.</p></div>
+    <div class="glass" style="padding:16px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-primary" onclick="aiRun('all')"><span class="ms" style="font-variation-settings:'FILL' 1">smart_toy</span> Run all agents</button>
+      <span class="muted" id="ai_status" style="font-size:13px">Team idle.</span>
+    </div>
+    <div id="ai_team_grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px"><p class="muted">Loading team…</p></div>
+    <div class="section-head" style="margin-top:36px"><h2>Recent runs</h2></div>
+    <div id="ai_runs" class="glass" style="padding:16px;overflow-x:auto"><p class="muted">Loading…</p></div>
+  </section>
+  <script>
+  var AI_AGENTS=[];
+  function aiEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function aiKey(o){return Object.keys(o||{}).filter(function(k){return !['sample_outreach','matches','flagged','staged','best_ads','escrow_states','markets'].includes(k);}).slice(0,6).map(function(k){return k+': '+aiEsc(JSON.stringify(o[k]).slice(0,60));}).join(' · ');}
+  function aiLoad(){
+    fetch('/api/admin/ai-team').then(function(r){return r.json();}).then(function(j){
+      AI_AGENTS=j.agents||[];
+      var grid=document.getElementById('ai_team_grid');
+      grid.innerHTML=AI_AGENTS.map(function(a){return '<div class="glass" style="padding:18px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:10px"><span class="ms" style="font-size:26px;color:var(--primary)">'+aiEsc(a.icon)+'</span><div><div style="font-weight:700">'+aiEsc(a.role)+'</div><div class="muted" style="font-size:12px">'+aiEsc(a.name)+'</div></div></div><p style="font-size:13px;margin:0;color:var(--on-surface-variant)">'+aiEsc(a.description)+'</p><div style="font-size:12px" class="muted">Last: '+(a.last?aiEsc(a.last.status)+' · '+aiEsc(aiKey(a.last.output)):'never run')+'</div><button class="btn btn-glass" onclick="aiRun(\''+aiEsc(a.name)+'\')">Run now</button></div>';}).join('');
+      document.getElementById('ai_status').textContent=AI_AGENTS.length+' agents ready.';
+      aiLoadRuns();
+    }).catch(function(){});
+  }
+  function aiLoadRuns(){
+    fetch('/api/admin/ai-team/runs').then(function(r){return r.json();}).then(function(j){
+      var d=document.getElementById('ai_runs');
+      if(!j.runs||!j.runs.length){d.innerHTML='<p class="muted">No agent runs yet. Run an agent to begin.</p>';return;}
+      d.innerHTML='<table><tr><th>Agent</th><th>Status</th><th>Started</th><th>Summary</th></tr>'+j.runs.slice(0,20).map(function(r){return '<tr><td>'+aiEsc(r.agent)+'</td><td>'+aiEsc(r.status)+'</td><td>'+aiEsc((r.started_at||'').slice(5,16))+'</td><td style="font-size:12px">'+aiEsc(aiKey(r.output))+'</td></tr>';}).join('')+'</table>';
+    }).catch(function(){});
+  }
+  function aiRun(name){
+    document.getElementById('ai_status').textContent='Running '+(name==='all'?'all agents':name)+'…';
+    var url=name==='all'?'/api/admin/ai-team/run-all':'/api/admin/ai-team/'+encodeURIComponent(name)+'/run';
+    fetch(url,{method:'POST'}).then(function(r){return r.json();}).then(function(){ document.getElementById('ai_status').textContent='Run complete.'; aiLoad(); }).catch(function(){ document.getElementById('ai_status').textContent='Run failed.'; });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aiLoad);else aiLoad();
+  </script>`;
+  return shell('AI Operations Team', body, active||'/admin');
+}
+module.exports = { shell, esc, IMG, marketplace, directory, sourcing, landedCostPage, tradeInfoPage, plansPage, loginPage, signupPage, advertisePage, aiTeamPage };

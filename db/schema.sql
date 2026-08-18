@@ -338,3 +338,15 @@ CREATE TABLE IF NOT EXISTS ad_events (
   at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_ad_events_ad ON ad_events(ad_id);
+
+-- ============ AI Operations Team: agent run log ============
+CREATE TABLE IF NOT EXISTS agent_runs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  agent TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  input JSONB DEFAULT '{}'::jsonb,
+  output JSONB DEFAULT '{}'::jsonb,
+  started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  finished_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_agent ON agent_runs(agent);

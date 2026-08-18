@@ -14,6 +14,7 @@ const CATS = require('./data/sources/categories.json');
 const pg = require('./src/pg');
 const landedCostEngine = require('./src/services/landed-cost');
 const legal = require('./src/legal');
+const aiTeam = require('./src/services/ai-team');
 const PORT = Number(process.env.PORT || 4000);
 function round2(n){ return Math.round((Number(n)+Number.EPSILON)*100)/100; }
 
@@ -72,6 +73,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && p === '/dpa') return html(res, 200, legal.render('dpa'));
   if (req.method === 'GET' && p === '/acceptable-use') return html(res, 200, legal.render('acceptable-use'));
   if (req.method === 'GET' && p === '/advertise') return html(res, 200, ui.advertisePage());
+  if (req.method === 'GET' && p === '/admin') return html(res, 200, ui.aiTeamPage());
   if (req.method === 'GET' && p === '/login') return html(res, 200, ui.loginPage(auth.auth(req)?.name));
   if (req.method === 'GET' && p === '/signup') return html(res, 200, ui.signupPage(auth.auth(req)?.name, q.get('role')));
 
@@ -282,15 +284,37 @@ async function handle(req, res) {
   let adact = p.match(/^\/api\/v1\/ads\/([^/]+)\/activate$/);
   if (req.method === 'POST' && adact){ const ad=await pg.setAdStatus(adact[1],'active'); return ad ? json(res,200,{ok:true,ad}) : json(res,404,{ok:false,error:'not_found'}); }
 
+
+  // ---- AI Operations Team (admin) ----
+  if (req.method === 'GET' && p === '/api/admin/ai-team') {
+    const agents = await Promise.all(aiTeam.AGENTS.map(async a => ({ ...a, last: await pg.lastAgentRun(a.name) })));
+    return json(res, 200, { ok:true, agents });
+  }
+  if (req.method === 'GET' && p === '/api/admin/ai-team/runs') { const runs = await pg.listAgentRuns(50); return json(res, 200, { ok:true, runs }); }
+  let aiRunM = p.match(/^\/api\/admin\/ai-team\/([^/]+)\/run$/);
+  if (req.method === 'POST' && aiRunM) { const r = await aiTeam.run(aiRunM[1]); return json(res, r.ok?200:400, r); }
+  if (req.method === 'POST' && p === '/api/admin/ai-team/run-all') {
+    const results = [];
+    for (const a of aiTeam.AGENTS) { results.push(await aiTeam.run(a.name)); }
+    return json(res, 200, { ok:true, results });
+  }
+
   return json(res, 404, { ok: false, error: 'not_found' });
 }
+
 
 
 
 const server = http.createServer((req, res) => { handle(req, res).catch(e => { console.error(e); json(res, 500, { ok: false, error: 'server_error' }); }); });
 if (require.main === module) {
   store.initPg()
-    .then(()=>{ server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT + ' (Postgres-backed)')); })
+    .then(()=>{
+      server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT + ' (Postgres-backed)'));
+      // AI operations team: run daily ops + supplier outreach once each morning
+      const runDaily = () => { aiTeam.run('daily_ops').then(()=>aiTeam.run('supplier_outreach')).catch(e=>console.error('daily agent error', e&&e.message)); };
+      const tick = () => { const n=new Date(); if (n.getHours()===6 && n.getMinutes()<10) runDaily(); };
+      tick(); setInterval(tick, 60*60*1000);
+    })
     .catch(err=>{ console.error('initPg failed:', err && err.message); server.listen(PORT, '0.0.0.0', () => console.log('Caribbean AI Trade Network on http://0.0.0.0:' + PORT)); });
 }
 module.exports = { server, handle, page, esc };

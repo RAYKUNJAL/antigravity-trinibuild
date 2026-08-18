@@ -202,6 +202,13 @@ async function recordAdEvent(adId, type){
 }
 async function adStats(){ const r=await pool.query("SELECT count(*)::int AS total, COALESCE(sum(impressions),0)::int AS impressions, COALESCE(sum(clicks),0)::int AS clicks FROM ads"); return r.rows[0]; }
 
+
+// ---- AI Operations Team: agent run log ----
+async function createAgentRun(agent, input){ const r=await pool.query('INSERT INTO agent_runs (agent,status,input,started_at) VALUES ($1,$2,$3,now()) RETURNING *',[agent,'running',input||{}]); return r.rows[0]; }
+async function finishAgentRun(id,status,output){ const r=await pool.query('UPDATE agent_runs SET status=$2, output=$3, finished_at=now() WHERE id=$1 RETURNING *',[id,status,output||{}]); return r.rows[0]; }
+async function listAgentRuns(limit){ const r=await pool.query('SELECT * FROM agent_runs ORDER BY started_at DESC LIMIT $1',[limit||50]); return r.rows; }
+async function lastAgentRun(agent){ const r=await pool.query('SELECT * FROM agent_runs WHERE agent=$1 ORDER BY started_at DESC LIMIT 1',[agent]); return r.rows[0]||null; }
+
 module.exports = {
   pool, DATABASE_URL, TABLES, hydrate, flushAll, migrate, ping, count,
   createEscrow, getEscrow, getEscrowByOrder, transitionEscrow, escrowEvents,
@@ -209,4 +216,5 @@ module.exports = {
   listCountryProfiles, listTariffs, listFreight,
   createTradeOrder, getTradeOrder, listTradeOrders,
   createAd, listActiveAds, listAds, getAd, setAdStatus, recordAdEvent, adStats,
+  createAgentRun, finishAgentRun, listAgentRuns, lastAgentRun,
 };
