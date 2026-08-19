@@ -3,6 +3,7 @@
 services:
   caribbean-trade-db:
     image: postgres:16-alpine
+    container_name: caribbean-trade-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: caribbean_trade
@@ -13,24 +14,29 @@ services:
     networks: [trade]
   caribbean-trade:
     build: .
+    container_name: caribbean-trade
     restart: unless-stopped
     depends_on: [caribbean-trade-db]
     env_file: .env.production
     environment:
       PORT: "4000"
-      DATABASE_URL: postgresql://caribbean_trade:${POSTGRES_PASSWORD}@caribbean-trade-db:5432/caribbean_trade
     ports:
       - "127.0.0.1:4005:4000"
+    networks:
+      - trade
+      - coolify
     expose: ["4000"]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.caribbean-trade.rule=Host(\`CHANGE-ME.example.com\`)"
+      - "traefik.http.routers.caribbean-trade.rule=Host(`trade.juvay.app`)"
       - "traefik.http.routers.caribbean-trade.entrypoints=https"
       - "traefik.http.routers.caribbean-trade.tls.certresolver=letsencrypt"
       - "traefik.http.services.caribbean-trade.loadbalancer.server.port=4000"
       - "traefik.http.routers.caribbean-trade.middlewares=coolify-gzip"
-    networks: [trade]
 volumes:
   caribbean_trade_db:
+    external: true
 networks:
   trade:
+  coolify:
+    external: true
