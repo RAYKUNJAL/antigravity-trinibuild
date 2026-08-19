@@ -16,9 +16,17 @@ function blank() {
     businesses: [], representatives: [], products: [], rfqs: [], quotes: [], orders: [],
     payments: [], landed_cost_scenarios: [], trade_rules: [], hs_candidates: [],
     activity: [], sources: [],
+    documents: [], messages: [], reviews: [], saved_searches: [], watchlists: [],
+    org_members: [], approvals: [], notifications: [], audit_log: [],
   };
 }
-let db = (() => { try { return fs.existsSync(DB_FILE) ? JSON.parse(fs.readFileSync(DB_FILE,'utf8')) : blank(); } catch { return blank(); } })();
+let db = (() => {
+  let d;
+  try { d = fs.existsSync(DB_FILE) ? JSON.parse(fs.readFileSync(DB_FILE,'utf8')) : blank(); } catch { d = blank(); }
+  const b = blank();
+  for (const k of Object.keys(b)) { if (!Array.isArray(d[k])) d[k] = b[k]; }
+  return d;
+})();
 let _t;
 function persist() {
   clearTimeout(_t);
@@ -103,10 +111,10 @@ function addBusiness({ source_id, name, legal_name, country, city, category, web
 function getBusiness(id) { return db.businesses.find(b=>b.id===id)||null; }
 function publicBusiness(b) {
   const s=b.state;
-  const pub={ id:b.id,name:b.name,country:b.country,city:b.city,category:b.category,website:b.website,address:b.address,phone:b.phone||null,email:b.email||null,
+  const pub={ id:b.id,name:b.name,country:b.country,city:b.city,category:b.category,website:(b.website&&!/example.(com|org)/i.test(b.website))?b.website:null,address:b.address,phone:b.phone||null,email:b.email||null,
     state:s,label:D.PUBLIC_LABEL[s]||s,
     verified_dimensions:Object.fromEntries(Object.entries(b.verification).filter(([,v])=>v.status==='verified').map(([k])=>[k,true])),
-    provenance:b.provenance, can_publish_products:D.canPublishProducts(s), can_receive_rfq:D.canReceiveRfq(s) };
+    provenance:b.provenance, can_publish_products:D.canPublishProducts(s), can_receive_rfq:D.canReceiveRfq(s), completeness_score: b.completeness_score||null };
   if (D.isUnclaimed(s)) pub.disclaimer=D.UNCLAIMED_DISCLAIMER;
   return pub;
 }
@@ -134,7 +142,7 @@ function claimBusiness(bizId, repId, orgId) {
 }
 function approveClaim(bizId){ const b=getBusiness(bizId); if(!b||b.state!==D.PROFILE_STATES.CLAIM_PENDING) return {ok:false,error:'invalid_state'}; b.state=D.PROFILE_STATES.CLAIMED; log('claim_approved',null,b.id,{name:b.name}); persist(); return {ok:true,business:publicBusiness(b)}; }
 function submitEvidence(bizId, repId, dimension, note){
-  const b=getBusiness(bizId); if(!b||b.state!==D.PROFILE_STATES.CLAIMED) return {ok:false,error:'must_be_claimed'};
+  const b=getBusiness(bizId); if(!b||(b.state!==D.PROFILE_STATES.CLAIMED && b.state!==D.PROFILE_STATES.CLAIM_PENDING)) return {ok:false,error:'must_be_claimed'};
   if(!D.VERIFICATION_DIMENSIONS.includes(dimension)) return {ok:false,error:'bad_dimension'};
   b.verification[dimension]={status:'pending_review',checked_at:nowIso(),note:note||'',submitted_by:repId};
   log('evidence_submitted',repId,b.id,{dimension}); persist(); return {ok:true,business:publicBusiness(b)};
@@ -179,16 +187,23 @@ function submitQuote(rfqId, supplierOrgId, bizId, { price_usd, currency, incoter
   if(!plan.can_quote) return {ok:false,error:'plan_requires_upgrade',plan:plan.slug};
   const q={ id:D.id('qte'), rfq_id:rfqId, supplier_org_id:supplierOrgId, business_id:bizId, price_usd:Number(price_usd)||0,
     currency:currency||'USD', incoterm:incoterm||'EXW', lead_time, moq:Number(moq)||1, validity_days:Number(validity_days)||30,
-    notes:notes||'', status:'submitted', created_at:nowIso() };
+    notes:notes||'', status:'submitted', version:1, parent_quote_id:null, negotiation_thread:[],
+    payment_terms:null, packing_notes:null, attachments:[], fx_rate:null, landed_cost_estimate:null, created_at:nowIso() };
   db.quotes.push(q); log('quote_submitted',supplierOrgId,rfqId,{price:q.price_usd}); persist(); return {ok:true,quote:q};
 }
 function listQuotesForRfq(rfqId){ return db.quotes.filter(q=>q.rfq_id===rfqId); }
 
 // ---- Orders ----
 function createOrder({ buyer_org_id, supplier_org_id, rfq_id, quote_id, product, quantity, price_usd, currency, incoterm, terms }) {
+  const now=nowIso();
   const order={ id:D.id('ord'), buyer_org_id, supplier_org_id, rfq_id, quote_id, product, quantity:Number(quantity)||1,
-    price_usd:Number(price_usd)||0, currency:currency||'USD', incoterm:incoterm||'EXW', status:'created',
-    terms:terms||{}, milestones:[], documents:[], created_at:nowIso() };
+    price_usd:Number(price_usd)||0, currency:currency||'USD', incoterm:incoterm||'EXW',
+    status:quote_id?'po_issued':'rfq_received',
+    status_history:[{status:quote_id?'po_issued':'rfq_received', at:now, by:null}],
+    po_number:'PO-'+new Date().getFullYear()+'-'+crypto.randomBytes(3).toString('hex').toUpperCase(),
+    deposit_amount:Number(terms?terms.deposit_amount:0)||0, payment_terms:(terms?terms.payment_terms:null),
+    fx_rate:(terms?terms.fx_rate:null), shipping:{carrier:null,tracking:null,etd:null,eta:null},
+    terms:terms||{}, milestones:[], documents:[], created_at:now };
   db.orders.push(order); log('order_created',buyer_org_id,order.id,{product,qty:order.quantity}); persist(); return order;
 }
 function getOrder(id){ return db.orders.find(o=>o.id===id)||null; }
@@ -234,6 +249,90 @@ function tradeRulesFor(jurisdiction, category){ return db.trade_rules.filter(r=>
 // ---- Activity ----
 function listActivity(limit){ return db.activity.slice(0,Number(limit)||50); }
 
+
+// ---- Documents ----
+function addDocument({ order_id, rfq_id, org_id, uploaded_by, kind, file_name, mime, size, url_or_path, notes }) {
+  const d={ id:D.id('doc'), order_id:order_id||null, rfq_id:rfq_id||null, org_id, uploaded_by:uploaded_by||null,
+    kind:kind||'other', file_name:file_name||null, mime:mime||null, size:Number(size)||0, url_or_path:url_or_path||null,
+    notes:notes||'', created_at:nowIso() };
+  db.documents.push(d); log('document_added',uploaded_by,order_id||rfq_id||null,{kind:d.kind}); persist(); return d;
+}
+function listDocuments({ orgId, orderId }={}){ return db.documents.filter(d=>orgId?d.org_id===orgId:true).filter(d=>orderId?d.order_id===orderId:true); }
+function getDocument(id){ return db.documents.find(d=>d.id===id)||null; }
+
+// ---- Messages ----
+function sendMessage({ thread_id, sender_id, recipient_id, org_id, order_id, rfq_id, body, attachment_ids }) {
+  const m={ id:D.id('msg'), thread_id, sender_id, recipient_id:recipient_id||null, org_id:org_id||null,
+    order_id:order_id||null, rfq_id:rfq_id||null, body:body||'', attachment_ids:attachment_ids||[],
+    created_at:nowIso(), read_at:null };
+  db.messages.push(m); persist(); return m;
+}
+function messagesForThread(thread_id){ return db.messages.filter(m=>m.thread_id===thread_id).sort((x,y)=>x.created_at<y.created_at?-1:1); }
+function markMessageRead(id, userId){ const m=db.messages.find(x=>x.id===id); if(m){ if(m.sender_id!==userId){ if(!m.read_at){ m.read_at=nowIso(); persist(); } } } return m; }
+
+// ---- Reviews / trust ----
+function addReview({ order_id, reviewer_org_id, reviewee_org_id, rating, comment }) {
+  if(db.reviews.some(r=>r.order_id===order_id ? r.reviewer_org_id===reviewer_org_id : false)) return {ok:false,error:'already_reviewed'};
+  const r={ id:D.id('rev'), order_id, reviewer_org_id, reviewee_org_id, rating:Math.min(5,Math.max(1,Number(rating)||5)), comment:comment||'', created_at:nowIso() };
+  db.reviews.push(r); log('review_submitted',reviewer_org_id,order_id,{rating:r.rating}); persist(); return {ok:true,review:r};
+}
+function reviewsForOrg(orgId){ return db.reviews.filter(r=>r.reviewee_org_id===orgId||r.reviewer_org_id===orgId); }
+function reviewStats(orgId){ const rs=db.reviews.filter(r=>r.reviewee_org_id===orgId); const avg=rs.length?rs.reduce((a,r)=>a+r.rating,0)/rs.length:0; return {count:rs.length,average:Number(avg.toFixed(1))}; }
+
+// ---- Saved searches and watchlists ----
+function addSavedSearch(orgId, name, filters){ const s={ id:D.id('sav'), org_id:orgId, name:name||'Saved search', filters:filters||{}, created_at:nowIso() }; db.saved_searches.push(s); persist(); return s; }
+function listSavedSearches(orgId){ return db.saved_searches.filter(s=>s.org_id===orgId); }
+function removeSavedSearch(id, orgId){ const i=db.saved_searches.findIndex(s=>s.id===id ? s.org_id===orgId : false); if(i<0) return {ok:false,error:'not_found'}; db.saved_searches.splice(i,1); persist(); return {ok:true}; }
+function addWatchlist(orgId, businessId){ if(db.watchlists.some(w=>w.org_id===orgId ? w.business_id===businessId : false)) return {ok:false,error:'already_watching'}; const w={ id:D.id('wtc'), org_id:orgId, business_id:businessId, created_at:nowIso() }; db.watchlists.push(w); persist(); return {ok:true,watchlist:w}; }
+function removeWatchlist(orgId, businessId){ const i=db.watchlists.findIndex(w=>w.org_id===orgId ? w.business_id===businessId : false); if(i<0) return {ok:false,error:'not_found'}; db.watchlists.splice(i,1); persist(); return {ok:true}; }
+function listWatchlists(orgId){ return db.watchlists.filter(w=>w.org_id===orgId); }
+
+// ---- Org members and approvals ----
+function addOrgMember(orgId, userId, role){ if(!D.ROLES.includes(role)) return {ok:false,error:'bad_role'}; if(db.org_members.some(m=>m.org_id===orgId ? m.user_id===userId : false)) return {ok:false,error:'already_member'}; const m={ id:D.id('om'), org_id:orgId, user_id:userId, role, created_at:nowIso() }; db.org_members.push(m); persist(); return {ok:true,member:m}; }
+function listOrgMembers(orgId){ return db.org_members.filter(m=>m.org_id===orgId); }
+function requestApproval({ org_id, kind, ref_id, requested_by, approver_role, note }){ const a={ id:D.id('app'), org_id, kind, ref_id, requested_by, approver_role:approver_role||'admin', status:'pending', decided_by:null, decided_at:null, note:note||'', created_at:nowIso() }; db.approvals.push(a); log('approval_requested',requested_by,ref_id,{kind}); persist(); return a; }
+function listApprovals(orgId, { status }={}){ return db.approvals.filter(a=>a.org_id===orgId ? (!status||a.status===status) : false); }
+function decideApproval(id, orgId, decision, decidedBy, note){ const a=db.approvals.find(x=>x.id===id ? x.org_id===orgId : false); if(!a) return {ok:false,error:'not_found'}; if(a.status!=='pending') return {ok:false,error:'already_decided'}; a.status=decision==='approved'?'approved':'rejected'; a.decided_by=decidedBy; a.decided_at=nowIso(); if(note) a.note=note; log('approval_'+a.status,decidedBy,a.ref_id,{kind:a.kind}); persist(); return {ok:true,approval:a}; }
+
+// ---- Notifications ----
+function notify(userId, kind, title, body, link){ const n={ id:D.id('ntf'), user_id:userId, kind:kind||'info', title, body:body||'', link:link||null, read_at:null, created_at:nowIso() }; db.notifications.push(n); if(db.notifications.length>500) db.notifications=db.notifications.slice(-500); persist(); return n; }
+function listNotifications(userId, { unread }={}){ return db.notifications.filter(n=>n.user_id===userId ? (!unread||!n.read_at) : false).sort((x,y)=>x.created_at<y.created_at?1:-1); }
+function markNotificationsRead(userId){ let n=0; for(const x of db.notifications){ if(x.user_id===userId){ if(!x.read_at){ x.read_at=nowIso(); n++; } } } if(n) persist(); return n; }
+
+// ---- Audit log ----
+function audit(actorUserId, action, entity, entityId, detail, ip){ db.audit_log.push({ id:D.id('aud'), actor_user_id:actorUserId||null, actor_org_id:null, action, entity:entity||null, entity_id:entityId||null, detail:detail||{}, ip:ip||null, created_at:nowIso() }); if(db.audit_log.length>5000) db.audit_log=db.audit_log.slice(-5000); }
+function listAudit({ limit, action }={}){ let out=db.audit_log; if(action) out=out.filter(a=>a.action===action); return out.slice(0,Number(limit)||100); }
+
+// ---- Order lifecycle ----
+function updateOrderStatus(orderId, status, by){ const o=getOrder(orderId); if(!o) return {ok:false,error:'not_found'}; if(!D.ORDER_STATUSES.includes(status)) return {ok:false,error:'bad_status'}; o.status=status; o.status_history=o.status_history||[]; o.status_history.push({status,at:nowIso(),by:by||null}); log('order_status',by,orderId,{status}); persist(); return {ok:true,order:o}; }
+function getOrderStatusHistory(orderId){ const o=getOrder(orderId); return o?(o.status_history||[]):[]; }
+
+// ---- Quote lifecycle ----
+function createCounterOffer(parentQuoteId, supplierOrgId, changes, by){
+  const parent=db.quotes.find(q=>q.id===parentQuoteId); if(!parent) return {ok:false,error:'quote_not_found'};
+  if(parent.supplier_org_id!==supplierOrgId) return {ok:false,error:'not_supplier'};
+  parent.status='countered'; parent.negotiation_thread=parent.negotiation_thread||[];
+  parent.negotiation_thread.push({by:by||null,at:nowIso(),message:changes.message||'Counteroffer submitted',counter_offer:{price_usd:changes.price_usd,moq:changes.moq,lead_time:changes.lead_time,incoterm:changes.incoterm}});
+  const q={ id:D.id('qte'), rfq_id:parent.rfq_id, supplier_org_id:parent.supplier_org_id, business_id:parent.business_id,
+    price_usd:Number(changes.price_usd)||parent.price_usd, currency:changes.currency||parent.currency||'USD', incoterm:changes.incoterm||parent.incoterm||'EXW',
+    lead_time:changes.lead_time||parent.lead_time, moq:Number(changes.moq)||parent.moq||1, validity_days:parent.validity_days||30,
+    notes:changes.notes||parent.notes||'', status:'submitted', version:(parent.version||1)+1, parent_quote_id:parent.id,
+    negotiation_thread:[], payment_terms:changes.payment_terms||parent.payment_terms||null, packing_notes:null, attachments:[], fx_rate:null, landed_cost_estimate:null, created_at:nowIso() };
+  db.quotes.push(q); log('counteroffer_submitted',supplierOrgId,parent.rfq_id,{version:q.version}); persist(); return {ok:true,quote:q};
+}
+function acceptQuote(quoteId, buyerOrgId){ const q=db.quotes.find(x=>x.id===quoteId); if(!q) return {ok:false,error:'quote_not_found'}; q.status='accepted'; persist(); return {ok:true,quote:q}; }
+
+// ---- Storefront ----
+function updateStorefront(businessId, orgId, patch){
+  const b=getBusiness(businessId); if(!b) return {ok:false,error:'not_found'};
+  if(b.owner_org_id!==orgId) return {ok:false,error:'not_owner'};
+  const f=['description','moq','lead_time_days','production_capacity','payment_terms','sample_policy','spec_sheet','response_time_minutes'];
+  for(const k of f){ if(patch[k]!==undefined) b[k]=k.endsWith('_minutes')?(Number(patch[k])||null):(patch[k]===''?null:patch[k]); }
+  for(const k of ['certifications','export_markets','incoterms_offered','pack_sizes']){ if(patch[k]!==undefined) b[k]=Array.isArray(patch[k])?patch[k]:String(patch[k]||'').split(',').map(x=>x.trim()).filter(Boolean); }
+  b.completeness_score=D.computeCompletenessScore(b, listProducts(businessId).length);
+  b.last_activity_at=nowIso(); persist(); return {ok:true,business:publicBusiness(b)};
+}
+
 // ---- Reset for tests ----
 function reset(){ db=blank(); persist(); }
 
@@ -243,7 +342,13 @@ module.exports = {
   addBusiness, getBusiness, publicBusiness, listBusinesses, searchBusinesses, businessesForOrg,
   claimBusiness, approveClaim, submitEvidence, approveEvidence,
   addProduct, listProducts, createRfq, listRfqs, getRfq, submitQuote, listQuotesForRfq,
-  createOrder, getOrder, listOrders, addMilestone, addOrderDocument,
+  createOrder, getOrder, listOrders, addMilestone, addOrderDocument, updateOrderStatus, getOrderStatusHistory,
+  createCounterOffer, acceptQuote, updateStorefront,
+  addDocument, listDocuments, getDocument, sendMessage, messagesForThread, markMessageRead,
+  addReview, reviewsForOrg, reviewStats, addSavedSearch, listSavedSearches, removeSavedSearch,
+  addWatchlist, removeWatchlist, listWatchlists, addOrgMember, listOrgMembers,
+  requestApproval, listApprovals, decideApproval, notify, listNotifications, markNotificationsRead,
+  audit, listAudit,
   createPaymentIntent, markPayment, markPaymentByWamRef, listPayments, saveLandedCost, listLandedCosts,
   addTradeRule, addHsCandidate, tradeRulesFor, listActivity, reset,
   _db: ()=>db, id: D.id, initPg,

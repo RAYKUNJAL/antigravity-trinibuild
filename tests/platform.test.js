@@ -104,7 +104,9 @@ test('order + payment lifecycle', () => {
   store.reset();
   const buyer = store.createUser({ email: 'buyer@x.com', name: 'Buyer', org_name: 'BuyerCo', role: 'buyer' });
   const order = store.createOrder({ buyer_org_id: buyer.org_id, supplier_org_id: 'org-sup', product: 'Cocoa', quantity: 10, price_usd: 100 });
-  assert.equal(order.status, 'created');
+  assert.equal(order.status, 'rfq_received');
+  assert.ok(order.po_number, 'order has po_number');
+  assert.equal(order.status_history.length, 1, 'status history seeded');
   const pi = store.createPaymentIntent({ order_id: order.id, buyer_org_id: buyer.org_id, amount: 100, currency: 'USD', method: 'card' });
   assert.equal(pi.status, 'CREATED');
   store.markPayment(pi.id, 'PAID', { ref: 'x' });

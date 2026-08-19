@@ -20,8 +20,8 @@ const TABLES = {
   representatives:    { table:'representatives',    columns:['id','org_id','user_id','business_id','role','created_at'] },
   products:           { table:'products',           columns:['id','business_id','org_id','title','description','category','hs_candidate','moq','lead_time','price_usd','currency','origin_country','published_by','created_at'] },
   rfqs:               { table:'rfqs',               columns:['id','buyer_user_id','buyer_org_id','product','quantity','destination_country','deadline','notes','category','status','created_at'] },
-  quotes:             { table:'quotes',             columns:['id','rfq_id','supplier_org_id','business_id','price_usd','currency','incoterm','lead_time','moq','validity_days','notes','status','created_at'] },
-  orders:             { table:'trade_orders',       columns:['id','order_number','buyer_id','seller_id','buyer_org_id','supplier_org_id','rfq_id','quote_id','product','quantity','price_usd','currency','incoterm','status','origin_country','destination_country','has_caricom_coo','terms','milestones','documents','base_goods_total_usd','freight_charge_usd','insurance_charge_usd','cif_value_usd','import_duty_usd','customs_service_charge_usd','environmental_levy_usd','vat_gct_usd','port_handling_usd','final_landed_total_usd','duty_rate_applied','vat_rate_applied','created_at'] },
+  quotes:             { table:'quotes',             columns:['id','rfq_id','supplier_org_id','business_id','price_usd','currency','incoterm','lead_time','moq','validity_days','notes','status','created_at','version','parent_quote_id','negotiation_thread','payment_terms','attachments','landed_cost_estimate'] },
+  orders:             { table:'trade_orders',       columns:['id','order_number','buyer_id','seller_id','buyer_org_id','supplier_org_id','rfq_id','quote_id','product','quantity','price_usd','currency','incoterm','status','origin_country','destination_country','has_caricom_coo','terms','milestones','documents','status_history','po_number','deposit_amount','payment_terms','fx_rate','shipping','base_goods_total_usd','freight_charge_usd','insurance_charge_usd','cif_value_usd','import_duty_usd','customs_service_charge_usd','environmental_levy_usd','vat_gct_usd','port_handling_usd','final_landed_total_usd','duty_rate_applied','vat_rate_applied','created_at'] },
   payments:           { table:'payments',           columns:['id','order_id','buyer_org_id','amount','currency','method','provider','status','metadata','provider_data','created_at','captured_at','wam_payment_id','wam_checkout_url','wam_status'] },
   landed_cost_scenarios:{ table:'landed_cost_scenarios', columns:['id','org_id','input','result','created_at'] },
   trade_rules:        { table:'trade_rules',        columns:['id','jurisdiction','product_scope','title','rule_type','value','source_url','source_tier','effective_from'] },
@@ -29,7 +29,8 @@ const TABLES = {
   activity:           { table:'activity',           columns:['id','action','actor','target','detail','at'] },
   sources:            { table:'sources',            columns:['id','name','url','tier','owner','terms','active','added_at'] },
 };
-const JSON_COLS = new Set(['verification','provenance','metadata','provider_data','detail','input','result','product_scope','terms','milestones','documents']);
+const JSON_COLS = new Set(['verification','provenance','metadata','provider_data','detail','input','result','product_scope','terms','milestones','documents','status_history','negotiation_thread','attachments','shipping','landed_cost_estimate']);
+const NUMERIC_COLS = new Set(['price_usd','amount','moq','quantity','confidence','deposit_amount','fx_rate','base_goods_total_usd','freight_charge_usd','insurance_charge_usd','cif_value_usd','import_duty_usd','customs_service_charge_usd','environmental_levy_usd','vat_gct_usd','port_handling_usd','final_landed_total_usd','duty_rate_applied','vat_rate_applied']);
 
 function cleanVal(v, col){
   if (v === undefined || v === null) return null;
@@ -52,6 +53,7 @@ async function hydrate(db){
       for (const c of columns){
         let v = row[c];
         if (v instanceof Date) v = v.toISOString();
+        else if (NUMERIC_COLS.has(c) && v !== null) v = Number(v);
         else if (v !== null && typeof v === 'object' && !Array.isArray(v)) v = v; // jsonb already object
         o[c] = v;
       }

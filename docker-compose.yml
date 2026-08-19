@@ -1,0 +1,36 @@
+# Caribbean Trade Network — self-hosted deploy (Traefik/Coolify edge proxy on trini VPS)
+# Set your real domain in the TRAEFIK label below, then: docker compose up -d --build
+services:
+  caribbean-trade-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: caribbean_trade
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: caribbean_trade
+    volumes:
+      - caribbean_trade_db:/var/lib/postgresql/data
+    networks: [trade]
+  caribbean-trade:
+    build: .
+    restart: unless-stopped
+    depends_on: [caribbean-trade-db]
+    env_file: .env.production
+    environment:
+      PORT: "4000"
+      DATABASE_URL: postgresql://caribbean_trade:${POSTGRES_PASSWORD}@caribbean-trade-db:5432/caribbean_trade
+    ports:
+      - "127.0.0.1:4005:4000"
+    expose: ["4000"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.caribbean-trade.rule=Host(\`CHANGE-ME.example.com\`)"
+      - "traefik.http.routers.caribbean-trade.entrypoints=https"
+      - "traefik.http.routers.caribbean-trade.tls.certresolver=letsencrypt"
+      - "traefik.http.services.caribbean-trade.loadbalancer.server.port=4000"
+      - "traefik.http.routers.caribbean-trade.middlewares=coolify-gzip"
+    networks: [trade]
+volumes:
+  caribbean_trade_db:
+networks:
+  trade:

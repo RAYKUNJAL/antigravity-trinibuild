@@ -7,13 +7,13 @@ function seed() {
   store.reset();
   const src = store.addSource({ name: 'Caribbean Export directory sample', url: 'https://carib-export.com/', tier: 3, owner: 'Caribbean Export Development Agency', terms: 'permitted-public-directory' });
   const rows = [
-    ['Blue Mountain Coffee Traders', 'Jamaica', 'Kingston', 'food_beverage', 'https://example.com/bmct', 'Spanish Town Rd, Kingston, Jamaica'],
-    ['Grenada Craft Chocolate Co', 'Grenada', 'St. George', 'food_beverage', 'https://example.com/gccc', 'St George, Grenada'],
-    ['Trinidadian Nutmeg Oils Ltd', 'Trinidad & Tobago', 'Port of Spain', 'beauty_wellness', 'https://example.com/tnol', 'Port of Spain, Trinidad'],
-    ['St. Lucian Sea Moss Exporters', 'Saint Lucia', 'Castries', 'agriculture', 'https://example.com/slsm', 'Castries, Saint Lucia'],
-    ['Barbados Hot Sauce Factory', 'Barbados', 'Bridgetown', 'food_beverage', 'https://example.com/bhsf', 'Bridgetown, Barbados'],
-    ['Guyana Pepper & Pepper Sauce Co', 'Guyana', 'Georgetown', 'food_beverage', 'https://example.com/gppsc', 'Georgetown, Guyana'],
-    ['DR Artisan Cigars', 'Dominican Republic', 'Santiago', 'agriculture', 'https://example.com/drac', 'Santiago, Dominican Republic'],
+    ['Blue Mountain Coffee Traders', 'Jamaica', 'Kingston', 'food_beverage', null, 'Spanish Town Rd, Kingston, Jamaica'],
+    ['Grenada Craft Chocolate Co', 'Grenada', 'St. George', 'food_beverage', null, 'St George, Grenada'],
+    ['Trinidadian Nutmeg Oils Ltd', 'Trinidad & Tobago', 'Port of Spain', 'beauty_wellness', null, 'Port of Spain, Trinidad'],
+    ['St. Lucian Sea Moss Exporters', 'Saint Lucia', 'Castries', 'agriculture', null, 'Castries, Saint Lucia'],
+    ['Barbados Hot Sauce Factory', 'Barbados', 'Bridgetown', 'food_beverage', null, 'Bridgetown, Barbados'],
+    ['Guyana Pepper & Pepper Sauce Co', 'Guyana', 'Georgetown', 'food_beverage', null, 'Georgetown, Guyana'],
+    ['DR Artisan Cigars', 'Dominican Republic', 'Santiago', 'agriculture', null, 'Santiago, Dominican Republic'],
   ];
   for (const [name, country, city, category, website, address] of rows) {
     store.addBusiness({ source_id: src.id, name, country, city, category, website, address, source_url: src.url });

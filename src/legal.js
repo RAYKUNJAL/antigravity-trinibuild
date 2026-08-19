@@ -4,9 +4,10 @@
 'use strict';
 const ui = require('./ui');
 
-function docBody(sections){
+function docBody(title, sections){
   return '<section class="section"><div class="legal" style="max-width:760px;margin:0 auto;line-height:1.7">'
-    + sections.map(s => `<h2 style="font-size:20px;margin:28px 0 10px;color:var(--primary)">${ui.esc(s.h)}</h2>${s.p.map(p=>`<p style="margin:10px 0;color:var(--on-surface-variant)">${ui.esc(p)}</p>`).join('')}`).join('')
+        + '<h1 style="font-size:30px;margin:0 0 6px;color:var(--primary)">' + ui.esc(title) + '</h1>'
++ sections.map(s => `<h2 style="font-size:20px;margin:28px 0 10px;color:var(--primary)">${ui.esc(s.h)}</h2>${s.p.map(p=>`<p style="margin:10px 0;color:var(--on-surface-variant)">${ui.esc(p)}</p>`).join('')}`).join('')
     + '<p style="margin-top:30px;color:var(--on-surface-variant)"><em>Last updated: August 2026. Operated by R&amp;R Digital Platform Solutions Ltd.</em></p></div></section>';
 }
 
@@ -73,6 +74,6 @@ const AU = [
 function render(slug, active){
   const map = { privacy:['Privacy Policy',PRIVACY], terms:['Terms of Service',TERMS], cookies:['Cookie Policy',COOKIES], dpa:['Data Processing Agreement',DPA], 'acceptable-use':['Acceptable Use Policy',AU] };
   const [title, sections] = map[slug] || map.privacy;
-  return ui.shell(title, docBody(sections), active);
+  return ui.shell(title, docBody(title, sections), active);
 }
 module.exports = { render, PRIVACY, TERMS, COOKIES, DPA, AU, docBody };

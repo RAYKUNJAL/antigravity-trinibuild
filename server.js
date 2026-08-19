@@ -13,17 +13,45 @@ const concierge = require('./src/services/concierge');
 const CATS = require('./data/sources/categories.json');
 const pg = require('./src/pg');
 const landedCostEngine = require('./src/services/landed-cost');
+const supplierPages = require('./src/pages/supplier');
+const buyerPages = require('./src/pages/buyer');
+const adminPages = require('./src/pages/admin');
 const legal = require('./src/legal');
 const aiTeam = require('./src/services/ai-team');
+const chatbot = require('./src/services/chatbot');
+const mail = require('./src/services/mail');
+const ADMIN_PASS = process.env.ADMIN_PASS || '';
+function isAdmin(req){ return !!ADMIN_PASS && (req.headers.cookie||'').includes('catn_admin=' + ADMIN_PASS); }
+function sessionUser(req){ const c=String(req.headers.cookie||''); const m=/(?:^|;\s*)catn_session=([^;]+)/.exec(c); return m ? auth.getSession(decodeURIComponent(m[1])) : null; }
+function adminLoginHtml(){
+  return `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin · Caribbean Trade Network</title><style>body{font-family:system-ui,sans-serif;background:#f2f7f8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:32px;width:340px;box-shadow:0 14px 44px rgba(0,0,0,.08)}h1{font-size:20px;color:#0b3a40;margin:0 0 4px}p{color:#64748b;font-size:13px;margin:0 0 20px}input{width:100%;padding:11px 12px;border:1px solid #d7e2e6;border-radius:10px;font-size:14px;margin-bottom:14px;box-sizing:border-box}button{width:100%;padding:11px;border:none;border-radius:10px;background:#00535B;color:#fff;font-weight:700;font-size:14px;cursor:pointer}.err{color:#b91c1c;font-size:12px;margin-bottom:12px;display:none}</style></head><body><div class="card"><h1>Admin Access</h1><p>Restricted — Caribbean Trade Network operations.</p><form id="f"><input type="password" id="pw" placeholder="Admin password" autofocus/><div class="err" id="err">Incorrect password.</div><button type="submit">Sign in</button></form><p style="margin-top:16px;text-align:center;font-size:12px;color:#94a3b8">R&R Digital Platform Solutions Ltd.</p></div><script>document.getElementById('f').addEventListener('submit',function(e){e.preventDefault();fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:document.getElementById('pw').value})}).then(function(r){if(r.ok){location.href='/admin';}else{document.getElementById('err').style.display='block';}}).catch(function(){document.getElementById('err').style.display='block';});});</script></body></html>`;
+}
 const PORT = Number(process.env.PORT || 4000);
 function round2(n){ return Math.round((Number(n)+Number.EPSILON)*100)/100; }
 
-function json(res, status, v) { const b = JSON.stringify(v, null, 2); res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(b); }
-function html(res, status, h) { res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' }); res.end(h); }
+function json(res, status, v) { const b = JSON.stringify(v, null, 2); res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'strict-origin-when-cross-origin' }); res.end(b); }
+function html(res, status, h) { res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY', 'Referrer-Policy': 'strict-origin-when-cross-origin' }); res.end(h); }
 
 function readRawBody(req) { return new Promise(r => { const c=[]; let n=0; req.on('data',x=>{n+=x.length; if(n>1000000) req.destroy(); else c.push(x);}); req.on('end',()=>r(Buffer.concat(c).toString('utf8'))); req.on('error',()=>r('')); }); }
 function readBody(req) { return new Promise(r => { const c = []; let n = 0; req.on('data', x => { n += x.length; if (n > 2000000) req.destroy(); else c.push(x); }); req.on('end', () => { const raw = Buffer.concat(c).toString('utf8'); if (!raw.trim()) return r({}); try { r(JSON.parse(raw)); } catch { r({}); } }); req.on('error', () => r({})); }); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function redirect(res, loc) { res.writeHead(302, { Location: loc }); res.end(); }
+const rateBuckets = new Map();
+function rateLimit(req, key, max, windowMs) {
+  const ip = req.socket.remoteAddress || '?';
+  const k = key + ':' + ip;
+  const now = Date.now();
+  const b = rateBuckets.get(k);
+  if (!b || now - b.t > windowMs) { rateBuckets.set(k, { t: now, n: 1 }); return true; }
+  b.n += 1;
+  if (b.n > max) { if (rateBuckets.size > 5000) rateBuckets.clear(); return false; }
+  return true;
+}
+function originOk(req) {
+  const o = req.headers.origin;
+  if (!o) return true;
+  try { return new URL(o).host === req.headers.host; } catch { return false; }
+}
 function badgeCls(s) { if (s === 'TRADE_VERIFIED' || s === 'TRANSACTION_VERIFIED') return 'trade'; if (s === 'IDENTITY_VERIFIED') return 'verified'; if (s === 'CLAIMED' || s === 'CLAIM_PENDING') return 'claimed'; return 'unclaimed'; }
 function page(title, bodyHtml, active) {
   return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>' + esc(title) + ' · Caribbean AI Trade Network</title><style>:root{--bg:#0b1220;--surface:#0f172a;--line:#1e293b;--fg:#e8eef7;--muted:#94a3b8;--gold:#fbbf24;--teal:#22d3ee;--green:#22c55e}*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}.nav{display:flex;gap:18px;align-items:center;padding:14px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,18,32,.92);z-index:10}.nav .brand{font-weight:800;color:var(--teal)}.nav a{color:var(--muted);text-decoration:none;font-size:14px}.nav a:hover{color:var(--fg)}.nav .spacer{flex:1}.btn{border:none;border-radius:999px;padding:10px 18px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.btn.gold{background:var(--gold);color:#111}.btn.teal{background:var(--teal);color:#05202b}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}.wrap{max-width:1100px;margin:0 auto;padding:28px 24px}h1{font-size:30px}h2{font-size:22px;margin-top:28px}.muted{color:var(--muted);font-size:14px}.mono{font-family:monospace;font-size:12px;color:#64748b}.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-left:8px}.badge.unclaimed{background:#3b82f6;color:#fff}.badge.claimed{background:#64748b;color:#fff}.badge.verified{background:#22c55e;color:#111}.badge.trade{background:#a3e635;color:#111}.card{border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;background:var(--surface)}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0b1220;color:var(--fg);margin:6px 0;font:inherit}label{font-size:13px;color:var(--muted);display:block;margin-top:10px}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--muted);font-size:12px;text-transform:uppercase}@media(max-width:700px){.nav{flex-wrap:wrap}}</style></head><body><div class="nav"><span class="brand">Caribbean AI Trade Network</span><a href="/">Marketplace</a><a href="/browse">Directory</a><a href="/sourcing">Sourcing</a><a href="/landed-cost">Landed Cost</a><a href="/trade-info">Trade Info</a><a href="/plans">Plans</a><span class="spacer"></span>' + (active ? '<a class="btn teal" href="/logout">' + esc(active) + '</a>' : '<a class="btn ghost" href="/login">Sign in</a><a class="btn gold" href="/signup">Start free</a>') + '</div><div class="wrap">' + bodyHtml + '</div></body></html>';
@@ -42,6 +70,12 @@ const signup = (active, role) => page('Start free', '<h1>Start free</h1><p class
 // ---------- API ----------
 async function handle(req, res) {
   const url = new URL(req.url, 'http://x'); const p = url.pathname; const q = url.searchParams;
+  if (req.method === 'POST') { if (!originOk(req)) return json(res, 403, { ok: false, error: 'bad_origin' }); }
+  if (req.method === 'POST') {
+    if (p === '/api/login') { if (!rateLimit(req, 'login', 5, 60000)) return json(res, 429, { ok: false, error: 'too_many_attempts' }); }
+    if (p === '/api/rfqs') { if (!rateLimit(req, 'rfq', 10, 3600000)) return json(res, 429, { ok: false, error: 'too_many_requests' }); }
+    if (p === '/api/chat') { if (!rateLimit(req, 'chat', 30, 3600000)) return json(res, 429, { ok: false, error: 'too_many_requests' }); }
+  }
 
   // Static assets from /public
   if (req.method === 'GET' && p.startsWith('/public/')) {
@@ -51,7 +85,7 @@ async function handle(req, res) {
     return json(res, 404, { ok:false, error:'not_found' });
   }
 
-  if (req.method === 'GET' && p === '/') return html(res, 200, ui.marketplace(store.listBusinesses(), store._db().products));
+  if (req.method === 'GET' && p === '/') return html(res, 200, ui.marketplace(store.listBusinesses(), store._db().products, sessionUser(req)));
   if (req.method === 'GET' && p === '/browse') {
     const countries = [...new Set(store.listBusinesses().map(b=>b.country))].filter(Boolean).sort();
     const all = store.searchBusinesses({ q:q.get('q'), category:q.get('category'), country:q.get('country') });
@@ -61,21 +95,36 @@ async function handle(req, res) {
     return html(res, 200, ui.directory(list, {
       q:q.get('q')||'', category:q.get('category')||'', country:q.get('country')||'',
       countries, categories: CATS, total: all.length, page, per,
-    }));
+    }, sessionUser(req)));
   }
-  if (req.method === 'GET' && p === '/sourcing') return html(res, 200, ui.sourcing(store.listRfqs()));
-  if (req.method === 'GET' && p === '/landed-cost') return html(res, 200, ui.landedCostPage());
-  if (req.method === 'GET' && p === '/trade-info') return html(res, 200, ui.tradeInfoPage());
-  if (req.method === 'GET' && p === '/plans') return html(res, 200, ui.plansPage(auth.auth(req)?.name));
+  if (req.method === 'GET' && p === '/sourcing') return html(res, 200, ui.sourcing(store.listRfqs(), sessionUser(req)));
+  if (req.method === 'GET' && p === '/landed-cost') return html(res, 200, ui.landedCostPage(sessionUser(req)));
+  if (req.method === 'GET' && p === '/trade-info') return html(res, 200, ui.tradeInfoPage(sessionUser(req)));
+  if (req.method === 'GET' && p === '/plans') return html(res, 200, ui.plansPage(sessionUser(req)));
   if (req.method === 'GET' && p === '/privacy') return html(res, 200, legal.render('privacy'));
   if (req.method === 'GET' && p === '/terms') return html(res, 200, legal.render('terms'));
   if (req.method === 'GET' && p === '/cookies') return html(res, 200, legal.render('cookies'));
   if (req.method === 'GET' && p === '/dpa') return html(res, 200, legal.render('dpa'));
   if (req.method === 'GET' && p === '/acceptable-use') return html(res, 200, legal.render('acceptable-use'));
-  if (req.method === 'GET' && p === '/advertise') return html(res, 200, ui.advertisePage());
-  if (req.method === 'GET' && p === '/admin') return html(res, 200, ui.aiTeamPage());
-  if (req.method === 'GET' && p === '/login') return html(res, 200, ui.loginPage(auth.auth(req)?.name));
-  if (req.method === 'GET' && p === '/signup') return html(res, 200, ui.signupPage(auth.auth(req)?.name, q.get('role')));
+  if (req.method === 'GET' && p === '/sources') return html(res, 200, ui.sourcesPage(sessionUser(req)));
+  if (req.method === 'GET' && p === '/ai-disclosure') return html(res, 200, ui.aiDisclosurePage(sessionUser(req)));
+  if (req.method === 'GET' && p === '/advertise') return html(res, 200, ui.advertisePage(sessionUser(req)));
+  if (req.method === 'POST' && p === '/api/admin/login') {
+    const b = await readBody(req);
+    if (ADMIN_PASS && b.password === ADMIN_PASS) { res.setHeader('Set-Cookie', 'catn_admin=' + ADMIN_PASS + '; HttpOnly; Path=/; SameSite=Strict; Max-Age=21600'); return json(res, 200, { ok: true }); }
+    return json(res, 401, { ok: false, error: 'unauthorized' });
+  }
+  if (req.method === 'GET' && p === '/admin') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.overview(store)); }
+  if (req.method === 'GET' && p === '/admin/ai-team') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, ui.aiTeamPage({ isAdmin: true })); }
+  if (req.method === 'GET' && p === '/login') return html(res, 200, ui.loginPage(sessionUser(req)));
+  if (req.method === 'GET' && p === '/signup') return html(res, 200, ui.signupPage(sessionUser(req), q.get('role')));
+
+  if (req.method === 'GET' && p.startsWith('/business/')) {
+    const id = decodeURIComponent(p.slice('/business/'.length));
+    const b = store.listBusinesses().find(x => x.id === id);
+    if (!b) return html(res, 404, ui.notFoundPage());
+    return html(res, 200, ui.businessPage(b, sessionUser(req)));
+  }
 
   if (req.method === 'GET' && p === '/api/health') return json(res, 200, { ok: true, service: 'caribbean-ai-trade-network', businesses: store.listBusinesses().length, rfqs: store.listRfqs().length, users: store._db().users.length });
 
@@ -83,13 +132,13 @@ async function handle(req, res) {
     const term = q.get('q') || ''; const t = term.toLowerCase();
     const b = store.listBusinesses().filter(x => [x.name, x.country, x.city, x.category].join(' ').toLowerCase().includes(t));
     const pr = store._db().products.filter(x => [x.title, x.description || '', x.origin_country || ''].join(' ').toLowerCase().includes(t));
-    return html(res, 200, page('Search: ' + esc(term), '<h1>Results for "' + esc(term) + '"</h1><h2>Businesses (' + b.length + ')</h2><div class="grid">' + (b.map(x => '<div class="card"><strong>' + esc(x.name) + '</strong><span class="badge ' + badgeCls(x.state) + '">' + esc(x.label) + '</span><div class="muted">' + esc(x.country) + '</div></div>').join('') || '<p class="muted">None</p>') + '</div><h2>Products (' + pr.length + ')</h2><div class="grid">' + (pr.map(x => '<div class="card"><strong>' + esc(x.title) + '</strong><div class="muted">US$' + x.price_usd + ' · ' + esc(x.origin_country) + ' · MOQ ' + x.moq + '</div></div>').join('') || '<p class="muted">None</p>') + '</div>', auth.auth(req)?.name));
+    return html(res, 200, page('Search: ' + esc(term), '<h1>Results for "' + esc(term) + '"</h1><h2>Businesses (' + b.length + ')</h2><div class="grid">' + (b.map(x => '<div class="card"><strong>' + esc(x.name) + '</strong><span class="badge ' + badgeCls(x.state) + '">' + esc(x.label) + '</span><div class="muted">' + esc(x.country) + '</div></div>').join('') || '<p class="muted">None</p>') + '</div><h2>Products (' + pr.length + ')</h2><div class="grid">' + (pr.map(x => '<div class="card"><strong>' + esc(x.title) + '</strong><div class="muted">US$' + x.price_usd + ' · ' + esc(x.origin_country) + ' · MOQ ' + x.moq + '</div></div>').join('') || '<p class="muted">None</p>') + '</div>', (auth.auth(req) || sessionUser(req) || sessionUser(req))?.name));
   }
 
-  if (req.method === 'POST' && p === '/api/register') { const b = await readBody(req); try { const u = await auth.register(b); const s = await auth.login({ email: u.email, password: b.password }); res.setHeader('Set-Cookie', 'catn_session=' + s.token + '; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800'); return json(res, 201, { ok: true, data: u, plan: 'free' }); } catch (e) { return json(res, 400, { ok: false, error: e.message }); } }
+  if (req.method === 'POST' && p === '/api/register') { const b = await readBody(req); try { const u = await auth.register(b); const s = await auth.login({ email: u.email, password: b.password }); res.setHeader('Set-Cookie', 'catn_session=' + s.token + '; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800'); mail.sendWelcome(u.email, u.name).catch(()=>{}); return json(res, 201, { ok: true, data: u, plan: 'free' }); } catch (e) { return json(res, 400, { ok: false, error: e.message }); } }
   if (req.method === 'POST' && p === '/api/login') { const b = await readBody(req); const s = await auth.login(b); if (!s) return json(res, 401, { ok: false, error: 'Invalid email or password' }); res.setHeader('Set-Cookie', 'catn_session=' + s.token + '; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800'); return json(res, 200, { ok: true, data: s }); }
-  if (req.method === 'GET' && p === '/logout') { const s = auth.auth(req); if (s) auth.logout(s.token); res.setHeader('Set-Cookie', 'catn_session=; HttpOnly; Path=/; Max-Age=0'); res.writeHead(302, { Location: '/' }); res.end(); return; }
-  if (req.method === 'GET' && p === '/api/me') { const s = auth.auth(req); return json(res, s ? 200 : 401, s ? { ok: true, data: s } : { ok: false, error: 'unauthenticated' }); }
+  if (req.method === 'GET' && p === '/logout') { const s = auth.auth(req) || sessionUser(req); if (s) auth.logout(s.token); res.setHeader('Set-Cookie', 'catn_session=; HttpOnly; Path=/; Max-Age=0'); res.writeHead(302, { Location: '/' }); res.end(); return; }
+  if (req.method === 'GET' && p === '/api/me') { const s = auth.auth(req) || sessionUser(req); return json(res, s ? 200 : 401, s ? { ok: true, data: s } : { ok: false, error: 'unauthenticated' }); }
 
   if (req.method === 'GET' && p === '/api/businesses') return json(res, 200, { ok: true, data: store.listBusinesses() });
   if (req.method === 'GET' && p === '/api/search') { const data = store.searchBusinesses({ q:q.get('q'), category:q.get('category'), country:q.get('country'), city:q.get('city') }); return json(res, 200, { ok: true, count: data.length, data }); }
@@ -109,30 +158,30 @@ async function handle(req, res) {
   if (req.method === 'GET' && m) { const b = store.getBusiness(m[1]); return b ? json(res, 200, { ok: true, data: store.publicBusiness(b), products: store.listProducts(b.id) }) : json(res, 404, { ok: false, error: 'not_found' }); }
 
   m = p.match(/^\/api\/businesses\/([^/]+)\/claim$/);
-  if (req.method === 'POST' && m) { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const out = store.claimBusiness(m[1], s.user_id, s.org_id); return out.ok ? json(res, 200, { ok: true, data: out.business }) : json(res, 409, { ok: false, error: out.error }); }
+  if (req.method === 'POST' && m) { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const out = store.claimBusiness(m[1], s.user_id, s.org_id); return out.ok ? json(res, 200, { ok: true, data: out.business }) : json(res, 409, { ok: false, error: out.error }); }
   m = p.match(/^\/api\/businesses\/([^/]+)\/evidence$/);
-  if (req.method === 'POST' && m) { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.submitEvidence(m[1], s.user_id, b.dimension, b.note); return out.ok ? json(res, 200, { ok: true, data: out.business }) : json(res, 400, { ok: false, error: out.error }); }
+  if (req.method === 'POST' && m) { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.submitEvidence(m[1], s.user_id, b.dimension, b.note); return out.ok ? json(res, 200, { ok: true, data: out.business }) : json(res, 400, { ok: false, error: out.error }); }
   m = p.match(/^\/api\/admin\/([^/]+)\/approve$/);
   if (req.method === 'POST' && m) { const b = await readBody(req); const out = store.approveEvidence(m[1], b.dimension); return out.ok ? json(res, 200, { ok: true, data: out.business }) : json(res, 400, { ok: false, error: out.error }); }
 
   m = p.match(/^\/api\/businesses\/([^/]+)\/products$/);
-  if (req.method === 'POST' && m) { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.addProduct(m[1], s.org_id, s.user_id, b); return out.ok ? json(res, 201, { ok: true, data: out.product }) : json(res, 403, { ok: false, error: out.error }); }
+  if (req.method === 'POST' && m) { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.addProduct(m[1], s.org_id, s.user_id, b); return out.ok ? json(res, 201, { ok: true, data: out.product }) : json(res, 403, { ok: false, error: out.error }); }
 
-  if (req.method === 'POST' && p === '/api/rfqs') { const b = await readBody(req); if (!b.product || !b.buyer_email) return json(res, 400, { ok: false, error: 'product and buyer_email required' }); const s = auth.auth(req); const rfq = store.createRfq({ buyer_user_id: s ? s.user_id : null, buyer_org_id: s ? s.org_id : null, product: b.product, quantity: b.quantity, destination_country: b.destination_country, deadline: b.deadline, notes: b.notes, category: b.category }); return json(res, 201, { ok: true, data: rfq }); }
+  if (req.method === 'POST' && p === '/api/rfqs') { const b = await readBody(req); if (!b.product || !b.buyer_email) return json(res, 400, { ok: false, error: 'product and buyer_email required' }); const s = auth.auth(req) || sessionUser(req); const rfq = store.createRfq({ buyer_user_id: s ? s.user_id : null, buyer_org_id: s ? s.org_id : null, product: b.product, quantity: b.quantity, destination_country: b.destination_country, deadline: b.deadline, notes: b.notes, category: b.category }); return json(res, 201, { ok: true, data: rfq }); }
   if (req.method === 'GET' && p === '/api/rfqs') return json(res, 200, { ok: true, data: store.listRfqs() });
 
   m = p.match(/^\/api\/rfqs\/([^/]+)\/quotes$/);
-  if (req.method === 'POST' && m) { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.submitQuote(m[1], s.org_id, b.business_id, b); return out.ok ? json(res, 201, { ok: true, data: out.quote }) : json(res, 403, { ok: false, error: out.error }); }
+  if (req.method === 'POST' && m) { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const out = store.submitQuote(m[1], s.org_id, b.business_id, b); return out.ok ? json(res, 201, { ok: true, data: out.quote }) : json(res, 403, { ok: false, error: out.error }); }
   if (req.method === 'GET' && m) return json(res, 200, { ok: true, data: store.listQuotesForRfq(m[1]) });
 
-  if (req.method === 'POST' && p === '/api/orders') { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const order = store.createOrder({ buyer_org_id: s.org_id, supplier_org_id: b.supplier_org_id, rfq_id: b.rfq_id, quote_id: b.quote_id, product: b.product, quantity: b.quantity, price_usd: b.price_usd, currency: b.currency, incoterm: b.incoterm, terms: b.terms }); return json(res, 201, { ok: true, data: order }); }
-  if (req.method === 'GET' && p === '/api/orders') { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); return json(res, 200, { ok: true, data: store.listOrders(s.org_id) }); }
+  if (req.method === 'POST' && p === '/api/orders') { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const order = store.createOrder({ buyer_org_id: s.org_id, supplier_org_id: b.supplier_org_id, rfq_id: b.rfq_id, quote_id: b.quote_id, product: b.product, quantity: b.quantity, price_usd: b.price_usd, currency: b.currency, incoterm: b.incoterm, terms: b.terms }); return json(res, 201, { ok: true, data: order }); }
+  if (req.method === 'GET' && p === '/api/orders') { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); return json(res, 200, { ok: true, data: store.listOrders(s.org_id) }); }
 
-  if (req.method === 'POST' && p === '/api/payments') { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const pi = store.createPaymentIntent({ order_id: b.order_id, buyer_org_id: s.org_id, amount: b.amount, currency: b.currency, method: b.method, provider: b.provider, metadata: b.metadata }); return json(res, 201, { ok: true, data: pi }); }
+  if (req.method === 'POST' && p === '/api/payments') { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const pi = store.createPaymentIntent({ order_id: b.order_id, buyer_org_id: s.org_id, amount: b.amount, currency: b.currency, method: b.method, provider: b.provider, metadata: b.metadata }); return json(res, 201, { ok: true, data: pi }); }
 
   // Wam checkout intent — server-authoritative amount in TTD
   if (req.method === 'POST' && p === '/api/payments/wam-checkout') {
-    const sess = auth.auth(req); if (!sess) return json(res, 401, { ok: false, error: 'login required' });
+    const sess = auth.auth(req) || sessionUser(req); if (!sess) return json(res, 401, { ok: false, error: 'login required' });
     const b = await readBody(req);
     if (!b.order_id) return json(res, 400, { ok: false, error: 'order_id required' });
     const order = store.getOrder(b.order_id);
@@ -171,7 +220,7 @@ async function handle(req, res) {
   }
 
   if (req.method === 'GET' && p === '/api/landed-cost') { const spec = { product_value: q.get('product_value'), origin_charges: q.get('origin_charges'), freight: q.get('freight'), insurance: q.get('insurance'), applicable_duty: q.get('applicable_duty'), taxes_and_levies: q.get('taxes_and_levies'), destination_port_charges: q.get('destination_port_charges'), brokerage: q.get('brokerage'), inland_delivery: q.get('inland_delivery') }; return json(res, 200, { ok: true, data: trade.landedCost(spec) }); }
-  if (req.method === 'POST' && p === '/api/landed-cost') { const s = auth.auth(req); const b = await readBody(req); const result = trade.landedCost(b); const saved = s ? store.saveLandedCost(s.org_id, b, result) : null; return json(res, 200, { ok: true, data: result, saved: !!saved }); }
+  if (req.method === 'POST' && p === '/api/landed-cost') { const s = auth.auth(req) || sessionUser(req); const b = await readBody(req); const result = trade.landedCost(b); const saved = s ? store.saveLandedCost(s.org_id, b, result) : null; return json(res, 200, { ok: true, data: result, saved: !!saved }); }
 
   if (req.method === 'GET' && p === '/api/trade/requirements') { return json(res, 200, { ok: true, data: trade.likelyRequirements({ origin: q.get('origin'), destination: q.get('destination'), category: q.get('category'), hs: q.get('hs') }) }); }
   if (req.method === 'GET' && p === '/api/payment-rails') { return json(res, 200, { ok: true, data: trade.availableRails({ payer_territory: q.get('territory') || 'TT', buyer_is_external: q.get('external') === 'true' }) }); }
@@ -179,8 +228,9 @@ async function handle(req, res) {
   if (req.method === 'POST' && p === '/api/concierge') { const b = await readBody(req); const msg = String(b.message || b.question || '').trim(); if (!msg) return json(res, 400, { ok: false, error: 'message required' }); const ctx = { destination: b.destination, origin: b.origin, category: b.category, hs: b.hs, territory: b.territory, buyer_is_external: b.buyer_is_external, product_value: b.product_value, currency: b.currency }; const a = concierge.answerQuestion(msg, ctx); return json(res, 200, { ok: true, data: a }); }
 
   if (req.method === 'GET' && p === '/api/plans') return json(res, 200, { ok: true, data: Object.values(domain.PLANS) });
-  if (req.method === 'POST' && p === '/api/plan/upgrade') { const s = auth.auth(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const plan = domain.planBySlug(b.plan); const sub = store.setPlan(s.org_id, plan.slug, b.source || 'admin', { months: b.months }); return json(res, 200, { ok: true, data: { plan: plan.slug, status: sub.status, expires_at: sub.expires_at } }); }
+  if (req.method === 'POST' && p === '/api/plan/upgrade') { const s = auth.auth(req) || sessionUser(req); if (!s) return json(res, 401, { ok: false, error: 'login required' }); const b = await readBody(req); const plan = domain.planBySlug(b.plan); const sub = store.setPlan(s.org_id, plan.slug, b.source || 'admin', { months: b.months }); return json(res, 200, { ok: true, data: { plan: plan.slug, status: sub.status, expires_at: sub.expires_at } }); }
 
+  if (p.startsWith('/api/admin') && !isAdmin(req)) return json(res, 401, { ok: false, error: 'unauthorized' });
   if (req.method === 'GET' && p === '/api/admin/activity') return json(res, 200, { ok: true, data: store.listActivity(q.get('limit')) });
   if (req.method === 'GET' && p === '/api/admin/stats') { const d = store._db(); return json(res, 200, { ok: true, data: { users: d.users.length, organizations: d.organizations.length, businesses: d.businesses.length, products: d.products.length, rfqs: d.rfqs.length, quotes: d.quotes.length, orders: d.orders.length, payments: d.payments.length, activity: d.activity.length } }); }
 
@@ -299,8 +349,189 @@ async function handle(req, res) {
     return json(res, 200, { ok:true, results });
   }
 
+
+  // ---- Kai chatbot (Grok) ----
+  if (req.method === 'POST' && p === '/api/chat') {
+    const b = await readBody(req);
+    try { const r = await chatbot.chat(b.message||'', b.history||[]); return json(res, 200, r); }
+    catch(e){ return json(res,500,{ok:false,error:e.message}); }
+  }
+
+
+  // ================= Supplier workspace routes =================
+  const me = auth.auth(req) || sessionUser(req);
+  if (req.method === 'GET') {
+    if (p === '/supplier') return html(res, 200, supplierPages.dashboard(store, me));
+    if (p === '/supplier/rfqs') return html(res, 200, supplierPages.rfqInbox(store, me));
+    if (p === '/supplier/quotes') return html(res, 200, supplierPages.quotesOutbox(store, me));
+  }
+  let sm = p.match(/^\/supplier\/claim\/([^/]+)$/);
+  if (sm) {
+    if (req.method === 'GET') return html(res, 200, supplierPages.claimPage(store, me, decodeURIComponent(sm[1])));
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = supplierPages.saveEvidence(store, me, decodeURIComponent(sm[1]), b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/supplier/claim/' + sm[1]);
+    }
+  }
+  let ssm = p.match(/^\/supplier\/storefront\/([^/]+)$/);
+  if (ssm) {
+    if (req.method === 'GET') return html(res, 200, supplierPages.storefrontPage(store, me, decodeURIComponent(ssm[1])));
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = supplierPages.saveStorefront(store, me, decodeURIComponent(ssm[1]), b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/supplier');
+    }
+  }
+  let spm = p.match(/^\/supplier\/products\/([^/]+)$/);
+  if (spm) {
+    if (req.method === 'GET') return html(res, 200, supplierPages.productsPage(store, me, decodeURIComponent(spm[1])));
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = supplierPages.saveProduct(store, me, decodeURIComponent(spm[1]), b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/supplier/products/' + spm[1]);
+    }
+  }
+  let sqm = p.match(/^\/supplier\/rfqs\/([^/]+)\/quote$/);
+  if (sqm) {
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = supplierPages.submitQuote(store, me, decodeURIComponent(sqm[1]), b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/supplier/quotes');
+    }
+  }
+
+
+  // ---- Buyer routes ----
+  if (req.method === 'GET') {
+    if (p === '/buyer') return html(res, 200, buyerPages.dashboard(store, me));
+    if (p === '/buyer/orders') return html(res, 200, buyerPages.dashboard(store, me));
+    if (p === '/buyer/documents') return html(res, 200, buyerPages.documentsPage(store, me, null));
+    if (p === '/buyer/saved') return html(res, 200, buyerPages.savedPage(store, me));
+  }
+  let brm = p.match(/^\/buyer\/rfqs\/([^/]+)$/);
+  if (brm) {
+    if (req.method === 'GET') return html(res, 200, buyerPages.rfqDetail(store, me, decodeURIComponent(brm[1])));
+  }
+  let bqm = p.match(/^\/buyer\/rfqs\/([^/]+)\/quotes\/([^/]+)\/accept$/);
+  if (bqm) {
+    if (req.method === 'POST') {
+      const out = buyerPages.acceptQuote(store, me, decodeURIComponent(bqm[1]), decodeURIComponent(bqm[2]));
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, out.redirect || '/buyer');
+    }
+  }
+  let bcm = p.match(/^\/buyer\/rfqs\/([^/]+)\/quotes\/([^/]+)\/counter$/);
+  if (bcm) {
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = buyerPages.counterQuote(store, me, decodeURIComponent(bcm[1]), decodeURIComponent(bcm[2]), b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/buyer/rfqs/' + bcm[1]);
+    }
+  }
+  let boi = p.match(/^\/buyer\/orders\/([^/]+)\/invoice$/);
+  if (boi) {
+    if (req.method === 'GET') return html(res, 200, buyerPages.invoicePage(store, me, decodeURIComponent(boi[1])));
+  }
+  let bod = p.match(/^\/buyer\/orders\/([^/]+)\/documents$/);
+  if (bod) {
+    if (req.method === 'GET') return html(res, 200, buyerPages.documentsPage(store, me, decodeURIComponent(bod[1])));
+  }
+  let bom = p.match(/^\/buyer\/orders\/([^/]+)\/messages$/);
+  if (bom) {
+    if (req.method === 'GET') return html(res, 200, buyerPages.messagesPage(store, me, decodeURIComponent(bom[1])));
+  }
+  let bos = p.match(/^\/buyer\/orders\/([^/]+)\/status$/);
+  if (bos) {
+    if (req.method === 'POST') {
+      const b = await readBody(req);
+      const out = buyerPages.setOrderStatus(store, me, decodeURIComponent(bos[1]), b.status);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/buyer/orders/' + bos[1]);
+    }
+  }
+  let bog = p.match(/^\/buyer\/orders\/([^/]+)$/);
+  if (bog) {
+    if (req.method === 'GET') return html(res, 200, buyerPages.orderDetail(store, me, decodeURIComponent(bog[1])));
+  }
+  if (req.method === 'POST') {
+    if (p === '/buyer/reviews') {
+      const b = await readBody(req);
+      const out = buyerPages.addReview(store, me, b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/buyer/orders/' + b.order_id);
+    }
+    if (p === '/buyer/documents/add') {
+      const b = await readBody(req);
+      const out = buyerPages.addDocument(store, me, b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, b.order_id ? '/buyer/orders/' + b.order_id + '/documents' : '/buyer/documents');
+    }
+    if (p === '/buyer/messages/send') {
+      const b = await readBody(req);
+      const out = buyerPages.sendMessage(store, me, b);
+      if (out) { if (out.error) return json(res, 400, out); }
+      return redirect(res, '/buyer/orders/' + b.order_id + '/messages');
+    }
+    if (p === '/buyer/saved/add') {
+      const b = await readBody(req);
+      buyerPages.addSaved(store, me, b);
+      return redirect(res, '/buyer/saved');
+    }
+    if (p === '/buyer/watchlist/add') {
+      const b = await readBody(req);
+      buyerPages.watchlistAdd(store, me, b);
+      return redirect(res, '/browse');
+    }
+    if (p === '/buyer/watchlist/remove') {
+      const b = await readBody(req);
+      buyerPages.watchlistRemove(store, me, b);
+      return redirect(res, '/buyer/saved');
+    }
+  }
+
+  // ---- Admin console routes ----
+  if (req.method === 'GET') {
+    if (p === '/admin/verification') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.verification(store)); }
+    if (p === '/admin/businesses') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.businesses(store)); }
+    if (p === '/admin/orders') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.orders(store)); }
+    if (p === '/admin/users') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.usersPage(store)); }
+    if (p === '/admin/audit') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.auditPage(store)); }
+    if (p === '/admin/agents') { if (!isAdmin(req)) return html(res, 401, adminLoginHtml()); return html(res, 200, adminPages.agents(store)); }
+  }
+  let adm = p.match(/^\/admin\/approve\/([^/]+)$/);
+  if (adm) {
+    if (req.method === 'POST') {
+      if (!isAdmin(req)) return json(res, 401, { ok: false, error: 'unauthorized' });
+      const b = await readBody(req);
+      return json(res, 200, adminPages.approveEvidence(store, decodeURIComponent(adm[1]), b));
+    }
+  }
+  let bsm = p.match(/^\/admin\/businesses\/([^/]+)\/state$/);
+  if (bsm) {
+    if (req.method === 'POST') {
+      if (!isAdmin(req)) return json(res, 401, { ok: false, error: 'unauthorized' });
+      const b = await readBody(req);
+      return json(res, 200, adminPages.setBusinessState(store, decodeURIComponent(bsm[1]), b));
+    }
+  }
+  let opm = p.match(/^\/admin\/orgs\/([^/]+)\/plan$/);
+  if (opm) {
+    if (req.method === 'POST') {
+      if (!isAdmin(req)) return json(res, 401, { ok: false, error: 'unauthorized' });
+      const b = await readBody(req);
+      return json(res, 200, adminPages.setOrgPlan(store, decodeURIComponent(opm[1]), b));
+    }
+  }
+
   return json(res, 404, { ok: false, error: 'not_found' });
 }
+
 
 
 

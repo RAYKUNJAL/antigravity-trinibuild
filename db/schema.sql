@@ -120,6 +120,12 @@ CREATE TABLE IF NOT EXISTS quotes (
   validity_days NUMERIC DEFAULT 30,
   notes TEXT,
   status TEXT DEFAULT 'submitted',
+  version INTEGER DEFAULT 1,
+  parent_quote_id TEXT,
+  negotiation_thread JSONB DEFAULT '[]'::jsonb,
+  payment_terms TEXT,
+  attachments JSONB DEFAULT '[]'::jsonb,
+  landed_cost_estimate JSONB,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -251,6 +257,12 @@ CREATE TABLE IF NOT EXISTS trade_orders (
   terms JSONB DEFAULT '{}'::jsonb,
   milestones JSONB DEFAULT '[]'::jsonb,
   documents JSONB DEFAULT '[]'::jsonb,
+  status_history JSONB DEFAULT '[]'::jsonb,
+  po_number TEXT,
+  deposit_amount NUMERIC(14,2) DEFAULT 0.00,
+  payment_terms TEXT,
+  fx_rate NUMERIC(14,6),
+  shipping JSONB DEFAULT '{}'::jsonb,
   -- Landed cost breakdown (USD)
   base_goods_total_usd NUMERIC(14,2) DEFAULT 0.00,
   freight_charge_usd NUMERIC(14,2) DEFAULT 0.00,
@@ -350,3 +362,17 @@ CREATE TABLE IF NOT EXISTS agent_runs (
   finished_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_agent_runs_agent ON agent_runs(agent);
+
+-- Idempotent upgrades for pre-existing databases (safe to re-run on every boot)
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS status_history JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS po_number TEXT;
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS deposit_amount NUMERIC(14,2) DEFAULT 0.00;
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS payment_terms TEXT;
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS fx_rate NUMERIC(14,6);
+ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS shipping JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS version INTEGER DEFAULT 1;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS parent_quote_id TEXT;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS negotiation_thread JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS payment_terms TEXT;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE quotes ADD COLUMN IF NOT EXISTS landed_cost_estimate JSONB;

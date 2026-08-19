@@ -104,8 +104,27 @@ function answer({ text, jurisdiction, destination, product_category, sources=[],
     next_best_action, escalation_reason: escalation_reason||null };
 }
 
+
+const ORDER_STATUSES = Object.freeze(['rfq_received','quoted','negotiated','po_issued','deposit_paid','in_production','ready_to_ship','shipped','delivered','closed']);
+const QUOTE_STATUSES = Object.freeze(['submitted','countered','accepted','rejected','expired']);
+function computeCompletenessScore(b, productsCount){
+  const n=x=>Number(x)>0?1:0;
+  const dims=b.verification?Object.values(b.verification).filter(v=>v?v.status==='verified':false).length:0;
+  let score=0;
+  score+=Math.min(25, dims/9*25);
+  score+=Math.min(15, (Number(productsCount)||0)*3);
+  score+=n(b.moq)*10; score+=n(b.lead_time_days)*10;
+  score+=Math.min(10,(b.certifications||[]).length*2);
+  score+=Math.min(10,(b.export_markets||[]).length*2);
+  score+=n(b.payment_terms)*5; score+=n(b.sample_policy)*5;
+  score+=Math.min(5,(b.incoterms_offered||[]).length);
+  score+=n(b.spec_sheet)*5;
+  return Math.min(100, Math.round(score));
+}
+
 module.exports = {
   PROFILE_STATES, PUBLIC_LABEL, UNCLAIMED_DISCLAIMER, VERIFICATION_DIMENSIONS,
   PLANS, planBySlug, ROLES, isUnclaimed, canPublishProducts, canReceiveRfq,
   blankVerification, provenance, landedCost, answer, id: (p)=>p+'-'+crypto.randomUUID(),
+  ORDER_STATUSES, QUOTE_STATUSES, computeCompletenessScore,
 };

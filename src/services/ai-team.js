@@ -1,40 +1,44 @@
 // src/services/ai-team.js — Agentic AI operations team for the admin section.
 // Each agent runs a deterministic collector over real platform data (store + Postgres),
-// producing concrete, useful operational output. Goose AI is wired as the optional
-// generative/agentic layer (enable via AI_TEAM_USE_GOOSE=1 once a provider has credits).
+// producing concrete, useful operational output. Grok/xAI powers the generative layer.
 'use strict';
-const { execFile } = require('node:child_process');
+require('../env'); // load .env (XAI_API_KEY etc.)
 const pg = require('../pg');
 const store = require('../store');
 
-const GOOSE = process.env.GOOSE_BIN || (process.platform === 'win32' ? 'C:\\Users\\Banjo\\.local\\bin\\goose.EXE' : 'goose');
-const USE_GOOSE = process.env.AI_TEAM_USE_GOOSE === '1';
+// Generative layer runs on Grok/xAI (OpenAI-compatible). Enabled automatically when the
+// key is present; falls back to deterministic output when missing or on error.
+const XAI = { key: process.env.XAI_API_KEY || '', base: process.env.XAI_BASE_URL || 'https://api.x.ai/v1', model: process.env.XAI_MODEL || 'grok-4-fast' };
 
-function runGoose(prompt, system, timeout=90000){
-  return new Promise(resolve=>{
-    if(!USE_GOOSE) return resolve(null);
-    execFile(GOOSE, ['run','-t',prompt,'--system',system||'You are a Caribbean trade operations analyst. Be concise and factual.'], { timeout }, (err, stdout, stderr)=>{
-      if(err) return resolve(null);
-      resolve((stdout||'').slice(0,4000));
-    });
+function runGoose(prompt, system, timeout = 90000) {
+  return new Promise(resolve => {
+    if (!XAI.key) return resolve(null);   // deterministic-only when no key
+    const controller = new AbortController(); const to = setTimeout(() => controller.abort(), timeout);
+    fetch(`${XAI.base}/chat/completions`, { method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + XAI.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: XAI.model, max_tokens: 600, temperature: 0.35,
+        messages: [ { role: 'system', content: system || 'You are a Caribbean trade operations analyst. Be concise and factual.' }, { role: 'user', content: prompt } ] }),
+      signal: controller.signal })
+      .then(r => r.json().catch(() => ({}))).then(d => { clearTimeout(to); resolve((d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) ? d.choices[0].message.content.slice(0, 4000) : null); })
+      .catch(() => { clearTimeout(to); resolve(null); });
   });
 }
 
 const AGENTS = [
-  { name:'supplier_outreach', icon:'campaign', role:'Supplier Acquisition',
-    description:'Finds unclaimed businesses by market and generates personalized claim/outreach leads so suppliers turn public data into owned profiles.', run: runSupplierOutreach },
-  { name:'rfq_triage', icon:'support_agent', role:'Demand Matching',
-    description:'Matches open sourcing requests (RFQs) to the most relevant suppliers by category, country and verification, and ranks them.', run: runRfqTriage },
-  { name:'directory_quality', icon:'database', role:'Data Quality',
-    description:'Scans the directory for thin or non-trade-ready records and flags them so the market stays credible for buyers.', run: runDirectoryQuality },
-  { name:'claim_verifier', icon:'verified_user', role:'Trust & Verification',
-    description:'Reviews pending business claims and applies automatic identity checks to stage them for approval.', run: runClaimVerifier },
-  { name:'content_moderator', icon:'shield', role:'Moderation',
-    description:'Screens RFQs and ad copy for prohibited, spammy or misleading content per the Acceptable Use Policy.', run: runContentModerator },
-  { name:'ads_performance', icon:'insights', role:'Revenue Optimizer',
-    description:'Aggregates advertising impressions/clicks and recommends budget and placement moves.', run: runAdsPerformance },
-  { name:'daily_ops', icon:'today', role:'Daily Operations',
-    description:'Builds a daily operational brief: new accounts, RFQs, quotes, claims, orders, escrows and ad activity.', run: runDailyOps },
+  { name: 'supplier_outreach', icon: 'campaign', role: 'Supplier Acquisition',
+    description: 'Finds unclaimed businesses by market and generates personalized claim/outreach leads so suppliers turn public data into owned profiles.', run: runSupplierOutreach },
+  { name: 'rfq_triage', icon: 'support_agent', role: 'Demand Matching',
+    description: 'Matches open sourcing requests (RFQs) to the most relevant suppliers by category, country and verification, and ranks them.', run: runRfqTriage },
+  { name: 'directory_quality', icon: 'database', role: 'Data Quality',
+    description: 'Scans the directory for thin or non-trade-ready records and flags them so the market stays credible for buyers.', run: runDirectoryQuality },
+  { name: 'claim_verifier', icon: 'verified_user', role: 'Trust & Verification',
+    description: 'Reviews pending business claims and applies automatic identity checks to stage them for approval.', run: runClaimVerifier },
+  { name: 'content_moderator', icon: 'shield', role: 'Moderation',
+    description: 'Screens RFQs and ad copy for prohibited, spammy or misleading content per the Acceptable Use Policy.', run: runContentModerator },
+  { name: 'ads_performance', icon: 'insights', role: 'Revenue Optimizer',
+    description: 'Aggregates advertising impressions/clicks and recommends budget and placement moves.', run: runAdsPerformance },
+  { name: 'daily_ops', icon: 'today', role: 'Daily Operations',
+    description: 'Builds a daily operational brief: new accounts, RFQs, quotes, claims, orders, escrows and ad activity.', run: runDailyOps },
 ];
 
 async function runSupplierOutreach(){
@@ -57,7 +61,7 @@ async function runRfqTriage(){
   const rfqs = store.listRfqs();
   const businesses = store.listBusinesses();
   const results = rfqs.slice(0,10).map(rfq=>{
-    const cat = rfq.category || (String(rfq.product||'').toLowerCase().includes('chocolat')||String(rfq.product||'').toLowerCase().includes('food')||String(rfq.product||'').toLowerCase().includes('coffee') ? 'food_beverage' : null);
+    const cat = rfq.category || (/(chocolat|food|coffee|rum|spice)/i.test(rfq.product||'') ? 'food_beverage' : null);
     const dest = rfq.destination_country || '';
     const matches = businesses
       .filter(b=> (cat ? b.category===cat : true) && (!dest || b.country===dest))
@@ -131,4 +135,4 @@ async function run(name){
   }
 }
 
-module.exports = { AGENTS, run, runGoose };
+module.exports = { AGENTS, run, runGoose, XAI };
