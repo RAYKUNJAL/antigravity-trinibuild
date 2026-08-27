@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye, Lock, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Search, Heart, Share2, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye, Lock, ShieldCheck } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
@@ -12,11 +12,7 @@ import { startWamCheckout } from '../services/wamCheckout';
 import { storesApi } from '../services/selfHostedApi';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
-import { ChatWidget } from '../components/ChatWidget';
 import type { Store, Product } from '../types';
-
-// Lazy load heavy components
-const GooglePayButton = lazy(() => import('@google-pay/button-react'));
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -343,20 +339,20 @@ export const StorefrontV2: React.FC = () => {
 
             {/* SEO Optimization */}
             <Helmet>
-                <title>{store.name} - Shop Online in Trinidad & Tobago | TriniBuild</title>
+                <title>{store.name} - Shop Online in Trinidad & Tobago | Juvay</title>
                 {themeStyles && <style>{themeStyles}</style>}
                 <meta name="description" content={store.description || `Shop at ${store.name} - Fast delivery across Trinidad & Tobago. Cash on delivery available.`} />
-                <meta name="keywords" content={`${store.name}, Trinidad shopping, online store, ${store.category}, TriniBuild`} />
+                <meta name="keywords" content={`${store.name}, Trinidad shopping, online store, ${store.category}, Juvay`} />
 
                 {/* Open Graph */}
-                <meta property="og:title" content={`${store.name} - TriniBuild`} />
+                <meta property="og:title" content={`${store.name} - Juvay`} />
                 <meta property="og:description" content={store.description || ''} />
                 <meta property="og:image" content={store.logo_url || store.banner_url || ''} />
                 <meta property="og:type" content="website" />
 
                 {/* Twitter Card */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={`${store.name} - TriniBuild`} />
+                <meta name="twitter:title" content={`${store.name} - Juvay`} />
                 <meta name="twitter:description" content={store.description || ''} />
 
                 {/* Structured Data for SEO */}
@@ -415,10 +411,6 @@ export const StorefrontV2: React.FC = () => {
                                 )}
                                 <div>
                                     <h1 className="text-lg font-bold text-gray-900">{store.name}</h1>
-                                    <div className="flex items-center text-xs text-gray-500">
-                                        <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                                        4.8 (120 reviews)
-                                    </div>
                                 </div>
                             </div>
 
@@ -491,51 +483,40 @@ export const StorefrontV2: React.FC = () => {
                             <p className="text-lg text-gray-200 max-w-2xl mb-6">
                                 {store.description}
                             </p>
-                            <div className="flex items-center space-x-4 text-sm text-white">
-                                <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                                    <Shield className="h-4 w-4 mr-1" />
-                                    Verified Seller
-                                </div>
-                                <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                                    <Truck className="h-4 w-4 mr-1" />
-                                    Fast Delivery
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Trust Badges - CRO Element */}
+                    {/* Trust chips = only rails that are on for this store */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                            <Shield className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">Secure Checkout</p>
-                            <p className="text-xs text-gray-500">SSL Encrypted</p>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                            <Truck className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">Fast Delivery</p>
-                            <p className="text-xs text-gray-500">1-3 Days</p>
-                        </div>
+                        {store.accepts_cod !== false && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                             <Banknote className="h-8 w-8 text-green-600 mx-auto mb-2" />
                             <p className="text-sm font-bold text-gray-900">Cash on Delivery</p>
-                            <p className="text-xs text-gray-500">Pay When You Get It</p>
+                            <p className="text-xs text-gray-500">Pay when it arrives</p>
                         </div>
-                        {store.whatsapp && (
+                        )}
+                        {store.accepts_pickup && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                            <Phone className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">WhatsApp</p>
-                            <p className="text-xs text-gray-500">Merchant listed a handle</p>
+                            <Truck className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-900">Pickup</p>
+                            <p className="text-xs text-gray-500">Collect at the store</p>
                         </div>
                         )}
                         {wamOn && store.wam_handle && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                             <CreditCard className="h-8 w-8 text-gray-900 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">Wam</p>
-                            <p className="text-xs text-gray-500">Face-only paid rail</p>
+                            <p className="text-sm font-bold text-gray-900">Supported online payment</p>
+                            <p className="text-xs text-gray-500">Face amount only</p>
+                        </div>
+                        )}
+                        {store.whatsapp && (
+                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <Phone className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-900">WhatsApp</p>
+                            <p className="text-xs text-gray-500">Merchant listed a handle</p>
                         </div>
                         )}
                     </div>
@@ -578,14 +559,6 @@ export const StorefrontV2: React.FC = () => {
                                     <h4 className="font-bold text-gray-900 mb-1 line-clamp-2 text-sm">
                                         {product.name}
                                     </h4>
-                                    <div className="flex items-center mb-2">
-                                        <div className="flex text-yellow-400 text-xs">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className="h-3 w-3 fill-current" />
-                                            ))}
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-1">(24)</span>
-                                    </div>
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-lg font-bold text-trini-red">
@@ -626,7 +599,6 @@ export const StorefrontV2: React.FC = () => {
                     />
                 </section>
 
-                {/* TriniBuild Branding — shown on free plans */}
                 {((store as any).show_branding !== false) && (
                     <div className="text-center py-6 border-t border-gray-100">
                         <TriniBuildBadge variant="light" />
@@ -954,18 +926,7 @@ export const StorefrontV2: React.FC = () => {
                     </button>
                 )}
 
-                {/* AI Store Chatbot */}
-                {store && store.bot_enabled && (
-                    <ChatWidget
-                        mode="vendor"
-                        vendorContext={{
-                            id: store.id,
-                            name: store.name,
-                            description: store.description || '',
-                            products: products.slice(0, 10).map(p => ({ name: p.name, price: p.price }))
-                        }}
-                    />
-                )}
+                {/* Chat bubble hidden on storefront — overlaps Add on 390px */}
             </div>
         </>
     );

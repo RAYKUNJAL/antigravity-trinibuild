@@ -203,7 +203,7 @@ export const PremiumFashionTemplate: React.FC<{
             <p className="text-sm text-gray-500">© 2026 {storeName}</p>
             {storeData?.phone && <a href={`tel:${storeData.phone}`} className="text-sm text-gray-500 hover:underline">{storeData.phone}</a>}
           </div>
-          <p className="text-xs text-gray-400">Powered by <a href="https://trinibuild.com" className="underline">TriniBuild</a></p>
+          <p className="text-xs text-gray-400">Powered by <a href="https://juvay.app" className="underline">Juvay</a></p>
         </div>
       </footer>
     </div>

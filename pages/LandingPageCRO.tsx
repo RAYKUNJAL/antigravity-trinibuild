@@ -368,7 +368,7 @@ const TRUST_POINTS = [
 const FOUNDING_OFFER = {
   title: 'We\'re just getting started — and the first 100 merchants get something special',
   bullet_points: [
-    'Free Pro plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
+    'Free Starter plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
     'Direct WhatsApp line to the founding team — you get heard, fast',
     'Featured placement on the Juvay marketplace when it launches',
     'Your feedback shapes what we build next'
@@ -414,7 +414,7 @@ const COD_EXPLAINED = [
   },
   {
     title: 'Confirm & Deliver',
-    description: 'Arrange your own delivery or use TriniRides (TT$25 + TT$4/km). Driver collects cash.'
+    description: 'Arrange your own delivery or offer pickup. A ride fare is only shown when that product is live for that store — this page does not quote one.'
   },
   {
     title: 'Order Complete',
@@ -434,7 +434,7 @@ const FEATURES = [
   },
   {
     title: 'COD Checkout',
-    description: 'Cash on delivery and cash at pickup. Card rails stay hidden until Wam is on.'
+    description: 'Cash on delivery and cash at pickup. Supported online payments appear only when that rail is actually on for the store.'
   },
   {
     title: 'AI Product Lister',
@@ -450,7 +450,7 @@ const FEATURES = [
   },
   {
     title: 'Delivery Options',
-    description: 'Arrange your own delivery. Use TriniRides. Or let customers pick it up.'
+    description: 'Arrange your own delivery, or let customers pick it up. Ride fare is only shown when that product is live for that store.'
   },
   {
     title: 'WhatsApp Ready',
@@ -477,7 +477,7 @@ const PRICING_TIERS = [
     name: 'Starter',
     price: 'TT$199',
     period: '/month',
-    description: 'When Wam can take the money',
+    description: 'Bank payment setup in progress',
     features: [
       'Unlimited listings',
       'Everything in Free',
@@ -490,7 +490,7 @@ const PRICING_TIERS = [
     name: 'Business',
     price: 'TT$399',
     period: '/month',
-    description: 'When Wam can take the money',
+    description: 'Bank payment setup in progress',
     features: [
       'Everything in Starter',
       'Custom branding',
@@ -668,18 +668,13 @@ export const LandingPageCRO: React.FC = () => {
             </motion.div>
 
             {/* Main Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6"
-            >
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-white">
               Sell Online with{' '}
-              <span className="bg-gradient-to-r from-trini-red to-orange-500 bg-clip-text text-transparent">
+              <span className="text-orange-400">
                 Cash on Delivery
               </span>
               {' — No Credit Card — Powered by Juvay'}
-            </motion.h1>
+            </h1>
 
             {/* Subheadline */}
             <motion.p
@@ -688,7 +683,7 @@ export const LandingPageCRO: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
             >
-              Create your free online store in 5 minutes. Add products with AI. Accept COD, pickup, or online payment.
+              Create your free online store in 5 minutes. Add products with AI. Cash on delivery and pickup.
               Built in Trinidad & Tobago, launching to founding merchants now.
             </motion.p>
 

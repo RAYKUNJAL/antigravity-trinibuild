@@ -484,7 +484,7 @@ export const ExplorePage: React.FC = () => {
         ) : filteredStores.length === 0 ? (
           <div className="text-center py-16 px-4">
             <div className="text-5xl mb-4">🌴</div>
-            <h3 className="text-lg font-bold text-gray-900">No stores found. Be the first!</h3>
+            <h3 className="text-lg font-bold text-gray-900">No published stores yet</h3>
             <p className="text-sm text-gray-500 mt-1 max-w-md mx-auto">
               {search || islandFilter !== 'all' || categoryFilter !== 'all'
                 ? 'Try adjusting your filters, or create your own store in minutes.'

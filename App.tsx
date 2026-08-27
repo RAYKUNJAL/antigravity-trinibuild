@@ -11,6 +11,7 @@ import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
 import PricingPage from './pages/PricingPage';
 import PricingCheckout from './pages/PricingCheckout';
+import { DemoSamplePage } from './pages/DemoSamplePage';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -116,7 +117,6 @@ import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
 import { GamePassProPage } from './pages/GamePassProPage';
 import { MerchantDashboard } from './pages/MerchantDashboard';
 import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
-import { ProStoreFeaturesPage } from './pages/ProStoreFeaturesPage';
 import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
 import { HelpSupportPage } from './pages/HelpSupportPage';
 import { ReferralProgramPage } from './pages/ReferralProgramPage';
@@ -156,6 +156,20 @@ const LocationLogger = () => {
   const location = useLocation();
   console.log('📍 Current Location:', location.pathname, location.hash, location.search);
   return null;
+};
+
+/** Persistent bubble overlaps Add on 390px store/demo views. Hide there. */
+const PlatformChatGate: React.FC = () => {
+  const { pathname } = useLocation();
+  if (
+    pathname.startsWith('/store/') ||
+    pathname === '/demo' ||
+    pathname.startsWith('/demo/') ||
+    pathname.startsWith('/s/')
+  ) {
+    return null;
+  }
+  return <ChatWidget mode="platform" />;
 };
 
 const App: React.FC = () => {
@@ -248,8 +262,8 @@ const App: React.FC = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Navigate to="/login" replace />} />
               <Route path="/admin/bypass" element={<Navigate to="/" replace />} />
-              <Route path="/demo" element={<NotFound />} />
-              <Route path="/demo/food" element={<NotFound />} />
+              <Route path="/demo" element={<DemoSamplePage />} />
+              <Route path="/demo/food" element={<DemoSamplePage />} />
               <Route path="/pricing/checkout" element={<PricingCheckout />} />
               <Route path="/builder" element={<Navigate to="/create-store" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
@@ -299,7 +313,7 @@ const App: React.FC = () => {
               <Route path="/vendors" element={<VendorDirectoryPage />} />
               <Route path="/vendor-directory" element={<VendorDirectoryPage />} />
               <Route path="/pro-features" element={<Navigate to="/pricing" replace />} />
-              <Route path="/store-features" element={<ProStoreFeaturesPage />} />
+              <Route path="/store-features" element={<Navigate to="/pricing" replace />} />
               
               {/* 📧 EMAIL MARKETING */}
               <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
@@ -427,8 +441,7 @@ const App: React.FC = () => {
         </main>
         <Footer />
 
-        {/* Global Chatbot for Platform Support */}
-        <ChatWidget mode="platform" />
+        <PlatformChatGate />
       </div>
     </Router>
     </IslandProvider>

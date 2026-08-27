@@ -1,5 +1,5 @@
 /**
- * /pricing — one TTD table. Paid CTAs stay hidden until Wam is on.
+ * /pricing — one TTD table. Paid CTAs stay hidden until bank checkout is a real path.
  */
 import React from 'react';
 import { Check } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function PricingPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-16 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-            Start Free. Upgrade When Wam Can Take the Money.
+            Start Free. Bank payment setup in progress.
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
             One TTD table: Free, Starter, Business. Cash pickup and COD on Free.
@@ -55,7 +55,7 @@ export default function PricingPage() {
             </div>
             <div>
               <dt className="font-semibold text-gray-900">How do I pay for Starter or Business?</dt>
-              <dd>Those CTAs stay hidden until Wam is configured on the server. A charge does not auto-upgrade a plan.</dd>
+              <dd>Those CTAs stay hidden until bank checkout is a real path. A charge does not auto-upgrade a plan.</dd>
             </div>
           </dl>
         </div>

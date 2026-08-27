@@ -61,7 +61,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: '1 Free Web Page', included: true },
       { name: '5 Product Listings', included: true, limit: '5 products' },
       { name: 'Basic Template', included: true, limit: '1 design choice' },
-      { name: 'TriniBuild Branding', included: true, tooltip: 'Powered by TriniBuild badge' },
+      { name: 'Juvay Branding', included: true, tooltip: 'Powered by Juvay badge' },
       { name: 'Community Support', included: true },
       { name: 'Unlimited Marketplace Posts', included: true },
       { name: 'Basic Analytics', included: true, limit: 'Views & clicks only' },
@@ -99,7 +99,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   pro: {
     id: 'pro',
-    name: 'Pro',
+    name: 'Starter',
     price: {
       monthly: 29,
       yearly: 290,
@@ -114,9 +114,9 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: 'Multi-Page Website', included: true, limit: 'Unlimited pages' },
       { name: '50 Product Listings', included: true },
       { name: '15+ Premium Templates', included: true, tooltip: 'CRO-optimized designs' },
-      { name: 'Remove TriniBuild Branding', included: true },
+      { name: 'Remove Juvay Branding', included: true },
       { name: 'Custom Domain', included: true, tooltip: 'yourstore.com' },
-      { name: 'Online Payments', included: true, tooltip: 'WiPay, PayPal, Bank Transfer' },
+      { name: 'Online Payments', included: true, tooltip: 'Only when a live rail is on' },
       { name: 'Inventory Management', included: true },
       { name: 'Email Support', included: true, limit: '24hr response' },
       { name: 'Advanced Analytics', included: true },
@@ -154,7 +154,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   premium: {
     id: 'premium',
-    name: 'Premium',
+    name: 'Business',
     price: {
       monthly: 99,
       yearly: 990,
@@ -164,7 +164,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     currency: 'TTD',
     tagline: 'For enterprise & multi-location',
     features: [
-      { name: 'Everything in Pro, PLUS:', included: true },
+      { name: 'Everything in Starter, PLUS:', included: true },
       { name: 'Unlimited Products', included: true },
       { name: 'Multiple Store Locations', included: true },
       { name: '5 Staff Accounts', included: true, tooltip: '+$10/month for more' },

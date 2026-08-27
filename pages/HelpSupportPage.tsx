@@ -55,7 +55,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'What other payment methods are available?',
-          a: 'Pro & Business plans include: Bank Transfer (with proof upload), Credit/Debit Card via WiPay, and PayPal. Plus COD is always available.'
+          a: 'Live rails today are cash on delivery and pickup. Supported online payments appear only when that rail is actually on for the store. There is no PayPal, Stripe, or WiPay on this site.'
         },
         {
           q: 'When do I get paid?',
@@ -63,7 +63,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Are there any transaction fees?',
-          a: 'COD has no fees. Bank transfers have no fees. Card payments have 2.5% processor fee. All fees are transparent upfront.'
+          a: 'Cash on delivery and pickup have no Juvay take published. Do not assume a card or bank fee until that rail is live on the store.'
         }
       ]
     },
@@ -72,11 +72,11 @@ export const HelpSupportPage: React.FC = () => {
       items: [
         {
           q: 'How does delivery work?',
-          a: 'You have options: 1) Standard delivery (TT$25 base + TT$4/km via TriniRides), 2) Express (faster service), 3) Store pickup (customer collects), 4) Customer delivery (they arrange it).'
+          a: 'Pickup and seller-arranged delivery are the live options. A ride fare is only shown when that product is live for that store — this page does not quote TT$25 + TT$4/km.'
         },
         {
           q: 'Can I use my own courier?',
-          a: 'Yes! You can arrange your own delivery and mark it as "Self-Delivery" in the order. Or use our integrated TriniRides system for seamless tracking.'
+          a: 'Yes. You can arrange your own delivery and mark it as self-delivery, or offer pickup. TriniRides fare is not quoted unless that product is live for that store.'
         },
         {
           q: 'How do I track deliveries?',

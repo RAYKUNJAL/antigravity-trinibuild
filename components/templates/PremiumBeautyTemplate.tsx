@@ -162,7 +162,7 @@ export const PremiumBeautyTemplate: React.FC<{
       {/* ─── FOOTER ─── */}
       <footer className="border-t border-gray-100 dark:border-slate-800 py-8 px-4 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto text-center text-xs text-gray-400">
-          <p>© 2026 {storeName} · Powered by <a href="https://trinibuild.com" className="underline">TriniBuild</a></p>
+          <p>© 2026 {storeName} · Powered by <a href="https://juvay.app" className="underline">Juvay</a></p>
         </div>
       </footer>
     </div>

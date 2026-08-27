@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, TrendingUp, Users, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { JuvayPriceTable } from '../components/JuvayPriceTable';
 
 export const BecomeSellerPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'business'>('pro');
 
   const container = {
     hidden: { opacity: 0 },
@@ -16,55 +16,6 @@ export const BecomeSellerPage: React.FC = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
-
-  const plans = [
-    {
-      id: 'starter',
-      name: 'Starter',
-      price: 'Free',
-      description: 'Perfect for testing',
-      features: [
-        '5 free products',
-        'Basic store customization',
-        'COD checkout',
-        'Email support'
-      ],
-      cta: 'Start Free',
-      highlighted: false
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: 'TT$199/mo',
-      description: 'Most popular',
-      features: [
-        'Unlimited products',
-        'AI product lister',
-        'Advanced analytics',
-        'Priority support',
-        'Custom domain',
-        'Email marketing'
-      ],
-      cta: 'Start Pro',
-      highlighted: true
-    },
-    {
-      id: 'business',
-      name: 'Business',
-      price: 'TT$399/mo',
-      description: 'For serious sellers',
-      features: [
-        'Everything in Pro',
-        'Advanced inventory',
-        'API access',
-        'Custom integrations',
-        'Dedicated support',
-        'Video hosting'
-      ],
-      cta: 'Start Business',
-      highlighted: false
-    }
-  ];
 
   const benefits = [
     {
@@ -111,8 +62,7 @@ export const BecomeSellerPage: React.FC = () => {
               Start Selling Online Today
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Join thousands of Trinidad merchants selling on TriniBuild. 
-              Cash on Delivery, no credit card needed.
+              Open a Juvay store. Cash on delivery and pickup. No credit card needed.
             </p>
             <button
               onClick={() => navigate('/create-store')}
@@ -146,7 +96,7 @@ export const BecomeSellerPage: React.FC = () => {
         viewport={{ once: true }}
       >
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-black text-center mb-16">Why TriniBuild?</h2>
+          <h2 className="text-4xl font-black text-center mb-16">Why Juvay?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, idx) => {
               const Icon = benefit.icon;
@@ -176,48 +126,7 @@ export const BecomeSellerPage: React.FC = () => {
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-black text-center mb-16">Simple Pricing</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {plans.map((plan) => (
-              <motion.div
-                key={plan.id}
-                variants={item}
-                className={`rounded-lg p-8 transition-all ${
-                  selectedPlan === plan.id || plan.highlighted
-                    ? 'bg-gray-900 text-white border-2 border-[#E61E2B] shadow-xl scale-105'
-                    : 'bg-white border-2 border-gray-200 text-gray-900'
-                }`}
-                onClick={() => setSelectedPlan(plan.id as any)}
-              >
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className={selectedPlan === plan.id || plan.highlighted ? 'text-gray-300' : 'text-gray-600'}>
-                  {plan.description}
-                </p>
-                <p className="text-3xl font-black my-4">{plan.price}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center">
-                      <span className={`w-2 h-2 rounded-full mr-3 ${
-                        selectedPlan === plan.id || plan.highlighted 
-                          ? 'bg-[#E61E2B]' 
-                          : 'bg-gray-400'
-                      }`}></span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => navigate('/create-store')}
-                  className={`w-full py-3 rounded-lg font-bold transition ${
-                    selectedPlan === plan.id || plan.highlighted
-                      ? 'bg-[#E61E2B] text-white hover:bg-red-700'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
-                >
-                  {plan.cta}
-                </button>
-              </motion.div>
-            ))}
-          </div>
+          <JuvayPriceTable />
         </div>
       </motion.section>
 

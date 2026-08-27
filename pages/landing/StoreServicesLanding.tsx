@@ -72,7 +72,7 @@ export const StoreServicesLanding: React.FC = () => {
             field: 'needsDelivery',
             type: 'radio',
             options: [
-                { value: 'yes', label: 'Yes, I need TriniBuild Go delivery' },
+                { value: 'yes', label: 'Yes, I need delivery (seller-arranged)' },
                 { value: 'own', label: 'I have my own delivery' },
                 { value: 'no', label: 'No delivery needed (pickup only)' }
             ]
@@ -82,19 +82,19 @@ export const StoreServicesLanding: React.FC = () => {
     const handleSubmit = async () => {
         // Submit form to create store
         console.log('Store setup data:', formData);
-        navigate('/store/builder');
+        navigate('/create-store');
     };
 
     return (
         <>
             <Helmet>
-                <title>Open Your Online Store in Trinidad & Tobago | TriniBuild</title>
-                <meta name="description" content="Start selling online in Trinidad & Tobago with TriniBuild. Get your store online in 5 minutes with COD, WiPay, delivery, and more. No technical skills needed!" />
-                <meta name="keywords" content="online store trinidad, e-commerce trinidad, sell online trinidad, trinidad online shopping, wipay, cash on delivery trinidad" />
+                <title>Open Your Online Store in Trinidad & Tobago | Juvay</title>
+                <meta name="description" content="Start selling online in Trinidad & Tobago with Juvay. Cash on delivery and pickup. No technical skills needed." />
+                <meta name="keywords" content="online store trinidad, e-commerce trinidad, sell online trinidad, trinidad online shopping, cash on delivery trinidad" />
 
                 {/* Open Graph */}
-                <meta property="og:title" content="Open Your Online Store in Trinidad & Tobago | TriniBuild" />
-                <meta property="og:description" content="Start selling online in 5 minutes. Accept COD, WiPay, get free delivery with TriniBuild Go." />
+                <meta property="og:title" content="Open Your Online Store in Trinidad & Tobago | Juvay" />
+                <meta property="og:description" content="Start selling online in 5 minutes. Cash on delivery and pickup." />
                 <meta property="og:type" content="website" />
 
                 {/* Structured Data */}
@@ -102,12 +102,12 @@ export const StoreServicesLanding: React.FC = () => {
                     {JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "Service",
-                        "name": "TriniBuild Online Store Platform",
+                        "name": "Juvay Online Store Platform",
                         "description": "E-commerce platform for Trinidad & Tobago businesses",
                         "provider": {
                             "@type": "Organization",
-                            "name": "TriniBuild",
-                            "url": "https://trinibuild.com"
+                            "name": "Juvay",
+                            "url": "https://juvay.app"
                         },
                         "areaServed": {
                             "@type": "Country",
@@ -115,7 +115,7 @@ export const StoreServicesLanding: React.FC = () => {
                         },
                         "offers": {
                             "@type": "Offer",
-                            "price": "29.00",
+                            "price": "0.00",
                             "priceCurrency": "TTD"
                         }
                     })}
@@ -137,7 +137,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     Start Selling Online in Trinidad & Tobago
                                 </h1>
                                 <p className="text-xl md:text-2xl mb-8 text-white/90">
-                                    Accept COD, WiPay, Google Pay. Get free delivery with TriniBuild Go. No technical skills needed.
+                                    Cash on delivery and pickup. Supported online payments only when that rail is actually on. No technical skills needed.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                     <button
@@ -163,7 +163,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
-                                        Free 14-Day Trial
+                                        5 listings on Free
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
@@ -208,12 +208,12 @@ export const StoreServicesLanding: React.FC = () => {
                             <FeatureCard
                                 icon={<DollarSign className="h-12 w-12 text-green-600" />}
                                 title="Cash pickup and COD"
-                                description="Customers pay cash at pickup or on delivery. Card rails stay hidden until Wam is actually on."
+                                description="Customers pay cash at pickup or on delivery. Supported online payments appear only when that rail is actually on."
                             />
                             <FeatureCard
                                 icon={<Truck className="h-12 w-12 text-purple-600" />}
-                                title="TriniBuild Go Delivery"
-                                description="Integrated delivery network across Trinidad & Tobago. Real-time tracking and proof of delivery."
+                                title="Pickup or seller delivery"
+                                description="Offer pickup or arrange your own delivery. A ride fare is only shown when that product is live for that store."
                             />
                             <FeatureCard
                                 icon={<MessageCircle className="h-12 w-12 text-pink-600" />}

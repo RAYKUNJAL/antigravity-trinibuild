@@ -54,7 +54,7 @@ export const JuvayPriceTable: React.FC<{ className?: string }> = ({ className = 
               </Link>
             ) : (
               <p className="w-full py-3 rounded-xl bg-gray-50 text-gray-500 text-sm font-semibold text-center">
-                Paid plans open when Wam can take that money. Free listing stays 5 products.
+                Bank payment setup in progress. Free listing stays 5 products.
               </p>
             )}
           </div>

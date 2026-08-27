@@ -188,7 +188,7 @@ export default function CODDashboard() {
               <p className="text-xl font-bold">TT${(stats.grossRevenue || 0).toFixed(2)}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs mb-1">Platform Fee (5%)</p>
+              <p className="text-gray-400 text-xs mb-1">Platform fee (none published)</p>
               <p className="text-xl font-bold text-red-400">−TT${(stats.platformFees || 0).toFixed(2)}</p>
             </div>
             <div>
@@ -318,7 +318,7 @@ export default function CODDashboard() {
                               <span>Total</span><span>TT${(order.total_amount || 0).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-xs text-red-500">
-                              <span>Platform Fee (5%)</span><span>−TT${(order.cod_commission_amount || 0).toFixed(2)}</span>
+                              <span>Platform fee (none published)</span><span>TT$0.00</span>
                             </div>
                             <div className="flex justify-between text-sm font-semibold text-green-600">
                               <span>Your Payout</span><span>TT${(order.merchant_payout || 0).toFixed(2)}</span>
