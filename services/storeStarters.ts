@@ -344,6 +344,11 @@ export const GALLERY_TO_STARTER: Record<string, StarterId> = {
   tech_gadgets_store: 'electronics',
   auto_accessories_store: 'auto',
   multi_location_enterprise: 'general',
+  'premium-3-column': 'general',
+  'premium-fashion': 'fashion',
+  'premium-restaurant': 'food',
+  'premium-beauty': 'beauty',
+  'premium-ecommerce': 'general',
 };
 
 export function isStarterId(value: string | null | undefined): value is StarterId {
