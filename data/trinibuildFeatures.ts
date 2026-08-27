@@ -45,7 +45,7 @@ export const TRINIBUILD_FEATURES: TriniBuildFeature[] = [
         summary: "Sell goods and services online in a local T&T marketplace.",
         internal_url: "/marketplace",
         benefits: [
-            "Up to 10 free product listings",
+            "Up to 5 free product listings",
             "WhatsApp checkout integration",
             "Local delivery options",
             "No payment processor needed initially",

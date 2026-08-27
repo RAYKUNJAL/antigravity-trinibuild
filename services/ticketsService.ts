@@ -64,9 +64,8 @@ export const ticketsService = {
 
     // --- Tickets / Purchasing ---
 
-    async purchaseTickets(eventId: string, tierId: string, quantity: number, holderName: string) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('User must be logged in');
+    async purchaseTickets(_eventId: string, _tierId: string, _quantity: number, _holderName: string) {
+        throw new Error('Ticket sales are not available on this origin');
 
         // Note: In a real app, we'd use a transaction or RPC to ensure stock isn't oversold.
         // For this demo, we'll just check and insert.

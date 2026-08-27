@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
+import { Navigate, useLocation } from 'react-router-dom';
+import { authApi, getToken } from '../services/selfHostedApi';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -9,12 +9,17 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const location = useLocation();
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                setIsAuthenticated(!!session);
+                if (!getToken()) {
+                    setIsAuthenticated(false);
+                    return;
+                }
+                const user = await authApi.getUser();
+                setIsAuthenticated(!!user);
             } catch (err) {
                 console.error('ProtectedRoute: session check failed', err);
                 setIsAuthenticated(false);
@@ -24,7 +29,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }, []);
 
     if (isAuthenticated === null) {
-        // Loading state
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
@@ -36,10 +40,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
 
     if (!isAuthenticated) {
-        // Redirect to auth page if not authenticated
-        return <Navigate to="/auth" replace />;
+        const next = encodeURIComponent(location.pathname + location.search);
+        return <Navigate to={`/signup?next=${next}`} replace />;
     }
 
-    // Render protected content if authenticated
     return <>{children}</>;
 };

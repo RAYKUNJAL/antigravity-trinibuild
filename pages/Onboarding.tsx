@@ -90,7 +90,7 @@ export const Onboarding: React.FC = () => {
             {step === 3 && "One Last Thing"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {step === 1 && "Select your path in the TriniBuild ecosystem."}
+            {step === 1 && "Select your path on Juvay."}
             {step === 2 && intent === 'sell' && "Customers need to know who you are."}
             {step === 3 && "We need to make it official."}
           </p>
@@ -98,9 +98,6 @@ export const Onboarding: React.FC = () => {
 
         <div className="bg-white py-8 px-4 shadow-2xl sm:rounded-2xl sm:px-10 border border-gray-100 relative overflow-hidden">
 
-          <div className="absolute top-0 right-0 bg-green-50 text-green-700 text-[10px] font-bold px-3 py-1 rounded-bl-xl border-b border-l border-green-100 flex items-center">
-            <TrendingUp className="h-3 w-3 mr-1" /> 45 people joined today
-          </div>
 
           {step === 1 && (
             <div className="space-y-3 mt-4">
@@ -115,7 +112,7 @@ export const Onboarding: React.FC = () => {
                 <div className="flex-grow">
                   <h3 className="font-bold text-gray-900">Merchant</h3>
                   <p className="text-xs text-gray-500">Build a Store & Accept Payments.</p>
-                  <span className="text-[10px] font-bold text-trini-red bg-white px-1 rounded mt-1 inline-block">TriniBuild Pay</span>
+                  <span className="text-[10px] font-bold text-trini-red bg-white px-1 rounded mt-1 inline-block">Cash pickup + COD</span>
                 </div>
                 {intent === 'sell' && <CheckCircle className="h-5 w-5 text-trini-red" />}
               </button>

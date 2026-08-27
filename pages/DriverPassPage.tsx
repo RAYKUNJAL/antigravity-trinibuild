@@ -159,9 +159,7 @@ export default function DriverPassPage() {
                                         {p.free_ride_threshold != null && <p className="text-xs text-emerald-400 font-semibold mt-1">Free until {p.free_ride_threshold} rides/week</p>}
                                     </div>
                                     <div className="flex flex-col gap-2 shrink-0">
-                                        <button onClick={() => startPay(p, 'paypal')} disabled={busy} className="bg-[#0070BA] hover:bg-[#005c99] text-sm font-bold px-4 py-2 rounded-lg">Pay with PayPal</button>
                                         <button onClick={() => startPay(p, 'bank')} disabled={busy} className="bg-gray-800 hover:bg-gray-700 text-sm font-bold px-4 py-2 rounded-lg">Pay at Bank</button>
-                                        <button disabled className="bg-gray-900 text-gray-500 text-sm font-bold px-4 py-2 rounded-lg cursor-not-allowed">WAM <span className="text-[10px] text-[#FFD700]">SOON</span></button>
                                     </div>
                                 </div>
                                 <ul className="mt-3 space-y-1">

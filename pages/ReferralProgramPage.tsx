@@ -70,7 +70,7 @@ export const ReferralProgramPage: React.FC = () => {
     {
       step: 3,
       title: 'You Earn',
-      description: 'Earn 10-20% commission on their first year of subscriptions'
+      description: 'Earn 10% of their subscription'
     },
     {
       step: 4,

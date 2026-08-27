@@ -553,11 +553,11 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**Juvay Pricing:**\n\n🆓 **Hustle (Free forever):** 10 products, basic store, directory listing\n💎 **Pro ($199 TTD/mo):** Unlimited products, AI tools, store chatbot\n🏆 **Premium ($399 TTD/mo):** Custom domain, priority support\n🏢 **Business ($799 TTD/mo):** Multi-location, API access\n\nDoh even need a credit card to start. Check [/pricing](/pricing) for the full breakdown!";
+        return "**Juvay Pricing:**\n\n🆓 **Free:** 5 product listings, cash pickup, COD\n💎 **Starter (TT$199/mo):** Unlimited listings — opens when Wam can take the money\n🏆 **Business (TT$399/mo):** Everything in Starter plus branding\n\nNo credit card to start. Check [/pricing](/pricing).";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {
-        return "Creating a store is real easy — 5 minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick from 15 templates built for T&T businesses\n3. Add yuh products\n4. Share yuh store link!\n\nFirst 10 products free forever. No credit card needed. 🇹🇹";
+        return "Creating a store is real easy — 5 minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product or skip\n4. Share yuh https://juvay.app/store/slug link\n\nFirst 5 products free. No credit card needed. 🇹🇹";
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {

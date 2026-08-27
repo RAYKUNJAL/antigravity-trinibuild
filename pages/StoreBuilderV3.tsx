@@ -16,7 +16,9 @@
  */
 
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { storesApi, getToken } from '../services/selfHostedApi';
+import { GALLERY_TO_BUILDER, VERTICAL_COPY, type StarterType } from '../services/storeCopyTokens';
 import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown, X, Maximize2, Monitor, Smartphone } from 'lucide-react';
 import {
   Store as StoreIcon, Shirt, Utensils, ShoppingBag, Briefcase, MoreHorizontal,
@@ -215,46 +217,46 @@ const DESIGN_SYSTEMS: Record<string, DesignSystem> = {
 
 const BUSINESS_TYPES: BusinessType[] = [
   {
-    id: 'fashion',
-    name: 'Fashion & Apparel',
-    icon: Shirt,
-    description: 'Clothing, accessories, jewelry',
-    recommendedTemplate: 'fashion',
-  },
-  {
     id: 'food',
-    name: 'Food & Beverage',
+    name: 'Food',
     icon: Utensils,
-    description: 'Restaurants, bakeries, food delivery',
+    description: 'Cooked this morning. Ready when you reach.',
     recommendedTemplate: 'restaurant',
   },
   {
-    id: 'beauty',
-    name: 'Beauty & Wellness',
-    icon: Sparkles,
-    description: 'Salons, spas, cosmetics',
-    recommendedTemplate: 'beauty',
-  },
-  {
-    id: 'retail',
-    name: 'General Retail',
-    icon: ShoppingBag,
-    description: 'Electronics, household, gifts',
-    recommendedTemplate: 'ecommerce',
+    id: 'fashion',
+    name: 'Fashion',
+    icon: Shirt,
+    description: 'Pieces you can try. Prices you can see.',
+    recommendedTemplate: 'fashion',
   },
   {
     id: 'services',
-    name: 'Professional Services',
+    name: 'Services',
     icon: Briefcase,
-    description: 'Consulting, agency, freelancing',
+    description: 'Book or enquire. No fake reviews.',
     recommendedTemplate: 'professional',
   },
   {
-    id: 'other',
-    name: 'Other',
-    icon: MoreHorizontal,
-    description: 'Tell us about your business',
-    recommendedTemplate: 'professional',
+    id: 'general',
+    name: 'General',
+    icon: ShoppingBag,
+    description: 'In the shop today. Not “ships in 6 weeks.”',
+    recommendedTemplate: 'island-commerce',
+  },
+  {
+    id: 'beauty',
+    name: 'Beauty',
+    icon: Sparkles,
+    description: 'Book the chair. Or take the product home.',
+    recommendedTemplate: 'beauty',
+  },
+  {
+    id: 'home',
+    name: 'Home',
+    icon: StoreIcon,
+    description: 'Treat like general retail.',
+    recommendedTemplate: 'ecommerce',
   },
 ];
 
@@ -330,59 +332,57 @@ const COLOR_PRESETS = [
 
 // ─── Helper: build sample storeData for preview rendering ─────────────
 
-function buildSampleStoreData(storeName: string, primaryColor: string) {
+function buildSampleStoreData(storeName: string, primaryColor: string, businessType?: string) {
+  const type = (['food', 'fashion', 'beauty', 'services', 'general', 'home'].includes(businessType || '')
+    ? businessType
+    : 'general') as StarterType;
+  const copy = VERTICAL_COPY[type];
   return {
-    name: storeName || 'Your Store Name',
-    tagline: storeName ? `Welcome to ${storeName}` : 'Your Trinidad & Tobago storefront',
-    description: storeName ? `${storeName} — quality products and service in Trinidad & Tobago.` : 'Quality products and service in Trinidad & Tobago.',
-    phone: '8681234567',
-    whatsapp: '8681234567',
+    name: storeName || '{{store_name}}',
+    tagline: copy.hero,
+    description: copy.hero,
+    phone: '',
+    whatsapp: '',
     color_scheme: { primary: primaryColor },
-    address: 'Trinidad & Tobago',
-    delivery: 'Island-wide delivery available',
+    address: '{{pickup_address}}',
+    delivery: '',
+    accepts_cod: false,
+    accepts_pickup: false,
   };
 }
 
-function buildSampleProducts(storeName: string) {
-  const name = storeName || 'Your Store';
-  return [
-    { id: 's1', name: `${name} Signature Tee`, description: 'Soft cotton, island-printed', price: 149.99, compare_at_price: 199.99, image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=640&q=80', status: 'active', stock: 12, category: 'Apparel', variants: [
-      { id: 's1-rs', title: 'Red / S', options: { Color: 'Red', Size: 'S' }, price: 149.99 },
-      { id: 's1-rm', title: 'Red / M', options: { Color: 'Red', Size: 'M' }, price: 149.99 },
-      { id: 's1-bl', title: 'Blue / L', options: { Color: 'Blue', Size: 'L' }, price: 149.99 },
-      { id: 's1-gm', title: 'Green / M', options: { Color: 'Green', Size: 'M' }, price: 149.99 },
-    ] },
-    { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: 'https://images.unsplash.com/photo-1547637589-f54c34f5a1da?w=640&q=80', status: 'active', stock: 5, category: 'Featured' },
-    { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=640&q=80', status: 'active', stock: 20, category: 'Value' },
-  ];
+function buildSampleProducts(_storeName: string) {
+  return [];
 }
 
 // ─── Main Component ────────────────────────────────────────────────────
 
+const emptyBuilderState = (): StoreBuilderState => ({
+  step: 1,
+  businessType: '',
+  templateId: '',
+  storeName: '',
+  tagline: '',
+  primaryColor: '#E61E2B',
+  description: '',
+  category: '',
+  phone: '',
+  whatsapp: '',
+});
+
 const StoreBuilderV3: React.FC = () => {
   const navigate = useNavigate();
-  const [state, setState] = useState<StoreBuilderState>(() => {
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.warn('Could not load draft:', e);
+  const [searchParams] = useSearchParams();
+  const [state, setState] = useState<StoreBuilderState>(emptyBuilderState);
+
+  useEffect(() => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+    const raw = searchParams.get('template') || '';
+    const mapped = GALLERY_TO_BUILDER[raw] || (TEMPLATES.some((t) => t.id === raw) ? raw : '');
+    if (mapped) {
+      setState((prev) => ({ ...prev, templateId: mapped, step: prev.businessType ? 2 : 1 }));
     }
-    return {
-      step: 1,
-      businessType: '',
-      templateId: '',
-      storeName: '',
-      tagline: '',
-      primaryColor: '#E61E2B',
-      description: '',
-      category: '',
-      phone: '',
-      whatsapp: '',
-    };
-  });
+  }, [searchParams]);
 
   const [showPreview, setShowPreview] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -634,8 +634,8 @@ const StoreBuilderV3: React.FC = () => {
   const renderPreviewModal = () => {
     if (!previewTemplate) return null;
     const TemplateComponent = previewTemplate.Component;
-    const storeData = buildSampleStoreData(state.storeName || 'Sample Store', state.primaryColor);
-    const sampleProducts = buildSampleProducts(state.storeName || 'Sample Store');
+    const storeData = buildSampleStoreData(state.storeName, state.primaryColor, state.businessType);
+    const sampleProducts = buildSampleProducts(state.storeName);
     const isMobile = previewDevice === 'mobile';
 
     return (
@@ -894,7 +894,7 @@ const StoreBuilderV3: React.FC = () => {
                     </div>
                   );
                   const TemplateComponent = selectedTemplate.Component;
-                  const storeData = buildSampleStoreData(state.storeName, state.primaryColor);
+                  const storeData = buildSampleStoreData(state.storeName, state.primaryColor, state.businessType);
                   const sampleProducts = buildSampleProducts(state.storeName);
                   return (
                     <TemplateComponent
@@ -942,89 +942,28 @@ const StoreBuilderV3: React.FC = () => {
     setError(null);
 
     try {
-      // Get current user - check localStorage first, then Supabase session
-      let user = null;
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          user = JSON.parse(storedUser);
-        } catch (e) {
-          console.warn('Invalid stored user:', e);
-        }
-      }
-
-      // If not in localStorage, try Supabase session
-      if (!user) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          user = session.user as any;
-        }
-      }
-
-      if (!user) {
-        // Save draft and redirect to signup
+      if (!getToken()) {
         navigate('/signup?next=/create-store');
         return;
       }
 
-      // Generate slug
-      const slug = state.storeName
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 7);
-
-      // Insert store - matches actual stores table schema (owner_id, theme_config jsonb, color_scheme jsonb)
-      const { data: store, error: storeError } = await supabase
-        .from('stores')
-        .insert({
-          owner_id: user.id,  // RLS policy: auth.uid() = owner_id
-          name: state.storeName.trim(),
-          slug,
-          tagline: state.tagline.trim() || null,
-          description: state.description.trim() || null,
-          category: state.businessType,
-          theme_config: {
-            template_id: state.templateId,
-            business_type: state.businessType,
-          },
-          color_scheme: {
-            primary: state.primaryColor,
-          },
-          phone: state.phone.trim() || null,
-          whatsapp: state.whatsapp.trim() || null,
-          status: 'active',
-        })
-        .select()
-        .single();
-
-      if (storeError) {
-        console.error('Store creation error:', storeError);
-        throw new Error(storeError.message || 'Could not create store');
-      }
-
-      // Clear draft
-      localStorage.removeItem(DRAFT_KEY);
-
-      // Track conversion
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'store_created', {
-          template: state.templateId,
+      const store = await storesApi.create({
+        name: state.storeName.trim(),
+        description: state.description.trim() || undefined,
+        category: state.businessType,
+        phone: state.phone.trim() || undefined,
+        whatsapp: state.whatsapp.trim() || undefined,
+        template_id: state.templateId,
+        theme_config: {
+          template_id: state.templateId,
           business_type: state.businessType,
-        });
-      }
+          color: state.primaryColor,
+          tagline: state.tagline.trim() || undefined,
+        },
+      });
 
-      // Award gamification points + give them a free spin (non-blocking)
-      try {
-        const { MerchantGamification } = await import('../services/gamificationIntegration');
-        await MerchantGamification.recordStoreCreation(user.id);
-      } catch (gamiErr) {
-        console.warn('Gamification reward failed (non-blocking):', gamiErr);
-      }
-
-      // Navigate to success page; ?welcome=1 triggers the spin-wheel reward popup on storefront
-      navigate(`/store/${slug}?welcome=1&spin=1`);
+      localStorage.removeItem(DRAFT_KEY);
+      navigate(`/store/${store.slug}`);
     } catch (err: any) {
       console.error('Launch error:', err);
       setError(err?.message || 'Something went wrong. Please try again.');
@@ -1251,7 +1190,7 @@ const StoreBuilderV3: React.FC = () => {
               onClick={() => navigate('/')}
               className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
-              <Store className="w-4 h-4" /> TriniBuild
+              <Store className="w-4 h-4" /> Juvay
             </button>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Step {state.step} of {STEPS.length} · {STEPS[state.step - 1].label}

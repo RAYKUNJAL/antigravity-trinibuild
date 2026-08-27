@@ -38,21 +38,15 @@ class WiPayService {
     // Create a payment
     async createPayment(payment: WiPayPayment): Promise<WiPayResponse> {
         try {
-            // In sandbox/development mode, return mock success
-            if (!this.apiKey || this.sandbox) {
-                console.log('[WiPay Mock] Payment created:', payment);
-                return {
-                    success: true,
-                    transactionId: `MOCK_${Date.now()}`,
-                    url: `/payment/success?tx=${Date.now()}`
-                };
+            if (!this.apiKey) {
+                return { success: false, error: 'WiPay is not a live rail on Juvay' };
             }
 
             const response = await fetch(`${this.getApiUrl()}/payments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
+                    Authorization: `Bearer ${this.apiKey}`,
                 },
                 body: JSON.stringify({
                     merchant_id: this.merchantId,

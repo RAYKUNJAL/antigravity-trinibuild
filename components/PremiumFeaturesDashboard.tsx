@@ -4,6 +4,7 @@ import {
   Sparkles, TrendingUp, Users, Zap, Award, Target, 
   BarChart3, Mail, Share2, Gift, Lock, Crown 
 } from 'lucide-react';
+import { JuvayPriceTable } from './JuvayPriceTable';
 
 interface Feature {
   id: string;
@@ -113,19 +114,19 @@ export const PremiumFeaturesDashboard: React.FC = () => {
     const info = {
       free: {
         name: 'Free',
-        price: '$0',
+        price: 'TT$0',
         color: 'gray',
         gradient: 'from-gray-400 to-gray-600'
       },
       pro: {
-        name: 'Pro',
-        price: '$29/mo',
+        name: 'Starter',
+        price: 'TT$199/mo',
         color: '[#E61E2B]',
         gradient: 'from-[#E61E2B] to-[#C41E3A]'
       },
       premium: {
-        name: 'Premium',
-        price: '$99/mo',
+        name: 'Business',
+        price: 'TT$399/mo',
         color: '[#FFD700]',
         gradient: 'from-[#FFD700] to-[#FFA500]'
       }
@@ -166,8 +167,12 @@ export const PremiumFeaturesDashboard: React.FC = () => {
 
       {/* Current Plan Selector (Demo) */}
       <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-black text-gray-900 mb-4">One TTD price table</h2>
+          <JuvayPriceTable />
+        </div>
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <p className="text-sm font-bold text-gray-600 mb-3">Current Plan (Demo):</p>
+          <p className="text-sm font-bold text-gray-600 mb-3">Plan names (preview only — not a live bill):</p>
           <div className="flex gap-3">
             {(['free', 'pro', 'premium'] as const).map((tier) => {
               const info = getTierInfo(tier);
@@ -336,14 +341,14 @@ export const PremiumFeaturesDashboard: React.FC = () => {
               Ready to Unlock Premium Features?
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Start with Pro at $29/month and grow your Trinidad business 10x faster.
+              Free is TT$0 with 5 listings. Starter TT$199 and Business TT$399 open when Wam can take that money.
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 bg-white text-[#E61E2B] font-black rounded-full text-lg hover:bg-gray-100 transition-colors"
             >
-              Upgrade to Pro - $29/month
+              See /pricing — Free / Starter / Business
             </motion.button>
           </div>
         </div>

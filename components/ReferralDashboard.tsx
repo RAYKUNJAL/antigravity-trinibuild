@@ -86,7 +86,7 @@ export const ReferralDashboard: React.FC = () => {
                         </div>
                         <div>
                             <h2 className="text-3xl font-bold">Earn with Referrals</h2>
-                            <p className="text-white/90">Share TriniBuild and earn 10% commission on all sales!</p>
+                            <p className="text-white/90">Share Juvay and earn 10% of their subscription.</p>
                         </div>
                     </div>
 
@@ -207,7 +207,7 @@ export const ReferralDashboard: React.FC = () => {
                             <span className="text-2xl font-bold text-yellow-600">3</span>
                         </div>
                         <h4 className="font-bold text-gray-900 mb-2">Earn Commission</h4>
-                        <p className="text-sm text-gray-600">Get 10% commission on all their sales, forever!</p>
+                        <p className="text-sm text-gray-600">10% of their subscription. Not of product sales.</p>
                     </div>
                 </div>
             </div>

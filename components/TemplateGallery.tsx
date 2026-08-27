@@ -327,7 +327,7 @@ const P_beauty_cosmetics_store = () => (
       <div style={{ fontSize: 28 }}>💄</div>
     </div>
     <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['Lip Kit','TT$149','#fce7f3','★4.9'],['Serum','TT$189','#fef3c7','★4.7'],['Bundle','TT$299','#dcfce7','★5.0']].map(([n,p,bg,r]) => (
+      {[['Lip Kit','','#fce7f3',''],['Serum','','#fef3c7',''],['Bundle','','#dcfce7','']].map(([n,p,bg,r]) => (
         <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 18, height: 18, background: '#ec4899', borderRadius: '50%', opacity: 0.3 }} />
@@ -588,7 +588,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
 
   const handleUse = (template: StoreTemplate) => {
     onSelectTemplate?.(template);
-    navigate(`/create-store?template=${template.id}`);
+    navigate(`/create-store?template=${template.id}&fresh=1`);
   };
 
   return (
@@ -596,7 +596,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
 
       {/* Hero */}
       <div style={{ padding: '60px 24px 44px', textAlign: 'center', background: 'radial-gradient(ellipse at 50% 0%,rgba(230,30,43,0.12) 0%,transparent 70%)' }}>
-        <div style={{ fontSize: 10, letterSpacing: 6, color: '#E61E2B', fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>TriniBuild · Store Templates</div>
+        <div style={{ fontSize: 10, letterSpacing: 6, color: '#E61E2B', fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>Juvay · Store Templates</div>
         <h1 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, lineHeight: 1.05, margin: '0 0 14px', letterSpacing: '-0.02em' }}>
           Pick your store.<br />
           <span style={{ color: '#E61E2B' }}>Launch in minutes.</span>

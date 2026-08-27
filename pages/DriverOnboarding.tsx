@@ -100,8 +100,8 @@ export const DriverOnboarding: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-12">
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                 <DollarSign className="h-10 w-10 text-green-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold mb-1">80%</div>
-                <div className="text-sm text-gray-300">You keep 80%+ of fares</div>
+                <div className="text-2xl font-bold mb-1">Apply</div>
+                <div className="text-sm text-gray-300">No fare-split claim</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                 <Clock className="h-10 w-10 text-blue-400 mx-auto mb-3" />
@@ -110,8 +110,8 @@ export const DriverOnboarding: React.FC = () => {
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                 <TrendingUp className="h-10 w-10 text-yellow-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold mb-1">$500+</div>
-                <div className="text-sm text-gray-300">Weekly earnings potential</div>
+                <div className="text-2xl font-bold mb-1">Hours</div>
+                <div className="text-sm text-gray-300">You set your own schedule</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                 <Award className="h-10 w-10 text-purple-400 mx-auto mb-3" />

@@ -94,8 +94,8 @@ export const DriverSignupAI: React.FC = () => {
                         <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mt-8">
                             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                                 <DollarSign className="h-8 w-8 text-green-400 mx-auto mb-2" />
-                                <div className="text-2xl font-bold">80%+</div>
-                                <div className="text-xs text-gray-300">You Keep</div>
+                                <div className="text-2xl font-bold">Apply</div>
+                                <div className="text-xs text-gray-300">No fare-split claim</div>
                             </div>
                             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                                 <Clock className="h-8 w-8 text-blue-400 mx-auto mb-2" />

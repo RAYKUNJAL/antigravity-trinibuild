@@ -218,22 +218,6 @@ export const StorefrontV2: React.FC = () => {
 
                 let result;
                 switch (paymentMethod) {
-                    case 'paypal': {
-                        // Record order as pending, open PayPal payment in new tab
-                        result = await paymentService.processCashPayment({
-                            ...paymentConfig,
-                            method: 'cod' as any
-                        });
-                        if (result.success) {
-                            const amountUSD = (cartTotal * 0.147).toFixed(2);
-                            const itemName = encodeURIComponent(`TriniBuild Order #${newOrderId}`);
-                            window.open(
-                                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=ray%40kunjaldigital.com&amount=${amountUSD}&currency_code=USD&item_name=${itemName}&no_shipping=1`,
-                                '_blank'
-                            );
-                        }
-                        break;
-                    }
                     case 'cod':
                     case 'cash':
                         result = await paymentService.processCashPayment(paymentConfig);
@@ -518,11 +502,13 @@ export const StorefrontV2: React.FC = () => {
                             <p className="text-sm font-bold text-gray-900">Cash on Delivery</p>
                             <p className="text-xs text-gray-500">Pay When You Get It</p>
                         </div>
+                        {store.whatsapp && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                             <Phone className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">24/7 Support</p>
-                            <p className="text-xs text-gray-500">WhatsApp Ready</p>
+                            <p className="text-sm font-bold text-gray-900">WhatsApp</p>
+                            <p className="text-xs text-gray-500">Merchant listed a handle</p>
                         </div>
+                        )}
                     </div>
 
                     {/* Products Grid */}
@@ -776,33 +762,18 @@ export const StorefrontV2: React.FC = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => setPaymentMethod('paypal')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                                onClick={() => setPaymentMethod('cash')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'cash' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
-                                                    <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
+                                                    <Banknote className="h-6 w-6 text-emerald-700 mr-3" />
                                                     <div className="text-left">
-                                                        <p className="font-bold text-gray-900">PayPal / Card</p>
-                                                        <p className="text-xs text-gray-500">Credit, Debit or PayPal balance</p>
+                                                        <p className="font-bold text-gray-900">Cash at pickup</p>
+                                                        <p className="text-xs text-gray-500">Exact cash unless the merchant says otherwise</p>
                                                     </div>
                                                 </div>
-                                                {paymentMethod === 'paypal' && <Check className="h-5 w-5 text-blue-600" />}
-                                            </button>
-
-                                            <button
-                                                onClick={() => setPaymentMethod('bank_transfer')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'bank_transfer' ? 'border-orange-500 bg-orange-50' : 'border-gray-200'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center">
-                                                    <Building2 className="h-6 w-6 text-orange-600 mr-3" />
-                                                    <div className="text-left">
-                                                        <p className="font-bold text-gray-900">Bank Transfer</p>
-                                                        <p className="text-xs text-gray-500">Republic, Scotia, FCB</p>
-                                                    </div>
-                                                </div>
-                                                {paymentMethod === 'bank_transfer' && <Check className="h-5 w-5 text-orange-600" />}
+                                                {paymentMethod === 'cash' && <Check className="h-5 w-5 text-emerald-700" />}
                                             </button>
 
                                             {/* Trust badges — truthful: HTTPS/SSL via Caddy, encrypted Supabase, COD supported */}

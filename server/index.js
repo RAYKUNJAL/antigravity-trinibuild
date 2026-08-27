@@ -13,12 +13,24 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const { isWamConfigured, verifyWamSignature } = require('./wam');
+
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 3001;
+const PASSWORD_MIN = 8;
 
-app.use(express.json({ limit: '5mb' }));
+if (!JWT_SECRET) {
+  console.error('JWT_SECRET is unset — auth will fail closed');
+}
+
+app.use((req, res, next) => {
+  if (req.path === '/api/wam/webhook') {
+    return express.raw({ type: '*/*', limit: '1mb' })(req, res, next);
+  }
+  return express.json({ limit: '5mb' })(req, res, next);
+});
 
 // ─── File uploads (replaces Supabase Storage) ───────────────
 const UPLOAD_DIR = '/var/www/trinibuild/uploads';
@@ -37,6 +49,7 @@ const upload = multer({
 
 // ─── Auth middleware ─────────────────────────────────────────
 function auth(req, res, next) {
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Auth is not configured' });
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'No token' });
   try {
@@ -52,20 +65,99 @@ function adminOnly(req, res, next) {
   next();
 }
 
-const sign = (user) => jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+const sign = (user) => {
+  if (!JWT_SECRET) throw new Error('Auth is not configured');
+  return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+};
 
 // ═══════════════════════════════════════════════════════════
 // AUTH ROUTES (replaces Supabase Auth)
 // ═══════════════════════════════════════════════════════════
-app.post('/api/auth/signup', async (req, res) => {
-  const { email, password, full_name, phone, ref } = req.body;
+app.get('/api/wam/status', (_req, res) => {
+  res.json({ configured: isWamConfigured() });
+});
+
+app.post('/api/wam/checkout', auth, async (req, res) => {
+  if (!isWamConfigured()) {
+    return res.status(503).json({ error: 'Paid checkout is not available. Use cash pickup or cash on delivery.' });
+  }
+  const { amountCents, faceCents, purpose, storeId, idempotencyKey } = req.body || {};
+  const face = Number(faceCents ?? amountCents);
+  const charged = Number(amountCents);
+  if (!Number.isFinite(face) || face <= 0) return res.status(400).json({ error: 'Face amount required' });
+  if (charged !== face) return res.status(400).json({ error: 'amountCents must equal face only — processing is display-only' });
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO wam_payments (user_id, store_id, purpose, amount_cents, face_cents, idempotency_key, status)
+       VALUES ($1,$2,$3,$4,$4,$5,'pending')
+       ON CONFLICT (idempotency_key) DO NOTHING
+       RETURNING *`,
+      [req.user.id, storeId || null, purpose || 'store', charged, idempotencyKey || null]
+    );
+    if (!rows[0] && idempotencyKey) {
+      const existing = await pool.query(`SELECT * FROM wam_payments WHERE idempotency_key = $1`, [idempotencyKey]);
+      return res.json({ payment: existing.rows[0], replay: true });
+    }
+    res.json({ payment: rows[0], status: 'pending', fulfill: false });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/wam/webhook', async (req, res) => {
+  if (!isWamConfigured()) return res.status(503).json({ error: 'Wam is not configured' });
+  const raw = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {}));
+  if (!verifyWamSignature(req, raw)) {
+    return res.status(401).json({ error: 'Unsigned or invalid webhook — fail closed' });
+  }
+  let event;
+  try { event = JSON.parse(raw); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+  const eventId = event.id || event.event_id || event.wam_event_id;
+  if (!eventId) return res.status(400).json({ error: 'Missing event id' });
+  const amountCents = Number(event.amountCents ?? event.amount_cents);
+  const faceCents = Number(event.faceCents ?? event.face_cents ?? amountCents);
+  if (Number.isFinite(amountCents) && Number.isFinite(faceCents) && amountCents !== faceCents) {
+    return res.status(400).json({ error: 'amountCents must equal face only' });
+  }
+  try {
+    const existing = await pool.query(`SELECT id, status FROM wam_payments WHERE wam_event_id = $1`, [eventId]);
+    if (existing.rows[0]) {
+      return res.json({ ok: true, duplicate: true, fulfill: false });
+    }
+    await pool.query(
+      `INSERT INTO wam_payments (purpose, amount_cents, face_cents, wam_event_id, status, metadata)
+       VALUES ($1,$2,$3,$4,'recorded',$5)`,
+      [event.purpose || 'webhook', amountCents || 0, faceCents || 0, eventId, JSON.stringify(event)]
+    );
+    // Record only. Do not fulfil an order or upgrade a plan from this webhook.
+    res.json({ ok: true, fulfill: false });
+  } catch (e) {
+    if (e.code === '23505') return res.json({ ok: true, duplicate: true, fulfill: false });
+    res.status(500).json({ error: e.message });
+  }
+});
+
+async function handleSignup(req, res) {
+  const { email, password, full_name, phone, ref, island } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  if (String(password).length < PASSWORD_MIN) {
+    return res.status(400).json({ error: `Password must be at least ${PASSWORD_MIN} characters` });
+  }
   try {
     const hash = await bcrypt.hash(password, 12);
-    const { rows } = await pool.query(
-      `INSERT INTO users (email, password_hash, full_name, phone) VALUES ($1,$2,$3,$4) RETURNING id, email, full_name, role`,
-      [email.toLowerCase(), hash, full_name, phone]
-    );
+    let rows;
+    try {
+      ({ rows } = await pool.query(
+        `INSERT INTO users (email, password_hash, full_name, phone, island) VALUES ($1,$2,$3,$4,$5) RETURNING id, email, full_name, role`,
+        [email.toLowerCase(), hash, full_name, phone, island || null]
+      ));
+    } catch (colErr) {
+      if (colErr.code !== '42703') throw colErr;
+      ({ rows } = await pool.query(
+        `INSERT INTO users (email, password_hash, full_name, phone) VALUES ($1,$2,$3,$4) RETURNING id, email, full_name, role`,
+        [email.toLowerCase(), hash, full_name, phone]
+      ));
+    }
     const user = rows[0];
 
     // Track referral if ref code provided
@@ -85,9 +177,12 @@ app.post('/api/auth/signup', async (req, res) => {
     if (e.code === '23505') return res.status(409).json({ error: 'Email already registered' });
     res.status(500).json({ error: e.message });
   }
-});
+}
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/signup', handleSignup);
+app.post('/api/auth/signup', handleSignup);
+
+async function handleLogin(req, res) {
   const { email, password } = req.body;
   const { rows } = await pool.query(`SELECT * FROM users WHERE email = $1`, [email?.toLowerCase()]);
   const user = rows[0];
@@ -95,7 +190,9 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
   res.json({ user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role }, token: sign(user) });
-});
+}
+app.post('/api/login', handleLogin);
+app.post('/api/auth/login', handleLogin);
 
 app.get('/api/auth/me', auth, async (req, res) => {
   const { rows } = await pool.query(`SELECT id, email, full_name, phone, role, created_at FROM users WHERE id = $1`, [req.user.id]);
@@ -111,13 +208,32 @@ app.get('/api/stores/mine', auth, async (req, res) => {
 });
 
 app.post('/api/stores', auth, async (req, res) => {
-  const { name, description, category, phone, whatsapp, address } = req.body;
+  const {
+    name, description, category, phone, whatsapp, address,
+    accepts_cod, accepts_pickup, pickup_address, wam_handle,
+    exact_cash_note, island, theme_config, template_id,
+  } = req.body;
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'Store name required' });
+  if (wam_handle && !isWamConfigured()) {
+    return res.status(400).json({ error: 'Paid Wam rail is not available' });
+  }
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + crypto.randomBytes(2).toString('hex');
-  const { rows } = await pool.query(
-    `INSERT INTO stores (owner_id, name, slug, description, category, phone, whatsapp, address) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-    [req.user.id, name, slug, description, category, phone, whatsapp, address]
-  );
-  res.json(rows[0]);
+  const theme = { ...(theme_config || {}), template_id: template_id || theme_config?.template_id };
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO stores (owner_id, name, slug, description, category, phone, whatsapp, address, accepts_cod, accepts_pickup, pickup_address, wam_handle, exact_cash_note, island, theme_config, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'active') RETURNING *`,
+      [
+        req.user.id, name.trim(), slug, description || null, category || null,
+        phone || null, whatsapp || null, address || pickup_address || null,
+        accepts_cod !== false, !!accepts_pickup, pickup_address || null,
+        wam_handle || null, exact_cash_note !== false, island || null, JSON.stringify(theme),
+      ]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/stores/:slug', async (req, res) => {
@@ -141,13 +257,14 @@ app.post('/api/products', auth, async (req, res) => {
     [req.user.id]
   );
   const { rows: count } = await pool.query(`SELECT COUNT(*) FROM products WHERE store_id = $1`, [store_id]);
-  if (parseInt(count[0].count) >= (plan[0]?.max_products ?? 10)) {
-    return res.status(402).json({ error: 'Product limit reached. Upgrade to Pro for unlimited products.' });
+  if (parseInt(count[0].count) >= (plan[0]?.max_products ?? 5)) {
+    return res.status(402).json({ error: 'Product limit reached. Free plan is 5 listings.' });
   }
 
+  const status = req.body.status === 'draft' ? 'draft' : 'active';
   const { rows } = await pool.query(
-    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-    [store_id, name, description, category, price, stock || 0, condition || 'new', JSON.stringify(images || [])]
+    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+    [store_id, name, description, category, price, stock || 0, condition || 'new', JSON.stringify(images || []), status]
   );
   res.json(rows[0]);
 });

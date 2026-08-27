@@ -1,5 +1,6 @@
 
 import { supabase } from './supabaseClient';
+import { authApi, setToken } from './selfHostedApi';
 
 export interface User {
     id: string;
@@ -21,35 +22,22 @@ export const authService = {
     // Register a new user
     register: async (userData: any): Promise<AuthResponse> => {
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email: userData.email,
-                password: userData.password,
-                options: {
-                    emailRedirectTo: window.location.origin,
-                    data: {
-                        full_name: `${userData.firstName} ${userData.lastName}`,
-                        role: 'user', // Default role
-                    },
-                },
-            });
-
-            if (error) throw error;
-
-            if (data.user) {
+            const created = await authApi.signUp(
+                userData.email,
+                userData.password,
+                `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+            );
+            if (created?.id) {
                 const user: User = {
-                    id: data.user.id,
-                    email: data.user.email!,
+                    id: created.id,
+                    email: created.email || userData.email,
                     firstName: userData.firstName,
                     lastName: userData.lastName,
-                    role: 'user',
-                    subscription_tier: 'Community Plan'
+                    role: created.role || 'user',
+                    subscription_tier: 'Free'
                 };
-
-                // Supabase handles session persistence automatically, 
-                // but we keep this for compatibility with existing code if needed
                 localStorage.setItem('user', JSON.stringify(user));
-
-                return { user, token: data.session?.access_token || '' };
+                return { user, token: localStorage.getItem('tb_token') || '' };
             }
             return { user: null, token: null, error: 'Registration failed' };
 
@@ -62,20 +50,9 @@ export const authService = {
     // Login an existing user
     login: async (credentials: any): Promise<AuthResponse> => {
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: credentials.email,
-                password: credentials.password,
-            });
-
-            if (error) {
-                // Handle email confirmation error specifically
-                if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
-                    throw new Error('Please verify your email address before signing in. Check your inbox for the confirmation link.');
-                }
-                throw error;
-            }
-
-            if (data.user) {
+            const signed = await authApi.signIn(credentials.email, credentials.password);
+            if (signed?.id) {
+                const data = { user: signed };
                 // Try to fetch profile data, but don't fail if it doesn't exist
                 let profile = null;
                 try {
@@ -89,10 +66,8 @@ export const authService = {
                     console.warn('Could not fetch profile (non-critical):', e);
                 }
 
-                const fullName = profile?.full_name || data.user.user_metadata.full_name || '';
-                const [firstName, ...lastNameParts] = fullName.split(' ');
-
-                // Priority: user metadata > localStorage > profile table > default
+                const fullName = profile?.full_name || data.user.full_name || '';
+                const [firstName, ...lastNameParts] = String(fullName).split(' ');
                 const storedUser = localStorage.getItem('user');
                 const storedRole = storedUser ? JSON.parse(storedUser).role : null;
 
@@ -101,13 +76,13 @@ export const authService = {
                     email: data.user.email!,
                     firstName: firstName || '',
                     lastName: lastNameParts.join(' ') || '',
-                    role: data.user.user_metadata.role || storedRole || profile?.role || 'user',
+                    role: data.user.role || storedRole || profile?.role || 'user',
                     avatar_url: profile?.avatar_url,
-                    subscription_tier: profile?.subscription_tier || 'Community Plan'
+                    subscription_tier: profile?.subscription_tier || 'Free'
                 };
 
                 localStorage.setItem('user', JSON.stringify(user));
-                return { user, token: data.session?.access_token || '' };
+                return { user, token: localStorage.getItem('tb_token') || '' };
             }
             return { user: null, token: null, error: 'Login failed' };
 

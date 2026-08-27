@@ -22,29 +22,27 @@ export const ProStoreFeaturesPage: React.FC = () => {
 
   const tiers = [
     {
-      name: 'Hustler',
-      price: { monthly: 'Free', yearly: 'Free' },
-      description: 'Perfect for testing the platform',
+      name: 'Free',
+      price: { monthly: 'TT$0', yearly: 'TT$0' },
+      description: 'Start selling',
       features: [
-        'Up to 10 products',
-        'Basic store customization',
-        'Cash on Delivery (COD)',
-        'Basic analytics',
-        'Email support (24-48h)',
-        'Mobile responsive'
+        'Up to 5 products',
+        'juvay.app store slug',
+        'Cash at pickup',
+        'Cash on delivery'
       ],
       cta: 'Get Started',
       highlighted: false,
       icon: ShoppingBag
     },
     {
-      name: 'Pro',
-      price: { monthly: 'TT$199', yearly: 'TT$1,990' },
-      description: 'Most popular for growing merchants',
+      name: 'Starter',
+      price: { monthly: 'TT$199', yearly: 'TT$199' },
+      description: 'When Wam can take the money',
       features: [
         'Unlimited products',
         'Advanced store customization',
-        'COD + Bank Transfer + Card payments',
+        'Everything in Free',
         'AI Product Lister',
         'Email marketing (up to 1,000 subscribers)',
         'Advanced analytics & reports',
@@ -339,7 +337,7 @@ export const ProStoreFeaturesPage: React.FC = () => {
           >
             Create Your Free Store Today
           </button>
-          <p className="text-red-100 mt-4">First 10 listings free • No credit card required</p>
+          <p className="text-red-100 mt-4">First 5 listings free • No credit card required</p>
         </div>
       </motion.section>
     </div>

@@ -252,7 +252,7 @@ export const SellerOnboardingPage: React.FC = () => {
               {
                 name: 'Starter',
                 price: 'Free',
-                description: '10 products, basic features',
+                description: '5 products, cash pickup and COD',
                 color: 'bg-gray-100'
               },
               {

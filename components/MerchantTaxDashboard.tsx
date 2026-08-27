@@ -43,40 +43,10 @@ export default function MerchantTaxDashboard() {
 
   const loadTaxData = async () => {
     setLoading(true);
-    // TODO: Replace with actual Supabase query
     setTimeout(() => {
-      setReport({
-        id: '1',
-        period: selectedPeriod,
-        grossSales: 45000,
-        vatCollected: 5000,
-        vatPaid: 1200,
-        netVatDue: 3800,
-        greenFundLevy: 135,
-        businessLevy: 0,
-        totalTaxLiability: 3935,
-        netProfit: 8565,
-        corporationTaxEstimate: 2569.50,
-        readyForFiling: true,
-        generatedAt: new Date().toISOString()
-      });
+      setReport(null);
 
-      setDeadlines([
-        {
-          type: 'vat',
-          description: 'VAT Return Filing',
-          dueDate: '2026-05-15',
-          amount: 3800,
-          status: 'due_soon'
-        },
-        {
-          type: 'green_fund',
-          description: 'Green Fund Levy',
-          dueDate: '2026-05-15',
-          amount: 135,
-          status: 'due_soon'
-        }
-      ]);
+      setDeadlines([]);
       
       setLoading(false);
     }, 500);
@@ -110,6 +80,19 @@ Total Tax Liability,TTD $${report.totalTaxLiability.toFixed(2)}
 Net Profit,TTD $${report.netProfit.toFixed(2)}
 Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
   };
+
+  if (!loading && !report) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-2xl mx-auto bg-white border rounded-2xl p-8">
+          <h1 className="text-2xl font-black text-gray-900 mb-2">Tax dashboard</h1>
+          <p className="text-gray-600">
+            No tax figures to show. This page does not invent sales numbers. When you have real orders, totals will appear here.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

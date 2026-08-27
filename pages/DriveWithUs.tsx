@@ -13,9 +13,9 @@ export const DriveWithUs: React.FC = () => {
     const benefits = [
         {
             icon: DollarSign,
-            title: 'Keep 80%+ of Your Earnings',
-            description: 'Lowest commission rates in Trinidad. More money in your pocket.',
-            highlight: 'Up to $500+ weekly'
+            title: 'Set your own hours',
+            description: 'Rides are a listing, not a guaranteed paycheck. No income figure is promised.',
+            highlight: 'No income claim'
         },
         {
             icon: Clock,
@@ -33,14 +33,14 @@ export const DriveWithUs: React.FC = () => {
             icon: Shield,
             title: 'H-Car Special Rates',
             description: 'Licensed H-Car drivers get even lower commission rates.',
-            highlight: 'Only 10% commission'
+            highlight: 'H-car docs if you have them'
         }
     ];
 
     const stats = [
         { number: 'Be First', label: 'Founding Drivers Wanted', icon: Users },
         { number: 'Set Rates', label: 'You Decide Your Fare', icon: DollarSign },
-        { number: 'Keep 80%+', label: 'Of Every Fare', icon: Star },
+        { number: 'Apply', label: 'No fare-split claim', icon: Star },
         { number: '24/7', label: 'Support Available', icon: Zap }
     ];
 
@@ -66,16 +66,16 @@ export const DriveWithUs: React.FC = () => {
     ];
 
     const earnings = [
-        { service: 'Rideshare', perTrip: '$25-100', perHour: '$40-80', icon: Car, color: 'blue' },
-        { service: 'Food Delivery', perTrip: '$18-50', perHour: '$30-60', icon: Package, color: 'orange' },
-        { service: 'Courier', perTrip: '$25-60', perHour: '$35-70', icon: FileText, color: 'purple' }
+        { service: 'Rideshare', perTrip: 'Set by you', perHour: 'Not published', icon: Car, color: 'blue' },
+        { service: 'Food Delivery', perTrip: 'Set by you', perHour: 'Not published', icon: Package, color: 'orange' },
+        { service: 'Courier', perTrip: 'Set by you', perHour: 'Not published', icon: FileText, color: 'purple' }
     ];
 
     return (
         <div className="min-h-screen bg-white">
             <SEO
-                title="Drive with TriniBuild Go - Earn $500+ Weekly"
-                description="Join the #1 driver platform in Trinidad & Tobago. Lowest commissions, daily payouts, and flexible hours. Sign up in 5 minutes."
+                title="Drive with Juvay"
+                description="Apply to drive. No promised weekly income. No fare-split claim until a written lock exists."
                 keywords="drive for trinibuild, taxi driver jobs trinidad, delivery driver jobs trinidad, earn money driving trinidad"
             />
             {/* Hero Section */}
@@ -319,7 +319,7 @@ export const DriveWithUs: React.FC = () => {
                             <Award className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
                             <div>
                                 <h4 className="font-bold text-gray-900 mb-1">H-Car (Optional)</h4>
-                                <p className="text-sm text-gray-600">Get 10% commission instead of 20%!</p>
+                                <p className="text-sm text-gray-600">Optional H-car papers. No fare-split is published here.</p>
                             </div>
                         </div>
                     </div>

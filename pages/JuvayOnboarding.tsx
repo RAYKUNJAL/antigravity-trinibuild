@@ -1,661 +1,335 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight, ArrowLeft, Check, Copy, Share2, RefreshCw, Loader2,
-  UploadCloud, AlertCircle, Camera, MessageCircle,
-} from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { ArrowRight, ArrowLeft, Check, Copy, Loader2, AlertCircle } from 'lucide-react';
+import { storesApi, productsApi } from '../services/selfHostedApi';
+import { fetchWamStatus } from '../services/wamStatus';
+import { VERTICAL_COPY, mapStarterToTemplate, payLine, type StarterType } from '../services/storeCopyTokens';
 import { track } from '../services/eventTracker';
 
-// ── Types ───────────────────────────────────────────────────────────────────
-
-type IslandId = 'tt' | 'jm' | 'bb' | 'gy' | 'lc' | 'gd' | 'other';
-
-interface IslandOption {
-  id: IslandId;
-  label: string;
-  flag: string;
-}
-
-interface CategoryOption {
-  id: string;
-  label: string;
-  emoji: string;
-}
-
-interface ColorPreset {
-  id: string;
-  name: string;
-  hex: string;
-}
-
-// ── Static config ───────────────────────────────────────────────────────────
-
-const ISLANDS: IslandOption[] = [
-  { id: 'tt', label: 'Trinidad & Tobago', flag: '🇹🇹' },
-  { id: 'jm', label: 'Jamaica', flag: '🇯🇲' },
-  { id: 'bb', label: 'Barbados', flag: '🇧🇧' },
-  { id: 'gy', label: 'Guyana', flag: '🇬🇾' },
-  { id: 'lc', label: 'St. Lucia', flag: '🇱🇨' },
-  { id: 'gd', label: 'Grenada', flag: '🇬🇩' },
-  { id: 'other', label: 'Other', flag: '🌴' },
+const TYPES: { id: StarterType; label: string }[] = [
+  { id: 'food', label: 'Food' },
+  { id: 'fashion', label: 'Fashion' },
+  { id: 'services', label: 'Services' },
+  { id: 'general', label: 'General' },
+  { id: 'beauty', label: 'Beauty' },
+  { id: 'home', label: 'Home' },
 ];
 
-const CATEGORIES: CategoryOption[] = [
-  { id: 'food', label: 'Food & Drinks', emoji: '🍽️' },
-  { id: 'fashion', label: 'Fashion & Clothing', emoji: '👗' },
-  { id: 'beauty', label: 'Beauty & Hair', emoji: '💄' },
-  { id: 'services', label: 'Services', emoji: '🛠️' },
-  { id: 'electronics', label: 'Electronics', emoji: '📱' },
-  { id: 'other', label: 'Other Products', emoji: '📦' },
+const TEMPLATES = [
+  { id: 'island-commerce', label: 'Island storefront', for: ['general', 'home', 'food'] },
+  { id: 'restaurant', label: 'Menu', for: ['food'] },
+  { id: 'fashion', label: 'Rack', for: ['fashion'] },
+  { id: 'beauty', label: 'Chair & retail', for: ['beauty', 'services'] },
+  { id: 'professional', label: 'Book / enquire', for: ['services'] },
+  { id: 'ecommerce', label: 'Shop grid', for: ['general', 'home'] },
 ];
-
-const COLORS: ColorPreset[] = [
-  { id: 'coral', name: 'Coral Red', hex: '#DC2626' },
-  { id: 'ocean', name: 'Ocean Blue', hex: '#0EA5E9' },
-  { id: 'sunset', name: 'Sunset Orange', hex: '#F97316' },
-  { id: 'forest', name: 'Forest Green', hex: '#16A34A' },
-  { id: 'golden', name: 'Golden Yellow', hex: '#EAB308' },
-  { id: 'midnight', name: 'Midnight Purple', hex: '#7C3AED' },
-];
-
-const TOTAL_STEPS = 5;
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-const generateSlug = (name: string): string =>
-  name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '') + '-' + Math.random().toString(36).slice(2, 6);
-
-const islandFlair: Record<IslandId, string> = {
-  tt: 'Trini',
-  jm: 'Yardie',
-  bb: 'Bajan',
-  gy: 'Guyanese',
-  lc: 'Lucian',
-  gd: 'Spice Isle',
-  other: 'Island',
-};
-
-const categoryFlair: Record<string, string> = {
-  food: 'Flavours',
-  fashion: 'Styles',
-  beauty: 'Glow',
-  services: 'Pros',
-  electronics: 'Tech',
-  other: 'Goods',
-};
-
-const generateStoreName = (category: string, island: IslandId, firstName: string): string => {
-  const flair = islandFlair[island] || 'Island';
-  const noun = categoryFlair[category] || 'Goods';
-  const name = firstName.trim() || 'You';
-  return `${flair} ${noun} by ${name}`;
-};
-
-// ── Component ───────────────────────────────────────────────────────────────
 
 export const JuvayOnboarding: React.FC = () => {
   const navigate = useNavigate();
-
   const [step, setStep] = useState(1);
-  const [fadeKey, setFadeKey] = useState(0);
-
-  // Step 1
-  const [firstName, setFirstName] = useState('');
-  const [island, setIsland] = useState<IslandId>('tt');
-
-  // Step 2
-  const [category, setCategory] = useState<string>('');
-
-  // Step 3
   const [storeName, setStoreName] = useState('');
-  const [aiSuggestion, setAiSuggestion] = useState('');
-  const [color, setColor] = useState<ColorPreset>(COLORS[0]);
-
-  // Step 4
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [storeSlug, setStoreSlug] = useState<string>('');
-  const [storeId, setStoreId] = useState<string>('');
-  const [live, setLive] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // Step 5
+  const [area, setArea] = useState('');
+  const [island, setIsland] = useState('Trinidad & Tobago');
+  const [starter, setStarter] = useState<StarterType>('general');
+  const [templateId, setTemplateId] = useState('island-commerce');
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
-  const [productImage, setProductImage] = useState<File | null>(null);
-  const [productImageUrl, setProductImageUrl] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [publishing, setPublishing] = useState(false);
-  const [publishError, setPublishError] = useState<string | null>(null);
+  const [acceptsPickup, setAcceptsPickup] = useState(true);
+  const [acceptsCod, setAcceptsCod] = useState(true);
+  const [pickupAddress, setPickupAddress] = useState('');
+  const [exactCash, setExactCash] = useState(true);
+  const [wamConfigured, setWamConfigured] = useState(false);
+  const [wamHandle, setWamHandle] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [slug, setSlug] = useState('');
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Re-trigger fade animation whenever step changes
   useEffect(() => {
-    setFadeKey((k) => k + 1);
-  }, [step]);
+    fetchWamStatus().then((s) => setWamConfigured(s.configured));
+  }, []);
 
-  // Keep AI suggestion in sync with choices
   useEffect(() => {
-    if (category && firstName) {
-      setAiSuggestion(generateStoreName(category, island, firstName));
-    }
-  }, [category, island, firstName]);
+    setTemplateId(mapStarterToTemplate(starter));
+  }, [starter]);
 
-  const canContinueStep1 = firstName.trim().length > 0;
-  const canContinueStep2 = !!category;
-  const canContinueStep3 = storeName.trim().length > 0;
+  const copy = VERTICAL_COPY[starter];
+  const liveUrl = slug ? `https://juvay.app/store/${slug}` : '';
+  const visibleTemplates = useMemo(
+    () => TEMPLATES.filter((t) => t.for.includes(starter) || t.id === 'island-commerce'),
+    [starter]
+  );
 
-  const goNext = () => {
-    if (step === 1) {
-      track('onboarding_step', 'onboarding', { step: 1, island });
-    } else if (step === 2) {
-      track('onboarding_step', 'onboarding', { step: 2, category });
-    }
-    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
-  };
-  const goBack = () => setStep((s) => Math.max(1, s - 1));
-
-  const useSuggestion = () => setStoreName(aiSuggestion);
-
-  const refreshSuggestion = () => {
-    const base = generateStoreName(category, island, firstName);
-    const suffixes = ['', ' Co.', ' Boutique', ' & Co', ' Hub'];
-    const pick = suffixes[Math.floor(Math.random() * suffixes.length)];
-    setAiSuggestion(base + pick);
+  const go = (n: number) => {
+    setError('');
+    setStep(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ── Step 4: actually create the store ────────────────────────────────────
-  const createStore = async (): Promise<void> => {
-    setCreating(true);
-    setCreateError(null);
+  const publish = async () => {
+    if (!storeName.trim()) {
+      setError('Name the store first.');
+      go(1);
+      return;
+    }
+    if (!acceptsPickup && !acceptsCod) {
+      setError('Turn on cash pickup and/or cash on delivery.');
+      go(4);
+      return;
+    }
+    if (wamConfigured && !wamHandle.trim()) {
+      setError('A Wam handle is required before a paid rail can go live. Or leave paid rail off.');
+      go(5);
+      return;
+    }
+    setSaving(true);
+    setError('');
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setCreateError('You must be logged in to create a store.');
-        setCreating(false);
-        return;
-      }
-
-      const slug = generateSlug(storeName);
-
-      const { data, error } = await supabase.from('stores').insert({
-        owner_id: user.id,
-        name: storeName,
-        slug,
-        category,
+      const store = await storesApi.create({
+        name: storeName.trim(),
+        category: starter,
         island,
-        status: 'active',
-        color_scheme: { primary: color.hex },
-        theme_config: { template_id: 'island-commerce', business_type: category },
-      }).select().single();
-
-      if (error || !data) {
-        setCreateError('Could not create store, try again');
-        setCreating(false);
-        return;
-      }
-
-      setStoreSlug(slug);
-      setStoreId(data.id);
-      setLive(true);
-      track('store_created', 'merchant', { store_id: data.id, category, island });
-    } catch (err) {
-      console.error('store creation error', err);
-      setCreateError('Could not create store, try again');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  // Auto-kick store creation when arriving at step 4
-  useEffect(() => {
-    if (step === 4 && !creating && !live && !createError && !storeSlug) {
-      const t = setTimeout(() => {
-        createStore();
-      }, 1500);
-      return () => clearTimeout(t);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
-
-  const storeUrl = useMemo(() => `juvay.app/store/${storeSlug}`, [storeSlug]);
-
-  const copyUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(`https://${storeUrl}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // no-op
-    }
-  };
-
-  const shareWhatsApp = () => {
-    const text = encodeURIComponent(`Check out my store on Juvay: https://${storeUrl}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-  };
-
-  // ── Step 5: product image upload ─────────────────────────────────────────
-  const handleImagePick = async (file: File | null) => {
-    if (!file) return;
-    if (!storeId) {
-      setPublishError('Finish creating your store first.');
-      return;
-    }
-    setUploadingImage(true);
-    setPublishError(null);
-    try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${storeId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('product-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-      if (upErr) throw new Error(upErr.message);
-      const { data: pub } = supabase.storage.from('product-images').getPublicUrl(path);
-      setProductImageUrl(pub.publicUrl);
-      setProductImage(file);
-    } catch (err: any) {
-      setPublishError(err?.message || 'Image upload failed');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const publishProduct = async () => {
-    if (!storeId) {
-      setPublishError('No store found.');
-      return;
-    }
-    if (!productName.trim() || !productPrice) {
-      setPublishError('Add a product name and price.');
-      return;
-    }
-    setPublishing(true);
-    setPublishError(null);
-    try {
-      const priceNum = Number(productPrice);
-      const slug = generateSlug(productName);
-      const { error } = await supabase.from('products').insert({
-        store_id: storeId,
-        name: productName.trim(),
-        slug,
-        description: '',
-        base_price: Number.isFinite(priceNum) && priceNum > 0 ? priceNum : 0,
-        image_url: productImageUrl || null,
-        images: productImageUrl ? [productImageUrl] : [],
-        status: 'active',
+        address: pickupAddress.trim() || area.trim() || undefined,
+        accepts_cod: acceptsCod,
+        accepts_pickup: acceptsPickup,
+        pickup_address: pickupAddress.trim() || undefined,
+        exact_cash_note: exactCash,
+        wam_handle: wamConfigured ? wamHandle.trim() : undefined,
+        template_id: templateId,
+        theme_config: {
+          template_id: templateId,
+          starter,
+          area,
+          island,
+          hero: copy.hero,
+        },
       });
-      if (error) throw new Error(error.message);
-      track('product_published', 'merchant', { store_id: storeId, first_product: true });
-      navigate('/store-builder');
+      setSlug(store.slug);
+      if (productName.trim() && productPrice) {
+        const price = Number(productPrice);
+        await productsApi.create({
+          store_id: store.id,
+          name: productName.trim(),
+          price: Number.isFinite(price) && price > 0 ? price : 0,
+          status: 'active',
+        });
+      }
+      track('store_created', 'merchant', { category: starter, slug: store.slug });
+      go(6);
     } catch (err: any) {
-      setPublishError(err?.message || 'Could not publish product.');
+      setError(err?.message || 'Could not create the store.');
     } finally {
-      setPublishing(false);
+      setSaving(false);
     }
   };
 
-  // ── Render helpers ───────────────────────────────────────────────────────
-
-  const ProgressBar = () => (
-    <div className="absolute top-0 left-0 right-0 h-1.5 bg-white/20 z-20">
-      <div
-        className="h-full bg-white transition-all duration-500 ease-out"
-        style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-      />
-    </div>
-  );
-
-  const BackButton = () => (
-    <button
-      onClick={goBack}
-      className="flex items-center text-sm font-medium text-white/80 hover:text-white transition-colors"
-    >
-      <ArrowLeft className="h-4 w-4 mr-1" /> Back
-    </button>
-  );
-
-  // ── Step 1 ────────────────────────────────────────────────────────────────
-  const Step1 = (
-    <div className="min-h-screen bg-gradient-to-br from-red-600 to-orange-500 flex flex-col">
-      <ProgressBar />
-      <div
-        key={fadeKey}
-        className="flex-1 flex flex-col justify-center px-6 py-10 max-w-md mx-auto w-full animate-fade-in"
-      >
-        <h1 className="text-5xl font-extrabold text-white text-center tracking-tight">JUVAY</h1>
-        <p className="text-center text-white/90 mt-2 mb-10 text-lg">
-          The Caribbean Commerce Platform
-        </p>
-
-        <label className="block text-white font-semibold mb-2">What's your name?</label>
-        <input
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          placeholder="e.g. Marcus"
-          className="w-full px-4 py-4 rounded-xl text-lg text-gray-900 placeholder-gray-400 shadow-lg focus:outline-none focus:ring-4 focus:ring-white/30"
-        />
-
-        <label className="block text-white font-semibold mt-6 mb-2">Your island</label>
-        <div className="relative">
-          <select
-            value={island}
-            onChange={(e) => setIsland(e.target.value as IslandId)}
-            className="w-full appearance-none px-4 py-4 pr-10 rounded-xl text-lg text-gray-900 bg-white shadow-lg focus:outline-none focus:ring-4 focus:ring-white/30"
-          >
-            {ISLANDS.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.flag} {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">▾</span>
-        </div>
-
-        <button
-          onClick={goNext}
-          disabled={!canContinueStep1}
-          className="mt-10 w-full bg-white text-red-600 font-bold text-lg py-4 rounded-xl shadow-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-        >
-          Let's Build Your Store →
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── Step 2 ────────────────────────────────────────────────────────────────
-  const Step2 = (
+  const shell = (title: string, body: React.ReactNode, actions: React.ReactNode) => (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex items-center justify-between px-6 pt-6 max-w-md mx-auto w-full">
-        <BackButton />
-        <span className="text-xs font-semibold text-gray-400">Step {step} of {TOTAL_STEPS}</span>
-      </div>
-      <div
-        key={fadeKey}
-        className="flex-1 flex flex-col px-6 py-8 max-w-md mx-auto w-full animate-fade-in"
-      >
-        <h2 className="text-2xl font-extrabold text-gray-900">What do you sell?</h2>
-        <p className="text-gray-500 mb-6">Pick the one that fits best — you can change later.</p>
-
-        <div className="grid grid-cols-2 gap-3">
-          {CATEGORIES.map((c) => {
-            const selected = category === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setCategory(c.id)}
-                className={`flex flex-col items-center justify-center rounded-2xl border-2 p-5 transition-all active:scale-[0.97] ${
-                  selected
-                    ? 'border-red-600 bg-red-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <span className="text-4xl mb-2">{c.emoji}</span>
-                <span className={`text-sm font-semibold text-center ${selected ? 'text-red-700' : 'text-gray-700'}`}>
-                  {c.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={goNext}
-          disabled={!canContinueStep2}
-          className="mt-8 w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-        >
-          Continue →
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── Step 3 ────────────────────────────────────────────────────────────────
-  const Step3 = (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex items-center justify-between px-6 pt-6 max-w-md mx-auto w-full">
-        <BackButton />
-        <span className="text-xs font-semibold text-gray-400">Step {step} of {TOTAL_STEPS}</span>
-      </div>
-      <div
-        key={fadeKey}
-        className="flex-1 flex flex-col px-6 py-8 max-w-md mx-auto w-full animate-fade-in"
-      >
-        <h2 className="text-2xl font-extrabold text-gray-900">Name your store</h2>
-        <p className="text-gray-500 mb-6">This is what customers will see.</p>
-
-        <label className="block text-gray-700 font-semibold mb-2">What's your store called?</label>
-        <input
-          type="text"
-          value={storeName}
-          onChange={(e) => setStoreName(e.target.value)}
-          placeholder="e.g. Trini Flavours by Marcus"
-          className="w-full px-4 py-4 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200"
-        />
-
-        {aiSuggestion && (
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              onClick={useSuggestion}
-              className="flex-1 flex items-center text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2 hover:bg-red-100 transition-colors"
-            >
-              <span className="text-xs text-red-700 font-semibold mr-1">AI suggests:</span>
-              <span className="text-sm text-gray-800 truncate">{aiSuggestion}</span>
-            </button>
-            <button
-              onClick={refreshSuggestion}
-              className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50"
-              aria-label="Refresh suggestion"
-            >
-              <RefreshCw className="h-4 w-4 text-gray-600" />
-            </button>
-          </div>
-        )}
-
-        <label className="block text-gray-700 font-semibold mt-6 mb-2">Pick your brand color</label>
-        <div className="grid grid-cols-6 gap-2">
-          {COLORS.map((c) => {
-            const selected = color.id === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setColor(c)}
-                className={`h-12 w-full rounded-xl flex items-center justify-center transition-all ${
-                  selected ? 'ring-4 ring-offset-2 ring-gray-400' : ''
-                }`}
-                style={{ backgroundColor: c.hex }}
-                aria-label={c.name}
-              >
-                {selected && <Check className="h-5 w-5 text-white" />}
-              </button>
-            );
-          })}
-        </div>
-        <p className="text-xs text-gray-500 mt-2">{color.name}</p>
-
-        <button
-          onClick={goNext}
-          disabled={!canContinueStep3}
-          className="mt-8 w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-        >
-          My store is ready →
-        </button>
-      </div>
-    </div>
-  );
-
-  // ── Step 4 ────────────────────────────────────────────────────────────────
-  const Step4 = (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex items-center justify-between px-6 pt-6 max-w-md mx-auto w-full">
-        <BackButton />
-        <span className="text-xs font-semibold text-gray-400">Step {step} of {TOTAL_STEPS}</span>
-      </div>
-      <div
-        key={fadeKey}
-        className="flex-1 flex flex-col items-center justify-center px-6 py-8 max-w-md mx-auto w-full animate-fade-in text-center"
-      >
-        {creating && (
-          <>
-            <Loader2 className="h-16 w-16 text-red-600 animate-spin mb-6" />
-            <h2 className="text-2xl font-bold text-gray-900">Creating your store...</h2>
-            <p className="text-gray-500 mt-2">Hang tight, this only takes a moment.</p>
-          </>
-        )}
-
-        {createError && (
-          <>
-            <AlertCircle className="h-16 w-16 text-red-600 mb-6" />
-            <h2 className="text-2xl font-bold text-gray-900">Could not create store</h2>
-            <p className="text-gray-500 mt-2 mb-6">{createError}</p>
-            <button
-              onClick={() => {
-                setCreateError(null);
-                setCreating(false);
-                setStoreSlug('');
-                setStep(3);
-              }}
-              className="bg-red-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-red-700"
-            >
-              Try again
-            </button>
-          </>
-        )}
-
-        {live && !creating && !createError && (
-          <>
-            <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mb-6 animate-bounce">
-              <Check className="h-12 w-12 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-extrabold text-gray-900">Your store is LIVE! 🎉</h2>
-
-            <div className="mt-6 w-full">
-              <p className="text-sm text-gray-500 mb-1">Your store URL</p>
-              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-3">
-                <span className="flex-1 text-left text-sm text-gray-800 truncate">{storeUrl}</span>
-                <button
-                  onClick={copyUrl}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                  aria-label="Copy URL"
-                >
-                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-gray-600" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              onClick={shareWhatsApp}
-              className="mt-4 w-full flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition-all"
-            >
-              <MessageCircle className="h-5 w-5" /> Share on WhatsApp
-            </button>
-
-            <button
-              onClick={goNext}
-              className="mt-4 w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 transition-all active:scale-[0.98]"
-            >
-              Add your first product →
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-
-  // ── Step 5 ────────────────────────────────────────────────────────────────
-  const Step5 = (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="flex items-center justify-between px-6 pt-6 max-w-md mx-auto w-full">
-        <BackButton />
-        <span className="text-xs font-semibold text-gray-400">Step {step} of {TOTAL_STEPS}</span>
-      </div>
-      <div
-        key={fadeKey}
-        className="flex-1 flex flex-col px-6 py-8 max-w-md mx-auto w-full animate-fade-in"
-      >
-        <h2 className="text-2xl font-extrabold text-gray-900">Add your first product</h2>
-        <p className="text-gray-500 mb-6">Takes 60 seconds. Your customers are waiting.</p>
-
-        <label className="block text-gray-700 font-semibold mb-2">Product name</label>
-        <input
-          type="text"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-          placeholder="e.g. Pepper Sauce 250ml"
-          className="w-full px-4 py-4 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200"
-        />
-
-        <label className="block text-gray-700 font-semibold mt-4 mb-2">Price (TTD)</label>
-        <input
-          type="number"
-          inputMode="decimal"
-          value={productPrice}
-          onChange={(e) => setProductPrice(e.target.value)}
-          placeholder="e.g. 25.00"
-          className="w-full px-4 py-4 rounded-xl text-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-red-200"
-        />
-
-        <label className="block text-gray-700 font-semibold mt-4 mb-2">Product photo</label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => handleImagePick(e.target.files?.[0] ?? null)}
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl py-8 hover:border-red-400 hover:bg-red-50 transition-colors"
-        >
-          {uploadingImage ? (
-            <Loader2 className="h-8 w-8 text-red-600 animate-spin mb-2" />
-          ) : productImageUrl ? (
-            <img src={productImageUrl} alt="product" className="h-20 w-20 object-cover rounded-lg" />
-          ) : (
-            <Camera className="h-8 w-8 text-gray-400 mb-2" />
-          )}
-          <span className="text-sm text-gray-600">
-            {uploadingImage ? 'Uploading...' : productImageUrl ? 'Change photo' : 'Tap to upload'}
-          </span>
-        </button>
-
-        {publishError && (
-          <p className="mt-3 text-sm text-red-600 flex items-center">
-            <AlertCircle className="h-4 w-4 mr-1" /> {publishError}
+      <div className="max-w-md mx-auto w-full px-6 py-8">
+        <p className="text-xs font-semibold text-gray-400 mb-2">Juvay · step {step} of 6</p>
+        <h1 className="text-2xl font-extrabold text-gray-900 mb-6">{title}</h1>
+        {error && (
+          <p className="mb-4 text-sm text-red-700 flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /> {error}
           </p>
         )}
-
-        <button
-          onClick={publishProduct}
-          disabled={publishing || !productName.trim() || !productPrice}
-          className="mt-6 w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-        >
-          {publishing ? 'Publishing...' : 'Publish it!'}
-        </button>
-
-        <button
-          onClick={() => navigate('/store-builder')}
-          className="mt-3 text-sm text-gray-500 font-medium hover:text-gray-700"
-        >
-          I'll add products later →
-        </button>
+        {body}
+        <div className="mt-8 space-y-3">{actions}</div>
+        <p className="mt-8 text-center text-xs text-gray-500">
+          <a href="/terms" className="hover:underline">Terms</a>
+          {' · '}
+          <a href="/privacy" className="hover:underline">Privacy</a>
+          {' · '}
+          <a href="/refund" className="hover:underline">Refunds</a>
+        </p>
       </div>
     </div>
   );
 
-  // ── Step switch ───────────────────────────────────────────────────────────
-  if (step === 1) return Step1;
-  if (step === 2) return Step2;
-  if (step === 3) return Step3;
-  if (step === 4) return Step4;
-  return Step5;
+  if (step === 1) {
+    return shell(
+      'Name your store',
+      <>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Store name</label>
+        <input
+          value={storeName}
+          onChange={(e) => setStoreName(e.target.value)}
+          placeholder="The name on the door"
+          className="w-full px-4 py-3 rounded-xl border border-gray-300"
+        />
+        <label className="block text-sm font-semibold text-gray-700 mt-4 mb-2">Area</label>
+        <input
+          value={area}
+          onChange={(e) => setArea(e.target.value)}
+          placeholder="{{area}}"
+          className="w-full px-4 py-3 rounded-xl border border-gray-300"
+        />
+        <label className="block text-sm font-semibold text-gray-700 mt-4 mb-2">Island</label>
+        <input
+          value={island}
+          onChange={(e) => setIsland(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-gray-300"
+        />
+        <p className="text-xs text-gray-500 mt-3">Six starter types next. No preview shop names are baked in.</p>
+      </>,
+      <button
+        disabled={!storeName.trim()}
+        onClick={() => go(2)}
+        className="w-full bg-red-600 text-white font-bold py-3 rounded-xl disabled:opacity-40"
+      >
+        Continue <ArrowRight className="inline h-4 w-4" />
+      </button>
+    );
+  }
+
+  if (step === 2) {
+    return shell(
+      'Pick a type and template',
+      <>
+        <div className="grid grid-cols-2 gap-2 mb-6">
+          {TYPES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setStarter(t.id)}
+              className={`p-3 rounded-xl border-2 text-sm font-semibold ${starter === t.id ? 'border-red-600 bg-red-50' : 'border-gray-200'}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-sm font-medium text-gray-800 mb-2">{copy.hero}</p>
+        <div className="space-y-2">
+          {visibleTemplates.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTemplateId(t.id)}
+              className={`w-full text-left p-3 rounded-xl border-2 ${templateId === t.id ? 'border-red-600 bg-red-50' : 'border-gray-200'}`}
+            >
+              <span className="font-semibold">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </>,
+      <div className="flex gap-3">
+        <button onClick={() => go(1)} className="flex-1 border py-3 rounded-xl font-semibold"><ArrowLeft className="inline h-4 w-4" /> Back</button>
+        <button onClick={() => go(3)} className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">Continue</button>
+      </div>
+    );
+  }
+
+  if (step === 3) {
+    return shell(
+      'Add one product — or skip',
+      <>
+        <p className="text-sm text-gray-600 mb-4">Use a real name and price. Empty catalogues stay empty.</p>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Product name</label>
+        <input value={productName} onChange={(e) => setProductName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-300" />
+        <label className="block text-sm font-semibold text-gray-700 mt-4 mb-2">Price (TTD)</label>
+        <input type="number" inputMode="decimal" value={productPrice} onChange={(e) => setProductPrice(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-300" />
+      </>,
+      <div className="flex gap-3">
+        <button onClick={() => go(2)} className="flex-1 border py-3 rounded-xl font-semibold">Back</button>
+        <button onClick={() => { setProductName(''); setProductPrice(''); go(4); }} className="flex-1 border py-3 rounded-xl font-semibold">Skip</button>
+        <button onClick={() => go(4)} className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">Continue</button>
+      </div>
+    );
+  }
+
+  if (step === 4) {
+    return shell(
+      'Cash pickup and COD',
+      <>
+        <label className="flex items-start gap-3 p-3 border rounded-xl mb-3">
+          <input type="checkbox" checked={acceptsPickup} onChange={(e) => setAcceptsPickup(e.target.checked)} className="mt-1" />
+          <span><strong>Cash at pickup</strong> — buyer pays when they collect.</span>
+        </label>
+        <label className="flex items-start gap-3 p-3 border rounded-xl mb-3">
+          <input type="checkbox" checked={acceptsCod} onChange={(e) => setAcceptsCod(e.target.checked)} className="mt-1" />
+          <span><strong>Cash on delivery</strong> — where you deliver.</span>
+        </label>
+        <label className="flex items-start gap-3 p-3 border rounded-xl mb-4">
+          <input type="checkbox" checked={exactCash} onChange={(e) => setExactCash(e.target.checked)} className="mt-1" />
+          <span><strong>Exact cash</strong> — please bring the listed amount.</span>
+        </label>
+        {acceptsPickup && (
+          <>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup address</label>
+            <input value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} placeholder="{{pickup_address}}" className="w-full px-4 py-3 rounded-xl border border-gray-300" />
+          </>
+        )}
+        <p className="text-sm text-gray-600 mt-4">
+          {payLine({
+            store_name: storeName, area, island, hours: '', pickup_address: pickupAddress,
+            delivery_areas: '', whatsapp: '', specialty: '',
+            accepts_pickup: acceptsPickup, accepts_cod: acceptsCod, whatsapp_on: false, wam_on: false,
+          }) || 'Turn on at least one cash method.'}
+        </p>
+      </>,
+      <div className="flex gap-3">
+        <button onClick={() => go(3)} className="flex-1 border py-3 rounded-xl font-semibold">Back</button>
+        <button
+          disabled={!acceptsPickup && !acceptsCod}
+          onClick={() => (wamConfigured ? go(5) : publish())}
+          className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold disabled:opacity-40"
+        >
+          {wamConfigured ? 'Continue' : (saving ? 'Publishing…' : 'Publish store')}
+        </button>
+      </div>
+    );
+  }
+
+  if (step === 5 && wamConfigured) {
+    return shell(
+      'Wam handle for paid rail',
+      <>
+        <p className="text-sm text-gray-600 mb-4">
+          A seller Wam handle is required before a paid (non-cash) rail can publish. Processing estimates are display-only. The charge is face amount only.
+        </p>
+        <input value={wamHandle} onChange={(e) => setWamHandle(e.target.value)} placeholder="Your Wam handle" className="w-full px-4 py-3 rounded-xl border border-gray-300" />
+        <button onClick={() => { setWamHandle(''); publish(); }} className="mt-3 text-sm text-gray-500 underline">Skip paid rail — cash only</button>
+      </>,
+      <div className="flex gap-3">
+        <button onClick={() => go(4)} className="flex-1 border py-3 rounded-xl font-semibold">Back</button>
+        <button onClick={publish} disabled={saving} className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">
+          {saving ? <Loader2 className="inline h-4 w-4 animate-spin" /> : 'Publish store'}
+        </button>
+      </div>
+    );
+  }
+
+  return shell(
+    slug ? 'Your store is live' : 'Publish your store',
+    <>
+      {!slug && <p className="text-sm text-gray-600">Ready to put this on a juvay.app slug you can share.</p>}
+      {slug && (
+        <>
+          <p className="text-sm text-gray-600 mb-3">Share this HTTPS link. Empty catalogues stay empty.</p>
+          <div className="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white">
+            <span className="flex-1 text-sm truncate">{liveUrl}</span>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(liveUrl)}
+              className="p-2"
+              aria-label="Copy store URL"
+            >
+              <Copy className="h-4 w-4" />
+            </button>
+          </div>
+        </>
+      )}
+    </>,
+    <>
+      {!slug && (
+        <button onClick={publish} disabled={saving} className="w-full bg-red-600 text-white font-bold py-3 rounded-xl">
+          {saving ? 'Publishing…' : 'Publish store'}
+        </button>
+      )}
+      {slug && (
+        <a href={liveUrl} className="block w-full text-center bg-red-600 text-white font-bold py-3 rounded-xl">
+          Open store <Check className="inline h-4 w-4" />
+        </a>
+      )}
+    </>
+  );
 };
 
 export default JuvayOnboarding;

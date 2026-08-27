@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
+import { JuvayPriceTable } from '../../components/JuvayPriceTable';
 
 export const StoreServicesLanding: React.FC = () => {
     const navigate = useNavigate();
@@ -147,10 +148,10 @@ export const StoreServicesLanding: React.FC = () => {
                                         <ArrowRight className="ml-2 h-5 w-5" />
                                     </button>
                                     <button
-                                        onClick={() => navigate('/demo')}
+                                        onClick={() => navigate('/signup')}
                                         className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center"
                                     >
-                                        View Demo Store
+                                        Create a store
                                     </button>
                                 </div>
 
@@ -206,8 +207,8 @@ export const StoreServicesLanding: React.FC = () => {
                             />
                             <FeatureCard
                                 icon={<DollarSign className="h-12 w-12 text-green-600" />}
-                                title="Accept All Payments"
-                                description="Cash on Delivery, WiPay, Google Pay, Bank Transfer. Your customers choose how they want to pay."
+                                title="Cash pickup and COD"
+                                description="Customers pay cash at pickup or on delivery. Card rails stay hidden until Wam is actually on."
                             />
                             <FeatureCard
                                 icon={<Truck className="h-12 w-12 text-purple-600" />}
@@ -455,52 +456,7 @@ export const StoreServicesLanding: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <PricingCard
-                                name="Starter"
-                                price="29"
-                                period="month"
-                                features={[
-                                    'Up to 100 products',
-                                    'Cash on Delivery',
-                                    'Basic analytics',
-                                    'WhatsApp notifications',
-                                    'Email support'
-                                ]}
-                                cta="Start Free Trial"
-                            />
-                            <PricingCard
-                                name="Pro"
-                                price="79"
-                                period="month"
-                                popular={true}
-                                features={[
-                                    'Unlimited products',
-                                    'All payment methods',
-                                    'TriniBuild Go delivery',
-                                    'Advanced analytics',
-                                    'Loyalty program',
-                                    'Email marketing',
-                                    'Priority support'
-                                ]}
-                                cta="Start Free Trial"
-                            />
-                            <PricingCard
-                                name="Enterprise"
-                                price="Custom"
-                                period=""
-                                features={[
-                                    'Everything in Pro',
-                                    'Multiple locations',
-                                    'Staff accounts',
-                                    'API access',
-                                    'White label',
-                                    'Dedicated account manager',
-                                    '24/7 phone support'
-                                ]}
-                                cta="Contact Sales"
-                            />
-                        </div>
+                        <JuvayPriceTable />
                     </div>
                 </section>
 

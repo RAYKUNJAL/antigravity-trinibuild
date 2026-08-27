@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
+import { authApi, setToken } from '../services/selfHostedApi';
 import { track } from '../services/eventTracker';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+
+const PASSWORD_MIN = 8;
 
 export const SignupPageSimple: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,11 +13,10 @@ export const SignupPageSimple: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [confirmationMsg, setConfirmationMsg] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('T&T');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard/ai';
+  const redirect = searchParams.get('next') || searchParams.get('redirect') || '/get-started';
 
   const islandOptions = [
     'T&T 🇹🇹',
@@ -29,7 +30,6 @@ export const SignupPageSimple: React.FC = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setConfirmationMsg('');
     setLoading(true);
 
     if (!email || !password || !fullName) {
@@ -38,66 +38,40 @@ export const SignupPageSimple: React.FC = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < PASSWORD_MIN) {
+      setError(`Password must be at least ${PASSWORD_MIN} characters`);
       setLoading(false);
       return;
     }
 
     try {
-      console.log('🔐 Starting signup:', { email, name: fullName, island: selectedIsland });
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            full_name: fullName,
-            island: selectedIsland,
-          },
-        },
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          full_name: fullName,
+          island: selectedIsland,
+          ref: searchParams.get('ref') || undefined,
+        }),
       });
-
-      if (signUpError) {
-        console.error('❌ Signup failed:', signUpError.message);
-        setError(signUpError.message);
-        setLoading(false);
-        return;
-      }
-
-      console.log('📝 Signup result:', data);
-
-      if (data.user) {
-        // Store user in localStorage for compatibility with existing code
-        const user = {
-          id: data.user.id,
-          email: data.user.email || email,
-          name: fullName,
-          role: 'user',
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-
-        track('user_signup', 'auth', { method: 'email', island: selectedIsland });
-
-        // If a session was returned (email confirmation disabled), navigate now
-        if (data.session) {
-          console.log('✅ Signup successful (session active), redirecting to:', redirect);
-          navigate(redirect);
-          return;
-        }
-
-        // No session → email confirmation required. Show confirmation message.
-        console.log('✅ Signup successful — email confirmation required');
-        setConfirmationMsg(
-          'Account created! Check your email for a confirmation link to activate your account. ' +
-          'After confirming, you can sign in.'
-        );
-      } else {
-        setError('Signup failed — no user returned. Please try again.');
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Signup failed (${res.status})`);
+      if (data.token) setToken(data.token);
+      const user = data.user || {};
+      const sessionUser = {
+        id: user.id,
+        email: user.email || email,
+        name: user.full_name || fullName,
+        role: user.role || 'user',
+      };
+      localStorage.setItem('user', JSON.stringify(sessionUser));
+      track('user_signup', 'auth', { method: 'email', island: selectedIsland });
+      navigate(redirect);
     } catch (err: any) {
-      console.error('❌ Signup exception:', err);
-      setError(err?.message || 'Signup failed. Please try again.');
+      const msg = err?.message || 'Signup failed. Please try again.';
+      setError(msg === 'Failed to fetch' ? 'Cannot reach the Juvay API on this site. Try again in a minute.' : msg);
     } finally {
       setLoading(false);
     }
@@ -107,36 +81,18 @@ export const SignupPageSimple: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl font-black text-gray-900 mb-2">Create Account</h1>
             <p className="text-gray-600">Join Juvay and start selling online</p>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <div className="text-red-600 text-xl">⚠️</div>
-              <div>
-                <p className="font-semibold text-red-900">{error}</p>
-                {error.includes('email') && (
-                  <p className="text-sm text-red-700 mt-1">Try a different email address</p>
-                )}
-              </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="font-semibold text-red-900">{error}</p>
             </div>
           )}
 
-          {/* Email Confirmation Message */}
-          {confirmationMsg && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-              <div className="text-green-600 text-xl">✅</div>
-              <p className="font-semibold text-green-900">{confirmationMsg}</p>
-            </div>
-          )}
-
-          {/* Form */}
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* Full Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
                 Full Name
@@ -149,13 +105,13 @@ export const SignupPageSimple: React.FC = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Your name"
+                  autoComplete="name"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address
@@ -168,13 +124,13 @@ export const SignupPageSimple: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
                   disabled={loading}
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
@@ -186,7 +142,8 @@ export const SignupPageSimple: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent"
                   disabled={loading}
                 />
@@ -198,10 +155,9 @@ export const SignupPageSimple: React.FC = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+              <p className="text-xs text-gray-500 mt-1">Minimum {PASSWORD_MIN} characters</p>
             </div>
 
-            {/* Island Selector */}
             <div>
               <label htmlFor="island" className="block text-sm font-semibold text-gray-700 mb-2">
                 Your Island / Region
@@ -219,7 +175,6 @@ export const SignupPageSimple: React.FC = () => {
               </select>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -229,34 +184,22 @@ export const SignupPageSimple: React.FC = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
-            </div>
-          </div>
+          <p className="text-center text-xs text-gray-500">
+            By signing up you agree to Juvay{' '}
+            <a href="/terms" className="text-trini-red font-semibold hover:underline">Terms</a>,{' '}
+            <a href="/privacy" className="text-trini-red font-semibold hover:underline">Privacy</a>, and{' '}
+            <a href="/refund" className="text-trini-red font-semibold hover:underline">Refund</a>.
+          </p>
 
-          {/* Login Link */}
           <div className="text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-bold text-trini-red hover:underline"
-              >
+              <Link to="/login" className="font-bold text-trini-red hover:underline">
                 Sign In
               </Link>
             </p>
           </div>
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-500 mt-6">
-          By signing up, you agree to our Terms of Service and Privacy Policy
-        </p>
       </div>
     </div>
   );

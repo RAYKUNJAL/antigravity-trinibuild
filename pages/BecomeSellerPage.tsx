@@ -24,7 +24,7 @@ export const BecomeSellerPage: React.FC = () => {
       price: 'Free',
       description: 'Perfect for testing',
       features: [
-        '10 free products',
+        '5 free products',
         'Basic store customization',
         'COD checkout',
         'Email support'
@@ -264,7 +264,7 @@ export const BecomeSellerPage: React.FC = () => {
       >
         <h2 className="text-4xl font-black mb-4">Ready to Start?</h2>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          First 10 listings free. No credit card required. Start selling today!
+          First 5 listings free. No credit card required. Start selling today!
         </p>
         <button
           onClick={() => navigate('/create-store')}

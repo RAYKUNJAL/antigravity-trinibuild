@@ -21,7 +21,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Is there a setup fee or credit card required?',
-          a: 'No! TriniBuild is completely free to start. No setup fees, no credit card required. Start with 10 free product listings. Upgrade to Pro (TT$199/mo) for unlimited products.'
+          a: 'No! Juvay is free to start. No setup fees, no credit card required. Start with 5 free product listings. Starter (TT$199/mo) and Business (TT$399/mo) open when Wam can take that money.'
         },
         {
           q: 'Can I use TriniBuild if I don\'t have a bank account?',
@@ -42,7 +42,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How many products can I list?',
-          a: 'Free plan: 10 products. Pro plan: Unlimited products. Business plan: Unlimited with API access.'
+          a: 'Free plan: 5 products. Starter and Business: unlimited listings. Paid CTAs stay hidden until Wam is on.'
         }
       ]
     },

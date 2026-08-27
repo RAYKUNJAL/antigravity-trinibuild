@@ -240,7 +240,7 @@ export const getUpgradeCTA = (
   if (currentTier === 'free') {
     return {
       title: `Upgrade to Pro for ${feature}`,
-      message: `Unlock ${feature} and 15+ more features for just $29/month`,
+      message: `Unlock ${feature} when a paid plan is actually open (Starter TT$199 / Business TT$399)`,
       targetTier: 'pro'
     };
   }

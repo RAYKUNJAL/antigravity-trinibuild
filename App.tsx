@@ -35,7 +35,6 @@ import { StoreBotSettings } from './pages/StoreBotSettings';
 import { ChatWidget } from './components/ChatWidget';
 import { Rides } from './pages/Rides';
 import { Jobs } from './pages/Jobs';
-import { Pricing } from './pages/Pricing';
 import { Deals } from './pages/Deals';
 import { Onboarding } from './pages/Onboarding';
 import { Earn } from './pages/Earn';
@@ -57,7 +56,6 @@ import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
 import { CODTrackingPage } from './pages/CODTrackingPage';
 import { AdminSignup } from './pages/admin/AdminSignup';
-import { AdminBypass } from './pages/admin/AdminBypass';
 import CommandCenter from './pages/CommandCenter';
 import { AdminLayout } from './layouts/AdminLayout';
 import {
@@ -209,7 +207,7 @@ const App: React.FC = () => {
               <Route path="/create-store-simple" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v2" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />
-              <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
+              <Route path="/tax-dashboard" element={<ProtectedRoute><MerchantTaxDashboard /></ProtectedRoute>} />
               <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
               <Route path="/dashboard" element={<ProtectedRoute><JuvayDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
@@ -248,7 +246,10 @@ const App: React.FC = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<AdminSignup />} />
-              <Route path="/admin/bypass" element={<AdminBypass />} />
+              <Route path="/admin/bypass" element={<Navigate to="/" replace />} />
+              <Route path="/demo" element={<NotFound />} />
+              <Route path="/demo/food" element={<NotFound />} />
+              <Route path="/pricing/checkout" element={<Navigate to="/pricing" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/carib-ads" element={<CaribAdsLanding />} />
               <Route path="/advertise" element={<CaribAdsLanding />} />
@@ -353,8 +354,7 @@ const App: React.FC = () => {
               <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
             </Route>
 
-            {/* Admin Command Center Sub-Website - No ProtectedRoute to allow bypass */}
-            <Route path="/admin/command-center" element={<AdminLayout />}>
+            <Route path="/admin/command-center" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<CommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
