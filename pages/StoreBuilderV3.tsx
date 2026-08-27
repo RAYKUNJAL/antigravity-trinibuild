@@ -43,6 +43,7 @@ interface BuilderState {
   heroSub: string;
   heroImage: string;
   about: string;
+  trustChips: string[];
   faq: Array<{ q: string; a: string }>;
   how: Array<{ title: string; body: string }>;
   agentWrote: boolean | null;
@@ -68,6 +69,7 @@ const emptyState = (): BuilderState => ({
   heroSub: '',
   heroImage: '',
   about: '',
+  trustChips: [],
   faq: [],
   how: [],
   agentWrote: null,
@@ -122,8 +124,10 @@ const StoreBuilderV3: React.FC = () => {
   const [proposed, setProposed] = useState<{
     heroHeadline: string;
     heroSub: string;
+    heroImage: string;
     about: string;
     hours: string;
+    trustChips: string[];
     changedFields: string[];
     conflicts: string[];
     warning?: string;
@@ -176,6 +180,7 @@ const StoreBuilderV3: React.FC = () => {
         image: state.heroImage || undefined,
       },
       about: state.about,
+      trustChips: state.trustChips,
       faq: state.faq.length ? state.faq : defaultFaq({
         acceptsPickup: state.acceptsCashPickup,
         acceptsCod: state.acceptsCod,
@@ -198,6 +203,7 @@ const StoreBuilderV3: React.FC = () => {
       heroHeadline: draft.hero?.headline || STORE_STARTERS[draft.templateId].heroHeadline,
       heroSub: draft.hero?.sub || '',
       about: draft.about || '',
+      trustChips: draft.trustChips || [],
       faq: draft.faq || [],
       how: draft.how || [],
       agentWrote: !!draft.agentWrote,
@@ -271,6 +277,7 @@ const StoreBuilderV3: React.FC = () => {
           hero: { headline: state.heroHeadline, sub: state.heroSub, image: state.heroImage },
           about: state.about,
           hours: state.hours,
+          trustChips: state.trustChips,
         },
         locked: {
           headline: state.heroHeadline,
@@ -286,8 +293,10 @@ const StoreBuilderV3: React.FC = () => {
       setProposed({
         heroHeadline: result.proposed?.hero?.headline || state.heroHeadline,
         heroSub: result.proposed?.hero?.sub || state.heroSub,
+        heroImage: result.proposed?.hero?.image ?? state.heroImage,
         about: result.proposed?.about || state.about,
         hours: result.proposed?.hours || state.hours,
+        trustChips: result.proposed?.trustChips || state.trustChips,
         changedFields: result.changedFields,
         conflicts: result.conflicts || [],
         warning: result.warning,
@@ -304,8 +313,10 @@ const StoreBuilderV3: React.FC = () => {
     update({
       heroHeadline: proposed.heroHeadline,
       heroSub: proposed.heroSub,
+      heroImage: proposed.heroImage,
       about: proposed.about,
       hours: proposed.hours,
+      trustChips: proposed.trustChips,
     });
     setProposed(null);
     setPatchChat('');
@@ -525,7 +536,7 @@ const StoreBuilderV3: React.FC = () => {
         </h2>
         <p style={{ color: '#6b6256', maxWidth: '42ch' }}>
           {state.agentWrote
-            ? 'Grok wrote the copy below. Click text to edit. Regenerating is optional.'
+            ? 'Grok wrote the copy below. Click text to edit. Ask for a patch — nothing overwrites your words until you apply it.'
             : state.agentWarning || 'Showing locked copy. The agent did not write this site.'}
         </p>
       </div>
@@ -533,11 +544,12 @@ const StoreBuilderV3: React.FC = () => {
         <div style={{ display: 'grid', gap: 12 }}>
           <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v })} />
           <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v })} />
+          <Field label="Hours" value={state.hours} onChange={(v) => update({ hours: v })} placeholder="Leave blank to hide" />
           <label style={{ display: 'block' }}>
             <span style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>About</span>
             <textarea value={state.about} onChange={(e) => update({ about: e.target.value })} rows={4} style={{ width: '100%', minHeight: 88, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
           </label>
-          <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Catalog stays empty until you add a real item.</p>
+          <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Ask Grok for a patch — never regenerate-to-edit. Catalog stays empty until you add a real item.</p>
           <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 12, display: 'grid', gap: 8 }}>
             <label style={{ fontSize: 14 }}>Ask Grok to propose a change</label>
             <textarea
@@ -564,6 +576,8 @@ const StoreBuilderV3: React.FC = () => {
                 {proposed.changedFields.includes('hero.headline') ? <div><strong>Headline</strong> {proposed.heroHeadline}</div> : null}
                 {proposed.changedFields.includes('about') ? <div><strong>About</strong> {proposed.about}</div> : null}
                 {proposed.changedFields.includes('hours') ? <div><strong>Hours</strong> {proposed.hours}</div> : null}
+                {proposed.changedFields.includes('trustChips') ? <div><strong>Chips</strong> {proposed.trustChips.join(' · ') || '(none)'}</div> : null}
+                {proposed.changedFields.includes('hero.image') ? <div><strong>Hero photo</strong> {proposed.heroImage ? 'Use starter / uploaded photo from this patch' : 'Clear merchant photo, keep starter art'}</div> : null}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" onClick={applyProposed} style={{ minHeight: 44, padding: '0 14px', border: 'none', background: '#141414', color: ISLAND.sand }}>Apply this patch</button>
                   <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
@@ -572,7 +586,7 @@ const StoreBuilderV3: React.FC = () => {
             ) : null}
           </div>
         </div>
-        <div style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto' }}>
+        <div className="juvay-preview-frame" style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto' }}>
           <JuvayStorefront
             model={previewModel}
             editor={{
@@ -663,6 +677,7 @@ const StoreBuilderV3: React.FC = () => {
           @media (max-width: 900px) {
             .juvay-pick-grid { grid-template-columns: 1fr !important; }
             .juvay-preview-split { grid-template-columns: 1fr !important; }
+            .juvay-preview-frame { max-width: 390px; margin-inline: auto; }
           }
         `}</style>
       </div>

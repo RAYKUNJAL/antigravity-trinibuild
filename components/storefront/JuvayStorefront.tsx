@@ -12,6 +12,7 @@ import {
   realTrustChips,
   reviewBadge,
   shouldRenderBlock,
+  showIllustrativeBanner,
   showOrderCta,
   showWhatsApp,
   type StorefrontItem,
@@ -167,7 +168,7 @@ export const JuvayStorefront: React.FC<{
   const showCta = showOrderCta(model);
   const wa = showWhatsApp(model) ? model.whatsappE164! : '';
   const empty = items.length === 0;
-  const isIllustrative = model.mode === 'illustrative';
+  const isIllustrative = showIllustrativeBanner(model);
   const announce = announcementLine(model);
   const heroRef = useRef<HTMLElement | null>(null);
   const [heroGone, setHeroGone] = useState(false);

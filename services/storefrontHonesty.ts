@@ -204,3 +204,20 @@ export function announcementLine(model: StorefrontModel): string {
   if (model.acceptsCod) bits.push('COD');
   return bits.join(' · ');
 }
+
+const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+
+export function merchantUploadedHero(model: StorefrontModel): boolean {
+  const img = String(model.hero?.image || '').trim();
+  if (!img) return false;
+  if (STARTER_HERO.test(img)) return false;
+  return true;
+}
+
+/** Gallery and create-store stay labeled until the merchant replaces the photo. */
+export function showIllustrativeBanner(model: StorefrontModel): boolean {
+  if (model.mode === 'published') return false;
+  if (model.mode === 'illustrative') return true;
+  if (model.mode === 'merchant_preview') return !merchantUploadedHero(model);
+  return false;
+}

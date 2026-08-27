@@ -73,6 +73,27 @@ assert.strictEqual(clean.templateId, 'food');
   assert.ok(merged.conflicts.includes('hero.headline'));
   assert.strictEqual(merged.proposed.about, 'River Bake in Trinidad.');
 
+  const chipPatch = mergePatch(current, { trustChips: ['Cash / pickup', 'Wed–Sat 4–8'] });
+  assert.deepStrictEqual(chipPatch.changedFields, ['trustChips']);
+  assert.ok(chipPatch.conflicts.includes('trustChips'));
+
+  const heroSwap = mergePatch(current, { hero: { image: '/templates/heroes/food.jpg' } });
+  assert.deepStrictEqual(heroSwap.changedFields, ['hero.image']);
+  assert.strictEqual(heroSwap.proposed.hero.image, '/templates/heroes/food.jpg');
+
+  const rejectedPhoto = mergePatch(
+    { ...current, hero: { ...current.hero, image: 'data:image/jpeg;base64,abc' } },
+    { hero: { image: 'https://example.com/wix-stock.jpg' } },
+  );
+  assert.ok(!rejectedPhoto.changedFields.includes('hero.image'));
+  assert.strictEqual(rejectedPhoto.proposed.hero.image, 'data:image/jpeg;base64,abc');
+
+  const conflictPhoto = mergePatch(
+    { ...current, hero: { ...current.hero, image: 'data:image/jpeg;base64,abc' } },
+    { hero: { image: '/templates/heroes/food.jpg' } },
+  );
+  assert.ok(conflictPhoto.conflicts.includes('hero.image'));
+
   const patched = await buildOnboardPatch({
     instruction: 'shorter headline',
     templateId: 'food',

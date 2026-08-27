@@ -109,6 +109,23 @@ function itemIsSellable(item) {
   return item.inStock !== false;
 }
 
+const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+
+function merchantUploadedHero(model) {
+  const img = String((model && model.hero && model.hero.image) || '').trim();
+  if (!img) return false;
+  if (STARTER_HERO.test(img)) return false;
+  return true;
+}
+
+function showIllustrativeBanner(model) {
+  if (!model) return false;
+  if (model.mode === 'published') return false;
+  if (model.mode === 'illustrative') return true;
+  if (model.mode === 'merchant_preview') return !merchantUploadedHero(model);
+  return false;
+}
+
 module.exports = {
   liveItems,
   featuredItems,
@@ -123,4 +140,6 @@ module.exports = {
   mapProductVariants,
   mapProductSpecs,
   itemIsSellable,
+  merchantUploadedHero,
+  showIllustrativeBanner,
 };

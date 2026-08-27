@@ -12,6 +12,7 @@ const {
   mapProductVariants,
   mapProductSpecs,
   itemIsSellable,
+  showIllustrativeBanner,
 } = require('./storefrontHonesty');
 
 function food(partial = {}) {
@@ -84,5 +85,17 @@ const autoFit = food({
 });
 assert.strictEqual(autoFit.items[0].compatibilityNote.includes('merchant'), true);
 assert.ok(!JSON.stringify(autoFit).toLowerCase().includes('same-day'));
+
+assert.strictEqual(showIllustrativeBanner({ templateId: 'food', storeName: 'Food', mode: 'illustrative' }), true);
+assert.strictEqual(showIllustrativeBanner({ templateId: 'food', storeName: 'Food', mode: 'merchant_preview' }), true);
+assert.strictEqual(showIllustrativeBanner({
+  templateId: 'food', storeName: 'Food', mode: 'merchant_preview', hero: { headline: 'x', image: '/templates/heroes/food.jpg' },
+}), true);
+assert.strictEqual(showIllustrativeBanner({
+  templateId: 'food', storeName: 'Food', mode: 'merchant_preview', hero: { headline: 'x', image: 'data:image/jpeg;base64,abc' },
+}), false);
+assert.strictEqual(showIllustrativeBanner({
+  templateId: 'food', storeName: 'Food', mode: 'published', hero: { headline: 'x', image: 'data:image/jpeg;base64,abc' },
+}), false);
 
 console.log('storefrontHonesty.test.js ok');

@@ -325,15 +325,31 @@ function validatePatchInput(body) {
   };
 }
 
+const STARTER_HERO_RE = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+
+function allowedProposedHeroImage(raw) {
+  if (raw == null) return null;
+  const value = String(raw).trim();
+  if (value === '') return '';
+  if (STARTER_HERO_RE.test(value)) return value;
+  return null;
+}
+
+function merchantOwnedImage(value) {
+  const img = String(value || '').trim();
+  return !!img && !STARTER_HERO_RE.test(img);
+}
+
 function mergePatch(current, rawPatch) {
   const patch = rawPatch && typeof rawPatch === 'object' ? rawPatch : {};
   const hero = patch.hero && typeof patch.hero === 'object' ? patch.hero : {};
+  const nextImage = allowedProposedHeroImage(hero.image);
   const next = {
     templateId: current.templateId,
     hero: {
       headline: hero.headline != null ? String(hero.headline).slice(0, 120) : current.hero.headline,
       sub: hero.sub != null ? String(hero.sub).slice(0, 160) : current.hero.sub,
-      image: current.hero.image,
+      image: nextImage !== null ? nextImage : current.hero.image,
     },
     about: patch.about != null ? String(patch.about).slice(0, 600) : current.about,
     hours: patch.hours != null ? String(patch.hours).slice(0, 160) : current.hours,
@@ -344,15 +360,18 @@ function mergePatch(current, rawPatch) {
   const changedFields = [];
   if (next.hero.headline !== current.hero.headline) changedFields.push('hero.headline');
   if (next.hero.sub !== current.hero.sub) changedFields.push('hero.sub');
+  if (next.hero.image !== current.hero.image) changedFields.push('hero.image');
   if (next.about !== current.about) changedFields.push('about');
   if (next.hours !== current.hours) changedFields.push('hours');
   if (JSON.stringify(next.trustChips) !== JSON.stringify(current.trustChips)) changedFields.push('trustChips');
   const conflicts = [];
   if (changedFields.includes('hero.headline') && current.hero.headline) conflicts.push('hero.headline');
+  if (changedFields.includes('hero.image') && merchantOwnedImage(current.hero.image)) conflicts.push('hero.image');
   if (changedFields.includes('about') && current.about) conflicts.push('about');
   if (changedFields.includes('hours') && current.hours) conflicts.push('hours');
+  if (changedFields.includes('trustChips') && current.trustChips.length) conflicts.push('trustChips');
   const shown = {
-    hero: { headline: next.hero.headline, sub: next.hero.sub },
+    hero: { headline: next.hero.headline, sub: next.hero.sub, image: next.hero.image },
     about: next.about,
     hours: next.hours,
     trustChips: next.trustChips,
@@ -367,11 +386,12 @@ async function callGrokPatch(input) {
   const model = (process.env.LLM_MODEL || 'grok-4-fast').trim();
   const system = [
     'You propose store copy patches for Juvay.',
-    'Return JSON only: { hero?: { headline?, sub? }, about?, hours?, trustChips? }.',
+    'Return JSON only: { hero?: { headline?, sub?, image? }, about?, hours?, trustChips? }.',
     'Only include fields the merchant asked to change.',
     'Do not invent products, prices, SKUs, WhatsApp, payment rails, or shop names.',
     'Do not mention PayPal, Linx, Michelin, free shipping, or TriniBuild.',
-    'Do not include products, items, catalog, skus, or a new hero image file.',
+    'Do not include products, items, catalog, or skus.',
+    'hero.image may only be empty (clear merchant photo) or a starter path /templates/heroes/{food|fashion|services|general|beauty|home|electronics|auto}.jpg.',
     'If the merchant already wrote a field, you may propose a rewrite but the client will show the patch first.',
   ].join(' ');
   const user = JSON.stringify({
@@ -448,6 +468,7 @@ module.exports = {
   buildFallbackDraft,
   sanitizeDraft,
   stripProducts,
+  allowedProposedHeroImage,
   grokConfigured,
   buildOnboardDraft,
   validatePatchInput,
