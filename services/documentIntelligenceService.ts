@@ -173,7 +173,7 @@ export const documentIntelligenceService = {
                 authentic: true,
                 nameMatch: true,
             },
-            feedback: 'H-Car license verified! Lower commission rates activated! ✓',
+            feedback: 'H-Car document recorded for review. No fare-split is published.',
             requiresManualReview: false,
         };
     },

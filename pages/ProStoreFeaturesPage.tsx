@@ -37,7 +37,7 @@ export const ProStoreFeaturesPage: React.FC = () => {
     },
     {
       name: 'Starter',
-      price: { monthly: 'TT$199', yearly: 'TT$199' },
+      price: { monthly: 'TT$99', yearly: 'TT$99' },
       description: 'When Wam can take the money',
       features: [
         'Unlimited products',
@@ -57,7 +57,7 @@ export const ProStoreFeaturesPage: React.FC = () => {
     },
     {
       name: 'Business',
-      price: { monthly: 'TT$399', yearly: 'TT$3,990' },
+      price: { monthly: 'TT$329', yearly: 'TT$329' },
       description: 'For established, high-volume sellers',
       features: [
         'Everything in Pro',

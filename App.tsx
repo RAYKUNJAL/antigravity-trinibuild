@@ -103,7 +103,6 @@ import { CaribAdsLanding } from './pages/CaribAdsLanding';
 import { DriverSignupAI } from './pages/DriverSignupAI';
 import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
-import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard';
 import { LoginPage } from './pages/LoginPageSimple';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
 import { QRScanner, OrderTracking } from './components/QRReceiptSystem';

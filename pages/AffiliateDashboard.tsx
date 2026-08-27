@@ -179,7 +179,7 @@ export default function AffiliateDashboard() {
           </div>
           <p className="text-xs text-gray-400 mt-3">
             Code: <span className="font-mono font-bold text-gray-600">{profile.referral_code}</span> · 
-            You earn TT${COMMISSION_EVENTS.subscription_pro.amount_ttd} per Pro referral, TT${COMMISSION_EVENTS.subscription_premium.amount_ttd} per Premium
+            You earn 10% of the paid subscription: TT${COMMISSION_EVENTS.subscription_starter.amount_ttd} on Starter, TT${COMMISSION_EVENTS.subscription_business.amount_ttd} on Business
           </p>
         </div>
 
@@ -233,7 +233,7 @@ export default function AffiliateDashboard() {
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                 <p className="text-xs text-yellow-800 font-medium">
                   🏆 Your tier upgrades automatically based on paid referrals:
-                  Bronze (10%) → Silver 5+ (13%) → Gold 20+ (17%) → Platinum 50+ (20%)
+                  10% of the paid subscription. Starter TT$99 → TT$9.90. Business TT$329 → TT$32.90.
                 </p>
               </div>
             </div>

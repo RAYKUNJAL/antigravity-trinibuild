@@ -304,7 +304,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-black text-base transition-transform hover:scale-105"
                                     style={{ background: 'linear-gradient(135deg, #FFD700, #fbbf24)' }}
                                 >
-                                    Get QR Reservations — TT$99/mo <ChevronRight className="h-5 w-5" />
+                                    See /pricing — Free / Starter / Business <ChevronRight className="h-5 w-5" />
                                 </button>
                                 <p className="text-xs text-gray-600 mt-3">Includes all Pro features · Cancel anytime</p>
                             </div>

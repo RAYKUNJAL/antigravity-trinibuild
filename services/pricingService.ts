@@ -101,10 +101,10 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     id: 'pro',
     name: 'Starter',
     price: {
-      monthly: 29,
-      yearly: 290,
-      yearlyMonthly: 24.17,
-      savings: 58
+      monthly: 99,
+      yearly: 1188,
+      yearlyMonthly: 99,
+      savings: 0
     },
     currency: 'TTD',
     tagline: 'For growing Trinidad businesses',
@@ -156,10 +156,10 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     id: 'premium',
     name: 'Business',
     price: {
-      monthly: 99,
-      yearly: 990,
-      yearlyMonthly: 82.50,
-      savings: 198
+      monthly: 329,
+      yearly: 3948,
+      yearlyMonthly: 329,
+      savings: 0
     },
     currency: 'TTD',
     tagline: 'For enterprise & multi-location',
@@ -239,16 +239,16 @@ export const getUpgradeCTA = (
 ): { title: string; message: string; targetTier: PricingTier } => {
   if (currentTier === 'free') {
     return {
-      title: `Upgrade to Pro for ${feature}`,
-      message: `Unlock ${feature} when a paid plan is actually open (Starter TT$199 / Business TT$399)`,
+      title: `See /pricing for ${feature}`,
+      message: `Unlock ${feature} when a paid plan is actually open (Starter TT$99 / Business TT$329)`,
       targetTier: 'pro'
     };
   }
   
   if (currentTier === 'pro') {
     return {
-      title: `Upgrade to Premium for ${feature}`,
-      message: `Get ${feature} plus unlimited everything for $99/month`,
+      title: `See /pricing for ${feature}`,
+      message: `Get ${feature} when Business (TT$329/mo) is actually open. No USD menu.`,
       targetTier: 'premium'
     };
   }

@@ -250,7 +250,7 @@ export const DriverOnboarding: React.FC = () => {
                         <Shield className="h-5 w-5 text-yellow-600" />
                         I have a Trinidad H-Car Registration
                       </span>
-                      <span className="block text-sm text-gray-600 mt-1">Lower commission rates for registered taxis!</span>
+                      <span className="block text-sm text-gray-600 mt-1">Optional papers. No fare-split or income figure is published.</span>
                     </span>
                   </label>
 

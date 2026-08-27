@@ -324,10 +324,10 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-black mb-2">
-                💰 Saving You $400-700 TTD/month!
+                Tax figures come from your real sales only
               </h3>
               <p className="text-red-100">
-                No accountant needed for basic tax tracking. No QuickBooks subscription required.
+                This screen does not invent savings or a monthly tax bill. Empty until you have orders.
               </p>
             </div>
             <PieChart size={64} className="opacity-50" />

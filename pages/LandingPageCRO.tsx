@@ -475,7 +475,7 @@ const PRICING_TIERS = [
   },
   {
     name: 'Starter',
-    price: 'TT$199',
+    price: 'TT$99',
     period: '/month',
     description: 'Bank payment setup in progress',
     features: [
@@ -488,7 +488,7 @@ const PRICING_TIERS = [
   },
   {
     name: 'Business',
-    price: 'TT$399',
+    price: 'TT$329',
     period: '/month',
     description: 'Bank payment setup in progress',
     features: [

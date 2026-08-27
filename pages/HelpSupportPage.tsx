@@ -21,7 +21,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Is there a setup fee or credit card required?',
-          a: 'No! Juvay is free to start. No setup fees, no credit card required. Start with 5 free product listings. Starter (TT$199/mo) and Business (TT$399/mo) open when Wam can take that money.'
+          a: 'No! Juvay is free to start. No setup fees, no credit card required. Start with 5 free product listings. Starter (TT$99/mo) and Business (TT$329/mo) open when Wam can take that money. One TTD table on /pricing. No USD menu.'
         },
         {
           q: 'Can I use TriniBuild if I don\'t have a bank account?',

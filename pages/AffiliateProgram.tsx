@@ -40,7 +40,7 @@ export const AffiliateProgram: React.FC = () => {
                      Turn Your Network <br /> Into <span className="text-juvay-red">Passive Income.</span>
                   </h1>
                   <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-                     Earn <strong>20% recurring commissions</strong> on every store you refer. Plus TT$100 for every verified driver. The most lucrative affiliate program in the Caribbean.
+                     Earn <strong>10% of the paid subscription</strong> on every store you refer (Starter or Business). That is the written cut. No SweetHand take. No invented driver bounty.
                   </p>
                   <button onClick={handleRegister} className="bg-white text-juvay-black px-10 py-4 rounded-full font-extrabold text-lg hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all">
                      Start Earning Now
@@ -58,18 +58,18 @@ export const AffiliateProgram: React.FC = () => {
                            <Users className="h-8 w-8" />
                         </div>
                         <h3 className="text-xl font-bold text-center mb-2">Refer Merchants</h3>
-                        <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">20%</p>
-                        <p className="text-center text-gray-500 text-sm mb-6">Recurring Lifetime Commission</p>
-                        <p className="text-gray-600 text-sm text-center">If a store pays $299/mo, you get <strong>$60/mo</strong>. Build a portfolio of just 10 stores and earn $600/mo passive.</p>
+                        <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">10%</p>
+                        <p className="text-center text-gray-500 text-sm mb-6">Of the paid subscription</p>
+                        <p className="text-gray-600 text-sm text-center">Starter TT$99/mo → <strong>TT$9.90/mo</strong>. Business TT$329/mo → <strong>TT$32.90/mo</strong>. Paid plans open when Wam can take that money.</p>
                      </div>
                      <div className="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-yellow-500 hover:-translate-y-2 transition-transform scale-105 z-10">
                         <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 text-yellow-600 mx-auto">
                            <Users className="h-8 w-8" />
                         </div>
                         <h3 className="text-xl font-bold text-center mb-2">Refer Drivers</h3>
-                        <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">TT$100</p>
-                        <p className="text-center text-gray-500 text-sm mb-6">Per Verified Driver</p>
-                        <p className="text-gray-600 text-sm text-center">Help us grow our driver network. Earn a flat fee for every driver you refer who completes their first 5 trips.</p>
+                        <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">Apply</p>
+                        <p className="text-center text-gray-500 text-sm mb-6">Driver referrals</p>
+                        <p className="text-gray-600 text-sm text-center">There is no published driver bounty. Send people to apply. We do not invent a per-driver payout.</p>
                      </div>
                      <div className="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-green-500 hover:-translate-y-2 transition-transform">
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600 mx-auto">
@@ -91,8 +91,8 @@ export const AffiliateProgram: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                      <div className="text-center p-6 rounded-xl">
                         <DollarSign className="h-12 w-12 text-juvay-red mx-auto mb-4" />
-                        <h3 className="text-xl font-bold mb-2">Highest Commissions</h3>
-                        <p className="text-gray-600">We offer the most competitive recurring commissions in the Caribbean market.</p>
+                        <h3 className="text-xl font-bold mb-2">10% of subscription</h3>
+                        <p className="text-gray-600">The written cut is 10% of Free/Starter/Business. Free pays TT$0, so the cut is TT$0 until a paid plan is actually billed.</p>
                      </div>
                      <div className="text-center p-6 rounded-xl">
                         <BarChart2 className="h-12 w-12 text-juvay-red mx-auto mb-4" />

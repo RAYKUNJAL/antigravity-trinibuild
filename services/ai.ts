@@ -553,7 +553,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**Juvay Pricing:**\n\n🆓 **Free:** 5 product listings, cash pickup, COD\n💎 **Starter (TT$199/mo):** Unlimited listings — opens when Wam can take the money\n🏆 **Business (TT$399/mo):** Everything in Starter plus branding\n\nNo credit card to start. Check [/pricing](/pricing).";
+        return "**Juvay Pricing:**\n\n🆓 **Free:** 5 product listings, cash pickup, COD\n💎 **Starter (TT$99/mo):** Unlimited listings — opens when Wam can take the money\n🏆 **Business (TT$329/mo):** Everything in Starter plus branding\n\nOne TTD table. No USD menu. Check [/pricing](/pricing).";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {

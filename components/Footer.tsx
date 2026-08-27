@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/documents" className="text-sm text-gray-400 hover:text-white transition-colors">AI Document Assistant</Link></li>
               <li><Link to="/products/ai-add" className="text-sm text-gray-400 hover:text-white transition-colors">AI Product Lister</Link></li>
               <li><Link to="/tax-dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">VAT Tax Tracker</Link></li>
-              <li><Link to="/premium-features" className="text-sm text-gray-400 hover:text-white transition-colors">Premium Features</Link></li>
+              <li><Link to="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Plans (TTD)</Link></li>
             </ul>
           </div>
 
