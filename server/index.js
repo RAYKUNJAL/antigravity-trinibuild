@@ -77,7 +77,7 @@ app.get('/api/wam/status', (_req, res) => {
   res.json({ configured: isWamConfigured() });
 });
 
-app.post('/api/wam/checkout', auth, async (req, res) => {
+async function handleWamCheckout(req, res) {
   if (!isWamConfigured()) {
     return res.status(503).json({ error: 'Paid checkout is not available. Use cash pickup or cash on delivery.' });
   }
@@ -86,6 +86,12 @@ app.post('/api/wam/checkout', auth, async (req, res) => {
   const charged = Number(amountCents);
   if (!Number.isFinite(face) || face <= 0) return res.status(400).json({ error: 'Face amount required' });
   if (charged !== face) return res.status(400).json({ error: 'amountCents must equal face only — processing is display-only' });
+  if (storeId) {
+    const { rows: stores } = await pool.query(`SELECT wam_handle FROM stores WHERE id = $1`, [storeId]);
+    if (!stores[0]?.wam_handle) {
+      return res.status(400).json({ error: 'Seller Wam handle required before paid checkout' });
+    }
+  }
   try {
     const { rows } = await pool.query(
       `INSERT INTO wam_payments (user_id, store_id, purpose, amount_cents, face_cents, idempotency_key, status)
@@ -102,7 +108,10 @@ app.post('/api/wam/checkout', auth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-});
+}
+
+app.post('/api/wam/checkout', auth, handleWamCheckout);
+app.post('/api/wam/create-intent', auth, handleWamCheckout);
 
 app.post('/api/wam/webhook', async (req, res) => {
   if (!isWamConfigured()) return res.status(503).json({ error: 'Wam is not configured' });

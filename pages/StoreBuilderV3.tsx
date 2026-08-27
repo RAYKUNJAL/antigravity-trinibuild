@@ -18,6 +18,7 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { storesApi, getToken } from '../services/selfHostedApi';
+import { fetchWamStatus } from '../services/wamStatus';
 import { GALLERY_TO_BUILDER, VERTICAL_COPY, type StarterType } from '../services/storeCopyTokens';
 import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown, X, Maximize2, Monitor, Smartphone } from 'lucide-react';
 import {
@@ -64,6 +65,7 @@ interface StoreBuilderState {
   category: string;
   phone: string;
   whatsapp: string;
+  wamHandle: string;
 }
 
 const DRAFT_KEY = 'trinibuild_store_draft_v3';
@@ -368,6 +370,7 @@ const emptyBuilderState = (): StoreBuilderState => ({
   category: '',
   phone: '',
   whatsapp: '',
+  wamHandle: '',
 });
 
 const StoreBuilderV3: React.FC = () => {
@@ -376,6 +379,7 @@ const StoreBuilderV3: React.FC = () => {
   const [state, setState] = useState<StoreBuilderState>(emptyBuilderState);
 
   useEffect(() => {
+    fetchWamStatus().then((s) => setWamConfigured(s.configured));
     try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
     const raw = searchParams.get('template') || '';
     const mapped = GALLERY_TO_BUILDER[raw] || (TEMPLATES.some((t) => t.id === raw) ? raw : '');
@@ -387,6 +391,7 @@ const StoreBuilderV3: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wamConfigured, setWamConfigured] = useState(false);
 
   // Full-size template preview modal state
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
@@ -947,12 +952,16 @@ const StoreBuilderV3: React.FC = () => {
         return;
       }
 
+      const handle = state.wamHandle.trim();
       const store = await storesApi.create({
         name: state.storeName.trim(),
         description: state.description.trim() || undefined,
         category: state.businessType,
         phone: state.phone.trim() || undefined,
         whatsapp: state.whatsapp.trim() || undefined,
+        accepts_cod: true,
+        accepts_pickup: true,
+        wam_handle: wamConfigured && handle ? handle : undefined,
         template_id: state.templateId,
         theme_config: {
           template_id: state.templateId,
@@ -1043,6 +1052,21 @@ const StoreBuilderV3: React.FC = () => {
               </div>
             )}
           </div>
+          {wamConfigured && (
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Seller Wam handle (required for paid rail)
+              </label>
+              <input
+                type="text"
+                value={state.wamHandle}
+                onChange={(e) => setState((prev) => ({ ...prev, wamHandle: e.target.value }))}
+                placeholder="Your Wam handle — leave blank for cash only"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
+              />
+              <p className="text-xs text-gray-500 mt-2">Cash pickup and COD stay on. No invented handle.</p>
+            </div>
+          )}
         </div>
 
         {/* Optional: Show template preview */}

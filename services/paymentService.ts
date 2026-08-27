@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient';
 
 // Payment Methods for Trinidad & Tobago
-export type PaymentMethod = 'cod' | 'cash' | 'wipay' | 'google_pay' | 'bank_transfer' | 'linx';
+export type PaymentMethod = 'cod' | 'cash' | 'wam';
 
 export interface PaymentConfig {
     method: PaymentMethod;
@@ -24,83 +24,13 @@ export interface PaymentResponse {
 
 export const paymentService = {
     // WiPay Integration (Trinidad's #1 Payment Gateway)
-    processWiPayPayment: async (config: PaymentConfig): Promise<PaymentResponse> => {
-        try {
-            // In production, this would call WiPay API
-            // For now, we'll simulate the flow
-            const isDev = import.meta.env.DEV;
-
-            if (isDev) {
-                // Mock response for development
-                return {
-                    success: true,
-                    transactionId: `WIPAY_MOCK_${Date.now()}`,
-                    redirectUrl: undefined
-                };
-            }
-
-            // Production WiPay API call would go here
-            const response = await fetch('https://tt.wipayfinancial.com/v1/gateway', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${import.meta.env.VITE_WIPAY_API_KEY}`
-                },
-                body: JSON.stringify({
-                    account_number: import.meta.env.VITE_WIPAY_MERCHANT_ID,
-                    amount: config.amount,
-                    currency: config.currency,
-                    order_id: config.orderId,
-                    return_url: `${window.location.origin}/payment/success`,
-                    customer_name: config.customerInfo.name,
-                    customer_email: config.customerInfo.email,
-                    customer_phone: config.customerInfo.phone
-                })
-            });
-
-            const data = await response.json();
-
-            return {
-                success: data.status === 'success',
-                transactionId: data.transaction_id,
-                redirectUrl: data.redirect_url
-            };
-        } catch (error) {
-            console.error('WiPay payment error:', error);
-            return {
-                success: false,
-                error: 'Payment processing failed. Please try again.'
-            };
-        }
+    processWiPayPayment: async (_config: PaymentConfig): Promise<PaymentResponse> => {
+        return { success: false, error: 'WiPay is not a live rail on Juvay' };
     },
 
     // Google Pay Integration
-    processGooglePayPayment: async (config: PaymentConfig, paymentData: any): Promise<PaymentResponse> => {
-        try {
-            // Google Pay token processing
-            const response = await fetch('/api/process-google-pay', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    paymentData,
-                    amount: config.amount,
-                    orderId: config.orderId
-                })
-            });
-
-            const result = await response.json();
-
-            return {
-                success: result.success,
-                transactionId: result.transactionId
-            };
-        } catch (error) {
-            console.error('Google Pay error:', error);
-            return {
-                success: false,
-                error: 'Google Pay processing failed.'
-            };
-        }
+    processGooglePayPayment: async (_config: PaymentConfig, _paymentData: any): Promise<PaymentResponse> => {
+        return { success: false, error: 'Google Pay is not a live rail on Juvay' };
     },
 
     // Cash on Delivery / Cash Payment

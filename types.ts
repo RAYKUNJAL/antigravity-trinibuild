@@ -135,6 +135,9 @@ export interface Store {
   bot_persona?: string | null;
   bot_system_prompt?: string | null;
   bot_enabled?: boolean;
+  wam_handle?: string | null;
+  accepts_cod?: boolean;
+  accepts_pickup?: boolean;
 }
 
 // -- ENHANCED PRODUCT INTERFACES --

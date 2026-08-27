@@ -7,6 +7,9 @@ import { supabase } from '../services/supabaseClient';
 import { trackAddToCart, trackOrderPlaced, trackProductView, trackStoreView } from '../services/eventTracker';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { notifyMerchantNewOrder, notifyCustomerOrderConfirmed } from '../services/whatsappService';
+import { fetchWamStatus } from '../services/wamStatus';
+import { startWamCheckout } from '../services/wamCheckout';
+import { storesApi } from '../services/selfHostedApi';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import { ChatWidget } from '../components/ChatWidget';
@@ -43,6 +46,8 @@ export const StorefrontV2: React.FC = () => {
         notes: ''
     });
     const [processing, setProcessing] = useState(false);
+    const [wamOn, setWamOn] = useState(false);
+    const [wamPending, setWamPending] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
 
@@ -58,7 +63,12 @@ export const StorefrontV2: React.FC = () => {
 
             setLoading(true);
             try {
-                const storeData = await storeService.getStoreBySlug(slug);
+                fetchWamStatus().then((s) => setWamOn(s.configured));
+                let storeData: any = await storeService.getStoreBySlug(slug);
+                if (!storeData) {
+                    const hosted = await storesApi.getBySlug(slug).catch(() => null);
+                    if (hosted?.store) storeData = { ...hosted.store, products: hosted.products || [] };
+                }
                 if (storeData) {
                     setStore(storeData);
                     setProducts(storeData.products || []);
@@ -222,6 +232,18 @@ export const StorefrontV2: React.FC = () => {
                     case 'cash':
                         result = await paymentService.processCashPayment(paymentConfig);
                         break;
+                    case 'wam': {
+                        const faceCents = Math.round(finalTotal * 100);
+                        await startWamCheckout({
+                            amountCents: faceCents,
+                            faceCents,
+                            purpose: 'store',
+                            storeId: store?.id,
+                        });
+                        setWamPending(true);
+                        result = { success: false, error: 'Wam intent recorded at face only. This does not fulfil the order. Use cash pickup or COD to complete, or wait for a signed webhook (still no auto-fulfil).' };
+                        break;
+                    }
                     default:
                         result = { success: false, error: 'Payment method not supported' };
                 }
@@ -509,6 +531,13 @@ export const StorefrontV2: React.FC = () => {
                             <p className="text-xs text-gray-500">Merchant listed a handle</p>
                         </div>
                         )}
+                        {wamOn && store.wam_handle && (
+                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <CreditCard className="h-8 w-8 text-gray-900 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-900">Wam</p>
+                            <p className="text-xs text-gray-500">Face-only paid rail</p>
+                        </div>
+                        )}
                     </div>
 
                     {/* Products Grid */}
@@ -775,6 +804,26 @@ export const StorefrontV2: React.FC = () => {
                                                 </div>
                                                 {paymentMethod === 'cash' && <Check className="h-5 w-5 text-emerald-700" />}
                                             </button>
+
+                                            {wamOn && store?.wam_handle && (
+                                            <button
+                                                onClick={() => setPaymentMethod('wam')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'wam' ? 'border-gray-900 bg-gray-50' : 'border-gray-200'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center">
+                                                    <CreditCard className="h-6 w-6 text-gray-900 mr-3" />
+                                                    <div className="text-left">
+                                                        <p className="font-bold text-gray-900">Wam</p>
+                                                        <p className="text-xs text-gray-500">Face amount only. Processing estimate is display-only and is not added.</p>
+                                                    </div>
+                                                </div>
+                                                {paymentMethod === 'wam' && <Check className="h-5 w-5 text-gray-900" />}
+                                            </button>
+                                            )}
+                                            {wamPending && (
+                                                <p className="text-sm text-gray-600">Wam intent recorded. Order is not fulfilled.</p>
+                                            )}
 
                                             {/* Trust badges — truthful: HTTPS/SSL via Caddy, encrypted Supabase, COD supported */}
                                             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 pb-1">
