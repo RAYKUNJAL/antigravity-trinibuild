@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { TRINIDAD_TEMPLATES, StoreTemplate } from '../services/templateService';
 import { ArrowRight, X, Globe } from 'lucide-react';
 
@@ -327,7 +327,7 @@ const P_beauty_cosmetics_store = () => (
       <div style={{ fontSize: 28 }}>💄</div>
     </div>
     <div style={{ padding: '10px 14px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5 }}>
-      {[['Lip Kit','TT$149','#fce7f3','★4.9'],['Serum','TT$189','#fef3c7','★4.7'],['Bundle','TT$299','#dcfce7','★5.0']].map(([n,p,bg,r]) => (
+      {[['Lip Kit','','#fce7f3',''],['Serum','','#fef3c7',''],['Bundle','','#dcfce7','']].map(([n,p,bg,r]) => (
         <div key={n} style={{ background: bg, borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 18, height: 18, background: '#ec4899', borderRadius: '50%', opacity: 0.3 }} />
@@ -564,8 +564,33 @@ interface TemplateGalleryProps {
 
 export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTemplate }) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [preview, setPreview] = useState<StoreTemplate | null>(null);
+
+  const openPreview = (template: StoreTemplate) => {
+    setPreview(template);
+    const next = new URLSearchParams(searchParams);
+    next.set('preview', template.id);
+    setSearchParams(next, { replace: true });
+  };
+
+  const closePreview = () => {
+    setPreview(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('preview');
+    setSearchParams(next, { replace: true });
+  };
+
+  useEffect(() => {
+    const id = searchParams.get('preview');
+    if (!id) {
+      setPreview(null);
+      return;
+    }
+    const match = TRINIDAD_TEMPLATES.find((t) => t.id === id) || null;
+    setPreview(match);
+  }, [searchParams]);
 
   const categories = [
     { id: 'all', name: 'All' },
@@ -588,7 +613,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
 
   const handleUse = (template: StoreTemplate) => {
     onSelectTemplate?.(template);
-    navigate(`/create-store?template=${template.id}`);
+    navigate(`/create-store?template=${template.id}&fresh=1`);
   };
 
   return (
@@ -596,7 +621,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
 
       {/* Hero */}
       <div style={{ padding: '60px 24px 44px', textAlign: 'center', background: 'radial-gradient(ellipse at 50% 0%,rgba(230,30,43,0.12) 0%,transparent 70%)' }}>
-        <div style={{ fontSize: 10, letterSpacing: 6, color: '#E61E2B', fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>TriniBuild · Store Templates</div>
+        <div style={{ fontSize: 10, letterSpacing: 6, color: '#E61E2B', fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>Juvay · Store Templates</div>
         <h1 style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 900, lineHeight: 1.05, margin: '0 0 14px', letterSpacing: '-0.02em' }}>
           Pick your store.<br />
           <span style={{ color: '#E61E2B' }}>Launch in minutes.</span>
@@ -641,31 +666,28 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
                 style={{ background: '#111', borderRadius: 14, overflow: 'hidden', border: '1px solid #1f1f1f', display: 'flex', flexDirection: 'column' }}
                 whileHover={{ y: -5, boxShadow: '0 16px 48px rgba(230,30,43,0.15)', borderColor: '#E61E2B' } as any}
               >
-                {/* Preview thumbnail — click to expand */}
+                {/* Preview thumbnail — tap opens shareable preview */}
                 <div
-                  onClick={() => setPreview(template)}
-                  style={{ height: 210, overflow: 'hidden', position: 'relative', cursor: 'zoom-in', flexShrink: 0 }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openPreview(template)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPreview(template); } }}
+                  style={{ height: 210, overflow: 'hidden', position: 'relative', cursor: 'pointer', flexShrink: 0 }}
                 >
-                  {/* Scale down the full preview to fit the card */}
                   <div style={{ transform: 'scale(0.82)', transformOrigin: 'top left', width: '122%', height: '122%', pointerEvents: 'none' }}>
                     <div style={{ height: 256 }}>
                       <Preview />
                     </div>
                   </div>
-                  {/* Tier badge */}
                   <div style={{ position: 'absolute', top: 10, left: 10, background: tier.bg, color: tier.color, borderRadius: 20, padding: '3px 10px', fontSize: 9, fontWeight: 900, letterSpacing: 0.5 }}>
                     {tier.label}
                   </div>
-                  {/* Hover overlay */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <div style={{ background: '#fff', color: '#000', borderRadius: 24, padding: '8px 20px', fontWeight: 700, fontSize: 12 }}>
-                      Preview Full Size
-                    </div>
-                  </motion.div>
+                  <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.65)', color: '#fff', borderRadius: 20, padding: '3px 8px', fontSize: 8, fontWeight: 700, letterSpacing: 0.4 }}>
+                    ILLUSTRATIVE
+                  </div>
+                  <div style={{ position: 'absolute', left: 10, right: 10, bottom: 10, background: '#fff', color: '#000', borderRadius: 24, padding: '8px 0', fontWeight: 800, fontSize: 12, textAlign: 'center' }}>
+                    Preview Full Size
+                  </div>
                 </div>
 
                 {/* Info */}
@@ -682,18 +704,30 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
                       <div key={f} style={{ background: '#1a1a1a', color: '#9ca3af', borderRadius: 4, padding: '3px 8px', fontSize: 9 }}>{f}</div>
                     ))}
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleUse(template)}
-                    style={{
-                      width: '100%', background: '#E61E2B', color: '#fff', border: 'none',
-                      borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    }}
-                  >
-                    Use This Template <ArrowRight size={14} />
-                  </motion.button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => openPreview(template)}
+                      style={{
+                        flex: 1, background: '#1a1a1a', color: '#fff', border: '1px solid #2a2a2a',
+                        borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer',
+                      }}
+                    >
+                      Preview
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleUse(template)}
+                      style={{
+                        flex: 1, background: '#E61E2B', color: '#fff', border: 'none',
+                        borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      Use <ArrowRight size={14} />
+                    </motion.button>
+                  </div>
                 </div>
               </motion.div>
             );
@@ -711,7 +745,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setPreview(null)}
+              onClick={closePreview}
               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
             >
               <motion.div
@@ -725,8 +759,9 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 16 }}>{preview.name}</div>
                     <div style={{ color: '#6b7280', fontSize: 11, marginTop: 2 }}>{preview.category} · <span style={{ color: tier.bg === '#e5e7eb' ? '#9ca3af' : tier.bg }}>{tier.label}</span></div>
+                    <div style={{ color: '#9ca3af', fontSize: 10, marginTop: 4 }}>Share: /templates?preview={preview.id}</div>
                   </div>
-                  <button onClick={() => setPreview(null)} style={{ background: '#1a1a1a', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
+                  <button onClick={closePreview} style={{ background: '#1a1a1a', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
                     <X size={15} />
                   </button>
                 </div>
@@ -735,13 +770,13 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({ onSelectTempla
                   <ModalPreview />
                 </div>
                 <div style={{ padding: '16px 20px', display: 'flex', gap: 10 }}>
-                  <button onClick={() => setPreview(null)} style={{ flex: 1, background: '#1a1a1a', color: '#9ca3af', border: '1px solid #2a2a2a', borderRadius: 10, padding: '11px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                  <button onClick={closePreview} style={{ flex: 1, background: '#1a1a1a', color: '#9ca3af', border: '1px solid #2a2a2a', borderRadius: 10, padding: '11px 0', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                     Back
                   </button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => { handleUse(preview); setPreview(null); }}
+                    onClick={() => { handleUse(preview); closePreview(); }}
                     style={{ flex: 2, background: '#E61E2B', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                   >
                     Use This Template <ArrowRight size={14} />

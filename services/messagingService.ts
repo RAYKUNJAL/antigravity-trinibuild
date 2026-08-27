@@ -306,7 +306,7 @@ export const messagingService = {
             "Yes, this item is in stock!",
             "What size are you looking for?",
             "We offer free delivery on orders over TT$200.",
-            "You can pay via Cash on Delivery, WiPay, or Bank Transfer.",
+            "You can pay cash on delivery or at pickup.",
             "Our store is open Monday-Saturday, 9am-6pm."
         ];
     },

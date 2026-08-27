@@ -1,0 +1,50 @@
+# Juvay — Caddy (source of truth if the VPS uses Caddy, not nginx)
+# HTTP → HTTPS 308, HSTS, www and apex must not split.
+# /api* → Node on :3001. GET /api and GET /api/ must be JSON, not the SPA shell.
+# Do not invent api.juvay.app DNS. Never commit WAM_API_KEY.
+
+www.juvay.app {
+	redir https://juvay.app{uri} 308
+}
+
+juvay.app {
+	encode gzip
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header X-Content-Type-Options nosniff
+	header Referrer-Policy strict-origin-when-cross-origin
+	header X-Frame-Options SAMEORIGIN
+
+	# Same-origin API — must come before the SPA fallback.
+	# Match /api and /api/* so GET /api/ is never the SPA shell.
+	@api path /api /api/*
+	handle @api {
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	handle /terms {
+		rewrite * /terms.html
+		root * /opt/juvay/dist
+		file_server
+	}
+	handle /privacy {
+		rewrite * /privacy.html
+		root * /opt/juvay/dist
+		file_server
+	}
+	handle /refund {
+		rewrite * /refund.html
+		root * /opt/juvay/dist
+		file_server
+	}
+	handle /legal/merchant-agreement {
+		rewrite * /merchant-agreement.html
+		root * /opt/juvay/dist
+		file_server
+	}
+
+	handle {
+		root * /opt/juvay/dist
+		try_files {path} /index.html
+		file_server
+	}
+}

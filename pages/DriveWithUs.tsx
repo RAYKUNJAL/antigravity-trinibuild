@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Car, DollarSign, Clock, TrendingUp, Users, Shield,
-    Star, Award, Zap, CheckCircle, ArrowRight, Phone, Mail,
-    MapPin, Package, FileText, Calendar
+    Car, Clock, Users, Shield,
+    Award, Zap, CheckCircle, ArrowRight, Phone,
+    Package, FileText
 } from 'lucide-react';
 import { SEO } from '../components/SEO';
 
@@ -12,73 +12,66 @@ export const DriveWithUs: React.FC = () => {
 
     const benefits = [
         {
-            icon: DollarSign,
-            title: 'Keep 80%+ of Your Earnings',
-            description: 'Lowest commission rates in Trinidad. More money in your pocket.',
-            highlight: 'Up to $500+ weekly'
-        },
-        {
             icon: Clock,
-            title: 'Work When You Want',
-            description: 'Be your own boss. Set your own schedule. Work as little or as much as you like.',
-            highlight: '24/7 Flexibility'
+            title: 'Apply on your schedule',
+            description: 'Rides are a listing, not a guaranteed paycheck. No income figure is promised.',
+            highlight: 'No income claim'
         },
         {
-            icon: TrendingUp,
-            title: 'Multiple Income Streams',
-            description: 'Choose from Rideshare, Delivery, or Courier. Or do all three!',
-            highlight: '3 Services in 1 App'
+            icon: Users,
+            title: 'Work when you want',
+            description: 'Set your own hours if you are approved. There is no published weekly minimum.',
+            highlight: 'Apply first'
+        },
+        {
+            icon: Package,
+            title: 'Rides, delivery, or courier',
+            description: 'Choose the jobs you want if those services are live. No earning mix is published.',
+            highlight: 'No fare-split claim'
         },
         {
             icon: Shield,
-            title: 'H-Car Special Rates',
-            description: 'Licensed H-Car drivers get even lower commission rates.',
-            highlight: 'Only 10% commission'
+            title: 'H-Car papers (optional)',
+            description: 'Upload H-Car documents if you have them. That does not unlock a published lower rate.',
+            highlight: 'Docs only'
         }
     ];
 
     const stats = [
         { number: 'Be First', label: 'Founding Drivers Wanted', icon: Users },
-        { number: 'Set Rates', label: 'You Decide Your Fare', icon: DollarSign },
-        { number: 'Keep 80%+', label: 'Of Every Fare', icon: Star },
+        { number: 'Apply', label: 'No income figure published', icon: FileText },
+        { number: 'H-Car', label: 'Optional papers, no rate claim', icon: Shield },
         { number: '24/7', label: 'Support Available', icon: Zap }
     ];
 
     const howItWorks = [
         {
             step: '1',
-            title: 'Sign Up Online',
-            description: 'Quick 5-minute registration. Upload your license and vehicle docs.',
+            title: 'Apply online',
+            description: 'Register and upload your license and vehicle docs.',
             icon: FileText
         },
         {
             step: '2',
-            title: 'Get Approved',
-            description: 'We verify your documents within 24 hours.',
+            title: 'Get reviewed',
+            description: 'A person reviews your documents. Approval is not instant or guaranteed.',
             icon: CheckCircle
         },
         {
             step: '3',
-            title: 'Start Earning',
-            description: 'Go online and start accepting jobs immediately.',
-            icon: DollarSign
+            title: 'Go online if approved',
+            description: 'If you are approved, you can accept jobs when the service is live.',
+            icon: Car
         }
-    ];
-
-    const earnings = [
-        { service: 'Rideshare', perTrip: '$25-100', perHour: '$40-80', icon: Car, color: 'blue' },
-        { service: 'Food Delivery', perTrip: '$18-50', perHour: '$30-60', icon: Package, color: 'orange' },
-        { service: 'Courier', perTrip: '$25-60', perHour: '$35-70', icon: FileText, color: 'purple' }
     ];
 
     return (
         <div className="min-h-screen bg-white">
             <SEO
-                title="Drive with TriniBuild Go - Earn $500+ Weekly"
-                description="Join the #1 driver platform in Trinidad & Tobago. Lowest commissions, daily payouts, and flexible hours. Sign up in 5 minutes."
-                keywords="drive for trinibuild, taxi driver jobs trinidad, delivery driver jobs trinidad, earn money driving trinidad"
+                title="Drive with Juvay"
+                description="Apply to drive. No promised weekly or monthly income. No fare-split claim."
+                keywords="drive for juvay, taxi driver jobs trinidad, delivery driver jobs trinidad"
             />
-            {/* Hero Section */}
             <div className="relative bg-gradient-to-br from-trini-black via-gray-900 to-trini-black text-white overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80')] bg-cover bg-center opacity-10"></div>
 
@@ -86,16 +79,16 @@ export const DriveWithUs: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div>
                             <div className="inline-block bg-yellow-400 text-trini-black px-4 py-2 rounded-full text-sm font-bold mb-6">
-                                🇹🇹 Trinidad & Tobago's #1 Driver Platform
+                                Trinidad & Tobago driver applications
                             </div>
 
                             <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
-                                Drive. Deliver. <span className="text-yellow-400">Earn More.</span>
+                                Drive. Deliver. <span className="text-yellow-400">Apply.</span>
                             </h1>
 
                             <p className="text-xl text-gray-300 mb-8">
-                                Join TriniBuild Go and start earning on your own schedule.
-                                We offer the <strong>lowest commission rates</strong> and <strong>highest driver earnings</strong> in Trinidad.
+                                Apply to drive with Juvay. We do not publish a commission split,
+                                weekly potential, or monthly income figure.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -103,31 +96,23 @@ export const DriveWithUs: React.FC = () => {
                                     onClick={() => navigate('/drive/signup')}
                                     className="bg-yellow-400 hover:bg-yellow-500 text-trini-black px-8 py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl"
                                 >
-                                    Start Earning Today
+                                    Apply to drive
                                     <ArrowRight className="h-5 w-5" />
-                                </button>
-
-                                <button
-                                    onClick={() => document.getElementById('earnings')?.scrollIntoView({ behavior: 'smooth' })}
-                                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all"
-                                >
-                                    View Earnings
                                 </button>
                             </div>
 
                             <div className="flex items-center gap-6 text-sm">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle className="h-5 w-5 text-green-400" />
-                                    <span>No Sign-Up Fees</span>
+                                    <span>No sign-up fee listed</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <CheckCircle className="h-5 w-5 text-green-400" />
-                                    <span>Weekly Payouts</span>
+                                    <span>No income promise</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Quick Stats */}
                         <div className="grid grid-cols-2 gap-4">
                             {stats.map((stat, idx) => (
                                 <div key={idx} className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20">
@@ -141,15 +126,14 @@ export const DriveWithUs: React.FC = () => {
                 </div>
             </div>
 
-            {/* Benefits Section */}
             <div className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Why Drivers Choose TriniBuild Go
+                            Why apply
                         </h2>
                         <p className="text-xl text-gray-600">
-                            More earnings, more freedom, more support
+                            Honest copy only. No published take-home number.
                         </p>
                     </div>
 
@@ -168,65 +152,24 @@ export const DriveWithUs: React.FC = () => {
                 </div>
             </div>
 
-            {/* Earnings Calculator */}
-            <div id="earnings" className="py-20 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            How Much Can You Earn?
-                        </h2>
-                        <p className="text-xl text-gray-600">
-                            Choose your service and see your potential earnings
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {earnings.map((earning, idx) => (
-                            <div key={idx} className={`bg-gradient-to-br from-${earning.color}-50 to-${earning.color}-100 rounded-2xl p-8 border-2 border-${earning.color}-200`}>
-                                <earning.icon className={`h-12 w-12 text-${earning.color}-600 mb-4`} />
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">{earning.service}</h3>
-
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Per Trip:</span>
-                                        <span className="text-xl font-bold text-gray-900">{earning.perTrip}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Per Hour:</span>
-                                        <span className="text-xl font-bold text-gray-900">{earning.perHour}</span>
-                                    </div>
-                                </div>
-
-                                <div className={`bg-${earning.color}-200 rounded-lg p-4 text-center`}>
-                                    <div className="text-sm text-gray-700 mb-1">Weekly Potential</div>
-                                    <div className="text-2xl font-bold text-gray-900">$400-800+</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-12 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-green-200">
-                        <div className="text-center">
-                            <Award className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Earn Even More!</h3>
-                            <p className="text-gray-700 mb-4">
-                                Work 40 hours/week across all three services and earn <strong className="text-green-600">$1,500-2,000+ monthly</strong>
-                            </p>
-                            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                                <span>Plus bonuses, surge pricing, and tips</span>
-                            </div>
-                        </div>
-                    </div>
+            <div className="py-20 bg-white">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                        No published driver income
+                    </h2>
+                    <p className="text-xl text-gray-600 mb-6">
+                        There is no written live product lock in this app for 80%+, a weekly or monthly
+                        dollar figure, or an H-Car 10% split. Apply if you want to drive. Do not treat
+                        this page as an earnings calculator.
+                    </p>
                 </div>
             </div>
 
-            {/* How It Works */}
             <div className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Start Earning in 3 Easy Steps
+                            How to apply
                         </h2>
                     </div>
 
@@ -255,22 +198,21 @@ export const DriveWithUs: React.FC = () => {
                             onClick={() => navigate('/drive/signup')}
                             className="bg-trini-red hover:bg-red-700 text-white px-12 py-5 rounded-lg font-bold text-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-3 mx-auto"
                         >
-                            Get Started Now - It's Free!
+                            Apply to drive
                             <ArrowRight className="h-6 w-6" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Requirements */}
             <div className="py-20 bg-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Driver Requirements
+                            Driver requirements
                         </h2>
                         <p className="text-xl text-gray-600">
-                            Make sure you meet these simple requirements
+                            Documents we ask for. Approval is not automatic.
                         </p>
                     </div>
 
@@ -311,7 +253,7 @@ export const DriveWithUs: React.FC = () => {
                             <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
                             <div>
                                 <h4 className="font-bold text-gray-900 mb-1">Bank Account</h4>
-                                <p className="text-sm text-gray-600">Trinidad bank account for payouts</p>
+                                <p className="text-sm text-gray-600">Trinidad bank account for payouts if a payout rail is live</p>
                             </div>
                         </div>
 
@@ -319,34 +261,33 @@ export const DriveWithUs: React.FC = () => {
                             <Award className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
                             <div>
                                 <h4 className="font-bold text-gray-900 mb-1">H-Car (Optional)</h4>
-                                <p className="text-sm text-gray-600">Get 10% commission instead of 20%!</p>
+                                <p className="text-sm text-gray-600">Optional H-car papers. No fare-split is published here.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* CTA Section */}
             <div className="py-20 bg-gradient-to-r from-trini-red to-orange-600 text-white">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-5xl font-extrabold mb-6">
-                        Ready to Start Earning?
+                        Ready to apply?
                     </h2>
                     <p className="text-2xl mb-8 text-white/90">
-                         Be among the first drivers on Juvay. Set your own rates. Keep more of every fare.
+                        Be among the first drivers on Juvay. No published income figure.
                     </p>
 
                     <button
                         onClick={() => navigate('/drive/signup')}
                         className="bg-white text-trini-red px-12 py-5 rounded-lg font-bold text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all inline-flex items-center gap-3"
                     >
-                        Sign Up Free - 5 Minutes
+                        Apply free
                         <ArrowRight className="h-6 w-6" />
                     </button>
 
                     <p className="mt-6 text-white/80">
                         <Phone className="h-4 w-4 inline mr-2" />
-                        Questions? Call us: <strong>1-868-GO-DRIVE</strong>
+                        Questions? Use the contact page. We do not publish a driver hotline here.
                     </p>
                 </div>
             </div>

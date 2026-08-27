@@ -142,7 +142,7 @@ export const CRO_RULES = {
   // Trust badges
   trustBadges: {
     ssl: true,
-    payments: ['WiPay', 'PayPal', 'Credit Card'],
+    payments: ['Cash on Delivery', 'Pickup'],
     guarantees: ['100% Secure', 'Trinidad Local', 'COD Available']
   },
   

@@ -16,8 +16,7 @@ export const PartnershipPage: React.FC = () => {
   const partners = [
     { name: 'Supabase', icon: '🐘', category: 'Database' },
     { name: 'Vercel', icon: '▲', category: 'Hosting' },
-    { name: 'PayPal', icon: '💳', category: 'Payments' },
-    { name: 'Stripe', icon: '⚡', category: 'Payments' },
+    { name: 'WhatsApp', icon: '💬', category: 'Messaging' },
     { name: 'Google Analytics', icon: '📊', category: 'Analytics' },
     { name: 'Framer Motion', icon: '✨', category: 'Animations' }
   ];

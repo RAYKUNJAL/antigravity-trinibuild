@@ -634,7 +634,7 @@ const CheckoutFlow: React.FC<{
 
   const [form, setForm] = useState({
     name: '', phone: '', address: '', city: '', notes: '',
-    payment: 'cod' as 'cod' | 'bank_transfer',
+    payment: 'cod' as 'cod' | 'pickup',
     delivery: 'standard' as 'standard' | 'express' | 'pickup',
   });
 
@@ -751,7 +751,7 @@ const CheckoutFlow: React.FC<{
                 <div className="space-y-2">
                   {[
                     ['cod', 'Cash on Delivery', 'Pay when your order arrives'],
-                    ['bank_transfer', 'Bank Transfer / Linx', 'We\'ll send you payment details'],
+                    ['pickup', 'Cash at pickup', 'Pay when you collect'],
                   ].map(([val, title, sub]) => (
                     <label key={val} className="flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors"
                       style={form.payment === val ? { borderColor: '#E61E2B', background: '#FEF2F2' } : { borderColor: '#e5e7eb' }}>

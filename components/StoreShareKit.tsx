@@ -51,9 +51,9 @@ const BrandedQRCode: React.FC<{
         {/* TriniBuild header */}
         <div className="flex items-center justify-center gap-1.5 mb-3 pb-2 border-b border-gray-100">
           <div className="w-5 h-5 bg-[#E61E2B] rounded-md flex items-center justify-center">
-            <span className="text-white text-[8px] font-black">TB</span>
+            <span className="text-white text-[8px] font-black">J</span>
           </div>
-          <span className="text-[10px] font-bold text-gray-800 tracking-wide uppercase">TriniBuild</span>
+          <span className="text-[10px] font-bold text-gray-800 tracking-wide uppercase">Juvay</span>
         </div>
 
         {/* QR Code */}
@@ -92,7 +92,7 @@ const ShareButtons: React.FC<{
   description?: string;
 }> = ({ url, storeName, description }) => {
   const [copied, setCopied] = useState(false);
-  const text = description || `Check out ${storeName} on TriniBuild!`;
+  const text = description || `Check out ${storeName} on Juvay!`;
 
   const copyLink = async () => {
     try {
@@ -207,7 +207,7 @@ export const TriniBuildBadge: React.FC<{
 
   return (
     <motion.a
-      href="https://trinibuild.com"
+      href="https://juvay.app"
       target="_blank"
       rel="noopener noreferrer"
       initial={{ opacity: 0 }}
@@ -216,9 +216,9 @@ export const TriniBuildBadge: React.FC<{
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium ${styles[variant]} hover:opacity-100 transition-opacity`}
     >
       <div className="w-4 h-4 bg-[#E61E2B] rounded flex items-center justify-center flex-shrink-0">
-        <span className="text-white text-[6px] font-black leading-none">TB</span>
+        <span className="text-white text-[6px] font-black leading-none">J</span>
       </div>
-      Powered by TriniBuild
+      Powered by Juvay
     </motion.a>
   );
 };
@@ -235,10 +235,10 @@ export const BrandingToggle: React.FC<{
   return (
     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
       <div>
-        <p className="text-sm font-semibold text-gray-800">TriniBuild Branding</p>
+        <p className="text-sm font-semibold text-gray-800">Juvay Branding</p>
         <p className="text-xs text-gray-500 mt-0.5">
           {isPaid
-            ? 'Remove "Powered by TriniBuild" from your storefront'
+            ? 'Remove "Powered by Juvay" from your storefront'
             : 'Upgrade to a paid plan to remove branding'
           }
         </p>
@@ -333,7 +333,7 @@ export const StoreShareModal: React.FC<
             {/* Footer */}
             <div className="p-3 border-t border-gray-100 text-center">
               <p className="text-[10px] text-gray-400">
-                A product of R&R Digital Solutions · TriniBuild
+                A product of R&R Digital Solutions · Juvay
               </p>
             </div>
           </motion.div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { supabase } from '../services/supabaseClient';
+import { authApi } from '../services/selfHostedApi';
 import { track } from '../services/eventTracker';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -12,6 +12,8 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get('next') || searchParams.get('redirect') || '/get-started';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,47 +21,18 @@ export const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        // Handle 'Email not confirmed' error gracefully
-        if (
-          signInError.message.includes('Email not confirmed') ||
-          signInError.message.includes('email_not_confirmed')
-        ) {
-          setError(
-            'Your email is not confirmed yet. Please check your inbox for the confirmation link and try again.'
-          );
-        } else {
-          setError(signInError.message || 'Login failed. Please try again.');
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (data.user) {
-        // Store user in localStorage for compatibility with existing code
-        const user = {
-          id: data.user.id,
-          email: data.user.email || email,
-          name: (data.user.user_metadata?.full_name as string) || email.split('@')[0],
-          role: 'user',
-        };
-        localStorage.setItem('user', JSON.stringify(user));
-
-        track('user_login', 'auth', { method: 'email' });
-
-        // Success - redirect to dashboard
-        navigate('/dashboard/ai');
-      } else {
-        setError('Login failed. Please try again.');
-        setLoading(false);
-      }
+      const user = await authApi.signIn(email, password);
+      localStorage.setItem('user', JSON.stringify({
+        id: user.id,
+        email: user.email || email,
+        name: user.full_name || email.split('@')[0],
+        role: user.role || 'user',
+      }));
+      track('user_login', 'auth', { method: 'email' });
+      navigate(redirect);
     } catch (err: any) {
-      setError(err?.message || 'Login failed. Please try again.');
+      const msg = err?.message || 'Login failed. Please check your email and password.';
+      setError(msg === 'Failed to fetch' ? 'Cannot reach the Juvay API on this site. Try again in a minute.' : msg);
       setLoading(false);
     }
   };

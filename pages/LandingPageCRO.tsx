@@ -13,6 +13,7 @@ import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
 import { WorkingAIDemo } from '../components/WorkingAIDemo';
 import { ServicesShowcase } from '../components/ServicesShowcase';
+import { JuvayPriceTable } from '../components/JuvayPriceTable';
 
 /* ────────────────────────────────────────────────────────────────────────
    SOCIAL PROOF DATA
@@ -367,7 +368,7 @@ const TRUST_POINTS = [
 const FOUNDING_OFFER = {
   title: 'We\'re just getting started — and the first 100 merchants get something special',
   bullet_points: [
-    'Free Pro plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
+    'Free Starter plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
     'Direct WhatsApp line to the founding team — you get heard, fast',
     'Featured placement on the Juvay marketplace when it launches',
     'Your feedback shapes what we build next'
@@ -413,7 +414,7 @@ const COD_EXPLAINED = [
   },
   {
     title: 'Confirm & Deliver',
-    description: 'Arrange your own delivery or use TriniRides (TT$25 + TT$4/km). Driver collects cash.'
+    description: 'Arrange your own delivery or offer pickup. A ride fare is only shown when that product is live for that store — this page does not quote one.'
   },
   {
     title: 'Order Complete',
@@ -428,12 +429,12 @@ const FEATURES = [
     icon: <ShoppingCart className="w-6 h-6" />
   },
   {
-    title: '10 Free Products',
-    description: 'List 10 items free forever. Test your business before upgrading. Upgrade anytime.'
+    title: '5 Free Products',
+    description: 'List 5 items free forever. Test your business before upgrading. Upgrade anytime.'
   },
   {
     title: 'COD Checkout',
-    description: 'Cash on delivery, pickup, or online payment. Choose what works for your business.'
+    description: 'Cash on delivery and cash at pickup. Supported online payments appear only when that rail is actually on for the store.'
   },
   {
     title: 'AI Product Lister',
@@ -449,7 +450,7 @@ const FEATURES = [
   },
   {
     title: 'Delivery Options',
-    description: 'Arrange your own delivery. Use TriniRides. Or let customers pick it up.'
+    description: 'Arrange your own delivery, or let customers pick it up. Ride fare is only shown when that product is live for that store.'
   },
   {
     title: 'WhatsApp Ready',
@@ -459,50 +460,43 @@ const FEATURES = [
 
 const PRICING_TIERS = [
   {
-    name: 'Hustle (Free)',
+    name: 'Free',
     price: 'TT$0',
     period: 'forever',
-    description: 'Perfect for testing',
+    description: 'Start selling',
     features: [
-      '10 products',
-      'Free storefront',
-      'COD checkout',
-      'Order dashboard',
-      'WhatsApp notifications'
+      '5 product listings',
+      'juvay.app store slug',
+      'Cash at pickup',
+      'Cash on delivery'
     ],
     cta: 'Start Free',
     highlighted: false
   },
   {
-    name: 'Pro',
-    price: 'TT$199',
+    name: 'Starter',
+    price: 'TT$99',
     period: '/month',
-    description: 'Most popular for growing stores',
+    description: 'Bank payment setup in progress',
     features: [
-      'Unlimited products',
-      'Everything in Hustle',
-      'AI product lister',
-      'Advanced analytics',
-      'Priority support',
-      'Featured in directory'
+      'Unlimited listings',
+      'Everything in Free',
+      'AI product drafts'
     ],
-    cta: 'Upgrade to Pro',
+    cta: 'Starter',
     highlighted: true
   },
   {
     name: 'Business',
-    price: 'TT$399',
+    price: 'TT$329',
     period: '/month',
-    description: 'For serious online sellers',
+    description: 'Bank payment setup in progress',
     features: [
-      'Everything in Pro',
-      'Advanced delivery management',
+      'Everything in Starter',
       'Custom branding',
-      'API access',
-      'Dedicated support',
-      'Multi-store management'
+      'Priority support'
     ],
-    cta: 'Go Business',
+    cta: 'Business',
     highlighted: false
   }
 ];
@@ -589,15 +583,14 @@ export const LandingPageCRO: React.FC = () => {
     ga4Analytics.trackSignupStart('Start My Free Store', source);
     facebookPixel.trackSignupStart(source);
 
-    // Navigate to store creator
-    navigate('/create-store');
+    navigate('/signup');
   };
 
   const handleEmailCTA = () => {
     if (emailInput) {
       ga4Analytics.trackFormComplete('email_cta_form', true);
       facebookPixel.trackCustom('LeadCapture', { email: emailInput });
-      navigate('/create-store');
+      navigate('/signup');
     }
   };
 
@@ -608,23 +601,23 @@ export const LandingPageCRO: React.FC = () => {
         <title>Free Online Store for Trinidad & Tobago | COD Selling Made Easy | Juvay</title>
         <meta
           name="description"
-          content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 10 free products, no credit card required. Built in T&T."
+          content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 5 free products, no credit card required. Built in T&T."
         />
         <meta
           name="keywords"
           content="online store Trinidad, sell online T&T, cash on delivery Trinidad, free store builder, Trinidad business, Tobago online selling, Juvay, SME platform"
         />
-        <link rel="canonical" href="https://trinibuild.com/landing" />
+        <link rel="canonical" href="https://juvay.app/" />
 
         {/* Open Graph for Social Sharing */}
         <meta property="og:title" content="Free Online Store for Trinidad & Tobago - Start Selling with COD" />
         <meta
           property="og:description"
-          content="Launching in T&T: a free online store builder with COD checkout. No credit card, 10 products free. Founding merchants get 6 months Pro free."
+          content="Launching in T&T: a free online store builder with COD checkout. No credit card, 5 products free."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://trinibuild.com/landing" />
-        <meta property="og:image" content="https://trinibuild.com/og-landing.jpg" />
+        <meta property="og:url" content="https://juvay.app/" />
+        <meta property="og:image" content="https://juvay.app/juvay-logo.png" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -645,7 +638,7 @@ export const LandingPageCRO: React.FC = () => {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'TTD',
-              description: 'Free online store with 10 products'
+              description: 'Free online store with 5 products'
             }
           })}
         </script>
@@ -675,18 +668,13 @@ export const LandingPageCRO: React.FC = () => {
             </motion.div>
 
             {/* Main Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6"
-            >
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-white">
               Sell Online with{' '}
-              <span className="bg-gradient-to-r from-trini-red to-orange-500 bg-clip-text text-transparent">
+              <span className="text-orange-400">
                 Cash on Delivery
               </span>
               {' — No Credit Card — Powered by Juvay'}
-            </motion.h1>
+            </h1>
 
             {/* Subheadline */}
             <motion.p
@@ -695,7 +683,7 @@ export const LandingPageCRO: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
             >
-              Create your free online store in 5 minutes. Add products with AI. Accept COD, pickup, or online payment.
+              Create your free online store in 5 minutes. Add products with AI. Cash on delivery and pickup.
               Built in Trinidad & Tobago, launching to founding merchants now.
             </motion.p>
 
@@ -712,7 +700,7 @@ export const LandingPageCRO: React.FC = () => {
               </span>
               <span className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-400" />
-                10 free listings
+                5 free listings
               </span>
               <span className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-400" />
@@ -934,50 +922,7 @@ export const LandingPageCRO: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {PRICING_TIERS.map((tier, idx) => (
-                <div
-                  key={idx}
-                  className={`rounded-lg overflow-hidden transition-all duration-300 ${
-                    tier.highlighted
-                      ? 'ring-2 ring-trini-red shadow-xl transform scale-105 md:scale-110'
-                      : 'border border-gray-200 shadow-sm'
-                  } bg-white`}
-                >
-                  {tier.highlighted && (
-                    <div className="bg-trini-red text-white text-center py-2 font-bold text-sm">
-                      MOST POPULAR
-                    </div>
-                  )}
-                  <div className="p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-                    <p className="text-sm text-gray-600 mb-6">{tier.description}</p>
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold text-gray-900">{tier.price}</span>
-                      <span className="text-gray-600 ml-2">{tier.period}</span>
-                    </div>
-                    <button
-                      onClick={handleStartFree}
-                      className={`w-full py-3 rounded-lg font-bold transition-all duration-300 mb-8 ${
-                        tier.highlighted
-                          ? 'bg-trini-red hover:bg-red-700 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
-                    >
-                      {tier.cta}
-                    </button>
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, fidx) => (
-                        <li key={fidx} className="flex items-start gap-3 text-sm text-gray-700">
-                          <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <JuvayPriceTable />
 
             <div className="text-center mt-12 text-gray-600">
               <p className="mb-2">
@@ -1049,7 +994,7 @@ export const LandingPageCRO: React.FC = () => {
               Ready to Start Selling Online?
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Your first 10 free listings are waiting. No credit card, no risk, no obligation.
+              Your first 5 free listings are waiting. No credit card, no risk, no obligation.
               Start your free store right now.
             </p>
             <button

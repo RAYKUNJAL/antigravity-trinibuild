@@ -11,7 +11,6 @@ import { supabase } from '../services/supabaseClient';
 import { LogoBuilder } from '../components/LogoBuilder';
 import { ThemeGenerator } from '../components/ThemeGenerator';
 import { AIGeneratingOverlay } from '../components/AIGeneratingOverlay';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 // Placeholder logo URL
 const LOGO_URL = "https://trinibuild.com/wp-content/uploads/2023/05/TriniBuild-Logo.png";
@@ -765,39 +764,9 @@ export const StoreCreator: React.FC = () => {
                               <p className="text-sm opacity-90">One-time payment • Limited time offer</p>
                            </div>
 
-                           {/* PayPal Button */}
-                           <div className="mb-4">
-                              <PayPalScriptProvider options={{ clientId: "sb", currency: "USD", intent: "capture" }}>
-                                 <PayPalButtons
-                                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay", height: 55 }}
-                                    createOrder={(data, actions) => {
-                                       return actions.order.create({
-                                          intent: "CAPTURE",
-                                          purchase_units: [{
-                                             amount: {
-                                                currency_code: "USD",
-                                                value: "7.50", // ~49 TTD to USD
-                                             },
-                                             description: `TriniBuild Fast Track Upgrade - ${formData.name}`
-                                          }],
-                                       });
-                                    }}
-                                    onApprove={async (data, actions) => {
-                                       if (actions.order) {
-                                          const details = await actions.order.capture();
-                                          console.log("Payment successful:", details);
-                                          // TODO: Update store with premium features in database
-                                          alert("🎉 Upgrade successful! Your store is now boosted.");
-                                          navigate('/dashboard');
-                                       }
-                                    }}
-                                    onError={(err) => {
-                                       console.error("PayPal Error:", err);
-                                       alert("Payment failed. Please try again or skip this offer.");
-                                    }}
-                                 />
-                              </PayPalScriptProvider>
-                           </div>
+                           <p className="mb-4 text-sm text-gray-600 text-center">
+                              PayPal is off. There is no pay button here.
+                           </p>
 
                            {/* Skip button */}
                            <button

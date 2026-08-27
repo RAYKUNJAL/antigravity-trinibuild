@@ -30,13 +30,13 @@ async function request<T = any>(path: string, options: RequestInit = {}): Promis
 
 // ─── AUTH (replaces supabase.auth) ───────────────────────────
 export const authApi = {
-  async signUp(email: string, password: string, full_name?: string, phone?: string, ref?: string) {
-    const data = await request('/auth/signup', { method: 'POST', body: JSON.stringify({ email, password, full_name, phone, ref }) });
+  async signUp(email: string, password: string, full_name?: string, phone?: string, ref?: string, island?: string) {
+    const data = await request('/signup', { method: 'POST', body: JSON.stringify({ email, password, full_name, phone, ref, island }) });
     setToken(data.token);
     return data.user;
   },
   async signIn(email: string, password: string) {
-    const data = await request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    const data = await request('/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     setToken(data.token);
     return data.user;
   },
@@ -59,8 +59,22 @@ export const authApi = {
 // ─── STORES ──────────────────────────────────────────────────
 export const storesApi = {
   getMine: () => request('/stores/mine'),
-  create: (store: { name: string; description?: string; category?: string; phone?: string; whatsapp?: string; address?: string }) =>
-    request('/stores', { method: 'POST', body: JSON.stringify(store) }),
+  create: (store: {
+    name: string;
+    description?: string;
+    category?: string;
+    phone?: string;
+    whatsapp?: string;
+    address?: string;
+    accepts_cod?: boolean;
+    accepts_pickup?: boolean;
+    pickup_address?: string;
+    wam_handle?: string;
+    exact_cash_note?: boolean;
+    island?: string;
+    template_id?: string;
+    theme_config?: Record<string, unknown>;
+  }) => request('/stores', { method: 'POST', body: JSON.stringify(store) }),
   getBySlug: (slug: string) => request(`/stores/${slug}`),
 };
 
@@ -104,9 +118,11 @@ export const subscriptionApi = {
     const form = new FormData();
     form.append('proof', file);
     form.append('reference_code', reference_code);
+    const token = getToken();
+    if (!token) throw new Error('Sign in required');
     const res = await fetch(`${API_BASE}/subscription/bank-pay/proof`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: form,
     });
     if (!res.ok) throw new Error('Upload failed');

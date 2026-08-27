@@ -1,7 +1,7 @@
 /**
  * codSystemService.ts — Full Cash-on-Delivery System
  * Live Supabase integration, commission calc, WhatsApp notifications
- * Handles: COD, Bank Transfer, WiPay — with 5% platform commission
+ * Handles: COD and cash pickup. No published Juvay take on COD.
  */
 
 import { supabase } from './supabaseClient';
@@ -54,7 +54,7 @@ export interface CODOrderFull {
 }
 
 const VAT_RATE = 0.125;
-const PLATFORM_COMMISSION = 0.05;
+const PLATFORM_COMMISSION = 0; // No written Juvay COD take lock. Do not invent 5%.
 
 function generateOrderRef(): string {
   const date = new Date();

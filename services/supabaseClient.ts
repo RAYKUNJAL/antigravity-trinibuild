@@ -1,143 +1,91 @@
-// Self-hosted Supabase at api.juvay.app — do not use cloud supabase.co URL
-import { createClient } from '@supabase/supabase-js';
+/**
+ * Supabase client — fail closed on a dead host.
+ * https://api.juvay.app is NXDOMAIN. Do not call it.
+ * Signup is same-origin POST /api/signup (see selfHostedApi / SignupPageSimple).
+ */
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// These environment variables will need to be set in your .env file
-// For development, we'll use placeholders if they aren't present
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim();
+const rawKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const DEAD = /api\.juvay\.app/i.test(rawUrl) || !rawUrl || !rawKey;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Missing Supabase environment variables!');
-    console.error('Please check your .env.local file and ensure:');
-    console.error('  - VITE_SUPABASE_URL is set');
-    console.error('  - VITE_SUPABASE_ANON_KEY is set');
-} else {
-    console.log('✅ Supabase configuration loaded');
-    console.log('📍 URL:', supabaseUrl);
+function deadBuilder(): any {
+  const err = { message: 'This catalog is not on this origin' };
+  const empty = Promise.resolve({ data: [], error: err, count: 0 });
+  const none = Promise.resolve({ data: null, error: err });
+  const q: any = {
+    select: () => q,
+    insert: () => none,
+    update: () => q,
+    upsert: () => none,
+    delete: () => none,
+    eq: () => q,
+    neq: () => q,
+    or: () => q,
+    in: () => q,
+    is: () => q,
+    ilike: () => q,
+    like: () => q,
+    gte: () => q,
+    lte: () => q,
+    order: () => q,
+    limit: () => q,
+    range: () => q,
+    single: () => none,
+    maybeSingle: () => none,
+    then: (ok: any, bad: any) => empty.then(ok, bad),
+  };
+  return q;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+function makeDeadClient(): SupabaseClient {
+  const dead: any = {
+    from: () => deadBuilder(),
+    rpc: () => Promise.resolve({ data: null, error: { message: 'RPC not on this origin' } }),
+    storage: {
+      from: () => ({
+        upload: async () => ({ data: null, error: { message: 'Storage not on this origin' } }),
+        getPublicUrl: (path: string) => ({ data: { publicUrl: path } }),
+      }),
+    },
     auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-    }
-});
+      signUp: async () => ({ data: { user: null, session: null }, error: { message: 'Use POST /api/signup' } }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: { message: 'Use POST /api/login' } }),
+      signInWithOAuth: async () => ({ data: { url: null }, error: { message: 'Social login is not on this origin' } }),
+      getSession: async () => ({ data: { session: null }, error: null }),
+      getUser: async () => ({ data: { user: null }, error: null }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+    },
+  };
+  return dead as SupabaseClient;
+}
 
-// Helper to check if Supabase is configured
-export const isSupabaseConfigured = () => {
-    return supabaseUrl !== '' && supabaseAnonKey !== '';
-};
+export const supabase: SupabaseClient = DEAD
+  ? makeDeadClient()
+  : createClient(rawUrl, rawKey, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
 
-// Test database connection
+export const isSupabaseConfigured = () => !DEAD;
+
 export const testConnection = async () => {
-    if (!isSupabaseConfigured()) {
-        return {
-            success: false,
-            error: 'Supabase not configured - missing environment variables'
-        };
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('count')
-            .limit(1);
-
-        if (error) {
-            console.error('❌ Database connection test failed:', error);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-
-        console.log('✅ Database connection successful');
-        return {
-            success: true,
-            message: 'Connected to Supabase'
-        };
-    } catch (err: any) {
-        console.error('❌ Database connection exception:', err);
-        return {
-            success: false,
-            error: err.message || 'Unknown error'
-        };
-    }
+  if (DEAD) return { success: false, error: 'No live catalog host on this origin' };
+  return { success: true, message: 'Connected' };
 };
 
-// Check if a specific table exists and is accessible
 export const checkTable = async (tableName: string) => {
-    try {
-        const { data, error } = await supabase
-            .from(tableName)
-            .select('*')
-            .limit(1);
-
-        if (error) {
-            return {
-                exists: false,
-                accessible: false,
-                error: error.message
-            };
-        }
-
-        return {
-            exists: true,
-            accessible: true,
-            hasData: data && data.length > 0
-        };
-    } catch (err: any) {
-        return {
-            exists: false,
-            accessible: false,
-            error: err.message || 'Unknown error'
-        };
-    }
+  try {
+    const { error } = await supabase.from(tableName).select('*').limit(1);
+    if (error) return { exists: false, accessible: false, error: error.message };
+    return { exists: true, accessible: true, hasData: false };
+  } catch (err: any) {
+    return { exists: false, accessible: false, error: err.message };
+  }
 };
 
-// Get database health status
-export const getDatabaseHealth = async () => {
-    const connectionTest = await testConnection();
-
-    if (!connectionTest.success) {
-        return {
-            status: 'unhealthy' as const,
-            message: connectionTest.error || 'Cannot connect to database',
-            details: null
-        };
-    }
-
-    // Check critical tables
-    const criticalTables = ['profiles', 'jobs', 'real_estate_listings', 'events'];
-    const tableChecks = await Promise.all(
-        criticalTables.map(async (table) => ({
-            table,
-            ...(await checkTable(table))
-        }))
-    );
-
-    const allTablesAccessible = tableChecks.every(check => check.accessible);
-    const missingTables = tableChecks.filter(check => !check.exists).map(c => c.table);
-
-    if (missingTables.length > 0) {
-        return {
-            status: 'degraded' as const,
-            message: `Missing tables: ${missingTables.join(', ')}`,
-            details: tableChecks
-        };
-    }
-
-    if (!allTablesAccessible) {
-        return {
-            status: 'degraded' as const,
-            message: 'Some tables are not accessible',
-            details: tableChecks
-        };
-    }
-
-    return {
-        status: 'healthy' as const,
-        message: 'All systems operational',
-        details: tableChecks
-    };
-};
+export const getDatabaseHealth = async () => ({
+  status: DEAD ? ('unhealthy' as const) : ('healthy' as const),
+  message: DEAD ? 'Catalog host is not on this origin' : 'OK',
+  details: null,
+});

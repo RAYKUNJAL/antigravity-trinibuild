@@ -88,12 +88,11 @@ export const Classifieds: React.FC = () => {
    return (
       <>
          <Helmet>
-            <title>Buy & Sell Classifieds Trinidad & Tobago | TriniBuild Market</title>
-            <meta name="description" content="Buy and sell vehicles, electronics, furniture, and more in Trinidad & Tobago. Free classifieds for locals - post your ad and sell fast!" />
-            <meta name="keywords" content="Trinidad classifieds, Tobago buy sell, used cars Trinidad, electronics T&T, furniture Port of Spain, free classifieds" />
-            <link rel="canonical" href="https://trinibuild.com/#/classifieds" />
-            <meta property="og:title" content="TriniBuild Market - Buy & Sell in Trinidad & Tobago" />
-            <meta property="og:description" content="Free online classifieds for Trinidad & Tobago. List your items and reach thousands of local buyers." />
+            <title>Classifieds | Juvay</title>
+            <meta name="description" content="Juvay classifieds stay empty until a live catalog is on this origin. No invented ads." />
+            <link rel="canonical" href="https://juvay.app/classifieds" />
+            <meta property="og:title" content="Classifieds | Juvay" />
+            <meta property="og:description" content="Classifieds stay empty until a live catalog is on this origin." />
          </Helmet>
 
          <div className="min-h-screen bg-gray-50 font-sans pb-20">
@@ -102,8 +101,8 @@ export const Classifieds: React.FC = () => {
                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                      <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900">TriniBuild <span className="text-purple-600">Market</span></h1>
-                        <p className="text-gray-500">Buy and sell anything in Trinidad & Tobago.</p>
+                        <h1 className="text-3xl font-extrabold text-gray-900">Juvay <span className="text-purple-600">Market</span></h1>
+                        <p className="text-gray-500">Classifieds stay empty unless a live catalog is on this origin.</p>
                      </div>
                      <div className="flex gap-3">
                         <button onClick={() => setShowPostModal(true)} className="bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-purple-700 flex items-center transition-all hover:scale-105">
@@ -152,8 +151,8 @@ export const Classifieds: React.FC = () => {
                ) : listings.length === 0 ? (
                   <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
                      <Tag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                     <p className="text-gray-500 text-lg">No listings found.</p>
-                     <button onClick={() => setShowPostModal(true)} className="mt-4 text-purple-600 font-bold hover:underline">Post the first ad!</button>
+                     <p className="text-gray-500 text-lg">No listings on this origin.</p>
+                     <p className="text-sm text-gray-400 mt-2">Juvay does not invent ads or buyer counts.</p>
                   </div>
                ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -36,13 +36,13 @@ export const Home: React.FC = () => {
       <>
          <Helmet>
             <title>TriniBuild - Start Selling Online in Trinidad & Tobago | Free Store Builder</title>
-            <meta name="description" content="The easiest way to start selling online in Trinidad & Tobago. Get a free website, 10 free listings, no credit card required. Shop local, support local businesses." />
+            <meta name="description" content="The easiest way to start selling online in Trinidad & Tobago. Get a free website, 5 free listings, no credit card required. Shop local, support local businesses." />
             <meta name="keywords" content="Trinidad online store, Trinidad marketplace, sell online Trinidad, Tobago business, TriniBuild, free store builder, local shopping T&T" />
             <link rel="canonical" href="https://trinibuild.com/" />
 
             {/* Open Graph */}
             <meta property="og:title" content="TriniBuild - For We, By We - Trinidad & Tobago Business Platform" />
-            <meta property="og:description" content="The easiest way to start selling online in Trinidad & Tobago. Free website, 10 free listings, no credit card required." />
+            <meta property="og:description" content="The easiest way to start selling online in Trinidad & Tobago. Free website, 5 free listings, no credit card required." />
             <meta property="og:type" content="website" />
             <meta property="og:url" content="https://trinibuild.com/" />
             <meta property="og:image" content="https://trinibuild.com/og-image.jpg" />
@@ -113,7 +113,7 @@ export const Home: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-center gap-6 mb-8 max-w-3xl mx-auto">
                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                         <ShoppingCart className="h-5 w-5 text-green-400" />
-                        <span className="text-white font-bold text-sm">10 Free Listings</span>
+                        <span className="text-white font-bold text-sm">5 Free Listings</span>
                      </div>
                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                         <Globe className="h-5 w-5 text-blue-400" />
@@ -202,7 +202,7 @@ export const Home: React.FC = () => {
                            <ShoppingCart className="h-6 w-6" />
                         </div>
                         <h3 className="text-3xl font-bold mb-2">Marketplace</h3>
-                        <p className="text-gray-200 mb-4">Buy & sell anything. Open your free store. 10 free listings.</p>
+                        <p className="text-gray-200 mb-4">Buy & sell anything. Open your free store. 5 free listings.</p>
                         <span className="inline-flex items-center font-bold text-blue-300 group-hover:text-white transition-colors">Shop Now <ArrowRight className="ml-2 h-4 w-4" /></span>
                      </div>
                   </div>
@@ -303,7 +303,7 @@ export const Home: React.FC = () => {
                      "Built in Trinidad & Tobago",
                      "TriniRides · Jobs · Real Estate · Events",
                      "Founding merchants get 6 months Pro free",
-                     "First 10 products free, forever",
+                     "First 5 products free, forever",
                      "Cancel anytime, no questions",
                   ].map((text, i) => (
                      <span key={i} className="text-gray-400 mx-8 font-mono text-sm flex items-center">
@@ -339,7 +339,7 @@ export const Home: React.FC = () => {
                            We Know the Struggle: That’s Why We Made TriniBuild
                         </h2>
                         <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-                           Look, we know how it goes in T&T. Banking’s a hassle. Getting a website feels like a big-company thing. And sometimes it feels like nobody building nothing for we. Well, that’s why we built this. On TriniBuild, you don’t need a credit card to get started. Get a free website and list your first 10 items on us. We set you up as your own boss and give you the tools to prove your income, handle your business, and do it all ‘for we, by we.’
+                           Look, we know how it goes in T&T. Banking’s a hassle. Getting a website feels like a big-company thing. And sometimes it feels like nobody building nothing for we. Well, that’s why we built this. On Juvay, you don’t need a credit card to get started. Get a free website and list your first 5 items on us. We set you up as your own boss and give you the tools to handle your business.
                         </p>
                         <Link to="/get-started" className="inline-flex items-center px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg shadow-lg hover:bg-gray-800 transition-all hover:scale-105">
                            Build My Free Page Now <ArrowRight className="ml-2 h-5 w-5" />

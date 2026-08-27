@@ -61,7 +61,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: '1 Free Web Page', included: true },
       { name: '5 Product Listings', included: true, limit: '5 products' },
       { name: 'Basic Template', included: true, limit: '1 design choice' },
-      { name: 'TriniBuild Branding', included: true, tooltip: 'Powered by TriniBuild badge' },
+      { name: 'Juvay Branding', included: true, tooltip: 'Powered by Juvay badge' },
       { name: 'Community Support', included: true },
       { name: 'Unlimited Marketplace Posts', included: true },
       { name: 'Basic Analytics', included: true, limit: 'Views & clicks only' },
@@ -99,12 +99,12 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   pro: {
     id: 'pro',
-    name: 'Pro',
+    name: 'Starter',
     price: {
-      monthly: 29,
-      yearly: 290,
-      yearlyMonthly: 24.17,
-      savings: 58
+      monthly: 99,
+      yearly: 1188,
+      yearlyMonthly: 99,
+      savings: 0
     },
     currency: 'TTD',
     tagline: 'For growing Trinidad businesses',
@@ -114,9 +114,9 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: 'Multi-Page Website', included: true, limit: 'Unlimited pages' },
       { name: '50 Product Listings', included: true },
       { name: '15+ Premium Templates', included: true, tooltip: 'CRO-optimized designs' },
-      { name: 'Remove TriniBuild Branding', included: true },
+      { name: 'Remove Juvay Branding', included: true },
       { name: 'Custom Domain', included: true, tooltip: 'yourstore.com' },
-      { name: 'Online Payments', included: true, tooltip: 'WiPay, PayPal, Bank Transfer' },
+      { name: 'Online Payments', included: true, tooltip: 'Only when a live rail is on' },
       { name: 'Inventory Management', included: true },
       { name: 'Email Support', included: true, limit: '24hr response' },
       { name: 'Advanced Analytics', included: true },
@@ -154,17 +154,17 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   premium: {
     id: 'premium',
-    name: 'Premium',
+    name: 'Business',
     price: {
-      monthly: 99,
-      yearly: 990,
-      yearlyMonthly: 82.50,
-      savings: 198
+      monthly: 329,
+      yearly: 3948,
+      yearlyMonthly: 329,
+      savings: 0
     },
     currency: 'TTD',
     tagline: 'For enterprise & multi-location',
     features: [
-      { name: 'Everything in Pro, PLUS:', included: true },
+      { name: 'Everything in Starter, PLUS:', included: true },
       { name: 'Unlimited Products', included: true },
       { name: 'Multiple Store Locations', included: true },
       { name: '5 Staff Accounts', included: true, tooltip: '+$10/month for more' },
@@ -239,16 +239,16 @@ export const getUpgradeCTA = (
 ): { title: string; message: string; targetTier: PricingTier } => {
   if (currentTier === 'free') {
     return {
-      title: `Upgrade to Pro for ${feature}`,
-      message: `Unlock ${feature} and 15+ more features for just $29/month`,
+      title: `See /pricing for ${feature}`,
+      message: `Unlock ${feature} when a paid plan is actually open (Starter TT$99 / Business TT$329)`,
       targetTier: 'pro'
     };
   }
   
   if (currentTier === 'pro') {
     return {
-      title: `Upgrade to Premium for ${feature}`,
-      message: `Get ${feature} plus unlimited everything for $99/month`,
+      title: `See /pricing for ${feature}`,
+      message: `Get ${feature} when Business (TT$329/mo) is actually open. No USD menu.`,
       targetTier: 'premium'
     };
   }

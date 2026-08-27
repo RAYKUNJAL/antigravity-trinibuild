@@ -39,7 +39,7 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
             <div>
               <p className="font-bold">{feature} is available on {targetPlan.name}</p>
               <p className="text-sm text-white/80">
-                Unlock for just ${targetPlan.price.monthly}/month
+                Unlock for TT${targetPlan.price.monthly}/month when that plan is actually open
               </p>
             </div>
           </div>
@@ -116,15 +116,12 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
           <div className="mb-6 p-4 bg-gradient-to-br from-trini-red/10 to-red-100 rounded-xl">
             <div className="flex items-baseline justify-center gap-2 mb-1">
               <span className="text-3xl font-black text-gray-900">
-                ${targetPlan.price.monthly}
+                TT${targetPlan.price.monthly}
               </span>
               <span className="text-gray-600">/month</span>
             </div>
             <p className="text-center text-sm text-gray-600">
-              or ${targetPlan.price.yearlyMonthly}/month billed yearly
-              <span className="text-trini-red font-bold ml-1">
-                (save ${targetPlan.price.savings})
-              </span>
+              Same TTD table as /pricing. No yearly discount is published.
             </p>
           </div>
 
@@ -177,7 +174,7 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
               className="px-6 py-2 bg-trini-red text-white rounded-lg font-bold hover:bg-red-700 flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              Upgrade for ${targetPlan.price.monthly}/month
+              See /pricing — TT${targetPlan.price.monthly}/month
             </motion.button>
 
             <a

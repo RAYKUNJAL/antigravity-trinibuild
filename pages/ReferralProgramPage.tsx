@@ -26,31 +26,16 @@ export const ReferralProgramPage: React.FC = () => {
 
   const tiers = [
     {
-      name: 'Bronze',
-      referrals: '1-5',
+      name: 'Affiliate',
+      referrals: 'Any count',
       commission: '10%',
-      bonus: 'TT$50',
-      benefits: ['Referral dashboard', 'Monthly payouts', 'Dedicated support']
-    },
-    {
-      name: 'Silver',
-      referrals: '6-20',
-      commission: '15%',
-      bonus: 'TT$200',
-      benefits: ['Everything in Bronze', 'Custom landing page', 'Email templates', 'Early access to features'],
-      highlighted: true
-    },
-    {
-      name: 'Gold',
-      referrals: '21+',
-      commission: '20%',
-      bonus: 'TT$500',
-      benefits: ['Everything in Silver', 'Dedicated account manager', 'Co-marketing opportunities', 'VIP support (1hr response)']
+      bonus: 'Of subscription',
+      benefits: ['10% of Starter TT$99 or Business TT$329', 'Paid when that plan is actually billed', 'No invented driver bounty']
     }
   ];
 
   const stats = [
-    { label: 'Per Merchant Referral', value: 'TT$150' },
+    { label: 'Per paid subscription', value: '10%' },
     { label: 'Referral Cap', value: 'None' },
     { label: 'Payout Schedule', value: 'Monthly' },
     { label: 'Cost to Join', value: 'Free' }
@@ -70,7 +55,7 @@ export const ReferralProgramPage: React.FC = () => {
     {
       step: 3,
       title: 'You Earn',
-      description: 'Earn 10-20% commission on their first year of subscriptions'
+      description: 'Earn 10% of their subscription'
     },
     {
       step: 4,
@@ -280,7 +265,7 @@ export const ReferralProgramPage: React.FC = () => {
             {[
               {
                 q: 'How much can I earn?',
-                 a: 'You earn TT$150 for every merchant you refer who signs up. There is no cap — refer more, earn more. We do not publish average earnings because the program is brand new and there is no data yet.'
+                 a: 'You earn 10% of the paid subscription (Starter TT$99 → TT$9.90, Business TT$329 → TT$32.90) when that plan is actually billed. Free referrals pay TT$0. We do not publish average earnings.'
               },
               {
                 q: 'When do I get paid?',
@@ -292,7 +277,7 @@ export const ReferralProgramPage: React.FC = () => {
               },
               {
                 q: 'Is there a limit to referrals?',
-                a: 'No! The more merchants you refer, the higher your tier and commission rate.'
+                a: 'No cap on referrals. The cut stays 10% of the paid subscription. We do not invent a higher tier rate.'
               }
             ].map((faq, idx) => (
               <motion.div 
@@ -318,7 +303,7 @@ export const ReferralProgramPage: React.FC = () => {
       >
         <h2 className="text-4xl font-black mb-4">Start Earning Today</h2>
         <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-           Earn TT$150 for every merchant you refer who signs up. No cap.
+           10% of the paid subscription. Starter TT$9.90 / Business TT$32.90. No invented flat fee.
         </p>
         <button className="bg-white text-[#E61E2B] px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
           Become a Referrer

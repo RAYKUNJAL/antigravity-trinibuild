@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Search, Loader2, BadgeCheck, ArrowRight, Navigation, Crosshair, Map as MapIcon, AlertCircle, ExternalLink, Star, ChevronDown } from 'lucide-react';
-import { findLocalBusinesses } from '../services/geminiService';
 import { useNavigate, Link } from 'react-router-dom';
 import { PlaceResult } from '../types';
 import { storeService } from '../services/storeService';
@@ -186,53 +185,15 @@ export const Directory: React.FC = () => {
     const fetchStores = async () => {
       try {
         const data = await storeService.getAllStores();
-        setLocalStores(data);
+        setLocalStores(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to load stores from API:", err);
-        // Fallback to local storage if API fails
-        const stored = JSON.parse(localStorage.getItem('trinibuild_stores') || '[]');
-        setLocalStores(stored);
+        setLocalStores([]);
       }
     };
 
     fetchStores();
   }, []);
-
-  const fetchAiInsights = async (query: string, lat?: number, lng?: number) => {
-    try {
-      const { text } = await findLocalBusinesses(query, lat, lng);
-      setAiResponseText(text);
-    } catch (error) {
-      console.error("Gemini error", error);
-    }
-  };
-
-  const searchWithGemini = async (query: string, category?: string) => {
-    const searchTerm = query || category || 'businesses in Trinidad';
-
-    try {
-      const { text, chunks } = await findLocalBusinesses(searchTerm);
-      setAiResponseText(text);
-
-      const fallbackPlaces: PlaceResult[] = chunks
-        .filter(chunk => chunk.maps)
-        .map(chunk => ({
-          name: chunk.maps.title,
-          place_id: chunk.maps.placeId || `gemini-${Date.now()}-${Math.random()}`,
-          formatted_address: "Address available via map link",
-          url: chunk.maps.uri,
-          rating: 0,
-          user_ratings_total: 0,
-          geometry: { location: null }
-        }));
-
-      setPlaces(fallbackPlaces);
-    } catch (e) {
-      console.error("Gemini search failed", e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const performSearch = (query: string, type?: string) => {
     setLoading(true);
@@ -268,22 +229,15 @@ export const Directory: React.FC = () => {
         } as any,
         viewport: null
       },
-      rating: 5.0,
-      user_ratings_total: 1,
+      rating: 0,
+      user_ratings_total: 0,
       photos: [],
       types: ['store']
     } as PlaceResult));
 
     setPlaces(matchingLocalStores);
 
-    if (matchingLocalStores.length > 0) {
-      if (query) fetchAiInsights(query);
-    } else {
-      // No local stores found — fall back to Gemini AI search
-      searchWithGemini(query, type);
-      return;
-    }
-
+    setAiResponseText('');
     setLoading(false);
   };
 
@@ -369,12 +323,12 @@ export const Directory: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Business Directory Trinidad & Tobago | Find Local Shops & Services | TriniBuild</title>
-        <meta name="description" content="Find local businesses, restaurants, shops, and services across Trinidad & Tobago. Search by category, location, or use our AI-powered directory to discover hidden gems." />
+        <title>Business Directory Trinidad & Tobago | Find Local Shops & Services | Juvay</title>
+        <meta name="description" content="Published Juvay stores in Trinidad & Tobago. Empty until a real store is live. No invented shops." />
         <meta name="keywords" content="Trinidad business directory, Tobago local shops, find businesses T&T, restaurants Trinidad, services Port of Spain" />
-        <link rel="canonical" href="https://trinibuild.com/#/directory" />
-        <meta property="og:title" content="Business Directory Trinidad & Tobago | TriniBuild" />
-        <meta property="og:description" content="Discover local businesses across Trinidad & Tobago. AI-powered search for shops, restaurants, and services." />
+        <link rel="canonical" href="https://juvay.app/stores" />
+        <meta property="og:title" content="Business Directory Trinidad & Tobago | Juvay" />
+        <meta property="og:description" content="Published Juvay stores only. No invented shops." />
       </Helmet>
       <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-gray-50">
         <div className="bg-white shadow-md border-b border-gray-200 z-30 flex-shrink-0 relative">

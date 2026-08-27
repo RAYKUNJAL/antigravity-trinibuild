@@ -173,7 +173,7 @@ export const PremiumEcommerceTemplate: React.FC<{
             <Shield className="w-5 h-5 text-gray-400 flex-shrink-0" />
             <div className="text-left">
               <div className="text-sm font-medium">Verified Store</div>
-              <div className="text-xs text-gray-500">Built on TriniBuild</div>
+              <div className="text-xs text-gray-500">Built on Juvay</div>
             </div>
           </div>
           <div className="flex items-center justify-center gap-3 py-4 px-2">
@@ -399,7 +399,7 @@ export const PremiumEcommerceTemplate: React.FC<{
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h4 className="font-medium mb-3">{storeName}</h4>
-            <p className="text-sm text-gray-500 mb-4">{storeData?.description || 'Your trusted store on TriniBuild.'}</p>
+            <p className="text-sm text-gray-500 mb-4">{storeData?.description || 'Your trusted store on Juvay.'}</p>
             {storeData?.phone && (
               <a href={`tel:${storeData.phone.replace(/\D/g, '')}`} className="inline-flex items-center gap-2 text-sm hover:opacity-70">
                 <Phone className="w-4 h-4" /> {storeData.phone}
@@ -423,7 +423,7 @@ export const PremiumEcommerceTemplate: React.FC<{
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-200 dark:border-slate-800 text-center text-xs text-gray-400">
-          <p>Powered by <a href="https://trinibuild.com" className="underline">TriniBuild</a> • {storeName} © 2026</p>
+          <p>Powered by <a href="https://juvay.app" className="underline">Juvay</a> • {storeName} © 2026</p>
         </div>
       </footer>
     </div>

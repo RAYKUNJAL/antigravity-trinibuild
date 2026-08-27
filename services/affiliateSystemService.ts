@@ -1,7 +1,7 @@
 /**
  * affiliateSystemService.ts — Live Affiliate/Referral System
  * Bronze→Silver→Gold→Platinum tiers
- * 10%→13%→17%→20% commission on referred subscriptions
+ * 10% of referred paid subscription (written lock). No SweetHand 20%-of-take.
  * Payout via Bank, WiPay, or Platform Credit
  */
 
@@ -54,16 +54,14 @@ export interface PayoutRequest {
 
 export const TIER_CONFIG = {
   bronze: { label: 'Bronze', min_referrals: 0, commission: 0.10, color: '#CD7F32', next: 'silver', next_at: 5 },
-  silver: { label: 'Silver', min_referrals: 5, commission: 0.13, color: '#9CA3AF', next: 'gold', next_at: 20 },
-  gold: { label: 'Gold', min_referrals: 20, commission: 0.17, color: '#FFD700', next: 'platinum', next_at: 50 },
-  platinum: { label: 'Platinum', min_referrals: 50, commission: 0.20, color: '#E5E4E2', next: null, next_at: null },
+  silver: { label: 'Silver', min_referrals: 5, commission: 0.10, color: '#9CA3AF', next: 'gold', next_at: 20 },
+  gold: { label: 'Gold', min_referrals: 20, commission: 0.10, color: '#FFD700', next: 'platinum', next_at: 50 },
+  platinum: { label: 'Platinum', min_referrals: 50, commission: 0.10, color: '#E5E4E2', next: null, next_at: null },
 };
 
 export const COMMISSION_EVENTS = {
-  subscription_pro: { label: 'Pro Subscription Referred', amount_ttd: 19.90 },   // 10% of TT$199
-  subscription_premium: { label: 'Premium Subscription Referred', amount_ttd: 39.90 },
-  store_created: { label: 'Store Created', amount_ttd: 5 },
-  first_order: { label: 'First COD Order', amount_ttd: 10 },
+  subscription_starter: { label: 'Starter subscription referred', amount_ttd: 9.90 },
+  subscription_business: { label: 'Business subscription referred', amount_ttd: 32.90 },
 };
 
 export const affiliateSystemService = {

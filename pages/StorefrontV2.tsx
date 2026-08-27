@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ShoppingCart, Search, Heart, Share2, Star, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye, Lock, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Search, Heart, Share2, TrendingUp, Shield, Truck, Clock, Phone, Mail, MapPin, ChevronRight, X, Plus, Minus, Check, CreditCard, Smartphone, Banknote, Building2, Zap, Eye, Lock, ShieldCheck } from 'lucide-react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/storeService';
 import { supabase } from '../services/supabaseClient';
 import { trackAddToCart, trackOrderPlaced, trackProductView, trackStoreView } from '../services/eventTracker';
 import { paymentService, PaymentMethod } from '../services/paymentService';
 import { notifyMerchantNewOrder, notifyCustomerOrderConfirmed } from '../services/whatsappService';
+import { fetchWamStatus } from '../services/wamStatus';
+import { startWamCheckout } from '../services/wamCheckout';
+import { storesApi } from '../services/selfHostedApi';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
-import { ChatWidget } from '../components/ChatWidget';
 import type { Store, Product } from '../types';
-
-// Lazy load heavy components
-const GooglePayButton = lazy(() => import('@google-pay/button-react'));
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -43,6 +42,8 @@ export const StorefrontV2: React.FC = () => {
         notes: ''
     });
     const [processing, setProcessing] = useState(false);
+    const [wamOn, setWamOn] = useState(false);
+    const [wamPending, setWamPending] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
 
@@ -58,7 +59,12 @@ export const StorefrontV2: React.FC = () => {
 
             setLoading(true);
             try {
-                const storeData = await storeService.getStoreBySlug(slug);
+                fetchWamStatus().then((s) => setWamOn(s.configured));
+                let storeData: any = await storeService.getStoreBySlug(slug);
+                if (!storeData) {
+                    const hosted = await storesApi.getBySlug(slug).catch(() => null);
+                    if (hosted?.store) storeData = { ...hosted.store, products: hosted.products || [] };
+                }
                 if (storeData) {
                     setStore(storeData);
                     setProducts(storeData.products || []);
@@ -218,26 +224,22 @@ export const StorefrontV2: React.FC = () => {
 
                 let result;
                 switch (paymentMethod) {
-                    case 'paypal': {
-                        // Record order as pending, open PayPal payment in new tab
-                        result = await paymentService.processCashPayment({
-                            ...paymentConfig,
-                            method: 'cod' as any
-                        });
-                        if (result.success) {
-                            const amountUSD = (cartTotal * 0.147).toFixed(2);
-                            const itemName = encodeURIComponent(`TriniBuild Order #${newOrderId}`);
-                            window.open(
-                                `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=ray%40kunjaldigital.com&amount=${amountUSD}&currency_code=USD&item_name=${itemName}&no_shipping=1`,
-                                '_blank'
-                            );
-                        }
-                        break;
-                    }
                     case 'cod':
                     case 'cash':
                         result = await paymentService.processCashPayment(paymentConfig);
                         break;
+                    case 'wam': {
+                        const faceCents = Math.round(finalTotal * 100);
+                        await startWamCheckout({
+                            amountCents: faceCents,
+                            faceCents,
+                            purpose: 'store',
+                            storeId: store?.id,
+                        });
+                        setWamPending(true);
+                        result = { success: false, error: 'Wam intent recorded at face only. This does not fulfil the order. Use cash pickup or COD to complete, or wait for a signed webhook (still no auto-fulfil).' };
+                        break;
+                    }
                     default:
                         result = { success: false, error: 'Payment method not supported' };
                 }
@@ -337,20 +339,20 @@ export const StorefrontV2: React.FC = () => {
 
             {/* SEO Optimization */}
             <Helmet>
-                <title>{store.name} - Shop Online in Trinidad & Tobago | TriniBuild</title>
+                <title>{store.name} - Shop Online in Trinidad & Tobago | Juvay</title>
                 {themeStyles && <style>{themeStyles}</style>}
                 <meta name="description" content={store.description || `Shop at ${store.name} - Fast delivery across Trinidad & Tobago. Cash on delivery available.`} />
-                <meta name="keywords" content={`${store.name}, Trinidad shopping, online store, ${store.category}, TriniBuild`} />
+                <meta name="keywords" content={`${store.name}, Trinidad shopping, online store, ${store.category}, Juvay`} />
 
                 {/* Open Graph */}
-                <meta property="og:title" content={`${store.name} - TriniBuild`} />
+                <meta property="og:title" content={`${store.name} - Juvay`} />
                 <meta property="og:description" content={store.description || ''} />
                 <meta property="og:image" content={store.logo_url || store.banner_url || ''} />
                 <meta property="og:type" content="website" />
 
                 {/* Twitter Card */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={`${store.name} - TriniBuild`} />
+                <meta name="twitter:title" content={`${store.name} - Juvay`} />
                 <meta name="twitter:description" content={store.description || ''} />
 
                 {/* Structured Data for SEO */}
@@ -409,10 +411,6 @@ export const StorefrontV2: React.FC = () => {
                                 )}
                                 <div>
                                     <h1 className="text-lg font-bold text-gray-900">{store.name}</h1>
-                                    <div className="flex items-center text-xs text-gray-500">
-                                        <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                                        4.8 (120 reviews)
-                                    </div>
                                 </div>
                             </div>
 
@@ -485,44 +483,42 @@ export const StorefrontV2: React.FC = () => {
                             <p className="text-lg text-gray-200 max-w-2xl mb-6">
                                 {store.description}
                             </p>
-                            <div className="flex items-center space-x-4 text-sm text-white">
-                                <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                                    <Shield className="h-4 w-4 mr-1" />
-                                    Verified Seller
-                                </div>
-                                <div className="flex items-center bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                                    <Truck className="h-4 w-4 mr-1" />
-                                    Fast Delivery
-                                </div>
-                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Trust Badges - CRO Element */}
+                    {/* Trust chips = only rails that are on for this store */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                            <Shield className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">Secure Checkout</p>
-                            <p className="text-xs text-gray-500">SSL Encrypted</p>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                            <Truck className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">Fast Delivery</p>
-                            <p className="text-xs text-gray-500">1-3 Days</p>
-                        </div>
+                        {store.accepts_cod !== false && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                             <Banknote className="h-8 w-8 text-green-600 mx-auto mb-2" />
                             <p className="text-sm font-bold text-gray-900">Cash on Delivery</p>
-                            <p className="text-xs text-gray-500">Pay When You Get It</p>
+                            <p className="text-xs text-gray-500">Pay when it arrives</p>
                         </div>
+                        )}
+                        {store.accepts_pickup && (
+                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <Truck className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-900">Pickup</p>
+                            <p className="text-xs text-gray-500">Collect at the store</p>
+                        </div>
+                        )}
+                        {wamOn && store.wam_handle && (
+                        <div className="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <CreditCard className="h-8 w-8 text-gray-900 mx-auto mb-2" />
+                            <p className="text-sm font-bold text-gray-900">Supported online payment</p>
+                            <p className="text-xs text-gray-500">Face amount only</p>
+                        </div>
+                        )}
+                        {store.whatsapp && (
                         <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                             <Phone className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                            <p className="text-sm font-bold text-gray-900">24/7 Support</p>
-                            <p className="text-xs text-gray-500">WhatsApp Ready</p>
+                            <p className="text-sm font-bold text-gray-900">WhatsApp</p>
+                            <p className="text-xs text-gray-500">Merchant listed a handle</p>
                         </div>
+                        )}
                     </div>
 
                     {/* Products Grid */}
@@ -563,14 +559,6 @@ export const StorefrontV2: React.FC = () => {
                                     <h4 className="font-bold text-gray-900 mb-1 line-clamp-2 text-sm">
                                         {product.name}
                                     </h4>
-                                    <div className="flex items-center mb-2">
-                                        <div className="flex text-yellow-400 text-xs">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className="h-3 w-3 fill-current" />
-                                            ))}
-                                        </div>
-                                        <span className="text-xs text-gray-500 ml-1">(24)</span>
-                                    </div>
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-lg font-bold text-trini-red">
@@ -611,7 +599,6 @@ export const StorefrontV2: React.FC = () => {
                     />
                 </section>
 
-                {/* TriniBuild Branding — shown on free plans */}
                 {((store as any).show_branding !== false) && (
                     <div className="text-center py-6 border-t border-gray-100">
                         <TriniBuildBadge variant="light" />
@@ -776,34 +763,39 @@ export const StorefrontV2: React.FC = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => setPaymentMethod('paypal')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                                onClick={() => setPaymentMethod('cash')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'cash' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
-                                                    <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
+                                                    <Banknote className="h-6 w-6 text-emerald-700 mr-3" />
                                                     <div className="text-left">
-                                                        <p className="font-bold text-gray-900">PayPal / Card</p>
-                                                        <p className="text-xs text-gray-500">Credit, Debit or PayPal balance</p>
+                                                        <p className="font-bold text-gray-900">Cash at pickup</p>
+                                                        <p className="text-xs text-gray-500">Exact cash unless the merchant says otherwise</p>
                                                     </div>
                                                 </div>
-                                                {paymentMethod === 'paypal' && <Check className="h-5 w-5 text-blue-600" />}
+                                                {paymentMethod === 'cash' && <Check className="h-5 w-5 text-emerald-700" />}
                                             </button>
 
+                                            {wamOn && store?.wam_handle && (
                                             <button
-                                                onClick={() => setPaymentMethod('bank_transfer')}
-                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'bank_transfer' ? 'border-orange-500 bg-orange-50' : 'border-gray-200'
+                                                onClick={() => setPaymentMethod('wam')}
+                                                className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all ${paymentMethod === 'wam' ? 'border-gray-900 bg-gray-50' : 'border-gray-200'
                                                     }`}
                                             >
                                                 <div className="flex items-center">
-                                                    <Building2 className="h-6 w-6 text-orange-600 mr-3" />
+                                                    <CreditCard className="h-6 w-6 text-gray-900 mr-3" />
                                                     <div className="text-left">
-                                                        <p className="font-bold text-gray-900">Bank Transfer</p>
-                                                        <p className="text-xs text-gray-500">Republic, Scotia, FCB</p>
+                                                        <p className="font-bold text-gray-900">Wam</p>
+                                                        <p className="text-xs text-gray-500">Face amount only. Processing estimate is display-only and is not added.</p>
                                                     </div>
                                                 </div>
-                                                {paymentMethod === 'bank_transfer' && <Check className="h-5 w-5 text-orange-600" />}
+                                                {paymentMethod === 'wam' && <Check className="h-5 w-5 text-gray-900" />}
                                             </button>
+                                            )}
+                                            {wamPending && (
+                                                <p className="text-sm text-gray-600">Wam intent recorded. Order is not fulfilled.</p>
+                                            )}
 
                                             {/* Trust badges — truthful: HTTPS/SSL via Caddy, encrypted Supabase, COD supported */}
                                             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 pb-1">
@@ -934,18 +926,7 @@ export const StorefrontV2: React.FC = () => {
                     </button>
                 )}
 
-                {/* AI Store Chatbot */}
-                {store && store.bot_enabled && (
-                    <ChatWidget
-                        mode="vendor"
-                        vendorContext={{
-                            id: store.id,
-                            name: store.name,
-                            description: store.description || '',
-                            products: products.slice(0, 10).map(p => ({ name: p.name, price: p.price }))
-                        }}
-                    />
-                )}
+                {/* Chat bubble hidden on storefront — overlaps Add on 390px */}
             </div>
         </>
     );

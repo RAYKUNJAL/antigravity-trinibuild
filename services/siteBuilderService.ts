@@ -258,7 +258,6 @@ export function generateSiteLocal(brief: BusinessBrief): BuilderSite {
                 methods: [
                     { id: uid(), icon: '💵', name: 'Cash on Delivery', detail: 'Pay when your order reaches you' },
                     { id: uid(), icon: '🏪', name: 'Cash on Pickup', detail: 'Reserve online, pay at the counter' },
-                    { id: uid(), icon: '🏦', name: 'Bank Transfer', detail: 'Pay ahead by transfer or deposit' },
                 ],
             },
         },

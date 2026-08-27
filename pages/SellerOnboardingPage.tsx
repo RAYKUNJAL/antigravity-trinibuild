@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ArrowRight, Upload, DollarSign, Package, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { JuvayPriceTable } from '../components/JuvayPriceTable';
 
 export const SellerOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export const SellerOnboardingPage: React.FC = () => {
     {
       icon: '💳',
       title: 'Easy Payments',
-      description: 'Cash on Delivery, Bank Transfer, Card & PayPal'
+      description: 'Cash on delivery and pickup. Supported online payments only when that rail is actually on.'
     },
     {
       icon: '📱',
@@ -245,60 +246,9 @@ export const SellerOnboardingPage: React.FC = () => {
       >
         <div className="max-w-4xl mx-auto">
           <motion.h2 variants={item} className="text-3xl font-black text-center mb-12">
-            Simple Pricing
+            One TTD price table
           </motion.h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: 'Starter',
-                price: 'Free',
-                description: '10 products, basic features',
-                color: 'bg-gray-100'
-              },
-              {
-                name: 'Pro',
-                price: 'TT$199/mo',
-                description: 'Unlimited products, all features',
-                color: 'bg-[#E61E2B]',
-                highlighted: true,
-                textColor: 'text-white'
-              },
-              {
-                name: 'Business',
-                price: 'TT$399/mo',
-                description: 'Everything + dedicated support',
-                color: 'bg-gray-900',
-                textColor: 'text-white'
-              }
-            ].map((tier, idx) => (
-              <motion.div
-                key={idx}
-                variants={item}
-                className={`rounded-lg p-6 text-center ${tier.color} ${
-                  tier.highlighted ? 'border-2 border-yellow-400 shadow-lg' : ''
-                }`}
-              >
-                <h3 className={`text-2xl font-bold mb-2 ${tier.textColor || ''}`}>
-                  {tier.name}
-                </h3>
-                <p className={`text-sm mb-4 opacity-75 ${tier.textColor || 'text-gray-600'}`}>
-                  {tier.description}
-                </p>
-                <p className={`text-3xl font-black mb-6 ${tier.textColor || ''}`}>
-                  {tier.price}
-                </p>
-                <button className={`w-full py-3 rounded-lg font-bold transition ${
-                  tier.highlighted
-                    ? 'bg-white text-[#E61E2B] hover:bg-gray-100'
-                    : tier.name === 'Business'
-                      ? 'bg-[#E61E2B] text-white hover:bg-red-700'
-                      : 'bg-white text-gray-900 hover:bg-gray-50 border-2 border-gray-200'
-                }`}>
-                  Get Started
-                </button>
-              </motion.div>
-            ))}
-          </div>
+          <JuvayPriceTable />
         </div>
       </motion.section>
 

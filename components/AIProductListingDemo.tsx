@@ -462,7 +462,7 @@ export const AIProductListingDemo: React.FC = () => {
                     <div>
                       <div className="font-bold text-base sm:text-lg mb-0.5">This is what your store looks like.</div>
                       <div className="text-sm text-gray-300">
-                        Your first 10 listings are free. No credit card required.
+                        Your first 5 listings are free. No credit card required.
                       </div>
                     </div>
                     <Link

@@ -87,7 +87,7 @@ export const MerchantRevenueDashboard: React.FC<{ storeId: string }> = ({
     const totalOrders = orderList.length;
 
     // Fee calculations
-    const trinibuildFees = Math.round(totalOrderValue * 0.05); // 5% platform fee
+    const trinibuildFees = 0; // No written Juvay COD take lock. Do not invent 5%.
     const deliveryFees = orderList.reduce((sum, o) => sum + (o.delivery_fee || 0), 0);
 
     // Payment fees (simplified - varies by method)
@@ -136,7 +136,7 @@ export const MerchantRevenueDashboard: React.FC<{ storeId: string }> = ({
     csv += `Total Order Value,${metrics.totalOrderValue}\n`;
     csv += `Total Orders,${metrics.totalOrders}\n\n`;
     csv += 'FEES BREAKDOWN\n';
-    csv += `TriniBuild Platform Fee (5%),${metrics.trinibuildFees}\n`;
+    csv += `Platform fee (none published),${metrics.trinibuildFees}\n`;
     csv += `Delivery Fees (TriniRides),${metrics.deliveryFees}\n`;
     csv += `Payment Processing Fees,${metrics.paymentFees}\n\n`;
     csv += 'MERCHANT EARNINGS\n';
@@ -288,10 +288,10 @@ export const MerchantRevenueDashboard: React.FC<{ storeId: string }> = ({
               <div className="flex justify-between py-3">
                 <div>
                   <p className="text-gray-700 dark:text-gray-300">
-                    TriniBuild Platform Fee
+                    Platform fee
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    5% of all orders
+                    None published
                   </p>
                 </div>
                 <span className="font-light text-red-600">
@@ -529,15 +529,13 @@ export const MerchantRevenueDashboard: React.FC<{ storeId: string }> = ({
           </h4>
           <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
             <li>
-              <strong>TriniBuild Platform Fee (5%):</strong> Covers platform
-              maintenance, support, and features
+              <strong>Platform fee:</strong> No Juvay COD take is published. Do not assume 5%.
             </li>
             <li>
-              <strong>Delivery Fees:</strong> Paid to TriniRides for delivery services
+              <strong>Delivery:</strong> Only shown when that product is live for that store.
             </li>
             <li>
-              <strong>Payment Processing:</strong> Card (2.9% + TT$10), Bank (TT$50
-              batch fee)
+              <strong>Payment processing:</strong> Cash pickup and COD are the live rails.
             </li>
             <li>
               <strong>VAT (12.5%):</strong> Trinidad tax on your gross earnings,

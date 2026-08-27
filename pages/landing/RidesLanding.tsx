@@ -9,7 +9,7 @@ export const RidesLanding: React.FC = () => {
       <div className="min-h-screen bg-white font-sans">
          <SEO
             title="TriniBuild Go - Rideshare & Taxi App"
-            description="The most affordable rideshare in Trinidad & Tobago. Drivers keep 85% of earnings. Riders get fair, consistent pricing."
+            description="Rideshare listings in Trinidad & Tobago. No driver income split is published here."
             keywords="rideshare trinidad, taxi app trinidad, uber alternative trinidad, drive for money trinidad"
          />
          {/* HERO */}
@@ -26,7 +26,7 @@ export const RidesLanding: React.FC = () => {
                      Drive on <br /><span className="text-yellow-500">Your Terms.</span>
                   </h1>
                   <p className="text-xl text-gray-300 mb-10">
-                     Whether you have a car, a van, or a bike. Turn your vehicle into a revenue machine with TriniBuild Go. The lowest commissions in the Caribbean.
+                     Whether you have a car, a van, or a bike. Apply to drive. Juvay does not publish a fare split or weekly income figure.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
                      <Link to="/drive/signup" className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors shadow-lg flex items-center justify-center">
@@ -55,14 +55,14 @@ export const RidesLanding: React.FC = () => {
                   <div className="md:w-1/2 p-10 flex flex-col justify-center">
                      <h2 className="text-3xl font-bold text-gray-900 mb-4">Why drive with us?</h2>
                      <p className="text-gray-600 mb-6">
-                        Other apps take 25-30% of your hard-earned money. TriniBuild Go is built differently. We believe the person behind the wheel deserves the lion's share.
+                        Rides are a listing, not a guaranteed paycheck. Apply if you want to drive. There is no published fare split.
                      </p>
                      <ul className="space-y-4 mb-8">
                         <li className="flex items-center font-bold text-gray-800">
-                           <DollarSign className="h-5 w-5 text-green-600 mr-3" /> Keep 85% of every fare
+                           <DollarSign className="h-5 w-5 text-green-600 mr-3" /> No published fare-split claim
                         </li>
                         <li className="flex items-center font-bold text-gray-800">
-                           <Clock className="h-5 w-5 text-blue-600 mr-3" /> Instant Payouts (Daily)
+                           <Clock className="h-5 w-5 text-blue-600 mr-3" /> No published payout schedule
                         </li>
                         <li className="flex items-center font-bold text-gray-800">
                            <Shield className="h-5 w-5 text-red-600 mr-3" /> Verified Rider ID System
@@ -102,8 +102,8 @@ export const RidesLanding: React.FC = () => {
                      <div className="bg-green-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-green-700">
                         <DollarSign className="h-8 w-8" />
                      </div>
-                     <h3 className="font-bold text-lg mb-2">Cash or Card</h3>
-                     <p className="text-sm text-gray-500">Pay how you want.</p>
+                     <h3 className="font-bold text-lg mb-2">Cash when that ride is live</h3>
+                     <p className="text-sm text-gray-500">Card only if that rail is actually on.</p>
                   </div>
                </div>
 

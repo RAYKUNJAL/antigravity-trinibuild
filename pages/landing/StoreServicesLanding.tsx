@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
+import { JuvayPriceTable } from '../../components/JuvayPriceTable';
 
 export const StoreServicesLanding: React.FC = () => {
     const navigate = useNavigate();
@@ -71,7 +72,7 @@ export const StoreServicesLanding: React.FC = () => {
             field: 'needsDelivery',
             type: 'radio',
             options: [
-                { value: 'yes', label: 'Yes, I need TriniBuild Go delivery' },
+                { value: 'yes', label: 'Yes, I need delivery (seller-arranged)' },
                 { value: 'own', label: 'I have my own delivery' },
                 { value: 'no', label: 'No delivery needed (pickup only)' }
             ]
@@ -81,19 +82,19 @@ export const StoreServicesLanding: React.FC = () => {
     const handleSubmit = async () => {
         // Submit form to create store
         console.log('Store setup data:', formData);
-        navigate('/store/builder');
+        navigate('/create-store');
     };
 
     return (
         <>
             <Helmet>
-                <title>Open Your Online Store in Trinidad & Tobago | TriniBuild</title>
-                <meta name="description" content="Start selling online in Trinidad & Tobago with TriniBuild. Get your store online in 5 minutes with COD, WiPay, delivery, and more. No technical skills needed!" />
-                <meta name="keywords" content="online store trinidad, e-commerce trinidad, sell online trinidad, trinidad online shopping, wipay, cash on delivery trinidad" />
+                <title>Open Your Online Store in Trinidad & Tobago | Juvay</title>
+                <meta name="description" content="Start selling online in Trinidad & Tobago with Juvay. Cash on delivery and pickup. No technical skills needed." />
+                <meta name="keywords" content="online store trinidad, e-commerce trinidad, sell online trinidad, trinidad online shopping, cash on delivery trinidad" />
 
                 {/* Open Graph */}
-                <meta property="og:title" content="Open Your Online Store in Trinidad & Tobago | TriniBuild" />
-                <meta property="og:description" content="Start selling online in 5 minutes. Accept COD, WiPay, get free delivery with TriniBuild Go." />
+                <meta property="og:title" content="Open Your Online Store in Trinidad & Tobago | Juvay" />
+                <meta property="og:description" content="Start selling online in 5 minutes. Cash on delivery and pickup." />
                 <meta property="og:type" content="website" />
 
                 {/* Structured Data */}
@@ -101,12 +102,12 @@ export const StoreServicesLanding: React.FC = () => {
                     {JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "Service",
-                        "name": "TriniBuild Online Store Platform",
+                        "name": "Juvay Online Store Platform",
                         "description": "E-commerce platform for Trinidad & Tobago businesses",
                         "provider": {
                             "@type": "Organization",
-                            "name": "TriniBuild",
-                            "url": "https://trinibuild.com"
+                            "name": "Juvay",
+                            "url": "https://juvay.app"
                         },
                         "areaServed": {
                             "@type": "Country",
@@ -114,7 +115,7 @@ export const StoreServicesLanding: React.FC = () => {
                         },
                         "offers": {
                             "@type": "Offer",
-                            "price": "29.00",
+                            "price": "0.00",
                             "priceCurrency": "TTD"
                         }
                     })}
@@ -136,7 +137,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     Start Selling Online in Trinidad & Tobago
                                 </h1>
                                 <p className="text-xl md:text-2xl mb-8 text-white/90">
-                                    Accept COD, WiPay, Google Pay. Get free delivery with TriniBuild Go. No technical skills needed.
+                                    Cash on delivery and pickup. Supported online payments only when that rail is actually on. No technical skills needed.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                     <button
@@ -147,10 +148,10 @@ export const StoreServicesLanding: React.FC = () => {
                                         <ArrowRight className="ml-2 h-5 w-5" />
                                     </button>
                                     <button
-                                        onClick={() => navigate('/demo')}
+                                        onClick={() => navigate('/signup')}
                                         className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center"
                                     >
-                                        View Demo Store
+                                        Create a store
                                     </button>
                                 </div>
 
@@ -162,7 +163,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
-                                        Free 14-Day Trial
+                                        5 listings on Free
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
@@ -194,7 +195,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 Everything You Need to Sell Online
                             </h2>
                             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                                Built specifically for Trinidad & Tobago businesses. No hidden fees, no complicated setup.
+                                Built for Trinidad & Tobago. Cash pickup and COD are on. No 0% commission claim.
                             </p>
                         </div>
 
@@ -206,13 +207,13 @@ export const StoreServicesLanding: React.FC = () => {
                             />
                             <FeatureCard
                                 icon={<DollarSign className="h-12 w-12 text-green-600" />}
-                                title="Accept All Payments"
-                                description="Cash on Delivery, WiPay, Google Pay, Bank Transfer. Your customers choose how they want to pay."
+                                title="Cash pickup and COD"
+                                description="Customers pay cash at pickup or on delivery. Supported online payments appear only when that rail is actually on."
                             />
                             <FeatureCard
                                 icon={<Truck className="h-12 w-12 text-purple-600" />}
-                                title="TriniBuild Go Delivery"
-                                description="Integrated delivery network across Trinidad & Tobago. Real-time tracking and proof of delivery."
+                                title="Pickup or seller delivery"
+                                description="Offer pickup or arrange your own delivery. A ride fare is only shown when that product is live for that store."
                             />
                             <FeatureCard
                                 icon={<MessageCircle className="h-12 w-12 text-pink-600" />}
@@ -245,7 +246,7 @@ export const StoreServicesLanding: React.FC = () => {
                             <div>
                                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6"
                                     style={{ background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(255,215,0,0.4)' }}>
-                                    <span style={{ color: '#FFD700' }} className="text-xs font-black uppercase tracking-widest">Pro Feature</span>
+                                    <span style={{ color: '#FFD700' }} className="text-xs font-black uppercase tracking-widest">On /pricing when paid plans open</span>
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
                                     QR Pickup<br />
@@ -303,9 +304,9 @@ export const StoreServicesLanding: React.FC = () => {
                                     className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-black text-base transition-transform hover:scale-105"
                                     style={{ background: 'linear-gradient(135deg, #FFD700, #fbbf24)' }}
                                 >
-                                    Get QR Reservations — TT$99/mo <ChevronRight className="h-5 w-5" />
+                                    See /pricing — Free / Starter / Business <ChevronRight className="h-5 w-5" />
                                 </button>
-                                <p className="text-xs text-gray-600 mt-3">Includes all Pro features · Cancel anytime</p>
+                                <p className="text-xs text-gray-600 mt-3">One TTD table: Free / Starter / Business. No second menu.</p>
                             </div>
 
                             {/* Right — visual mockup of QR receipt + calendar */}
@@ -365,7 +366,7 @@ export const StoreServicesLanding: React.FC = () => {
 
                                 {/* Stats row */}
                                 <div className="w-full max-w-xs grid grid-cols-3 gap-2">
-                                    {[['65%', 'Fewer no-shows'], ['2min', 'Avg pickup time'], ['100%', 'Auto tax logged']].map(([v, l]) => (
+                                    {[['COD', 'Cash at pickup'], ['QR', 'Receipt mock only'], ['5', 'Free listings']].map(([v, l]) => (
                                         <div key={l} className="rounded-xl p-3 text-center" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
                                             <p className="font-black text-sm" style={{ color: '#FFD700' }}>{v}</p>
                                             <p className="text-gray-500 text-xs mt-0.5">{l}</p>
@@ -451,88 +452,11 @@ export const StoreServicesLanding: React.FC = () => {
                                 Simple, Transparent Pricing
                             </h2>
                             <p className="text-xl text-gray-600">
-                                No hidden fees. No surprises. Just honest pricing.
+                                One TTD table matching /pricing. Free TT$0 / Starter TT$99 / Business TT$329.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <PricingCard
-                                name="Starter"
-                                price="29"
-                                period="month"
-                                features={[
-                                    'Up to 100 products',
-                                    'Cash on Delivery',
-                                    'Basic analytics',
-                                    'WhatsApp notifications',
-                                    'Email support'
-                                ]}
-                                cta="Start Free Trial"
-                            />
-                            <PricingCard
-                                name="Pro"
-                                price="79"
-                                period="month"
-                                popular={true}
-                                features={[
-                                    'Unlimited products',
-                                    'All payment methods',
-                                    'TriniBuild Go delivery',
-                                    'Advanced analytics',
-                                    'Loyalty program',
-                                    'Email marketing',
-                                    'Priority support'
-                                ]}
-                                cta="Start Free Trial"
-                            />
-                            <PricingCard
-                                name="Enterprise"
-                                price="Custom"
-                                period=""
-                                features={[
-                                    'Everything in Pro',
-                                    'Multiple locations',
-                                    'Staff accounts',
-                                    'API access',
-                                    'White label',
-                                    'Dedicated account manager',
-                                    '24/7 phone support'
-                                ]}
-                                cta="Contact Sales"
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Social Proof */}
-                <section className="py-20 bg-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4">
-                                Trusted by Trinidad & Tobago Businesses
-                            </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <TestimonialCard
-                                quote="TriniBuild helped me take my small bakery online. Now I'm getting orders from all over Trinidad!"
-                                author="Sarah Mohammed"
-                                business="Sweet Treats Bakery, Port of Spain"
-                                rating={5}
-                            />
-                            <TestimonialCard
-                                quote="The COD option was a game-changer. My customers love being able to pay when they receive their order."
-                                author="Michael Chen"
-                                business="Tech Haven Electronics, San Fernando"
-                                rating={5}
-                            />
-                            <TestimonialCard
-                                quote="Setup was so easy! I had my store online in less than 10 minutes. The delivery integration is perfect."
-                                author="Khadijah Ali"
-                                business="Fashion Forward Boutique, Chaguanas"
-                                rating={5}
-                            />
-                        </div>
+                        <JuvayPriceTable />
                     </div>
                 </section>
 
@@ -543,7 +467,7 @@ export const StoreServicesLanding: React.FC = () => {
                             Ready to Start Selling Online?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Join hundreds of Trinidad & Tobago businesses already selling on TriniBuild
+                            Free is 5 listings, cash pickup, and COD. No invented merchant count.
                         </p>
                         <button
                             onClick={() => document.getElementById('quiz')?.scrollIntoView({ behavior: 'smooth' })}
@@ -553,7 +477,7 @@ export const StoreServicesLanding: React.FC = () => {
                             <ArrowRight className="ml-3 h-6 w-6" />
                         </button>
                         <p className="mt-6 text-sm text-white/80">
-                            No credit card required • Free 14-day trial • Cancel anytime
+                            No credit card to start. Free is not a timed trial. Paid plans open when Wam can take that money.
                         </p>
                     </div>
                 </section>
@@ -740,50 +664,6 @@ const ContactForm: React.FC<{ formData: any; onChange: (data: any) => void; onSu
         <p className="text-sm text-gray-500 text-center">
             By clicking "Create My Store", you agree to our Terms of Service and Privacy Policy
         </p>
-    </div>
-);
-
-const PricingCard: React.FC<{ name: string; price: string; period: string; features: string[]; cta: string; popular?: boolean }> = ({ name, price, period, features, cta, popular }) => (
-    <div className={`bg-white rounded-2xl shadow-xl border-2 ${popular ? 'border-trini-red' : 'border-gray-200'} p-8 relative`}>
-        {popular && (
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <span className="bg-trini-red text-white px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</span>
-            </div>
-        )}
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
-        <div className="mb-6">
-            <span className="text-5xl font-extrabold text-gray-900">TT${price}</span>
-            {period && <span className="text-gray-600">/{period}</span>}
-        </div>
-        <ul className="space-y-3 mb-8">
-            {features.map((feature, idx) => (
-                <li key={idx} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{feature}</span>
-                </li>
-            ))}
-        </ul>
-        <button className={`w-full py-3 rounded-lg font-bold transition-colors ${popular
-                ? 'bg-trini-red text-white hover:bg-red-700'
-                : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-            }`}>
-            {cta}
-        </button>
-    </div>
-);
-
-const TestimonialCard: React.FC<{ quote: string; author: string; business: string; rating: number }> = ({ quote, author, business, rating }) => (
-    <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
-        <div className="flex mb-4">
-            {[...Array(rating)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-            ))}
-        </div>
-        <p className="text-gray-700 mb-6 italic">"{quote}"</p>
-        <div>
-            <div className="font-bold text-gray-900">{author}</div>
-            <div className="text-sm text-gray-600">{business}</div>
-        </div>
     </div>
 );
 

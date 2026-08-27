@@ -172,7 +172,7 @@ export const IslandCommerceTemplate: React.FC<{
           {[
             { icon: <Truck size={18} />, t: 'Cash on Delivery', s: 'Pay when it arrives' },
             { icon: <MessageCircle size={18} />, t: 'WhatsApp Ordering', s: 'Chat & confirm instantly' },
-            { icon: <ShieldCheck size={18} />, t: 'Trusted Seller', s: 'Built on TriniBuild' },
+            { icon: <ShieldCheck size={18} />, t: 'Trusted Seller', s: 'Built on Juvay' },
           ].map((f, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 16, borderRadius: 10, boxShadow: SHADOW_BORDER }}>
               <span style={{ color: primaryColor }}>{f.icon}</span>
@@ -284,14 +284,14 @@ export const IslandCommerceTemplate: React.FC<{
       <footer style={{ boxShadow: SHADOW_BORDER, padding: '40px 20px', background: '#fafafa' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontWeight: 600, fontSize: 16, letterSpacing: '-0.02em' }}>{storeName}</div>
-          <p style={{ fontSize: 13.5, color: '#666', marginTop: 6 }}>{storeData?.description || 'Your trusted island store on TriniBuild.'}</p>
+          <p style={{ fontSize: 13.5, color: '#666', marginTop: 6 }}>{storeData?.description || 'Your trusted island store on Juvay.'}</p>
           {phone && (
             <button onClick={() => waProduct(active[0] ?? ({ name: 'your products', price: 0 } as Product))}
               style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontWeight: 600, fontSize: 13.5, cursor: 'pointer' }}>
               <MessageCircle size={15} /> Chat on WhatsApp
             </button>
           )}
-          <div style={{ fontSize: 12, color: '#999', marginTop: 20 }}>Powered by TriniBuild · Cash on Delivery available</div>
+          <div style={{ fontSize: 12, color: '#999', marginTop: 20 }}>Powered by Juvay · Cash on Delivery available</div>
         </div>
       </footer>
 

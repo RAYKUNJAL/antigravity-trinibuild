@@ -14,8 +14,8 @@ export const Footer: React.FC = () => {
           {/* Brand */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <div className="bg-white/90 p-2 rounded-lg inline-block mb-4">
-              <img src={LOGO_URL} alt="TriniBuild" className="h-10 w-auto"
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-2xl text-trini-black">Trini<span class="text-trini-red">Build</span></span>'; }} />
+              <img src={LOGO_URL} alt="Juvay" className="h-10 w-auto"
+                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-2xl text-trini-black">Juvay</span>'; }} />
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-xs leading-relaxed">
               Trinidad & Tobago's complete digital business platform. Stores, marketplace, rides, jobs, digital services, and AI tools — all in one place. For we, by we.
@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/documents" className="text-sm text-gray-400 hover:text-white transition-colors">AI Document Assistant</Link></li>
               <li><Link to="/products/ai-add" className="text-sm text-gray-400 hover:text-white transition-colors">AI Product Lister</Link></li>
               <li><Link to="/tax-dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">VAT Tax Tracker</Link></li>
-              <li><Link to="/premium-features" className="text-sm text-gray-400 hover:text-white transition-colors">Premium Features</Link></li>
+              <li><Link to="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">Plans (TTD)</Link></li>
             </ul>
           </div>
 
@@ -99,6 +99,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">Blog</Link></li>
               <li><Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About</Link></li>
               <li><Link to="/contact" className="text-sm text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              {/* No public Admin link. /admin is a login wall for strangers. */}
             </ul>
           </div>
 
@@ -106,8 +107,10 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Legal</h3>
             <ul className="space-y-2.5">
-              <li><Link to="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><a href="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="/refund" className="text-sm text-gray-400 hover:text-white transition-colors">Refund Policy</a></li>
+              <li><a href="/legal/merchant-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Merchant Agreement</a></li>
               <li><Link to="/contractor-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Contractor Agreement</Link></li>
               <li><Link to="/liability-waiver" className="text-sm text-gray-400 hover:text-white transition-colors">Liability Waiver</Link></li>
               <li><Link to="/affiliate-terms" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Terms</Link></li>
@@ -151,8 +154,7 @@ export const Footer: React.FC = () => {
               <span>For We, By We 🇹🇹</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/admin" className="text-xs text-gray-400 hover:text-gray-200 transition-colors">Admin</Link>
-              <a href="https://trinibuild.com/sitemap.xml" className="text-xs text-gray-400 hover:text-gray-200 transition-colors">Sitemap</a>
+              <a href="/sitemap.xml" className="text-xs text-gray-400 hover:text-gray-200 transition-colors">Sitemap</a>
               <span className="text-xs text-gray-400">v2.0</span>
             </div>
           </div>

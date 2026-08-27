@@ -10,6 +10,8 @@ import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
 import PricingPage from './pages/PricingPage';
+import PricingCheckout from './pages/PricingCheckout';
+import { DemoSamplePage } from './pages/DemoSamplePage';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -35,7 +37,6 @@ import { StoreBotSettings } from './pages/StoreBotSettings';
 import { ChatWidget } from './components/ChatWidget';
 import { Rides } from './pages/Rides';
 import { Jobs } from './pages/Jobs';
-import { Pricing } from './pages/Pricing';
 import { Deals } from './pages/Deals';
 import { Onboarding } from './pages/Onboarding';
 import { Earn } from './pages/Earn';
@@ -56,8 +57,6 @@ import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
 import { CODTrackingPage } from './pages/CODTrackingPage';
-import { AdminSignup } from './pages/admin/AdminSignup';
-import { AdminBypass } from './pages/admin/AdminBypass';
 import CommandCenter from './pages/CommandCenter';
 import { AdminLayout } from './layouts/AdminLayout';
 import {
@@ -69,6 +68,7 @@ import {
 import { MessagingCenter } from './pages/admin/MessagingCenter';
 import { Automations } from './pages/admin/Automations';
 import { Legal } from './pages/Legal';
+import { StaticLegalRedirect } from './components/StaticLegalRedirect';
 import { RealEstate } from './pages/RealEstate';
 import { ListProperty } from './pages/ListProperty';
 import { RealEstateAgentDashboard } from './pages/RealEstateAgentDashboard';
@@ -94,7 +94,7 @@ import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
 // StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
 import { StorefrontV2 } from './pages/StorefrontV2';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
@@ -103,7 +103,6 @@ import { CaribAdsLanding } from './pages/CaribAdsLanding';
 import { DriverSignupAI } from './pages/DriverSignupAI';
 import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
-import { PremiumFeaturesDashboard } from './components/PremiumFeaturesDashboard';
 import { LoginPage } from './pages/LoginPageSimple';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
 import { QRScanner, OrderTracking } from './components/QRReceiptSystem';
@@ -117,7 +116,6 @@ import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
 import { GamePassProPage } from './pages/GamePassProPage';
 import { MerchantDashboard } from './pages/MerchantDashboard';
 import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
-import { ProStoreFeaturesPage } from './pages/ProStoreFeaturesPage';
 import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
 import { HelpSupportPage } from './pages/HelpSupportPage';
 import { ReferralProgramPage } from './pages/ReferralProgramPage';
@@ -159,6 +157,20 @@ const LocationLogger = () => {
   return null;
 };
 
+/** Persistent bubble overlaps Add on 390px store/demo views. Hide there. */
+const PlatformChatGate: React.FC = () => {
+  const { pathname } = useLocation();
+  if (
+    pathname.startsWith('/store/') ||
+    pathname === '/demo' ||
+    pathname.startsWith('/demo/') ||
+    pathname.startsWith('/s/')
+  ) {
+    return null;
+  }
+  return <ChatWidget mode="platform" />;
+};
+
 const App: React.FC = () => {
   console.log('App Component Rendering');
   
@@ -186,7 +198,7 @@ const App: React.FC = () => {
             <Route path="/site/:slug" element={<PublishedSite />} />
             <Route path="/sitemap.xml" element={<SitemapXml />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
-            <Route path="/admin/payments" element={<AdminPaymentsVerify />} />
+            <Route path="/admin/payments" element={<AdminRoute><AdminPaymentsVerify /></AdminRoute>} />
             <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
             <Route path="/pickups" element={<MerchantPickupQueue />} />
             <Route path="/driver/pass" element={<DriverPassPage />} />
@@ -209,8 +221,8 @@ const App: React.FC = () => {
               <Route path="/create-store-simple" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v2" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />
-              <Route path="/tax-dashboard" element={<MerchantTaxDashboard />} />
-              <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
+              <Route path="/tax-dashboard" element={<ProtectedRoute><MerchantTaxDashboard /></ProtectedRoute>} />
+              <Route path="/admin-financial" element={<AdminRoute><AdminFinancialDashboard /></AdminRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><JuvayDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
@@ -247,8 +259,13 @@ const App: React.FC = () => {
               <Route path="/get-started" element={<ProtectedRoute><JuvayOnboarding /></ProtectedRoute>} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<AdminSignup />} />
-              <Route path="/admin/bypass" element={<AdminBypass />} />
+              <Route path="/admin" element={<Navigate to="/login" replace />} />
+              <Route path="/admin/" element={<Navigate to="/login" replace />} />
+              <Route path="/admin/bypass" element={<Navigate to="/" replace />} />
+              <Route path="/demo" element={<DemoSamplePage />} />
+              <Route path="/demo/food" element={<DemoSamplePage />} />
+              <Route path="/pricing/checkout" element={<PricingCheckout />} />
+              <Route path="/builder" element={<Navigate to="/create-store" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/carib-ads" element={<CaribAdsLanding />} />
               <Route path="/advertise" element={<CaribAdsLanding />} />
@@ -273,7 +290,7 @@ const App: React.FC = () => {
               {/* NEW ROUTES - Template Gallery & AI Features */}
               <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
-              <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
+              <Route path="/premium-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/documents" element={<DocumentCenter />} />
               <Route path="/ai-documents" element={<DocumentCenter />} />
               <Route path="/document-center" element={<DocumentCenter />} />
@@ -295,8 +312,8 @@ const App: React.FC = () => {
               <Route path="/seller-dashboard" element={<ProtectedRoute><MerchantDashboard /></ProtectedRoute>} />
               <Route path="/vendors" element={<VendorDirectoryPage />} />
               <Route path="/vendor-directory" element={<VendorDirectoryPage />} />
-              <Route path="/pro-features" element={<ProStoreFeaturesPage />} />
-              <Route path="/store-features" element={<ProStoreFeaturesPage />} />
+              <Route path="/pro-features" element={<Navigate to="/pricing" replace />} />
+              <Route path="/store-features" element={<Navigate to="/pricing" replace />} />
               
               {/* 📧 EMAIL MARKETING */}
               <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
@@ -348,13 +365,12 @@ const App: React.FC = () => {
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/blog/location/:slug" element={<LocationBlogPost />} />
 
-              <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
-              <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
-              <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
+              <Route path="/admin/blog-generator" element={<AdminRoute><BlogGenerator /></AdminRoute>} />
+              <Route path="/admin/blog-dashboard" element={<AdminRoute><AdminBlogDashboard /></AdminRoute>} />
+              <Route path="/admin/keywords" element={<AdminRoute><KeywordDashboard /></AdminRoute>} />
             </Route>
 
-            {/* Admin Command Center Sub-Website - No ProtectedRoute to allow bypass */}
-            <Route path="/admin/command-center" element={<AdminLayout />}>
+            <Route path="/admin/command-center" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<CommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
@@ -382,9 +398,14 @@ const App: React.FC = () => {
               <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
 
-              {/* Legal Documents */}
-              <Route path="/terms" element={<Legal type="terms" />} />
-              <Route path="/privacy" element={<Legal type="privacy" />} />
+              {/* Legal pack: static HTML owned by R&R Digital Solutions. Not TriniBuild. */}
+              <Route path="/terms" element={<StaticLegalRedirect href="/terms.html" />} />
+              <Route path="/privacy" element={<StaticLegalRedirect href="/privacy.html" />} />
+              <Route path="/refund" element={<StaticLegalRedirect href="/refund.html" />} />
+              <Route path="/legal/terms" element={<StaticLegalRedirect href="/terms.html" />} />
+              <Route path="/legal/privacy" element={<StaticLegalRedirect href="/privacy.html" />} />
+              <Route path="/legal/refund" element={<StaticLegalRedirect href="/refund.html" />} />
+              <Route path="/legal/merchant-agreement" element={<StaticLegalRedirect href="/merchant-agreement.html" />} />
               <Route path="/contractor-agreement" element={<ContractorSignup />} />
               <Route path="/liability-waiver" element={<Legal type="liability-waiver" />} />
               <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />
@@ -418,6 +439,9 @@ const App: React.FC = () => {
             <Route path="/store/:id/v1" element={<Storefront />} />
             <Route path="/store/preview" element={<StorefrontV2 />} />
 
+            {/* Unknown /admin/* — login wall, never public admin chrome */}
+            <Route path="/admin/*" element={<Navigate to="/login" replace />} />
+
             {/* 404 Catch-all */}
             <Route path="*" element={<NotFound />} />
 
@@ -425,8 +449,7 @@ const App: React.FC = () => {
         </main>
         <Footer />
 
-        {/* Global Chatbot for Platform Support */}
-        <ChatWidget mode="platform" />
+        <PlatformChatGate />
       </div>
     </Router>
     </IslandProvider>

@@ -31,9 +31,8 @@ export default function AffiliateDashboard() {
   const [loading, setLoading] = useState(true);
   const [requestingPayout, setRequestingPayout] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
-  const [payoutMethod, setPayoutMethod] = useState<'bank' | 'wipay' | 'credit'>('bank');
+  const [payoutMethod] = useState<'bank'>('bank');
   const [bankForm, setBankForm] = useState({ bank_name: '', account_name: '', account_number: '', branch: '' });
-  const [wipayPhone, setWipayPhone] = useState('');
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [payoutSubmitting, setPayoutSubmitting] = useState(false);
   const [payoutDone, setPayoutDone] = useState(false);
@@ -81,9 +80,6 @@ export default function AffiliateDashboard() {
         payoutMethod,
         payoutMethod === 'bank' ? bankForm : undefined
       );
-      if (payoutMethod === 'wipay') {
-        await affiliateSystemService.updatePayoutDetails(user.id, { wipay_phone: wipayPhone });
-      }
       setPayoutDone(true);
       const updated = await affiliateSystemService.getOrCreateProfile(user.id, user.email);
       setProfile(updated);
@@ -179,7 +175,7 @@ export default function AffiliateDashboard() {
           </div>
           <p className="text-xs text-gray-400 mt-3">
             Code: <span className="font-mono font-bold text-gray-600">{profile.referral_code}</span> · 
-            You earn TT${COMMISSION_EVENTS.subscription_pro.amount_ttd} per Pro referral, TT${COMMISSION_EVENTS.subscription_premium.amount_ttd} per Premium
+            You earn 10% of the paid subscription: TT${COMMISSION_EVENTS.subscription_starter.amount_ttd} on Starter, TT${COMMISSION_EVENTS.subscription_business.amount_ttd} on Business
           </p>
         </div>
 
@@ -233,7 +229,7 @@ export default function AffiliateDashboard() {
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                 <p className="text-xs text-yellow-800 font-medium">
                   🏆 Your tier upgrades automatically based on paid referrals:
-                  Bronze (10%) → Silver 5+ (13%) → Gold 20+ (17%) → Platinum 50+ (20%)
+                  10% of the paid subscription. Starter TT$99 → TT$9.90. Business TT$329 → TT$32.90.
                 </p>
               </div>
             </div>
@@ -313,20 +309,7 @@ export default function AffiliateDashboard() {
 
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Payout Method</label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {(['bank', 'wipay', 'credit'] as const).map(m => (
-                          <button key={m} onClick={() => setPayoutMethod(m)}
-                            className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                              payoutMethod === m ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                            }`}
-                          >
-                            {m === 'bank' ? '🏦 Bank' : m === 'wipay' ? '📱 WiPay' : '💳 Credit'}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {payoutMethod === 'bank' && (
+                      <p className="text-sm text-gray-600 mb-3">Bank transfer only. WiPay is not a live Juvay rail.</p>
                       <div className="space-y-3">
                         <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Bank Name"
                           value={bankForm.bank_name} onChange={e => setBankForm(f => ({ ...f, bank_name: e.target.value }))} />
@@ -337,18 +320,7 @@ export default function AffiliateDashboard() {
                         <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="Branch (optional)"
                           value={bankForm.branch} onChange={e => setBankForm(f => ({ ...f, branch: e.target.value }))} />
                       </div>
-                    )}
-
-                    {payoutMethod === 'wipay' && (
-                      <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" placeholder="WiPay Phone Number (+1868XXXXXXX)"
-                        value={wipayPhone} onChange={e => setWipayPhone(e.target.value)} />
-                    )}
-
-                    {payoutMethod === 'credit' && (
-                      <div className="p-4 bg-blue-50 rounded-xl text-sm text-blue-700">
-                        💳 Platform credit will be added to your account and applied to your next subscription payment automatically.
-                      </div>
-                    )}
+                    </div>
 
                     <button
                       disabled={payoutSubmitting || !payoutAmount}

@@ -180,7 +180,7 @@ export const AIProductListing: React.FC<AIProductListingProps> = ({
         stock: 1, // merchant can edit from the inventory list after save
         category: draft.category,
         image_url: draft.imageUrl,
-        status: 'active',
+        status: 'draft',
       } as any);
 
       // Also stamp tags directly (addProduct doesn't currently pass tags)
