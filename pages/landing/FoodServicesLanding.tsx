@@ -5,7 +5,7 @@ import { JuvayPriceTable } from '../../components/JuvayPriceTable';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
     Phone, Mail, MessageCircle, MapPin, Star, Clock, Truck, Shield, Award,
-    Check, ArrowRight, Zap, DollarSign, Users, TrendingUp, Package, Calendar
+    ArrowRight, Zap, DollarSign, Users, TrendingUp, Package, Calendar
 } from 'lucide-react';
 
 export const FoodServicesLanding: React.FC = () => {
@@ -223,7 +223,7 @@ export const FoodServicesLanding: React.FC = () => {
                                 Simple Pricing for Food Businesses
                             </h2>
                             <p className="text-xl text-gray-600">
-                                No hidden fees. No surprises. Just honest pricing for Trinidad businesses.
+                                One TTD table matching /pricing. Free TT$0 / Starter TT$99 / Business TT$329.
                             </p>
                         </div>
 
@@ -238,7 +238,7 @@ export const FoodServicesLanding: React.FC = () => {
                             Ready to Start Taking Online Orders?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Join hundreds of Trinidad food businesses already making money online!
+                            Free is 5 listings, cash pickup, and COD. No invented merchant count.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <button className="bg-white text-orange-600 px-12 py-5 rounded-full font-extrabold text-xl hover:bg-gray-100 transition-all shadow-2xl hover:scale-105">
@@ -269,35 +269,5 @@ const FeatureCard: React.FC<{ icon: string; title: string; description: string; 
         <div className="text-5xl mb-4">{icon}</div>
         <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
         <p className="text-gray-700">{description}</p>
-    </div>
-);
-
-const PricingCard: React.FC<{ name: string; price: string; period: string; description: string; features: string[]; popular?: boolean }> = ({ name, price, period, description, features, popular }) => (
-    <div className={`bg-white rounded-2xl shadow-xl border-2 ${popular ? 'border-orange-500 ring-4 ring-orange-200' : 'border-gray-200'} p-8 relative`}>
-        {popular && (
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</span>
-            </div>
-        )}
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
-        <p className="text-sm text-gray-600 mb-4">{description}</p>
-        <div className="mb-6">
-            <span className="text-5xl font-extrabold text-gray-900">TT${price}</span>
-            {period && <span className="text-gray-600">/{period}</span>}
-        </div>
-        <ul className="space-y-3 mb-8">
-            {features.map((feature, idx) => (
-                <li key={idx} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{feature}</span>
-                </li>
-            ))}
-        </ul>
-        <button className={`w-full py-3 rounded-lg font-bold transition-colors ${popular
-                ? 'bg-orange-500 text-white hover:bg-orange-600'
-                : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-            }`}>
-            Start Free Trial
-        </button>
     </div>
 );

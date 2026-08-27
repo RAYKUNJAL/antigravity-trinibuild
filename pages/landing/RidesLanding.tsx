@@ -62,7 +62,7 @@ export const RidesLanding: React.FC = () => {
                            <DollarSign className="h-5 w-5 text-green-600 mr-3" /> No published fare-split claim
                         </li>
                         <li className="flex items-center font-bold text-gray-800">
-                           <Clock className="h-5 w-5 text-blue-600 mr-3" /> Instant Payouts (Daily)
+                           <Clock className="h-5 w-5 text-blue-600 mr-3" /> No published payout schedule
                         </li>
                         <li className="flex items-center font-bold text-gray-800">
                            <Shield className="h-5 w-5 text-red-600 mr-3" /> Verified Rider ID System
@@ -102,8 +102,8 @@ export const RidesLanding: React.FC = () => {
                      <div className="bg-green-100 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-green-700">
                         <DollarSign className="h-8 w-8" />
                      </div>
-                     <h3 className="font-bold text-lg mb-2">Cash or Card</h3>
-                     <p className="text-sm text-gray-500">Pay how you want.</p>
+                     <h3 className="font-bold text-lg mb-2">Cash when that ride is live</h3>
+                     <p className="text-sm text-gray-500">Card only if that rail is actually on.</p>
                   </div>
                </div>
 
