@@ -19,6 +19,17 @@ function BrowserChrome({ children }: { children: React.ReactNode }) {
 
 function StarterThumb({ id }: { id: StarterId }) {
   const s = STORE_STARTERS[id];
+  const photo = (
+    <img
+      src={s.heroImage}
+      alt=""
+      width={800}
+      height={450}
+      loading="lazy"
+      decoding="async"
+      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+    />
+  );
   return (
     <div style={{ height: 220, background: s.palette.heroBg, color: s.palette.heroText, position: 'relative', overflow: 'hidden' }}>
       {s.heroLayout === 'split' ? (
@@ -27,20 +38,24 @@ function StarterThumb({ id }: { id: StarterId }) {
             <div style={{ fontFamily: s.palette.headingFont, fontSize: 22, lineHeight: 1.05 }}>{s.heroHeadline}</div>
             <div style={{ marginTop: 14, width: 72, height: 22, background: ISLAND.mango }} />
           </div>
-          <div style={{ background: s.palette.field }} />
+          <div style={{ minHeight: 0, overflow: 'hidden' }}>{photo}</div>
         </div>
       ) : s.heroLayout === 'bleed' ? (
-        <div style={{ height: '100%', background: s.palette.field, display: 'flex', alignItems: 'flex-end', padding: 18 }}>
-          <div>
+        <div style={{ height: '100%', position: 'relative' }}>
+          {photo}
+          <div style={{ position: 'absolute', left: 18, bottom: 18, right: 18 }}>
             <div style={{ fontFamily: s.palette.headingFont, fontStyle: 'italic', fontSize: 22, lineHeight: 1.05 }}>{s.heroHeadline}</div>
             <div style={{ marginTop: 12, width: 72, height: 22, border: `1px solid ${s.palette.heroText}` }} />
           </div>
         </div>
       ) : (
-        <div style={{ height: '100%', background: s.palette.field, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 16 }}>
-          <div>
-            <div style={{ fontFamily: s.palette.headingFont, fontSize: 28 }}>{s.name}</div>
-            <div style={{ fontSize: 11, marginTop: 6, opacity: 0.85 }}>{s.heroHeadline}</div>
+        <div style={{ height: '100%', position: 'relative' }}>
+          {photo}
+          <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 16 }}>
+            <div>
+              <div style={{ fontFamily: s.palette.headingFont, fontSize: 28 }}>{s.name}</div>
+              <div style={{ fontSize: 11, marginTop: 6, opacity: 0.85 }}>{s.heroHeadline}</div>
+            </div>
           </div>
         </div>
       )}
@@ -157,7 +172,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                 <BrowserChrome>
                   <div style={{ position: 'relative' }}>
                     <StarterThumb id={starter.id} />
-                    <div style={{ position: 'absolute', left: 12, right: 12, bottom: 12, background: '#fff', color: '#111', borderRadius: 999, minHeight: 40, display: 'grid', placeItems: 'center', fontWeight: 600, fontSize: 12 }}>
+                    <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(255,248,240,0.94)', color: '#111', minHeight: 32, padding: '0 12px', display: 'grid', placeItems: 'center', fontWeight: 600, fontSize: 11 }}>
                       Preview Full Size
                     </div>
                   </div>

@@ -5,6 +5,9 @@ const {
   sanitizeDraft,
   stripProducts,
   buildOnboardDraft,
+  validatePatchInput,
+  mergePatch,
+  buildOnboardPatch,
 } = require('./onboardDraft');
 
 const empty = validateOnboardInput({ storeName: '' });
@@ -50,6 +53,37 @@ assert.strictEqual(clean.templateId, 'food');
   assert.strictEqual(drafted.draft.agentWrote, false);
   assert.ok(!('products' in drafted.draft));
   assert.ok(!Array.isArray(drafted.draft.products));
+
+  const noInstruction = validatePatchInput({ instruction: '' });
+  assert.ok(noInstruction.error);
+
+  const current = {
+    templateId: 'food',
+    hero: { headline: 'Cooked this morning. Ready when you reach.', sub: 'Tunapuna' },
+    about: 'River Bake in Trinidad.',
+    hours: 'Wed–Sat 4–8',
+    trustChips: ['Cash / pickup'],
+  };
+  const merged = mergePatch(current, {
+    hero: { headline: 'Shorter line.' },
+    products: [{ name: 'Sample Product 1' }],
+  });
+  assert.ok(!('products' in merged.proposed));
+  assert.deepStrictEqual(merged.changedFields, ['hero.headline']);
+  assert.ok(merged.conflicts.includes('hero.headline'));
+  assert.strictEqual(merged.proposed.about, 'River Bake in Trinidad.');
+
+  const patched = await buildOnboardPatch({
+    instruction: 'shorter headline',
+    templateId: 'food',
+    current,
+    locked: { headline: current.hero.headline, about: current.about, hours: current.hours },
+  });
+  assert.strictEqual(patched.agentWrote, false);
+  assert.deepStrictEqual(patched.changedFields, []);
+  assert.match(patched.warning, /not writing|unchanged/i);
+  assert.ok(!('products' in patched.proposed));
+
   if (prev === undefined) delete process.env.LLM_API_KEY;
   else process.env.LLM_API_KEY = prev;
   console.log('onboardDraft.test.js ok');

@@ -14,7 +14,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { isWamConfigured, verifyWamSignature } = require('./wam');
-const { buildOnboardDraft } = require('./onboardDraft');
+const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -253,6 +253,23 @@ app.post('/api/onboard/draft', optionalAuth, async (req, res) => {
     const payload = { draft: result.draft };
     if (result.warning) payload.warning = result.warning;
     res.json(payload);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/onboard/patch', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardPatch(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json({
+      patch: result.patch,
+      proposed: result.proposed,
+      changedFields: result.changedFields,
+      conflicts: result.conflicts,
+      agentWrote: result.agentWrote === true,
+      warning: result.warning || undefined,
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

@@ -283,6 +283,161 @@ async function buildOnboardDraft(body) {
   }
 }
 
+function currentCopy(bodyCurrent, templateId) {
+  const current = bodyCurrent && typeof bodyCurrent === 'object' ? bodyCurrent : {};
+  const hero = current.hero && typeof current.hero === 'object' ? current.hero : {};
+  return {
+    templateId: isStarterId(current.templateId) ? current.templateId : templateId,
+    hero: {
+      headline: String(hero.headline || HERO[templateId] || '').slice(0, 120),
+      sub: String(hero.sub || '').slice(0, 160),
+      image: String(hero.image || '').slice(0, 2_000_000),
+    },
+    about: String(current.about || '').slice(0, 600),
+    hours: String(current.hours || '').slice(0, 160),
+    trustChips: Array.isArray(current.trustChips)
+      ? current.trustChips.map((c) => String(c || '').trim()).filter(Boolean).slice(0, 6)
+      : [],
+  };
+}
+
+function validatePatchInput(body) {
+  const instruction = String(body?.instruction || '').trim();
+  if (!instruction) return { error: 'instruction is required' };
+  if (instruction.length > 500) return { error: 'instruction is too long' };
+  let templateId = String(body?.templateId || body?.current?.templateId || '').trim();
+  if (templateId && !isStarterId(templateId)) {
+    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto' };
+  }
+  if (!templateId) templateId = 'general';
+  const locked = body?.locked && typeof body.locked === 'object' ? body.locked : {};
+  return {
+    input: {
+      instruction,
+      templateId,
+      current: currentCopy(body?.current, templateId),
+      locked: {
+        headline: String(locked.headline || '').trim(),
+        about: String(locked.about || '').trim(),
+        hours: String(locked.hours || '').trim(),
+      },
+    },
+  };
+}
+
+function mergePatch(current, rawPatch) {
+  const patch = rawPatch && typeof rawPatch === 'object' ? rawPatch : {};
+  const hero = patch.hero && typeof patch.hero === 'object' ? patch.hero : {};
+  const next = {
+    templateId: current.templateId,
+    hero: {
+      headline: hero.headline != null ? String(hero.headline).slice(0, 120) : current.hero.headline,
+      sub: hero.sub != null ? String(hero.sub).slice(0, 160) : current.hero.sub,
+      image: current.hero.image,
+    },
+    about: patch.about != null ? String(patch.about).slice(0, 600) : current.about,
+    hours: patch.hours != null ? String(patch.hours).slice(0, 160) : current.hours,
+    trustChips: Array.isArray(patch.trustChips)
+      ? patch.trustChips.map((c) => String(c || '').trim()).filter(Boolean).slice(0, 6)
+      : current.trustChips,
+  };
+  const changedFields = [];
+  if (next.hero.headline !== current.hero.headline) changedFields.push('hero.headline');
+  if (next.hero.sub !== current.hero.sub) changedFields.push('hero.sub');
+  if (next.about !== current.about) changedFields.push('about');
+  if (next.hours !== current.hours) changedFields.push('hours');
+  if (JSON.stringify(next.trustChips) !== JSON.stringify(current.trustChips)) changedFields.push('trustChips');
+  const conflicts = [];
+  if (changedFields.includes('hero.headline') && current.hero.headline) conflicts.push('hero.headline');
+  if (changedFields.includes('about') && current.about) conflicts.push('about');
+  if (changedFields.includes('hours') && current.hours) conflicts.push('hours');
+  const shown = {
+    hero: { headline: next.hero.headline, sub: next.hero.sub },
+    about: next.about,
+    hours: next.hours,
+    trustChips: next.trustChips,
+  };
+  return { proposed: stripProducts(next), changedFields, conflicts, patch: stripProducts(shown) };
+}
+
+async function callGrokPatch(input) {
+  const key = (process.env.LLM_API_KEY || '').trim();
+  if (!key) return null;
+  const endpoint = (process.env.LLM_API_URL || 'https://api.x.ai/v1/chat/completions').trim();
+  const model = (process.env.LLM_MODEL || 'grok-4-fast').trim();
+  const system = [
+    'You propose store copy patches for Juvay.',
+    'Return JSON only: { hero?: { headline?, sub? }, about?, hours?, trustChips? }.',
+    'Only include fields the merchant asked to change.',
+    'Do not invent products, prices, SKUs, WhatsApp, payment rails, or shop names.',
+    'Do not mention PayPal, Linx, Michelin, free shipping, or TriniBuild.',
+    'Do not include products, items, catalog, skus, or a new hero image file.',
+    'If the merchant already wrote a field, you may propose a rewrite but the client will show the patch first.',
+  ].join(' ');
+  const user = JSON.stringify({
+    instruction: input.instruction,
+    templateId: input.templateId,
+    current: {
+      hero: { headline: input.current.hero.headline, sub: input.current.hero.sub },
+      about: input.current.about,
+      hours: input.current.hours,
+      trustChips: input.current.trustChips,
+    },
+    lockedMerchantText: input.locked,
+  });
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      max_tokens: 500,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Grok error ${res.status}: ${text.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  const jsonText = content.replace(/^```json\s*|```$/g, '').trim();
+  return JSON.parse(jsonText);
+}
+
+async function buildOnboardPatch(body) {
+  const checked = validatePatchInput(body || {});
+  if (checked.error) return { error: checked.error, status: 400 };
+  const input = checked.input;
+  if (!grokConfigured()) {
+    const empty = mergePatch(input.current, {});
+    return {
+      ...empty,
+      agentWrote: false,
+      warning: 'Grok is not writing this change. Nothing was overwritten.',
+    };
+  }
+  try {
+    const grok = await callGrokPatch(input);
+    const merged = mergePatch(input.current, grok);
+    return { ...merged, agentWrote: true };
+  } catch (err) {
+    const empty = mergePatch(input.current, {});
+    return {
+      ...empty,
+      agentWrote: false,
+      warning: 'Grok did not write this change. Your copy is unchanged.',
+      detail: err.message,
+    };
+  }
+}
+
 module.exports = {
   STARTER_IDS,
   HERO,
@@ -295,4 +450,8 @@ module.exports = {
   stripProducts,
   grokConfigured,
   buildOnboardDraft,
+  validatePatchInput,
+  mergePatch,
+  currentCopy,
+  buildOnboardPatch,
 };

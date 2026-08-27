@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { storesApi, getToken } from '../services/selfHostedApi';
 import { fetchWamStatus } from '../services/wamStatus';
-import { STORE_STARTERS, STARTER_IDS, resolveStarterId, defaultFaq, defaultHowSteps, type StarterId } from '../services/storeStarters';
+import { STORE_STARTERS, STARTER_IDS, ISLAND, resolveStarterId, defaultFaq, defaultHowSteps, type StarterId } from '../services/storeStarters';
 import { normalizeWhatsappE164, type StorefrontModel } from '../services/storefrontHonesty';
 import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
 import { SafeBoundary } from '../components/SafeBoundary';
@@ -41,6 +41,7 @@ interface BuilderState {
   recommendChat: string;
   heroHeadline: string;
   heroSub: string;
+  heroImage: string;
   about: string;
   faq: Array<{ q: string; a: string }>;
   how: Array<{ title: string; body: string }>;
@@ -65,6 +66,7 @@ const emptyState = (): BuilderState => ({
   recommendChat: '',
   heroHeadline: '',
   heroSub: '',
+  heroImage: '',
   about: '',
   faq: [],
   how: [],
@@ -88,6 +90,27 @@ async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: 
   return data;
 }
 
+async function requestPatch(payload: Record<string, unknown>): Promise<{
+  proposed: DraftCopy & { hours?: string };
+  changedFields: string[];
+  conflicts: string[];
+  agentWrote: boolean;
+  warning?: string;
+}> {
+  const token = getToken();
+  const res = await fetch('/api/onboard/patch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Patch failed (${res.status})`);
+  return data;
+}
+
 const StoreBuilderV3: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -95,6 +118,16 @@ const StoreBuilderV3: React.FC = () => {
   const [wamConfigured, setWamConfigured] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [patchChat, setPatchChat] = useState('');
+  const [proposed, setProposed] = useState<{
+    heroHeadline: string;
+    heroSub: string;
+    about: string;
+    hours: string;
+    changedFields: string[];
+    conflicts: string[];
+    warning?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchWamStatus().then((s) => setWamConfigured(s.configured));
@@ -140,6 +173,7 @@ const StoreBuilderV3: React.FC = () => {
       hero: {
         headline: state.heroHeadline || starter.heroHeadline,
         sub: state.heroSub || [state.specialty, state.island].filter(Boolean).join(' · '),
+        image: state.heroImage || undefined,
       },
       about: state.about,
       faq: state.faq.length ? state.faq : defaultFaq({
@@ -224,6 +258,59 @@ const StoreBuilderV3: React.FC = () => {
     }
   };
 
+  const handlePatch = async () => {
+    if (!patchChat.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await requestPatch({
+        instruction: patchChat.trim(),
+        templateId: state.templateId || 'general',
+        current: {
+          templateId: state.templateId,
+          hero: { headline: state.heroHeadline, sub: state.heroSub, image: state.heroImage },
+          about: state.about,
+          hours: state.hours,
+        },
+        locked: {
+          headline: state.heroHeadline,
+          about: state.about,
+          hours: state.hours,
+        },
+      });
+      if (!result.changedFields?.length) {
+        setProposed(null);
+        setError(result.warning || 'Grok did not change any copy. Your text is unchanged.');
+        return;
+      }
+      setProposed({
+        heroHeadline: result.proposed?.hero?.headline || state.heroHeadline,
+        heroSub: result.proposed?.hero?.sub || state.heroSub,
+        about: result.proposed?.about || state.about,
+        hours: result.proposed?.hours || state.hours,
+        changedFields: result.changedFields,
+        conflicts: result.conflicts || [],
+        warning: result.warning,
+      });
+    } catch (err: any) {
+      setError(err.message || 'Could not propose a change.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const applyProposed = () => {
+    if (!proposed) return;
+    update({
+      heroHeadline: proposed.heroHeadline,
+      heroSub: proposed.heroSub,
+      about: proposed.about,
+      hours: proposed.hours,
+    });
+    setProposed(null);
+    setPatchChat('');
+  };
+
   const handlePublish = async () => {
     if (!state.storeName.trim() || !state.templateId) {
       setError('Name and starter are required');
@@ -258,7 +345,7 @@ const StoreBuilderV3: React.FC = () => {
           hours: state.hours || undefined,
           specialty: state.specialty || undefined,
           payout_preference: state.payoutPreference || undefined,
-          hero: { headline: state.heroHeadline, sub: state.heroSub },
+          hero: { headline: state.heroHeadline, sub: state.heroSub, image: state.heroImage || undefined },
           about: state.about,
           faq: state.faq,
           how: state.how,
@@ -276,12 +363,16 @@ const StoreBuilderV3: React.FC = () => {
   };
 
   const renderStep1 = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Pick a starter</h2>
-        <p className="text-gray-600">Eight starters. Same chrome. Grok can recommend one — still one of these eight.</p>
+    <div style={{ display: 'grid', gap: 28 }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 400, margin: '0 0 8px' }}>
+          Pick a starter
+        </h2>
+        <p style={{ color: '#6b6256', maxWidth: '40ch', margin: '0 auto' }}>
+          Eight starters. Same chrome. Grok can recommend one — still one of these eight.
+        </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="juvay-pick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
         {STARTER_IDS.map((id) => {
           const s = STORE_STARTERS[id];
           const selected = state.templateId === id;
@@ -290,44 +381,66 @@ const StoreBuilderV3: React.FC = () => {
               key={id}
               type="button"
               onClick={() => update({ templateId: id, heroHeadline: s.heroHeadline })}
-              className={`text-left rounded-2xl border-2 p-5 min-h-[160px] transition ${
-                selected ? 'border-stone-800 bg-stone-50' : 'border-gray-200 hover:border-stone-400'
-              }`}
+              style={{
+                textAlign: 'left',
+                border: selected ? '2px solid #141414' : '1px solid #e6dfd4',
+                background: ISLAND.sand,
+                padding: 0,
+                cursor: 'pointer',
+                minHeight: 44,
+              }}
             >
-              <div className="text-xl font-semibold" style={{ fontFamily: 'Georgia, serif' }}>{s.name}</div>
-              <p className="text-sm text-gray-600 mt-2">{s.useWhen}</p>
-              <p className="text-xs text-gray-500 mt-3">{s.heroHeadline}</p>
+              <div style={{ height: 22, background: '#f3efe8', display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+              </div>
+              <div style={{ height: 140, overflow: 'hidden', position: 'relative', background: s.palette.heroBg }}>
+                <img src={s.heroImage} alt="" width={640} height={360} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                {s.heroLayout === 'split' ? (
+                  <div style={{ position: 'absolute', left: 10, top: 12, color: s.palette.heroText, fontFamily: s.palette.headingFont, fontSize: 16, maxWidth: '46%' }}>
+                    {s.heroHeadline}
+                  </div>
+                ) : (
+                  <div style={{ position: 'absolute', left: 12, bottom: 12, color: s.palette.heroText, fontFamily: s.palette.headingFont, fontSize: 18 }}>
+                    {s.name}
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '12px 12px 14px' }}>
+                <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 16 }}>{s.name}</div>
+                <p style={{ margin: '4px 0 0', color: '#6b6256', fontSize: 13 }}>{s.useWhen}</p>
+              </div>
             </button>
           );
         })}
       </div>
-      <div className="rounded-2xl border border-gray-200 p-4 space-y-3">
-        <label className="block text-sm font-medium text-gray-800">Or describe the shop and let Grok pick one of the six</label>
+      <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 18, display: 'grid', gap: 10 }}>
+        <label style={{ fontSize: 14 }}>Or describe the shop and let Grok pick one of the eight</label>
         <textarea
           value={state.recommendChat}
           onChange={(e) => update({ recommendChat: e.target.value })}
           rows={2}
-          className="w-full rounded-xl border border-gray-300 px-3 py-3 min-h-[44px]"
+          style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }}
           placeholder="e.g. evening roti from Tunapuna"
         />
         <button
           type="button"
           onClick={handleRecommend}
           disabled={busy || !state.recommendChat.trim()}
-          className="inline-flex items-center gap-2 min-h-[44px] px-4 rounded-xl bg-stone-800 text-white font-semibold disabled:opacity-50"
+          style={{ minHeight: 44, width: 220, border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, cursor: 'pointer' }}
         >
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Recommend a starter
+          {busy ? 'Working…' : 'Recommend a starter'}
         </button>
       </div>
-      <div className="flex justify-end">
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button
           type="button"
           disabled={!state.templateId}
           onClick={() => go(2)}
-          className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
+          style={{ minHeight: 44, minWidth: 140, border: 'none', background: '#141414', color: ISLAND.sand, fontWeight: 600, cursor: 'pointer', opacity: state.templateId ? 1 : 0.4 }}
         >
-          Continue <ArrowRight className="w-4 h-4" />
+          Continue
         </button>
       </div>
     </div>
@@ -336,7 +449,7 @@ const StoreBuilderV3: React.FC = () => {
   const renderStep2 = () => (
     <div className="space-y-5">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Tell us about the shop</h2>
+        <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 400, margin: '0 0 8px' }}>Tell us about the shop</h2>
         <p className="text-gray-600">Grok prefills hero and about from this. It does not invent catalog items.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,35 +519,80 @@ const StoreBuilderV3: React.FC = () => {
   );
 
   const renderStep3 = () => (
-    <div className="space-y-5">
+    <div style={{ display: 'grid', gap: 20 }}>
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Preview {state.storeName || 'your store'}</h2>
-        <p className="text-gray-600">
+        <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 400, margin: '0 0 8px' }}>
+          Preview {state.storeName || 'your store'}
+        </h2>
+        <p style={{ color: '#6b6256', maxWidth: '42ch' }}>
           {state.agentWrote
-            ? 'Grok wrote the copy below. Edit anything. Regenerating is optional.'
+            ? 'Grok wrote the copy below. Click text to edit. Regenerating is optional.'
             : state.agentWarning || 'Showing locked copy. The agent did not write this site.'}
         </p>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-2 space-y-3">
+      <div className="juvay-preview-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 20 }}>
+        <div style={{ display: 'grid', gap: 12 }}>
           <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v })} />
           <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v })} />
-          <label className="block">
-            <span className="block text-sm font-medium text-gray-700 mb-2">About</span>
-            <textarea value={state.about} onChange={(e) => update({ about: e.target.value })} rows={4} className="w-full rounded-xl border border-gray-300 px-3 py-3" />
+          <label style={{ display: 'block' }}>
+            <span style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>About</span>
+            <textarea value={state.about} onChange={(e) => update({ about: e.target.value })} rows={4} style={{ width: '100%', minHeight: 88, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
           </label>
-          <p className="text-xs text-gray-500">Catalog stays empty until you add a real item. No Sample Product N.</p>
+          <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Catalog stays empty until you add a real item.</p>
+          <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 12, display: 'grid', gap: 8 }}>
+            <label style={{ fontSize: 14 }}>Ask Grok to propose a change</label>
+            <textarea
+              value={patchChat}
+              onChange={(e) => setPatchChat(e.target.value)}
+              rows={2}
+              style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }}
+              placeholder="e.g. shorter headline, keep my about"
+            />
+            <button
+              type="button"
+              onClick={handlePatch}
+              disabled={busy || !patchChat.trim()}
+              style={{ minHeight: 44, border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, cursor: 'pointer' }}
+            >
+              {busy ? 'Working…' : 'Propose change'}
+            </button>
+            {proposed ? (
+              <div style={{ border: '1px solid #cfc8bc', padding: 12, display: 'grid', gap: 8, background: '#fff' }}>
+                <div style={{ fontSize: 13, color: '#6b6256' }}>
+                  Proposed: {proposed.changedFields.join(', ')}
+                  {proposed.conflicts.length ? ` — you already wrote ${proposed.conflicts.join(', ')}` : ''}
+                </div>
+                {proposed.changedFields.includes('hero.headline') ? <div><strong>Headline</strong> {proposed.heroHeadline}</div> : null}
+                {proposed.changedFields.includes('about') ? <div><strong>About</strong> {proposed.about}</div> : null}
+                {proposed.changedFields.includes('hours') ? <div><strong>Hours</strong> {proposed.hours}</div> : null}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={applyProposed} style={{ minHeight: 44, padding: '0 14px', border: 'none', background: '#141414', color: ISLAND.sand }}>Apply this patch</button>
+                  <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
-        <div className="lg:col-span-3 border border-gray-200 rounded-2xl overflow-hidden max-h-[720px] overflow-y-auto">
-          <JuvayStorefront model={previewModel} />
+        <div style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto' }}>
+          <JuvayStorefront
+            model={previewModel}
+            editor={{
+              onFieldChange: (field, value) => {
+                if (field === 'headline') update({ heroHeadline: value });
+                if (field === 'sub') update({ heroSub: value });
+                if (field === 'about') update({ about: value });
+              },
+              onHeroUpload: (dataUrl) => update({ heroImage: dataUrl }),
+            }}
+          />
         </div>
       </div>
-      <div className="flex justify-between">
-        <button type="button" onClick={() => go(2)} className="inline-flex items-center gap-2 min-h-[44px] px-4 text-gray-700">
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <button type="button" onClick={() => go(2)} style={{ minHeight: 44, background: 'none', border: 'none', color: '#3d3429' }}>
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <button type="button" onClick={() => go(4)} className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold">
-          Review publish <ArrowRight className="w-4 h-4" />
+        <button type="button" onClick={() => go(4)} style={{ minHeight: 44, minWidth: 140, border: 'none', background: '#141414', color: ISLAND.sand, fontWeight: 600 }}>
+          Review publish
         </button>
       </div>
     </div>
@@ -443,7 +601,7 @@ const StoreBuilderV3: React.FC = () => {
   const renderStep4 = () => (
     <div className="space-y-5">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Publish when you choose</h2>
+        <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 400, margin: '0 0 8px' }}>Publish when you choose</h2>
         <p className="text-gray-600">Preview first. Publish is a separate action. Nothing goes live until you tap Publish.</p>
       </div>
       <div className="rounded-2xl border border-gray-200 p-5 space-y-2">
@@ -479,28 +637,35 @@ const StoreBuilderV3: React.FC = () => {
 
   return (
     <SafeBoundary name="StoreBuilder">
-      <div className="min-h-screen bg-[#f7f4ef] py-8">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="mb-6 flex items-center justify-between text-sm text-gray-600">
+      <div style={{ minHeight: '100vh', background: ISLAND.sand, color: '#1a1a1a', fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" />
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 16px 64px' }}>
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6b6256' }}>
             <span>Create store</span>
             <span>Step {state.step} of 4</span>
           </div>
-          <div className="h-2 bg-stone-200 rounded-full mb-6 overflow-hidden">
-            <div className="h-full bg-stone-800 transition-all" style={{ width: `${(state.step / 4) * 100}%` }} />
+          <div style={{ height: 2, background: '#e6dfd4', marginBottom: 24 }}>
+            <div style={{ height: '100%', background: '#141414', width: `${(state.step / 4) * 100}%` }} />
           </div>
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-800 text-sm">
+            <div style={{ marginBottom: 16, display: 'flex', gap: 8, border: '1px solid #e6dfd4', padding: 12, fontSize: 14 }}>
               <AlertCircle className="w-4 h-4 mt-0.5" />
               {error}
             </div>
           )}
-          <div className="bg-white rounded-3xl border border-stone-200 p-6 md:p-8">
+          <div style={{ background: ISLAND.sand }}>
             {state.step === 1 && renderStep1()}
             {state.step === 2 && renderStep2()}
             {state.step === 3 && renderStep3()}
             {state.step === 4 && renderStep4()}
           </div>
         </div>
+        <style>{`
+          @media (max-width: 900px) {
+            .juvay-pick-grid { grid-template-columns: 1fr !important; }
+            .juvay-preview-split { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
       </div>
     </SafeBoundary>
   );
@@ -515,7 +680,7 @@ const Field: React.FC<{ label: string; value: string; onChange: (v: string) => v
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full min-h-[44px] rounded-xl border border-gray-300 px-3"
+      style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }}
     />
   </label>
 );

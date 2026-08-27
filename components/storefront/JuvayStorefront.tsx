@@ -8,6 +8,7 @@ import {
   featuredItems,
   formatPrice,
   liveItems,
+  realTrustChips,
   reviewBadge,
   shouldRenderBlock,
   showOrderCta,
@@ -16,6 +17,13 @@ import {
   type StorefrontModel,
   type StorefrontVariant,
 } from '../../services/storefrontHonesty';
+
+export type StorefrontEditField = 'headline' | 'sub' | 'about';
+
+export interface StorefrontEditor {
+  onFieldChange: (field: StorefrontEditField, value: string) => void;
+  onHeroUpload: (dataUrl: string) => void;
+}
 
 function waHref(e164: string, text?: string): string {
   const base = `https://wa.me/${e164.replace('+', '')}`;
@@ -36,10 +44,118 @@ const SMALL_CTA: React.CSSProperties = {
   padding: 0,
 };
 
+function resolveHeroSrc(model: StorefrontModel): string {
+  if (model.hero?.image) return model.hero.image;
+  if (model.mode === 'published') return '';
+  return STORE_STARTERS[model.templateId].heroImage;
+}
+
+function readHeroFile(file: File, onDone: (dataUrl: string) => void) {
+  if (!file.type.startsWith('image/')) return;
+  if (file.size > 2_500_000) return;
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const max = 1600;
+    const scale = Math.min(1, max / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    onDone(canvas.toDataURL('image/jpeg', 0.82));
+  };
+  img.src = url;
+}
+
+const HeroPhoto: React.FC<{
+  src: string;
+  field: string;
+  editable?: boolean;
+  onUpload?: (dataUrl: string) => void;
+  priority?: boolean;
+  fill?: boolean;
+}> = ({ src, field, editable, onUpload, priority, fill }) => (
+  <div style={{ position: fill ? 'absolute' : 'relative', inset: fill ? 0 : undefined, minHeight: fill ? undefined : '100%', height: fill ? undefined : '100%', background: field, overflow: 'hidden' }}>
+    {src ? (
+      <img
+        src={src}
+        alt=""
+        width={1600}
+        height={900}
+        fetchPriority={priority ? 'high' : 'auto'}
+        decoding="async"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+    ) : null}
+    {editable && onUpload ? (
+      <label
+        style={{
+          position: 'absolute',
+          inset: 0,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          padding: 16,
+          background: src ? 'transparent' : 'rgba(0,0,0,0.04)',
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) readHeroFile(file, onUpload);
+          }}
+        />
+        <span
+          style={{
+            minHeight: 44,
+            padding: '0 14px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            background: 'rgba(20,20,20,0.72)',
+            color: '#FFF8F0',
+            fontSize: 12,
+          }}
+        >
+          {src ? 'Replace photo' : 'Tap to add your photo'}
+        </span>
+      </label>
+    ) : null}
+  </div>
+);
+
+const EditableText: React.FC<{
+  value: string;
+  field: StorefrontEditField;
+  editor?: StorefrontEditor;
+  as?: 'h1' | 'p' | 'div';
+  style?: React.CSSProperties;
+}> = ({ value, field, editor, as = 'p', style }) => {
+  const Tag = as;
+  if (!editor) return <Tag style={style}>{value}</Tag>;
+  return (
+    <Tag
+      style={{ ...style, outline: '1px dashed rgba(255,255,255,0.28)', cursor: 'text' }}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e) => editor.onFieldChange(field, e.currentTarget.textContent || '')}
+    >
+      {value}
+    </Tag>
+  );
+};
+
 export const JuvayStorefront: React.FC<{
   model: StorefrontModel;
   onPrimaryCta?: () => void;
-}> = ({ model, onPrimaryCta }) => {
+  editor?: StorefrontEditor;
+}> = ({ model, onPrimaryCta, editor }) => {
   const starter = STORE_STARTERS[model.templateId];
   const p = starter.palette;
   const items = liveItems(model);
@@ -112,6 +228,8 @@ export const JuvayStorefront: React.FC<{
   const ctaStyle: React.CSSProperties = ghost
     ? { ...SMALL_CTA, background: 'transparent', color: p.heroText, border: `1px solid ${p.heroText}` }
     : { ...SMALL_CTA, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' };
+  const heroSrc = resolveHeroSrc(model);
+  const chips = realTrustChips(model);
 
   const upsell = items.filter((i) => i.inStock !== false && !cart.some((l) => l.item.id === i.id)).slice(0, 1);
   const showUpsell = items.length >= 2 && upsell.length > 0;
@@ -164,18 +282,27 @@ export const JuvayStorefront: React.FC<{
       </header>
 
       {shouldRenderBlock('hero', model) && (
-        <section ref={heroRef as any} style={{ minHeight: '70vh' }}>
+        <section ref={heroRef as any} style={{ minHeight: '70vh', background: p.heroBg }}>
           {starter.heroLayout === 'split' ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '70vh' }} className="juvay-hero-split">
               <div style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
                 <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7 }}>
                   {[model.area, model.island, model.specialty].filter(Boolean).join(' · ') || starter.name}
                 </p>
-                <h1 style={{ fontFamily: p.headingFont, fontSize: 'clamp(40px, 7vw, 72px)', lineHeight: 0.95, margin: '0 0 16px', fontWeight: 600 }}>
-                  {model.hero?.headline || starter.heroHeadline}
-                </h1>
-                {model.hero?.sub ? (
-                  <p style={{ margin: '0 0 22px', fontSize: 15, maxWidth: '40ch', lineHeight: 1.55, opacity: 0.85 }}>{model.hero.sub}</p>
+                <EditableText
+                  as="h1"
+                  field="headline"
+                  editor={editor}
+                  value={model.hero?.headline || starter.heroHeadline}
+                  style={{ fontFamily: p.headingFont, fontSize: 'clamp(40px, 7vw, 72px)', lineHeight: 0.95, margin: '0 0 16px', fontWeight: 600 }}
+                />
+                {(model.hero?.sub || editor) ? (
+                  <EditableText
+                    field="sub"
+                    editor={editor}
+                    value={model.hero?.sub || ''}
+                    style={{ margin: '0 0 22px', fontSize: 15, maxWidth: '40ch', lineHeight: 1.55, opacity: 0.85 }}
+                  />
                 ) : null}
                 {showCta ? (
                   <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button>
@@ -183,45 +310,74 @@ export const JuvayStorefront: React.FC<{
                   <div style={{ fontWeight: 600 }}>{closedNote}</div>
                 )}
               </div>
-              <div aria-hidden style={{ background: p.field, minHeight: 280 }} />
+              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority />
             </div>
           ) : starter.heroLayout === 'bleed' ? (
             <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
-              <div style={{ position: 'absolute', left: '6vw', bottom: '12vh', maxWidth: 420 }}>
-                <h1 style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', lineHeight: 0.95, margin: '0 0 12px', fontWeight: 500 }}>
-                  {model.hero?.headline || starter.heroHeadline}
-                </h1>
-                {model.hero?.sub ? (
-                  <p style={{ margin: '0 0 18px', fontSize: 14, maxWidth: '40ch', lineHeight: 1.5, opacity: 0.88 }}>{model.hero.sub}</p>
+              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />
+              <div style={{ position: 'absolute', left: '6vw', bottom: '12vh', maxWidth: 420, zIndex: 2, pointerEvents: editor ? 'auto' : undefined }}>
+                <EditableText
+                  as="h1"
+                  field="headline"
+                  editor={editor}
+                  value={model.hero?.headline || starter.heroHeadline}
+                  style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', lineHeight: 0.95, margin: '0 0 12px', fontWeight: 500 }}
+                />
+                {(model.hero?.sub || editor) ? (
+                  <EditableText
+                    field="sub"
+                    editor={editor}
+                    value={model.hero?.sub || ''}
+                    style={{ margin: '0 0 18px', fontSize: 14, maxWidth: '40ch', lineHeight: 1.5, opacity: 0.88 }}
+                  />
                 ) : null}
                 {showCta ? <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button> : <div>{closedNote}</div>}
               </div>
               {featured[0] && featured[0].price != null ? (
-                <div style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200 }}>
+                <div style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
                   <div style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 14 }}>{featured[0].name}</div>
                   <div style={{ color: ISLAND.pepper, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
                 </div>
               ) : null}
             </div>
           ) : (
-            <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32 }}>
-              <div>
-                <div style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, marginBottom: 10 }}>
-                  {model.storeName || starter.name}
+            <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
+              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />
+              <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32, zIndex: 2 }}>
+                <div>
+                  <div style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, marginBottom: 10 }}>
+                    {model.storeName || starter.name}
+                  </div>
+                  <EditableText
+                    field="headline"
+                    editor={editor}
+                    value={model.hero?.headline || starter.heroHeadline}
+                    style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}
+                  />
+                  {showCta ? <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button> : <div>{closedNote}</div>}
                 </div>
-                <p style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}>
-                  {model.hero?.headline || starter.heroHeadline}
-                </p>
-                {showCta ? <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button> : <div>{closedNote}</div>}
               </div>
             </div>
           )}
         </section>
       )}
 
-      {model.about ? (
+      {shouldRenderBlock('trust', model) && chips.length > 0 ? (
+        <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface }}>
+          {chips.map((chip) => (
+            <span key={chip} style={{ fontSize: 12, color: ISLAND.teal, border: `1px solid ${p.border}`, padding: '4px 10px' }}>{chip}</span>
+          ))}
+        </div>
+      ) : null}
+
+      {model.about || editor ? (
         <section style={{ padding: '40px 6vw', maxWidth: 'calc(40ch + 12vw)' }}>
-          <p style={{ margin: 0, fontSize: 16, lineHeight: 1.65, color: p.muted, maxWidth: '40ch' }}>{model.about}</p>
+          <EditableText
+            field="about"
+            editor={editor}
+            value={model.about || ''}
+            style={{ margin: 0, fontSize: 16, lineHeight: 1.65, color: p.muted, maxWidth: '40ch' }}
+          />
         </section>
       ) : null}
 

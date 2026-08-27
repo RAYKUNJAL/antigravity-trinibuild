@@ -47,7 +47,7 @@ export interface StorefrontModel {
   wamLive?: boolean;
   reviewCount?: number;
   items?: StorefrontItem[];
-  hero?: { headline: string; sub?: string };
+  hero?: { headline: string; sub?: string; image?: string };
   about?: string;
   trustChips?: string[];
   faq?: Array<{ q: string; a: string }>;

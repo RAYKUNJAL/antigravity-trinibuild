@@ -52,7 +52,11 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
     wamLive,
     reviewCount: Number(store?.review_count || store?.reviewCount || 0),
     items,
-    hero: theme.hero || { headline: starter.heroHeadline, sub: [theme.specialty, store?.island].filter(Boolean).join(' · ') },
+    hero: {
+      headline: theme.hero?.headline || starter.heroHeadline,
+      sub: theme.hero?.sub || [theme.specialty, store?.island].filter(Boolean).join(' · '),
+      image: theme.hero?.image || '',
+    },
     about: theme.about || store?.description || '',
     trustChips: Array.isArray(theme.trustChips) ? theme.trustChips : [],
     faq: Array.isArray(theme.faq) && theme.faq.length ? theme.faq : defaultFaq({
