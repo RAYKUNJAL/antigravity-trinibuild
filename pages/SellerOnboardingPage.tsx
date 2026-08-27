@@ -55,7 +55,7 @@ export const SellerOnboardingPage: React.FC = () => {
     {
       icon: '💳',
       title: 'Easy Payments',
-      description: 'Cash on Delivery, Bank Transfer, Card & PayPal'
+      description: 'Cash on delivery and pickup. Supported online payments only when that rail is actually on.'
     },
     {
       icon: '📱',

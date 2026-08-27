@@ -1368,7 +1368,7 @@ export const StoreCreatorV2: React.FC = () => {
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 1 TriniBuild Storefront</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 15 Products Limit</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Basic Analytics</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 5% Transaction Fee</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Cash pickup and COD</li>
                         </ul>
                     </div>
 

@@ -19,7 +19,7 @@ export default function DriverPassPage() {
     const [pass, setPass] = useState<any>(null);
     const [access, setAccess] = useState<any>(null);
     const [payments, setPayments] = useState<any[]>([]);
-    const [payFlow, setPayFlow] = useState<{ plan: PassPlan; method: 'wam' | 'bank' | 'paypal'; payment?: any; instructions?: string } | null>(null);
+    const [payFlow, setPayFlow] = useState<{ plan: PassPlan; method: 'wam' | 'bank'; payment?: any; instructions?: string } | null>(null);
     const [uploading, setUploading] = useState(false);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
@@ -36,11 +36,10 @@ export default function DriverPassPage() {
 
     const trial = async () => { setBusy(true); try { await startFreeTrial(); await refresh(); } catch (e: any) { setError(e.message); } setBusy(false); };
 
-    const startPay = async (plan: PassPlan, method: 'wam' | 'bank' | 'paypal') => {
+    const startPay = async (plan: PassPlan, method: 'wam' | 'bank') => {
         setBusy(true); setError('');
         try {
             const res = await requestPassPayment(plan.slug, method);
-            if ((res as any).paypalUrl) window.open((res as any).paypalUrl, '_blank');
             setPayFlow({ plan, method, payment: res.payment, instructions: res.instructions });
         } catch (e: any) { setError(e.message); }
         setBusy(false);
@@ -54,7 +53,7 @@ export default function DriverPassPage() {
             const { error: ue } = await supabase.storage.from('bank-transfer-proofs').upload(path, file);
             if (ue) throw ue;
             const { data: { publicUrl } } = supabase.storage.from('bank-transfer-proofs').getPublicUrl(path);
-            await submitPassProof(payFlow.payment.reference_code, publicUrl, payFlow.method === 'bank' ? 'Bank deposit' : payFlow.method === 'paypal' ? 'PayPal' : 'WAM');
+            await submitPassProof(payFlow.payment.reference_code, publicUrl, payFlow.method === 'bank' ? 'Bank deposit' : 'WAM');
             setPayFlow(null); await refresh();
         } catch (e: any) { setError(e.message); }
         setUploading(false);
@@ -123,7 +122,7 @@ export default function DriverPassPage() {
                 {/* Pay flow */}
                 {payFlow?.payment ? (
                     <motion.div {...fade} className="bg-gray-950 border border-[#FFD700]/40 rounded-2xl p-5 mb-6">
-                        <p className="font-extrabold text-lg mb-1">{payFlow.method === 'paypal' ? 'Complete your PayPal payment' : payFlow.method === 'wam' ? 'Pay by WAM' : 'Pay at any bank'}</p>
+                        <p className="font-extrabold text-lg mb-1">{payFlow.method === 'wam' ? 'Pay by WAM' : 'Pay at any bank'}</p>
                         <p className="text-sm text-gray-300 mb-4">{payFlow.instructions}</p>
                         <div className="bg-black border border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between mb-4">
                             <span className="font-mono font-bold text-[#FFD700]">{payFlow.payment.reference_code}</span>
@@ -133,7 +132,7 @@ export default function DriverPassPage() {
                             <span className="sr-only">Upload receipt</span>
                             <div className="border-2 border-dashed border-gray-700 hover:border-[#E61E2B] rounded-xl p-6 text-center cursor-pointer transition-colors">
                                 {uploading ? <Loader2 className="animate-spin mx-auto" /> : (<><Upload className="mx-auto mb-2 text-gray-500" size={22} />
-                                    <p className="text-sm font-semibold">Upload your {payFlow.method === 'paypal' ? 'PayPal receipt' : payFlow.method === 'wam' ? 'WAM screenshot' : 'teller slip'}</p>
+                                    <p className="text-sm font-semibold">Upload your {payFlow.method === 'wam' ? 'WAM screenshot' : 'teller slip'}</p>
                                     <p className="text-xs text-gray-500 mt-1">Verified within 1–2 business days</p></>)}
                             </div>
                             <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => e.target.files?.[0] && uploadProof(e.target.files[0])} />

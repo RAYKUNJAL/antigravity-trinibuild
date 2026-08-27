@@ -3,8 +3,8 @@
  * 
  * Tracks all monetary flows:
  * - Merchant order values
- * - TriniBuild platform fees (5% base)
- * - COD delivery fees (TriniRides integration)
+ * - Platform fee: none published (do not invent 5%)
+ * - Delivery fare only if that product is live for that store
  * - Payment processing fees
  * - Merchant payouts
  * - Tax obligations (VAT, levies)
@@ -17,7 +17,7 @@ export interface OrderRevenue {
   storeId: string;
   merchantId: string;
   orderTotal: number;
-  trinibuildFee: number;      // 5% platform fee
+  trinibuildFee: number;      // No published Juvay take
   deliveryFee: number;        // TriniRides fee
   paymentFee: number;         // Payment processor fee
   merchantEarnings: number;   // What merchant gets
@@ -33,7 +33,7 @@ export interface MerchantRevenue {
   period: string;           // YYYY-MM
   totalOrderValue: number;
   orderCount: number;
-  trinibuildFees: number;   // 5% of all orders
+  trinibuildFees: number;   // No published Juvay take
   deliveryFees: number;     // TriniRides
   paymentFees: number;      // CC/bank processing
   merchantEarnings: number; // Take-home
@@ -60,14 +60,14 @@ export interface TrinibuildRevenue {
 // ============================================================================
 
 export const FEE_STRUCTURE = {
-  PLATFORM_FEE: 0.05,           // 5% of order total
-  COD_DELIVERY_BASE: 25,         // TT$25 base (TriniRides)
-  COD_DELIVERY_PER_KM: 4,        // TT$4 per km
-  STRIPE_FEE_PERCENTAGE: 0.029,  // 2.9%
-  STRIPE_FEE_FIXED: 10,          // TT$10 per transaction
-  PAYPAL_FEE_PERCENTAGE: 0.049,  // 4.9%
-  PAYPAL_FEE_FIXED: 20,          // TT$20 per transaction
-  BANK_TRANSFER_FEE: 50,         // TT$50 (one-time for daily batches)
+  PLATFORM_FEE: 0,               // No written Juvay COD take lock. Do not invent 5%.
+  COD_DELIVERY_BASE: 0,          // Ride fare only if that product is live for that store
+  COD_DELIVERY_PER_KM: 0,
+  STRIPE_FEE_PERCENTAGE: 0,
+  STRIPE_FEE_FIXED: 0,
+  PAYPAL_FEE_PERCENTAGE: 0,
+  PAYPAL_FEE_FIXED: 0,
+  BANK_TRANSFER_FEE: 0,
   
   // Tax rates (Trinidad)
   VAT_RATE: 0.125,               // 12.5%

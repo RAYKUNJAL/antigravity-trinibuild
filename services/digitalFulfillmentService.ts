@@ -3,11 +3,7 @@
  * Automated digital code delivery with fraud protection
  * 
  * Flow:
- * 1. Customer pays (PayPal or bank deposit)
- * 2. AI cross-references payment receipt
- * 3. Fraud checks run (velocity, device, amount matching)
- * 4. Code auto-delivered via WhatsApp/email
- * 5. Fallback: manual review queue for flagged orders
+ * Digital catalog is not live on this origin. No PayPal. No pay→fulfill.
  * 
  * Suppliers:
  * - CodesWholesale API (primary)
@@ -175,13 +171,13 @@ export const digitalFulfillmentService = {
             if (fraudResult.action === 'reject') {
                 // Flag for manual review
                 await this.notifyAdminFraudAlert(orderId, fraudResult);
-                return { success: false, message: 'Order flagged for review. Our team will verify within 4 hours.' };
+                return { success: false, message: 'Digital codes are not for sale on this origin. No code is delivered.' };
             }
 
             if (fraudResult.action === 'review') {
                 // Queue for manual review but don't reject
                 await this.notifyAdminFraudAlert(orderId, fraudResult);
-                return { success: true, message: 'Order placed! Verification in progress (1-4 hours).' };
+                return { success: false, message: 'Digital codes are not for sale on this origin. No instant delivery. No pay→fulfill.' };
             }
 
             // Auto-approve: fulfill immediately
@@ -192,53 +188,9 @@ export const digitalFulfillmentService = {
         }
     },
 
-    // Fulfill an approved order
-    async fulfillOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-        try {
-            const { data: order } = await supabase
-                .from('digital_orders')
-                .select('*')
-                .eq('id', orderId)
-                .single();
-
-            if (!order) return { success: false, message: 'Order not found' };
-
-            // Get code from inventory
-            const code = await this.getAvailableCode(order.product_id, order.variant_id);
-
-            if (!code) {
-                // No codes in stock — queue for manual fulfillment
-                await supabase.from('digital_orders').update({
-                    status: 'verifying',
-                    fraud_flags: [...(order.fraud_flags || []), 'OUT_OF_STOCK: Auto-fulfillment unavailable']
-                }).eq('id', orderId);
-
-                return { success: true, message: 'Order confirmed! Code delivery within 2 hours.' };
-            }
-
-            // Mark code as sold
-            await supabase.from('digital_inventory').update({
-                status: 'sold',
-                order_id: orderId,
-                sold_at: new Date().toISOString()
-            }).eq('id', code.id);
-
-            // Update order as fulfilled
-            await supabase.from('digital_orders').update({
-                status: 'fulfilled',
-                digital_code: code.code,
-                delivered_at: new Date().toISOString(),
-                verified_at: new Date().toISOString()
-            }).eq('id', orderId);
-
-            // Deliver code to customer
-            await this.deliverCode(order, code.code);
-
-            return { success: true, message: 'Your code has been delivered! Check your WhatsApp or email.' };
-        } catch (error) {
-            console.error('Fulfillment failed:', error);
-            return { success: false, message: 'Delivery error. Contact support for immediate assistance.' };
-        }
+    // Fulfill an approved order — fail closed. No pay→fulfill on this origin.
+    async fulfillOrder(_orderId: string): Promise<{ success: boolean; message: string }> {
+        return { success: false, message: 'Digital codes are not for sale on this origin. No pay→fulfill.' };
     },
 
     // Get available code from inventory
@@ -329,7 +281,7 @@ export const digitalFulfillmentService = {
             // For now: queue for manual verification
             return {
                 verified: false,
-                message: 'Receipt uploaded! Our team will verify within 1-4 hours and deliver your code.'
+                message: 'Digital codes are not for sale on this origin. A receipt does not deliver a code.'
             };
         } catch (error) {
             return { verified: false, message: 'Upload failed. Please try again or contact support.' };
