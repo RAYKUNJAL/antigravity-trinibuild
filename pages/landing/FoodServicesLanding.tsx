@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
+import { JuvayPriceTable } from '../../components/JuvayPriceTable';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
     Phone, Mail, MessageCircle, MapPin, Star, Clock, Truck, Shield, Award,
@@ -37,19 +38,19 @@ export const FoodServicesLanding: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Online Ordering for Trinidad & Tobago Food Businesses | TriniBuild</title>
-                <meta name="description" content="Accept online orders for your restaurant, roti shop, bakery, or food business in Trinidad & Tobago. COD, WiPay, free delivery with TriniBuild Go." />
+                <title>Online Ordering for Trinidad & Tobago Food Businesses | Juvay</title>
+                <meta name="description" content="Accept online orders for your restaurant, roti shop, bakery, or food business in Trinidad & Tobago. Cash on delivery and pickup." />
                 <meta name="keywords" content="online food ordering trinidad, restaurant online ordering, roti shop online, food delivery trinidad, doubles online, trinidad food business" />
 
                 <script type="application/ld+json">
                     {JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "Service",
-                        "name": "TriniBuild Food Services Platform",
+                        "name": "Juvay Food Services Platform",
                         "description": "Online ordering platform for Trinidad & Tobago food businesses",
                         "provider": {
                             "@type": "Organization",
-                            "name": "TriniBuild"
+                            "name": "Juvay"
                         },
                         "areaServed": {
                             "@type": "Country",
@@ -80,7 +81,7 @@ export const FoodServicesLanding: React.FC = () => {
                             </h1>
                             <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
                                 Perfect for roti shops, restaurants, bakeries, and all Trinidad food businesses.
-                                Accept COD, WiPay, get free delivery drivers. Set up in 5 minutes!
+                                Cash on delivery and pickup. Supported online payments only when that rail is actually on. Set up in 5 minutes.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -165,8 +166,8 @@ export const FoodServicesLanding: React.FC = () => {
                             />
                             <FeatureCard
                                 icon="🚗"
-                                title="Free Delivery Drivers"
-                                description="Connect to TriniBuild Go drivers across Trinidad & Tobago. Real-time tracking from kitchen to customer."
+                                title="Pickup or seller delivery"
+                                description="Offer pickup or arrange your own delivery. A ride fare is only shown when that product is live for that store."
                             />
                             <FeatureCard
                                 icon="💬"
@@ -226,50 +227,7 @@ export const FoodServicesLanding: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                            <PricingCard
-                                name="Small Shop"
-                                price="49"
-                                period="month"
-                                description="Perfect for roti shops, snackettes, small restaurants"
-                                features={[
-                                    'Up to 50 menu items',
-                                    'Cash on Delivery',
-                                    'WhatsApp notifications',
-                                    'Basic menu builder',
-                                    'Phone support'
-                                ]}
-                            />
-                            <PricingCard
-                                name="Restaurant"
-                                price="99"
-                                period="month"
-                                popular={true}
-                                description="For restaurants, bakeries, catering businesses"
-                                features={[
-                                    'Unlimited menu items',
-                                    'All payment methods',
-                                    'TriniBuild Go delivery',
-                                    'Advanced menu builder',
-                                    'Promo codes & specials',
-                                    'Priority support'
-                                ]}
-                            />
-                            <PricingCard
-                                name="Chain/Multiple"
-                                price="Custom"
-                                period=""
-                                description="Multiple locations, franchises, large operations"
-                                features={[
-                                    'Everything in Restaurant',
-                                    'Multiple locations',
-                                    'Staff accounts',
-                                    'Custom integrations',
-                                    'Dedicated support',
-                                    'Volume discounts'
-                                ]}
-                            />
-                        </div>
+                        <JuvayPriceTable />
                     </div>
                 </section>
 
@@ -295,7 +253,7 @@ export const FoodServicesLanding: React.FC = () => {
                             </a>
                         </div>
                         <p className="text-sm text-white/80">
-                            Call we: +1 (868) 555-FOOD • Email: food@trinibuild.com
+                            Email: support@juvay.app
                         </p>
                     </div>
                 </section>

@@ -459,7 +459,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
     city: '',
     landmark: '',
     notes: '',
-    delivery: 'trinirides',
+    delivery: 'pickup',
     payment: 'cod',
     transferProof: null,
     scheduleNow: true,
@@ -679,18 +679,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
     <div className="space-y-4">
       <h2 className="text-xl font-black text-gray-900">Choose Delivery</h2>
 
-      {/* TriniRides — first and featured */}
-      <TriniRidesPanel
-        selected={form.delivery === 'trinirides'}
-        onSelect={() => update('delivery', 'trinirides')}
-        fee={form.delivery === 'trinirides' ? deliveryFee() : (() => {
-          const driver = nearbyDrivers[0];
-          return driver ? Math.round(25 + driver.distance * 4) : 35;
-        })()}
-        drivers={nearbyDrivers}
-        selectedDriver={selectedDriver}
-        onSelectDriver={setSelectedDriver}
-      />
+      {/* TriniRides fare (TT$25 + TT$4/km) is only shown when that product is live for this store. */}
 
       {/* Standard delivery */}
       <DeliveryOption
@@ -843,68 +832,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
         </AnimatePresence>
       </div>
 
-      {/* Bank Transfer */}
-      <div>
-        <motion.button
-          onClick={() => update('payment', 'bank_transfer')}
-          whileTap={{ scale: 0.98 }}
-          className="w-full text-left rounded-2xl border-2 p-4 transition-all mb-3"
-          style={form.payment === 'bank_transfer'
-            ? { borderColor: '#3b82f6', background: '#eff6ff' }
-            : { borderColor: '#e5e7eb', background: '#fff' }
-          }
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Building2 size={22} className="text-blue-600" />
-            </div>
-            <div>
-              <p className="font-black text-gray-900">🏦 Bank Transfer / Linx Online</p>
-              <p className="text-xs text-gray-500 mt-0.5">Transfer to store's account, upload proof</p>
-            </div>
-          </div>
-        </motion.button>
-
-        <AnimatePresence>
-          {form.payment === 'bank_transfer' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <BankTransferPanel
-                store={store}
-                amount={total}
-                onProofUpload={(url) => update('transferProof', url)}
-                proof={form.transferProof}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Card (WiPay) */}
-      <motion.button
-        onClick={() => update('payment', 'card')}
-        whileTap={{ scale: 0.98 }}
-        className="w-full text-left rounded-2xl border-2 p-4 transition-all"
-        style={form.payment === 'card'
-          ? { borderColor: '#7c3aed', background: '#faf5ff' }
-          : { borderColor: '#e5e7eb', background: '#fff' }
-        }
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <CreditCard size={22} className="text-purple-600" />
-          </div>
-          <div className="flex-1">
-            <p className="font-black text-gray-900">💳 Card / WiPay</p>
-            <p className="text-xs text-gray-500 mt-0.5">Visa, Mastercard via WiPay secure gateway</p>
-          </div>
-          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">2% fee</span>
-        </div>
-      </motion.button>
+      {/* Bank transfer and WiPay are not live rails on Juvay. Cash only. */}
     </div>
   );
 
