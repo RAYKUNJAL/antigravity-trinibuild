@@ -144,7 +144,12 @@ export const Navbar: React.FC = () => {
     const simpleUser = simpleAuthService.getCurrentUser();
     setCurrentUser(simpleUser);
     setIsLoggedIn(!!simpleUser);
-    if (simpleUser && (simpleUser.role === 'admin' || simpleUser.role === 'super_admin')) setIsAdmin(true);
+    const token = localStorage.getItem('tb_token');
+    setIsAdmin(
+      !!token &&
+      !!simpleUser &&
+      (simpleUser.role === 'admin' || simpleUser.role === 'super_admin')
+    );
   }, [location]);
 
   useEffect(() => {

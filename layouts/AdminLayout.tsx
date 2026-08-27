@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { AdminSidebar } from '../components/admin';
 import { authService } from '../services/authService';
+import { getToken } from '../services/selfHostedApi';
 import { Bell, Search, User } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-    // Check localStorage directly (synchronous) for admin bypass
+    // Planted localStorage.user is not a session. Need tb_token + admin role.
     const getUserFromLocalStorage = () => {
         try {
             const userStr = localStorage.getItem('user');
@@ -21,11 +22,10 @@ export const AdminLayout: React.FC = () => {
     };
 
     const user = getUserFromLocalStorage();
+    const token = getToken();
 
-    // Double-check auth - redirect if no user or not admin
-    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-        console.warn('AdminLayout: No admin user found, redirecting to home');
-        return <Navigate to="/" replace />;
+    if (!token || !user || (user.role !== 'admin' && user.role !== 'super_admin')) {
+        return <Navigate to="/login" replace />;
     }
 
     const handleLogout = () => {

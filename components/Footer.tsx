@@ -99,6 +99,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">Blog</Link></li>
               <li><Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About</Link></li>
               <li><Link to="/contact" className="text-sm text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              {/* No public Admin link. /admin is a login wall for strangers. */}
             </ul>
           </div>
 

@@ -7,6 +7,10 @@ interface ProtectedRouteProps {
     children: React.ReactNode;
 }
 
+function isAdminRole(role?: string | null) {
+    return role === 'admin' || role === 'super_admin';
+}
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const location = useLocation();
@@ -42,6 +46,44 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     if (!isAuthenticated) {
         const next = encodeURIComponent(location.pathname + location.search);
         return <Navigate to={`/signup?next=${next}`} replace />;
+    }
+
+    return <>{children}</>;
+};
+
+/** Login wall for /admin*. No token and planted localStorage.user are not a session. No admin chrome. */
+export const AdminRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+    const location = useLocation();
+    const next = encodeURIComponent(location.pathname + location.search);
+    const loginTo = `/login?next=${next}`;
+    const [ok, setOk] = useState<boolean | null>(getToken() ? null : false);
+
+    useEffect(() => {
+        if (!getToken()) {
+            setOk(false);
+            return;
+        }
+        let cancelled = false;
+        authApi.getUser()
+            .then((user) => {
+                if (!cancelled) setOk(!!user && isAdminRole(user.role));
+            })
+            .catch(() => {
+                if (!cancelled) setOk(false);
+            });
+        return () => { cancelled = true; };
+    }, []);
+
+    if (ok === false) {
+        return <Navigate to={loginTo} replace />;
+    }
+
+    if (ok === null) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <p className="text-sm text-gray-600">Sign in required.</p>
+            </div>
+        );
     }
 
     return <>{children}</>;

@@ -27,6 +27,19 @@ export const SignupPageSimple: React.FC = () => {
     'Other',
   ];
 
+  React.useEffect(() => {
+    fetch('/api/', { headers: { Accept: 'application/json' } })
+      .then(async (r) => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          setError('Signup API is not mounted on this origin yet. GET /api/ must return JSON, not the site shell.');
+        }
+      })
+      .catch(() => {
+        setError('Cannot reach POST /api/signup on this origin. The site shell is not the API.');
+      });
+  }, []);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

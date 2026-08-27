@@ -57,7 +57,6 @@ import { AdminBlogDashboard } from './pages/AdminBlogDashboard';
 import { SearchResults } from './pages/SearchResults';
 import { KeywordDashboard } from './pages/KeywordDashboard';
 import { CODTrackingPage } from './pages/CODTrackingPage';
-import { AdminSignup } from './pages/admin/AdminSignup';
 import CommandCenter from './pages/CommandCenter';
 import { AdminLayout } from './layouts/AdminLayout';
 import {
@@ -95,7 +94,7 @@ import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
 // StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
 import { StorefrontV2 } from './pages/StorefrontV2';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
 import { ContractorSignup } from './pages/ContractorSignup';
@@ -199,7 +198,7 @@ const App: React.FC = () => {
             <Route path="/site/:slug" element={<PublishedSite />} />
             <Route path="/sitemap.xml" element={<SitemapXml />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
-            <Route path="/admin/payments" element={<AdminPaymentsVerify />} />
+            <Route path="/admin/payments" element={<AdminRoute><AdminPaymentsVerify /></AdminRoute>} />
             <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
             <Route path="/pickups" element={<MerchantPickupQueue />} />
             <Route path="/driver/pass" element={<DriverPassPage />} />
@@ -223,7 +222,7 @@ const App: React.FC = () => {
               <Route path="/create-store-v2" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />
               <Route path="/tax-dashboard" element={<ProtectedRoute><MerchantTaxDashboard /></ProtectedRoute>} />
-              <Route path="/admin-financial" element={<AdminFinancialDashboard />} />
+              <Route path="/admin-financial" element={<AdminRoute><AdminFinancialDashboard /></AdminRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><JuvayDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/bot-settings" element={<ProtectedRoute><StoreBotSettings /></ProtectedRoute>} />
               <Route path="/classifieds" element={<Classifieds />} />
@@ -261,6 +260,7 @@ const App: React.FC = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Navigate to="/login" replace />} />
+              <Route path="/admin/" element={<Navigate to="/login" replace />} />
               <Route path="/admin/bypass" element={<Navigate to="/" replace />} />
               <Route path="/demo" element={<DemoSamplePage />} />
               <Route path="/demo/food" element={<DemoSamplePage />} />
@@ -365,12 +365,12 @@ const App: React.FC = () => {
               <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/blog/location/:slug" element={<LocationBlogPost />} />
 
-              <Route path="/admin/blog-generator" element={<ProtectedRoute><BlogGenerator /></ProtectedRoute>} />
-              <Route path="/admin/blog-dashboard" element={<ProtectedRoute><AdminBlogDashboard /></ProtectedRoute>} />
-              <Route path="/admin/keywords" element={<ProtectedRoute><KeywordDashboard /></ProtectedRoute>} />
+              <Route path="/admin/blog-generator" element={<AdminRoute><BlogGenerator /></AdminRoute>} />
+              <Route path="/admin/blog-dashboard" element={<AdminRoute><AdminBlogDashboard /></AdminRoute>} />
+              <Route path="/admin/keywords" element={<AdminRoute><KeywordDashboard /></AdminRoute>} />
             </Route>
 
-            <Route path="/admin/command-center" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            <Route path="/admin/command-center" element={<AdminRoute><AdminLayout /></AdminRoute>}>
               <Route index element={<CommandCenter />} />
               <Route path="traffic-hub" element={<TrafficHub />} />
               <Route path="ads-engine" element={<AdsEngine />} />
@@ -438,6 +438,9 @@ const App: React.FC = () => {
             <Route path="/store/:slug" element={<StorefrontV2 />} />
             <Route path="/store/:id/v1" element={<Storefront />} />
             <Route path="/store/preview" element={<StorefrontV2 />} />
+
+            {/* Unknown /admin/* — login wall, never public admin chrome */}
+            <Route path="/admin/*" element={<Navigate to="/login" replace />} />
 
             {/* 404 Catch-all */}
             <Route path="*" element={<NotFound />} />
