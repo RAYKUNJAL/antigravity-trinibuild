@@ -11,6 +11,7 @@ const {
   closedFoodNextOpen,
   mapProductVariants,
   mapProductSpecs,
+  itemIsSellable,
 } = require('./storefrontHonesty');
 
 function food(partial = {}) {
@@ -67,5 +68,21 @@ assert.strictEqual(variants[1].title, 'Silver / 256GB');
 assert.deepStrictEqual(mapProductVariants([]), []);
 assert.strictEqual(mapProductSpecs({ Storage: '128GB', Color: 'Black' }), 'Storage: 128GB · Color: Black');
 assert.strictEqual(mapProductSpecs(''), '');
+assert.strictEqual(itemIsSellable({ id: '1', name: 'Cable' }), true);
+assert.strictEqual(itemIsSellable({ id: '2', name: 'Pad', inStock: false }), false);
+
+const electronics = food({
+  templateId: 'electronics',
+  items: [{ id: 'p', name: 'Phone', variants: variants, specs: 'Storage: 128GB' }],
+});
+assert.strictEqual(shouldRenderBlock('grid', electronics), true);
+assert.strictEqual(featuredItems(electronics)[0].variants.length, 2);
+
+const autoFit = food({
+  templateId: 'auto',
+  items: [{ id: 'a', name: 'Pad', compatibilityNote: 'Fits a 2016 Civic if the merchant typed that' }],
+});
+assert.strictEqual(autoFit.items[0].compatibilityNote.includes('merchant'), true);
+assert.ok(!JSON.stringify(autoFit).toLowerCase().includes('same-day'));
 
 console.log('storefrontHonesty.test.js ok');

@@ -7,6 +7,7 @@ import {
   emptyCatalogCopy,
   featuredItems,
   formatPrice,
+  itemIsSellable,
   liveItems,
   realTrustChips,
   reviewBadge,
@@ -190,7 +191,11 @@ export const JuvayStorefront: React.FC<{
   const visibleItems = useMemo(() => {
     if (!query.trim()) return items;
     const q = query.toLowerCase();
-    return items.filter((item) => item.name.toLowerCase().includes(q) || (item.compatibilityNote || '').toLowerCase().includes(q));
+    return items.filter((item) =>
+      [item.name, item.compatibilityNote, item.description, item.specs]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(q)),
+    );
   }, [items, query]);
 
   const cartTotal = cart.reduce((sum, line) => {
@@ -201,6 +206,7 @@ export const JuvayStorefront: React.FC<{
   const face = formatPrice(model, cartTotal) || `${currencyPrefix(model)}0`;
 
   const addLine = (item: StorefrontItem, variant?: StorefrontVariant) => {
+    if (!itemIsSellable(item)) return;
     if (item.variants && item.variants.length && !variant) {
       setPicker(item);
       setPickedVariant('');
@@ -407,13 +413,17 @@ export const JuvayStorefront: React.FC<{
         </section>
       ) : null}
 
-      {model.templateId === 'auto' && !empty ? (
+      {(model.templateId === 'auto' || model.templateId === 'electronics') && !empty ? (
         <div style={{ padding: '0 6vw 8px' }}>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search parts"
-            style={{ width: '100%', maxWidth: 360, height: 40, border: `1px solid ${p.border}`, background: p.surface, padding: '0 12px' }}
+            placeholder={
+              model.templateId === 'auto'
+                ? 'Search parts. Fit is a merchant note.'
+                : 'Search gadgets. Specs only if the seller typed them.'
+            }
+            style={{ width: '100%', maxWidth: 360, minHeight: 44, border: `1px solid ${p.border}`, background: p.surface, padding: '0 12px' }}
           />
         </div>
       ) : null}
@@ -433,7 +443,7 @@ export const JuvayStorefront: React.FC<{
 
       <section id="juvay-catalog" style={{ padding: `12px 6vw ${heroGone ? 88 : 48}px` }}>
         <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
-          {model.templateId === 'food' ? 'Menu' : model.templateId === 'services' ? 'Services' : model.templateId === 'fashion' ? 'The rack' : 'Shop'}
+          {model.templateId === 'food' ? 'Menu' : model.templateId === 'services' ? 'Services' : model.templateId === 'fashion' ? 'The rack' : model.templateId === 'auto' ? 'Parts' : model.templateId === 'electronics' ? 'Gadgets' : 'Shop'}
         </h2>
         {empty ? (
           <div style={{ border: `1px dashed ${p.border}`, padding: '48px 20px', textAlign: 'center', color: p.muted, maxWidth: 560, margin: '0 auto' }}>
@@ -451,7 +461,11 @@ export const JuvayStorefront: React.FC<{
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {price ? <strong style={{ color: ISLAND.pepper }}>{price}</strong> : null}
-                    <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>Add</button>
+                    {itemIsSellable(item) ? (
+                      <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>Add</button>
+                    ) : (
+                      <span style={{ fontSize: 12, color: p.muted }}>Out of stock</span>
+                    )}
                   </div>
                 </div>
               );
@@ -661,6 +675,8 @@ const CatalogCard: React.FC<{
   large?: boolean;
 }> = ({ item, model, palette: p, onAdd, large }) => {
   const price = formatPrice(model, item.price);
+  const sellable = itemIsSellable(item);
+  const needsVariant = !!(item.variants && item.variants.length);
   return (
     <article>
       <div
@@ -677,7 +693,13 @@ const CatalogCard: React.FC<{
         {item.specs ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.specs}</p> : null}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           {price ? <span style={{ color: ISLAND.pepper, fontWeight: 600 }}>{price}</span> : <span />}
-          <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, width: 72, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>Add</button>
+          {sellable ? (
+            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 72, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>
+              {needsVariant ? 'Pick' : 'Add'}
+            </button>
+          ) : (
+            <span style={{ fontSize: 12, color: p.muted }}>Out of stock</span>
+          )}
         </div>
       </div>
     </article>

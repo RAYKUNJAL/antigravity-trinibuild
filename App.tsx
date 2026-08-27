@@ -15,7 +15,7 @@ import { DemoSamplePage } from './pages/DemoSamplePage';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -141,15 +141,19 @@ import { ToastProvider } from './components/ui/Toast';
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
+  const { pathname } = useLocation();
+  const islandSurface = pathname.startsWith('/templates') || pathname.startsWith('/create-store');
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
+    <div
+      className={`pt-16 min-h-screen ${islandSurface ? '' : 'bg-gray-50'}`}
+      style={islandSurface ? { background: '#FFF8F0' } : undefined}
+    >
       <Outlet />
     </div>
   );
 };
 
 import ScrollToTop from './components/ScrollToTop';
-import { useLocation } from 'react-router-dom';
 
 const LocationLogger = () => {
   const location = useLocation();

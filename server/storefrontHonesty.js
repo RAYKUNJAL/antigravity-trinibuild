@@ -105,6 +105,10 @@ function closedFoodNextOpen(model) {
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
 }
 
+function itemIsSellable(item) {
+  return item.inStock !== false;
+}
+
 module.exports = {
   liveItems,
   featuredItems,
@@ -118,4 +122,5 @@ module.exports = {
   closedFoodNextOpen,
   mapProductVariants,
   mapProductSpecs,
+  itemIsSellable,
 };

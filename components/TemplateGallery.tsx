@@ -144,7 +144,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                 setSearchParams(next, { replace: true });
               }}
               style={{
-                minHeight: 36,
+                minHeight: 44,
                 padding: '0 14px',
                 borderRadius: 4,
                 border: `1px solid ${category === cat.id ? '#1a1a1a' : '#cfc8bc'}`,
@@ -188,14 +188,14 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                 <button
                   type="button"
                   onClick={() => openPreview(starter.galleryId)}
-                  style={{ minHeight: 40, padding: '0 14px', border: '1px solid #1a1a1a', background: 'transparent', cursor: 'pointer' }}
+                  style={{ minHeight: 44, padding: '0 14px', border: '1px solid #1a1a1a', background: 'transparent', cursor: 'pointer' }}
                 >
                   Preview
                 </button>
                 <button
                   type="button"
                   onClick={() => useTemplate(starter.galleryId)}
-                  style={{ minHeight: 40, padding: '0 14px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ minHeight: 44, padding: '0 14px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, cursor: 'pointer' }}
                 >
                   Use / Customize
                 </button>
@@ -229,13 +229,13 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
               <JuvayStorefront model={illustrativeModel(previewId)} />
             </div>
             <div style={{ padding: 16, display: 'flex', gap: 8, background: ISLAND.sand }}>
-              <button type="button" onClick={closePreview} style={{ minHeight: 40, padding: '0 16px', border: '1px solid #1a1a1a', background: 'transparent' }}>
+              <button type="button" onClick={closePreview} style={{ minHeight: 44, padding: '0 16px', border: '1px solid #1a1a1a', background: 'transparent' }}>
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => useTemplate(previewId)}
-                style={{ minHeight: 40, padding: '0 16px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700 }}
+                style={{ minHeight: 44, padding: '0 16px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700 }}
               >
                 Use / Customize
               </button>

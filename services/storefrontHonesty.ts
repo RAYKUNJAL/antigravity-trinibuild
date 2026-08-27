@@ -187,6 +187,11 @@ export function formatPrice(model: StorefrontModel, price?: number | null): stri
   return `${currencyPrefix(model)}${Number(price).toFixed(0)}`;
 }
 
+/** Explicit false / zero stock only. Missing stock stays sellable. */
+export function itemIsSellable(item: StorefrontItem): boolean {
+  return item.inStock !== false;
+}
+
 export function closedFoodNextOpen(model: StorefrontModel): string {
   if (model.templateId !== 'food' || model.isOpen !== false) return '';
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
