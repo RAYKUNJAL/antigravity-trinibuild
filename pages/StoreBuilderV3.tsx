@@ -501,18 +501,17 @@ const StoreBuilderV3: React.FC = () => {
           <p className="text-xs text-gray-500 mt-1">We never invent a number. Button stays hidden until this is a real E.164.</p>
         </div>
       </div>
-      <div className="flex justify-between">
-        <button type="button" onClick={() => go(1)} className="inline-flex items-center gap-2 min-h-[44px] px-4 text-gray-700">
+      <div style={{ position: 'sticky', bottom: 0, zIndex: 12, background: ISLAND.sand, borderTop: '1px solid #e6dfd4', padding: '12px 0', display: 'flex', justifyContent: 'space-between' }}>
+        <button type="button" onClick={() => go(1)} style={{ minHeight: 44, background: 'none', border: 'none', color: '#3d3429' }}>
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <button
           type="button"
           onClick={handleDraft}
           disabled={busy || !state.storeName.trim()}
-          className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
+          style={{ minHeight: 44, minWidth: 140, border: 'none', background: '#141414', color: ISLAND.sand, fontWeight: 600, opacity: state.storeName.trim() ? 1 : 0.4 }}
         >
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Draft my store
+          {busy ? 'Working…' : 'Draft my store'}
         </button>
       </div>
     </div>
@@ -587,7 +586,7 @@ const StoreBuilderV3: React.FC = () => {
           />
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ position: 'sticky', bottom: 0, zIndex: 12, background: ISLAND.sand, borderTop: '1px solid #e6dfd4', padding: '12px 0', display: 'flex', justifyContent: 'space-between' }}>
         <button type="button" onClick={() => go(2)} style={{ minHeight: 44, background: 'none', border: 'none', color: '#3d3429' }}>
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
