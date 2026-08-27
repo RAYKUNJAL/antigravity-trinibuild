@@ -3,7 +3,7 @@
  * Used by POST /api/onboard/draft. Testable without Express.
  */
 
-const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home'];
+const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto'];
 
 const HERO = {
   food: 'Cooked this morning. Ready when you reach.',
@@ -12,6 +12,8 @@ const HERO = {
   general: 'Shop local. Cash or pickup.',
   beauty: 'Shades and kits. Cash on pickup.',
   home: 'Furniture you can see. Price on the piece.',
+  electronics: 'Phones and gadgets. Price on the piece.',
+  auto: 'Parts and accessories. Ask if it fits.',
 };
 
 const FAQ_PAY_LINE =
@@ -27,7 +29,9 @@ function recommendFromText(text) {
   if (/\b(dress|fashion|cloth|boutique|apparel|wear|garment)\b/.test(t)) return 'fashion';
   if (/\b(barber|salon|fade|chair|book|repair|lesson|service)\b/.test(t)) return 'services';
   if (/\b(lipstick|makeup|cosmetic|shade|serum|kit|skincare)\b/.test(t)) return 'beauty';
-  if (/\b(sofa|chair|table|furniture|mattress|home decor)\b/.test(t)) return 'home';
+  if (/\b(sofa|table|furniture|mattress|home decor)\b/.test(t)) return 'home';
+  if (/\b(phone|laptop|gadget|electronics|storage|pixel)\b/.test(t)) return 'electronics';
+  if (/\b(auto|car|parts|brake|tyre|tire|vehicle)\b/.test(t)) return 'auto';
   return 'general';
 }
 
@@ -36,7 +40,7 @@ function validateOnboardInput(body) {
   if (!name) return { error: 'Store name is required' };
   let templateId = String(body?.templateId || body?.type || '').trim();
   if (templateId && !isStarterId(templateId)) {
-    return { error: 'templateId must be one of food, fashion, services, general, beauty, home' };
+    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto' };
   }
   if (!templateId) {
     templateId = recommendFromText(body?.chat || body?.specialty || name);
@@ -197,7 +201,7 @@ async function callGrok(input) {
   const system = [
     'You write store copy for Juvay, a Trinidad & Tobago commerce tool.',
     'Return JSON only: { templateId, hero: { headline, sub }, about, trustChips, faq, how }.',
-    'templateId must be one of food|fashion|services|general|beauty|home.',
+    'templateId must be one of food|fashion|services|general|beauty|home|electronics|auto.',
     'Use these locked headlines unless the merchant already wrote one:',
     'food: Cooked this morning. Ready when you reach.',
     'fashion: Pieces you can try. Prices you can see.',
@@ -205,6 +209,8 @@ async function callGrok(input) {
     'general: Shop local. Cash or pickup.',
     'beauty: Shades and kits. Cash on pickup.',
     'home: Furniture you can see. Price on the piece.',
+    'electronics: Phones and gadgets. Price on the piece.',
+    'auto: Parts and accessories. Ask if it fits.',
     'FAQ pay line must be: ' + FAQ_PAY_LINE,
     'Do not invent products, prices, SKUs, shop names, stars, hours, WhatsApp numbers, or payment rails.',
     'Do not mention PayPal, Linx, Michelin, free shipping, subscribe and save, or TriniBuild.',

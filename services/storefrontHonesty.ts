@@ -6,6 +6,12 @@
 import type { StarterId, StorefrontBlock } from './storeStarters';
 import { STORE_STARTERS } from './storeStarters';
 
+export interface StorefrontVariant {
+  id: string;
+  title: string;
+  price?: number | null;
+}
+
 export interface StorefrontItem {
   id: string;
   name: string;
@@ -14,6 +20,10 @@ export interface StorefrontItem {
   imageUrl?: string;
   featured?: boolean;
   category?: string;
+  variants?: StorefrontVariant[];
+  compatibilityNote?: string;
+  specs?: string;
+  inStock?: boolean;
 }
 
 export type StorefrontMode = 'illustrative' | 'merchant_preview' | 'published';
@@ -152,4 +162,12 @@ export function formatPrice(model: StorefrontModel, price?: number | null): stri
 export function closedFoodNextOpen(model: StorefrontModel): string {
   if (model.templateId !== 'food' || model.isOpen !== false) return '';
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
+}
+
+/** One announcement line from live rails only. Never free shipping / money-back. */
+export function announcementLine(model: StorefrontModel): string {
+  const bits: string[] = [];
+  if (model.acceptsCashPickup) bits.push('Cash at pickup');
+  if (model.acceptsCod) bits.push('COD');
+  return bits.join(' · ');
 }

@@ -7,6 +7,8 @@ const BLOCKS = {
   general: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
   beauty: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
   home: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  electronics: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  auto: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
 };
 
 function liveItems(model) {

@@ -75,5 +75,5 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
 export function storeUsesStarter(store: any): boolean {
   const theme = themeOf(store);
   const raw = theme.template_id || theme.business_type || store?.category || store?.template_id;
-  return ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'basic'].includes(String(raw || ''));
+  return ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto', 'basic'].includes(String(raw || ''));
 }

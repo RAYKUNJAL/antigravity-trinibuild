@@ -164,7 +164,9 @@ const PlatformChatGate: React.FC = () => {
     pathname.startsWith('/store/') ||
     pathname === '/demo' ||
     pathname.startsWith('/demo/') ||
-    pathname.startsWith('/s/')
+    pathname.startsWith('/s/') ||
+    pathname.startsWith('/templates') ||
+    pathname.startsWith('/create-store')
   ) {
     return null;
   }

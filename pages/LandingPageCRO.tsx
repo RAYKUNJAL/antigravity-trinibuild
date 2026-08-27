@@ -31,7 +31,7 @@ const TICKER_MERCHANTS = [
 ];
 
 const STATS_ROW = [
-  { value: '6', label: 'store starters' },
+  { value: '8', label: 'store starters' },
   { value: '5 min', label: 'to launch' },
   { value: '🇹🇹', label: 'built in T&T' },
 ];

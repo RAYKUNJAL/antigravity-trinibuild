@@ -85,6 +85,18 @@ export const VERTICAL_COPY: Record<StarterType, {
     ctaWhatsapp: 'WhatsApp',
     trust: '',
   },
+  electronics: {
+    hero: STORE_STARTERS.electronics.heroHeadline,
+    ctaPrimary: 'Shop now',
+    ctaWhatsapp: 'WhatsApp',
+    trust: '',
+  },
+  auto: {
+    hero: STORE_STARTERS.auto.heroHeadline,
+    ctaPrimary: 'Shop now',
+    ctaWhatsapp: 'WhatsApp',
+    trust: '',
+  },
 };
 
 export const GALLERY_TO_BUILDER: Record<string, string> = {
@@ -94,6 +106,8 @@ export const GALLERY_TO_BUILDER: Record<string, string> = {
   general: 'general',
   beauty: 'beauty',
   home: 'home',
+  electronics: 'electronics',
+  auto: 'auto',
   basic: 'general',
   basic_storefront: 'general',
   roti_shop_pro: 'food',
@@ -110,8 +124,8 @@ export const GALLERY_TO_BUILDER: Record<string, string> = {
   furniture_home_store: 'home',
   beauty_cosmetics_store: 'beauty',
   wellness_supplements: 'beauty',
-  tech_gadgets_store: 'general',
-  auto_accessories_store: 'general',
+  tech_gadgets_store: 'electronics',
+  auto_accessories_store: 'auto',
   multi_location_enterprise: 'general',
 };
 
