@@ -113,7 +113,7 @@ export const Home: React.FC = () => {
                   <div className="flex flex-wrap items-center justify-center gap-6 mb-8 max-w-3xl mx-auto">
                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                         <ShoppingCart className="h-5 w-5 text-green-400" />
-                        <span className="text-white font-bold text-sm">10 Free Listings</span>
+                        <span className="text-white font-bold text-sm">5 Free Listings</span>
                      </div>
                      <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
                         <Globe className="h-5 w-5 text-blue-400" />

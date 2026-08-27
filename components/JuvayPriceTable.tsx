@@ -47,10 +47,10 @@ export const JuvayPriceTable: React.FC<{ className?: string }> = ({ className = 
               </Link>
             ) : wamOn ? (
               <Link
-                to="/signup"
+                to={`/pricing/checkout?plan=${plan.id}`}
                 className="block w-full py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold text-center"
               >
-                Talk to us about a paid plan
+                Continue to checkout
               </Link>
             ) : (
               <p className="w-full py-3 rounded-xl bg-gray-50 text-gray-500 text-sm font-semibold text-center">

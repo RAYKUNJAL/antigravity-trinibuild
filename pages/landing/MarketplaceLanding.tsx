@@ -176,7 +176,7 @@ export const MarketplaceLanding: React.FC = () => {
             <Link to="/create-store" className="inline-block bg-trini-red text-white px-12 py-5 rounded-full font-extrabold text-xl hover:scale-105 transition-transform shadow-2xl">
                Claim Your Free Store Now
             </Link>
-            <p className="mt-4 text-xs text-gray-500 font-bold uppercase">No Credit Card Required • 10 Free Listings</p>
+            <p className="mt-4 text-xs text-gray-500 font-bold uppercase">No Credit Card Required • 5 Free Listings</p>
          </div>
       <ServicesShowcase variant="compact" currentSlug="marketplace" />
       </div>

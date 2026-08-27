@@ -396,7 +396,7 @@ export const Dashboard: React.FC = () => {
             {activeTab === 'products' && (
               <div className="animate-in fade-in">
                 <div className="flex justify-between items-center mb-6">
-                  <h1 className="text-2xl font-bold text-gray-900">Products ({products.length}/10 Free)</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">Products ({products.length}/5 Free)</h1>
                   <div className="flex gap-3">
                     <button className="bg-gray-100 text-gray-400 px-4 py-2 rounded-lg font-bold flex items-center cursor-not-allowed" title="Upgrade to Pro for Bulk Upload">
                       <UploadCloud className="h-5 w-5 mr-2" /> Bulk Upload (Pro)

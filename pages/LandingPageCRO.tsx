@@ -13,6 +13,7 @@ import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
 import { WorkingAIDemo } from '../components/WorkingAIDemo';
 import { ServicesShowcase } from '../components/ServicesShowcase';
+import { JuvayPriceTable } from '../components/JuvayPriceTable';
 
 /* ────────────────────────────────────────────────────────────────────────
    SOCIAL PROOF DATA
@@ -433,7 +434,7 @@ const FEATURES = [
   },
   {
     title: 'COD Checkout',
-    description: 'Cash on delivery, pickup, or online payment. Choose what works for your business.'
+    description: 'Cash on delivery and cash at pickup. Card rails stay hidden until Wam is on.'
   },
   {
     title: 'AI Product Lister',
@@ -926,50 +927,7 @@ export const LandingPageCRO: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {PRICING_TIERS.map((tier, idx) => (
-                <div
-                  key={idx}
-                  className={`rounded-lg overflow-hidden transition-all duration-300 ${
-                    tier.highlighted
-                      ? 'ring-2 ring-trini-red shadow-xl transform scale-105 md:scale-110'
-                      : 'border border-gray-200 shadow-sm'
-                  } bg-white`}
-                >
-                  {tier.highlighted && (
-                    <div className="bg-trini-red text-white text-center py-2 font-bold text-sm">
-                      MOST POPULAR
-                    </div>
-                  )}
-                  <div className="p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-                    <p className="text-sm text-gray-600 mb-6">{tier.description}</p>
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold text-gray-900">{tier.price}</span>
-                      <span className="text-gray-600 ml-2">{tier.period}</span>
-                    </div>
-                    <button
-                      onClick={handleStartFree}
-                      className={`w-full py-3 rounded-lg font-bold transition-all duration-300 mb-8 ${
-                        tier.highlighted
-                          ? 'bg-trini-red hover:bg-red-700 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                      }`}
-                    >
-                      {tier.cta}
-                    </button>
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, fidx) => (
-                        <li key={fidx} className="flex items-start gap-3 text-sm text-gray-700">
-                          <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <JuvayPriceTable />
 
             <div className="text-center mt-12 text-gray-600">
               <p className="mb-2">

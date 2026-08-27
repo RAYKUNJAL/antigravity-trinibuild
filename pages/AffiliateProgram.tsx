@@ -16,7 +16,7 @@ export const AffiliateProgram: React.FC = () => {
    };
 
    const assets: MarketingAsset[] = [
-      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with Juvay! 🇹🇹 10 Free Listings. No Credit Card. Link in bio! #JuvayBusiness" },
+      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with Juvay! 🇹🇹 5 Free Listings. No Credit Card. Link in bio! #JuvayBusiness" },
       { id: '2', title: 'WhatsApp Status (Driver)', type: 'Social', url: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800', copy: "Drive on your own schedule with Juvay. No published fare split. DM me for the signup link." },
       { id: '3', title: 'Web Banner (300x250)', type: 'Banner', url: 'https://via.placeholder.com/300x250/CE1126/FFFFFF?text=Start+Selling+Free', copy: "" },
    ];

@@ -57,7 +57,7 @@ export const WelcomeScreen = () => {
             title: "Launch Your Store in 90 Seconds",
             subtitle: "AI builds your complete store—products, theme, SEO—while you grab a doubles.",
             cta: "Start Selling Free",
-            features: ["10 Free Listings", "AI Store Builder", "No Credit Card"],
+            features: ["5 Free Listings", "AI Store Builder", "No Credit Card"],
             heroImage: "https://images.unsplash.com/photo-1472851294608-4155f2118c67?auto=format&fit=crop&w=1200&q=80",
             colorName: "red",
             bgClass: "bg-red-600",

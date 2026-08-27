@@ -33,7 +33,7 @@ export const Earn: React.FC = () => {
             </p>
             <ul className="space-y-3 mb-8 text-sm text-gray-600">
               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> Free Online Storefront</li>
-              <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> 10 Free Listings</li>
+              <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> 5 Free Listings</li>
               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> WhatsApp Checkout</li>
             </ul>
             <Link to="/create-store" className="block w-full bg-trini-red text-white text-center py-3 rounded-lg font-bold hover:bg-red-700 transition-colors">

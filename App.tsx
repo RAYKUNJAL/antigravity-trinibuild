@@ -10,6 +10,7 @@ import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
 import PricingPage from './pages/PricingPage';
+import PricingCheckout from './pages/PricingCheckout';
 
 console.log('🔄 App.tsx file is loading...');
 import React from 'react';
@@ -245,11 +246,12 @@ const App: React.FC = () => {
               <Route path="/get-started" element={<ProtectedRoute><JuvayOnboarding /></ProtectedRoute>} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<AdminSignup />} />
+              <Route path="/admin" element={<Navigate to="/login" replace />} />
               <Route path="/admin/bypass" element={<Navigate to="/" replace />} />
               <Route path="/demo" element={<NotFound />} />
               <Route path="/demo/food" element={<NotFound />} />
-              <Route path="/pricing/checkout" element={<Navigate to="/pricing" replace />} />
+              <Route path="/pricing/checkout" element={<PricingCheckout />} />
+              <Route path="/builder" element={<Navigate to="/create-store" replace />} />
               <Route path="/ads-portal" element={<ProtectedRoute><AdsPortal /></ProtectedRoute>} />
               <Route path="/carib-ads" element={<CaribAdsLanding />} />
               <Route path="/advertise" element={<CaribAdsLanding />} />
@@ -274,7 +276,7 @@ const App: React.FC = () => {
               {/* NEW ROUTES - Template Gallery & AI Features */}
               <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
-              <Route path="/premium-features" element={<PremiumFeaturesDashboard />} />
+              <Route path="/premium-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/documents" element={<DocumentCenter />} />
               <Route path="/ai-documents" element={<DocumentCenter />} />
               <Route path="/document-center" element={<DocumentCenter />} />
@@ -296,7 +298,7 @@ const App: React.FC = () => {
               <Route path="/seller-dashboard" element={<ProtectedRoute><MerchantDashboard /></ProtectedRoute>} />
               <Route path="/vendors" element={<VendorDirectoryPage />} />
               <Route path="/vendor-directory" element={<VendorDirectoryPage />} />
-              <Route path="/pro-features" element={<ProStoreFeaturesPage />} />
+              <Route path="/pro-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/store-features" element={<ProStoreFeaturesPage />} />
               
               {/* 📧 EMAIL MARKETING */}
