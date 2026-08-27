@@ -992,7 +992,9 @@ const StoreBuilderV3: React.FC = () => {
             Ready to launch! 🚀
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Review your store and go live
+            Review your store. After launch it is at{' '}
+            <span className="font-mono text-sm">https://juvay.app/store/&lt;slug&gt;</span>
+            {' '}(HTTPS, same origin). The slug is assigned when you launch.
           </p>
         </div>
 
