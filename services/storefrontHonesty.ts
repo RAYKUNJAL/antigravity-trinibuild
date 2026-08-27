@@ -55,6 +55,34 @@ export interface StorefrontModel {
   mode?: StorefrontMode;
 }
 
+export function mapProductVariants(raw: unknown): StorefrontVariant[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((row) => row && (row.title || row.name || row.id || row.options))
+    .map((row, i) => {
+      const fromOptions = row.options && typeof row.options === 'object'
+        ? Object.values(row.options).filter(Boolean).join(' / ')
+        : '';
+      const title = String(row.title || row.name || fromOptions || `Option ${i + 1}`).trim();
+      return {
+        id: String(row.id || title),
+        title,
+        price: row.price != null && Number.isFinite(Number(row.price)) ? Number(row.price) : null,
+      };
+    })
+    .filter((row) => row.title);
+}
+
+export function mapProductSpecs(raw: unknown): string {
+  if (typeof raw === 'string') return raw.trim();
+  if (!raw || typeof raw !== 'object') return '';
+  return Object.entries(raw as Record<string, unknown>)
+    .filter(([, value]) => value != null && String(value).trim())
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(' · ')
+    .slice(0, 240);
+}
+
 export function liveItems(model: StorefrontModel): StorefrontItem[] {
   return (model.items || []).filter((item) => item && String(item.name || '').trim());
 }

@@ -101,7 +101,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured_combo', 'menu', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the menu yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/food.png',
+    heroImage: '/templates/heroes/food.jpg',
     palette: {
       bg: '#1c140c',
       surface: '#2a1d12',
@@ -129,7 +129,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No pieces listed yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/fashion.png',
+    heroImage: '/templates/heroes/fashion.jpg',
     palette: {
       bg: '#F3EEE6',
       surface: '#FFF8F0',
@@ -157,7 +157,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'service_list', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No services listed yet.',
     merchantEmpty: 'Add your first service',
-    heroImage: '/starters/services.png',
+    heroImage: '/templates/heroes/services.jpg',
     palette: {
       bg: '#F3F5F2',
       surface: '#FFF8F0',
@@ -185,7 +185,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing in the shop yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/general.png',
+    heroImage: '/templates/heroes/general.jpg',
     palette: {
       bg: '#FFF8F0',
       surface: '#FFF8F0',
@@ -213,7 +213,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No shades or kits listed yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/beauty.png',
+    heroImage: '/templates/heroes/beauty.jpg',
     palette: {
       bg: '#FAF6F3',
       surface: '#FFF8F0',
@@ -241,7 +241,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No furniture listed yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/home.png',
+    heroImage: '/templates/heroes/home.jpg',
     palette: {
       bg: '#F3EFE8',
       surface: '#FFF8F0',
@@ -269,7 +269,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No gadgets listed yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/electronics.png',
+    heroImage: '/templates/heroes/electronics.jpg',
     palette: {
       bg: '#F4F6F6',
       surface: '#FFF8F0',
@@ -297,7 +297,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No parts listed yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/starters/auto.png',
+    heroImage: '/templates/heroes/auto.jpg',
     palette: {
       bg: '#F6F3EE',
       surface: '#FFF8F0',

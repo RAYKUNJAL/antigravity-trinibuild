@@ -37,12 +37,14 @@ const STATS_ROW = [
 ];
 
 const STORE_SHOWCASE = [
-  { name: 'Fashion', category: 'Fashion', location: 'Lookbook · grid · try in store', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
-  { name: 'Food', category: 'Food', location: 'Menu · cash or pickup · hours', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  { name: 'Services', category: 'Services', location: 'Book a time · cash when you come', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
-  { name: 'Beauty', category: 'Beauty', location: 'Retail shades and kits', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
-  { name: 'Home', category: 'Home', location: 'Furniture · price on the piece', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
-  { name: 'General', category: 'General', location: 'One-page shop · cash or pickup', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
+  { name: 'Food', category: 'Food', location: 'Menu · cash or pickup · hours', img: '/templates/heroes/food.jpg' },
+  { name: 'Fashion', category: 'Fashion', location: 'Lookbook · grid · try in store', img: '/templates/heroes/fashion.jpg' },
+  { name: 'Services', category: 'Services', location: 'Book a time · cash when you come', img: '/templates/heroes/services.jpg' },
+  { name: 'Beauty', category: 'Beauty', location: 'Retail shades and kits', img: '/templates/heroes/beauty.jpg' },
+  { name: 'Home', category: 'Home', location: 'Furniture · price on the piece', img: '/templates/heroes/home.jpg' },
+  { name: 'General', category: 'General', location: 'One-page shop · cash or pickup', img: '/templates/heroes/general.jpg' },
+  { name: 'Electronics', category: 'Electronics', location: 'Variant before add · specs if typed', img: '/templates/heroes/electronics.jpg' },
+  { name: 'Auto', category: 'Auto', location: 'Search + grid · merchant fit note', img: '/templates/heroes/auto.jpg' },
 ];
 
 const TESTIMONIALS_REMOVED = true; // (Removed fabricated reviews — replaced by honest WHY_TRINIBUILD section above.)

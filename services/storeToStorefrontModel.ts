@@ -1,5 +1,5 @@
 import { defaultFaq, defaultHowSteps, resolveStarterId, STORE_STARTERS, type StarterId } from './storeStarters';
-import { normalizeWhatsappE164, type StorefrontItem, type StorefrontModel, type StorefrontMode } from './storefrontHonesty';
+import { mapProductSpecs, mapProductVariants, normalizeWhatsappE164, type StorefrontItem, type StorefrontModel, type StorefrontMode } from './storefrontHonesty';
 
 function themeOf(store: any): Record<string, any> {
   const raw = store?.theme_config || store?.theme || {};
@@ -25,6 +25,10 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
       imageUrl: p.image_url || p.images?.[0] || '',
       featured: !!p.featured,
       category: p.category || '',
+      variants: mapProductVariants(p.variants || p.options),
+      compatibilityNote: String(p.compatibility_note || p.compatibilityNote || '').trim() || undefined,
+      specs: mapProductSpecs(p.specs || p.specifications),
+      inStock: p.in_stock === false || p.inStock === false || p.stock === 0 ? false : true,
     }));
 
   const whatsappE164 = normalizeWhatsappE164(store?.whatsapp || theme.whatsappE164 || store?.whatsappE164);

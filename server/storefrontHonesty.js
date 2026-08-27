@@ -72,6 +72,34 @@ function shouldRenderBlock(block, model) {
   return false;
 }
 
+function mapProductVariants(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((row) => row && (row.title || row.name || row.id || row.options))
+    .map((row, i) => {
+      const fromOptions = row.options && typeof row.options === 'object'
+        ? Object.values(row.options).filter(Boolean).join(' / ')
+        : '';
+      const title = String(row.title || row.name || fromOptions || `Option ${i + 1}`).trim();
+      return {
+        id: String(row.id || title),
+        title,
+        price: row.price != null && Number.isFinite(Number(row.price)) ? Number(row.price) : null,
+      };
+    })
+    .filter((row) => row.title);
+}
+
+function mapProductSpecs(raw) {
+  if (typeof raw === 'string') return raw.trim();
+  if (!raw || typeof raw !== 'object') return '';
+  return Object.entries(raw)
+    .filter(([, value]) => value != null && String(value).trim())
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(' · ')
+    .slice(0, 240);
+}
+
 function closedFoodNextOpen(model) {
   if (model.templateId !== 'food' || model.isOpen !== false) return '';
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
@@ -88,4 +116,6 @@ module.exports = {
   realTrustChips,
   shouldRenderBlock,
   closedFoodNextOpen,
+  mapProductVariants,
+  mapProductSpecs,
 };

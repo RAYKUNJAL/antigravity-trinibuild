@@ -32,7 +32,7 @@ function starterToTemplate(id: StarterId, galleryId: string = id): StoreTemplate
     name: galleryId === 'basic' ? 'Basic' : s.name,
     category: s.name,
     description: s.useWhen,
-    thumbnail: '',
+    thumbnail: s.heroImage,
     features: s.chips,
     businessTypes: [s.name],
     tier: id === 'general' || galleryId === 'basic' ? 'free' : 'pro',

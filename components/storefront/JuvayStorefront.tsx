@@ -271,6 +271,23 @@ export const JuvayStorefront: React.FC<{
           {model.isOpen === true && model.hours ? <span>Open</span> : null}
           {model.isOpen === false ? <span>{closedNote || 'Closed'}</span> : null}
           <span style={{ color: p.muted }}>{badge.label}</span>
+          {model.mode === 'published' ? (
+            <button
+              type="button"
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? window.location.href : '';
+                if (url && navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+              }}
+              style={{ background: 'none', border: 'none', color: p.text, fontSize: 12, cursor: 'pointer', minHeight: 32 }}
+            >
+              Share
+            </button>
+          ) : null}
+          {wa ? (
+            <a href={waHref(wa, `Hello ${model.storeName}`)} style={{ color: ISLAND.teal, textDecoration: 'none', minHeight: 32, display: 'inline-flex', alignItems: 'center' }}>
+              WhatsApp
+            </a>
+          ) : null}
           <button
             type="button"
             onClick={() => setCartOpen(true)}
@@ -309,6 +326,15 @@ export const JuvayStorefront: React.FC<{
                 ) : (
                   <div style={{ fontWeight: 600 }}>{closedNote}</div>
                 )}
+                {model.templateId === 'food' && model.hours ? (
+                  wa ? (
+                    <a href={waHref(wa, `Reserve at ${model.storeName}. Hours: ${model.hours}`)} style={{ marginTop: 14, color: p.heroText, fontSize: 13 }}>
+                      Reserve
+                    </a>
+                  ) : (
+                    <div style={{ marginTop: 14, fontSize: 13, opacity: 0.8 }}>Hours: {model.hours}</div>
+                  )
+                ) : null}
               </div>
               <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority />
             </div>

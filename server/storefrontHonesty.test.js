@@ -9,6 +9,8 @@ const {
   realTrustChips,
   shouldRenderBlock,
   closedFoodNextOpen,
+  mapProductVariants,
+  mapProductSpecs,
 } = require('./storefrontHonesty');
 
 function food(partial = {}) {
@@ -54,5 +56,16 @@ assert.strictEqual(showOrderCta(food({ templateId: 'fashion', isOpen: false })),
 assert.deepStrictEqual(reviewBadge(0), { kind: 'new', label: 'New' });
 assert.deepStrictEqual(reviewBadge(undefined), { kind: 'new', label: 'New' });
 assert.strictEqual(reviewBadge(3).label, '3 reviews');
+
+const variants = mapProductVariants([
+  { id: 'blk-128', title: 'Black / 128GB', price: 2200 },
+  { options: { Color: 'Silver', Storage: '256GB' }, price: 2600 },
+]);
+assert.strictEqual(variants.length, 2);
+assert.strictEqual(variants[0].title, 'Black / 128GB');
+assert.strictEqual(variants[1].title, 'Silver / 256GB');
+assert.deepStrictEqual(mapProductVariants([]), []);
+assert.strictEqual(mapProductSpecs({ Storage: '128GB', Color: 'Black' }), 'Storage: 128GB · Color: Black');
+assert.strictEqual(mapProductSpecs(''), '');
 
 console.log('storefrontHonesty.test.js ok');
