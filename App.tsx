@@ -288,7 +288,8 @@ const App: React.FC = () => {
               <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
 
               {/* NEW ROUTES - Template Gallery & AI Features */}
-              <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
+              <Route path="/templates" element={<TemplateGallery />} />
+              <Route path="/templates/:starterId" element={<TemplateGallery />} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/documents" element={<DocumentCenter />} />

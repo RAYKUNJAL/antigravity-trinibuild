@@ -139,43 +139,14 @@ export const CreateStoreOnboarding: React.FC = () => {
 
       if (storeError) throw storeError;
 
-      // If AI enabled, generate sample products
-      if (data.useAI && store) {
-        await generateAIProducts(store.id, data.businessCategory, data.productCount);
-      }
+      // Never seed Sample Product N. Catalog stays empty until the merchant adds a real item.
 
-      // Redirect to store builder
       navigate('/store-builder');
     } catch (error: any) {
       console.error('Error creating store:', error);
       alert('Failed to create store: ' + error.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // AI Product Generation (placeholder - you can integrate Claude API)
-  const generateAIProducts = async (storeId: string, category: string, count: number) => {
-    // TODO: Call Claude API to generate realistic products
-    // For now, insert placeholder products. `slug` is NOT NULL on products.
-    const runId = Date.now().toString(36);
-    const sampleProducts = Array.from({ length: count }, (_, i) => {
-      const name = `Sample Product ${i + 1}`;
-      return {
-        store_id: storeId,
-        name,
-        slug: `sample-product-${i + 1}-${runId}`,
-        description: `A great ${category} product`,
-        base_price: Math.floor(Math.random() * 200) + 20,
-        stock: Math.floor(Math.random() * 50) + 10,
-        category: category,
-        status: 'active'
-      };
-    });
-
-    const { error } = await supabase.from('products').insert(sampleProducts);
-    if (error) {
-      console.error('generateAIProducts insert error:', error);
     }
   };
 
@@ -640,48 +611,11 @@ const Step5Launch: React.FC<{ data: OnboardingData; setData: React.Dispatch<Reac
       </h2>
 
       <div className="space-y-6">
-        {/* AI Products */}
-        <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border-2 border-blue-200">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <Sparkles className="text-blue-600" size={32} />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg mb-2">AI Product Generation</h3>
-              <p className="text-gray-700 mb-4">
-                Let our AI create sample products for your store. You can edit them later!
-              </p>
-              
-              <label className="flex items-center gap-3 mb-3">
-                <input
-                  type="checkbox"
-                  checked={data.useAI}
-                  onChange={(e) => setData({ ...data, useAI: e.target.checked })}
-                  className="w-5 h-5 text-blue-600 rounded"
-                />
-                <span className="font-semibold">Enable AI Product Generation</span>
-              </label>
-
-              {data.useAI && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Number of products to generate
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    value={data.productCount}
-                    onChange={(e) => setData({ ...data, productCount: parseInt(e.target.value) })}
-                    className="w-full"
-                  />
-                  <p className="text-center font-bold text-blue-600 mt-2">
-                    {data.productCount} products
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="p-6 bg-stone-50 rounded-xl border-2 border-stone-200">
+          <h3 className="font-bold text-lg mb-2">Empty catalog on purpose</h3>
+          <p className="text-gray-700">
+            This path does not invent Sample Product N. Add real items after you publish.
+          </p>
         </div>
 
         {/* Summary */}
@@ -704,12 +638,10 @@ const Step5Launch: React.FC<{ data: OnboardingData; setData: React.Dispatch<Reac
               <Phone className="text-gray-400" size={20} />
               <span>{data.phone}</span>
             </div>
-            {data.useAI && (
-              <div className="flex items-center gap-3">
-                <Package className="text-gray-400" size={20} />
-                <span>{data.productCount} AI-generated products</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <Package className="text-gray-400" size={20} />
+              <span>Catalog stays empty until you add a real item</span>
+            </div>
           </div>
         </div>
 

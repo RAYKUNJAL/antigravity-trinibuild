@@ -14,6 +14,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { isWamConfigured, verifyWamSignature } = require('./wam');
+const { buildOnboardDraft } = require('./onboardDraft');
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -232,6 +233,31 @@ app.get('/api/auth/me', auth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // STORES
 // ═══════════════════════════════════════════════════════════
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return next();
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Auth is not configured' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    return next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+app.post('/api/onboard/draft', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardDraft(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    const payload = { draft: result.draft };
+    if (result.warning) payload.warning = result.warning;
+    res.json(payload);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/stores/mine', auth, async (req, res) => {
   const { rows } = await pool.query(`SELECT * FROM stores WHERE owner_id = $1`, [req.user.id]);
   res.json(rows);
@@ -256,7 +282,7 @@ app.post('/api/stores', auth, async (req, res) => {
       [
         req.user.id, name.trim(), slug, description || null, category || null,
         phone || null, whatsapp || null, address || pickup_address || null,
-        accepts_cod !== false, !!accepts_pickup, pickup_address || null,
+        !!accepts_cod, !!accepts_pickup, pickup_address || null,
         wam_handle || null, exact_cash_note !== false, island || null, JSON.stringify(theme),
       ]
     );

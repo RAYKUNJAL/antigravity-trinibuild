@@ -315,7 +315,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 <div className="w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl border-2" style={{ borderColor: '#E61E2B', background: '#111' }}>
                                     {/* Receipt header */}
                                     <div className="p-5 text-center" style={{ background: 'linear-gradient(135deg, #1a0000, #E61E2B)' }}>
-                                        <p className="text-white font-black text-sm mb-1">Mama's Roti Shop</p>
+                                        <p className="text-white font-black text-sm mb-1">Your store</p
                                         <p className="text-white/60 text-xs">Pickup Reservation</p>
                                         <div className="inline-flex mt-2 px-3 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.3)', color: '#86efac', border: '1px solid rgba(34,197,94,0.4)' }}>
                                             ● APPROVED

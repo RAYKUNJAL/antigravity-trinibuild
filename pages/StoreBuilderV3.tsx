@@ -1,522 +1,331 @@
 /**
- * TRINIBUILD STORE BUILDER v3 - COMMERCIAL GRADE
- * 
- * Architecture based on Shopify, Medusa, Saleor research (2026):
- * - Single source of truth (one component, one route)
- * - Error boundaries at every level
- * - React.lazy for templates (no eager loading)
- * - localStorage auto-save (never lose work)
- * - Direct Supabase calls (no abstraction)
- * - CSS transitions only (no Framer Motion in critical path)
- * - Mobile-first responsive
- * - Production-ready error handling
- * 
- * Flow: Choose Type → Pick Template → Customize → Launch
- * Time: 3 minutes to live store
+ * Create-store path: pick a starter, Grok draft (or honest fallback),
+ * preview the merchant's empty store, edit for real, publish on purpose.
  */
 
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { storesApi, getToken } from '../services/selfHostedApi';
 import { fetchWamStatus } from '../services/wamStatus';
-import { GALLERY_TO_BUILDER, VERTICAL_COPY, type StarterType } from '../services/storeCopyTokens';
-import { Save, ArrowLeft, ArrowRight, Store, Palette, Settings, Eye, Loader2, CheckCircle, Sparkles, RefreshCw, ChevronDown, X, Maximize2, Monitor, Smartphone } from 'lucide-react';
-import {
-  Store as StoreIcon, Shirt, Utensils, ShoppingBag, Briefcase, MoreHorizontal,
-  Check, EyeOff, AlertCircle, Sparkle
-} from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { STORE_STARTERS, STARTER_IDS, resolveStarterId, defaultFaq, defaultHowSteps, type StarterId } from '../services/storeStarters';
+import { normalizeWhatsappE164, type StorefrontModel } from '../services/storefrontHonesty';
+import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
 import { SafeBoundary } from '../components/SafeBoundary';
-import { PremiumEcommerceTemplate } from '../components/templates/PremiumEcommerceTemplate';
-import { Premium3ColumnTemplate } from '../components/templates/Premium3ColumnTemplate';
-import { PremiumFashionTemplate } from '../components/templates/PremiumFashionTemplate';
-import { PremiumRestaurantTemplate } from '../components/templates/PremiumRestaurantTemplate';
-import { PremiumBeautyTemplate } from '../components/templates/PremiumBeautyTemplate';
-import { IslandCommerceTemplate } from '../components/templates/IslandCommerceTemplate';
 
-// ─── Types ─────────────────────────────────────────────────────────────
+type Step = 1 | 2 | 3 | 4;
 
-interface BusinessType {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  recommendedTemplate: string;
+interface DraftCopy {
+  templateId: StarterId;
+  hero: { headline: string; sub?: string };
+  about: string;
+  trustChips: string[];
+  faq: Array<{ q: string; a: string }>;
+  how: Array<{ title: string; body: string }>;
+  agentWrote: boolean;
 }
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  preview: string;
-  bestFor: string[];
-  componentLoader: () => Promise<{ default: React.ComponentType<any> }>;
-  Component: React.ComponentType<any>;
-}
-
-interface StoreBuilderState {
-  step: 1 | 2 | 3 | 4;
-  businessType: string;
-  templateId: string;
+interface BuilderState {
+  step: Step;
+  templateId: StarterId | '';
   storeName: string;
-  tagline: string;
-  primaryColor: string;
-  description: string;
-  category: string;
   phone: string;
-  whatsapp: string;
-  wamHandle: string;
+  pickupAddress: string;
+  island: string;
+  specialty: string;
+  hours: string;
+  payoutPreference: '' | 'cash_vendor_keeps' | 'wam' | 'bank_transfer';
+  acceptsCashPickup: boolean;
+  acceptsCod: boolean;
+  whatsappE164: string;
+  recommendChat: string;
+  heroHeadline: string;
+  heroSub: string;
+  about: string;
+  faq: Array<{ q: string; a: string }>;
+  how: Array<{ title: string; body: string }>;
+  agentWrote: boolean | null;
+  agentWarning: string;
+  foodAttested: boolean;
 }
 
-const DRAFT_KEY = 'trinibuild_store_draft_v3';
-
-// ─── Wizard Steps Definition ───────────────────────────────────────────
-
-interface StepDef {
-  num: 1 | 2 | 3 | 4;
-  label: string;
-  short: string;
-}
-
-const STEPS: StepDef[] = [
-  { num: 1, label: 'Business Type', short: 'Business' },
-  { num: 2, label: 'Pick a Template', short: 'Template' },
-  { num: 3, label: 'Customize Your Store', short: 'Customize' },
-  { num: 4, label: 'Review & Launch', short: 'Launch' },
-];
-
-// ─── Industry-Specific Design Systems (from UI/UX Pro Max skill) ──────
-
-interface DesignSystem {
-  defaultColor: string;
-  accentColor: string;
-  colorPresets: { name: string; value: string }[];
-  headingFont: string;
-  bodyFont: string;
-  fontImport: string;
-  landingPattern: string;
-  styleKeywords: string[];
-}
-
-const DESIGN_SYSTEMS: Record<string, DesignSystem> = {
-  fashion: {
-    defaultColor: '#BE185D',
-    accentColor: '#D97706',
-    colorPresets: [
-      { name: 'Fashion Rose', value: '#BE185D' },
-      { name: 'Luxury Black', value: '#1C1917' },
-      { name: 'Gold Accent', value: '#D97706' },
-      { name: 'Editorial Navy', value: '#1E3A5F' },
-      { name: 'Burgundy', value: '#7C2D12' },
-      { name: 'Champagne', value: '#CA8A04' },
-      { name: 'Charcoal', value: '#1F2937' },
-      { name: 'Blush Pink', value: '#EC4899' },
-    ],
-    headingFont: "'Cormorant', serif",
-    bodyFont: "'Montserrat', sans-serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap",
-    landingPattern: 'Feature-Rich Showcase',
-    styleKeywords: ['Liquid Glass', 'Glassmorphism', 'Elegance & sophistication'],
-  },
-  food: {
-    defaultColor: '#DC2626',
-    accentColor: '#A16207',
-    colorPresets: [
-      { name: 'Appetizing Red', value: '#DC2626' },
-      { name: 'Warm Gold', value: '#A16207' },
-      { name: 'Food Delivery Orange', value: '#EA580C' },
-      { name: 'Trust Blue', value: '#2563EB' },
-      { name: 'Fresh Green', value: '#059669' },
-      { name: 'Trinidad Red', value: '#E61E2B' },
-      { name: 'Coffee Brown', value: '#78350F' },
-      { name: 'Chili Red', value: '#B91C1C' },
-    ],
-    headingFont: "'Abril Fatface', serif",
-    bodyFont: "'Merriweather', serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Merriweather:wght@300;400;700&display=swap",
-    landingPattern: 'Hero-Centric + Conversion',
-    styleKeywords: ['Vibrant & Block-based', 'Motion-Driven', 'Appetizing imagery'],
-  },
-  beauty: {
-    defaultColor: '#EC4899',
-    accentColor: '#8B5CF6',
-    colorPresets: [
-      { name: 'Soft Pink', value: '#EC4899' },
-      { name: 'Lavender Luxury', value: '#8B5CF6' },
-      { name: 'Sage Green', value: '#90EE90' },
-      { name: 'Gold Accent', value: '#D4AF37' },
-      { name: 'Rose Gold', value: '#E8B4B8' },
-      { name: 'Mauve', value: '#C084FC' },
-      { name: 'Warm White', value: '#FFF5F5' },
-      { name: 'Charcoal', value: '#2D3436' },
-    ],
-    headingFont: "'Lora', serif",
-    bodyFont: "'Raleway', sans-serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap",
-    landingPattern: 'Hero-Centric + Social Proof',
-    styleKeywords: ['Soft UI Evolution', 'Neumorphism', 'Calming aesthetic'],
-  },
-  retail: {
-    defaultColor: '#059669',
-    accentColor: '#EA580C',
-    colorPresets: [
-      { name: 'Success Green', value: '#059669' },
-      { name: 'Urgency Orange', value: '#EA580C' },
-      { name: 'Trust Blue', value: '#2563EB' },
-      { name: 'Trinidad Red', value: '#E61E2B' },
-      { name: 'Ocean Blue', value: '#0066CC' },
-      { name: 'Forest Green', value: '#16A34A' },
-      { name: 'Royal Purple', value: '#7C3AED' },
-      { name: 'Charcoal', value: '#1F2937' },
-    ],
-    headingFont: "'Outfit', sans-serif",
-    bodyFont: "'Work Sans', sans-serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap",
-    landingPattern: 'Feature-Rich Showcase',
-    styleKeywords: ['Vibrant & Block-based', 'High visual hierarchy', 'Engagement & conversions'],
-  },
-  services: {
-    defaultColor: '#0F172A',
-    accentColor: '#0369A1',
-    colorPresets: [
-      { name: 'Professional Navy', value: '#0F172A' },
-      { name: 'Corporate Blue', value: '#0369A1' },
-      { name: 'Trust Blue', value: '#2563EB' },
-      { name: 'Success Green', value: '#059669' },
-      { name: 'Trinidad Red', value: '#E61E2B' },
-      { name: 'Ocean Blue', value: '#0066CC' },
-      { name: 'Charcoal', value: '#1F2937' },
-      { name: 'Gold', value: '#D97706' },
-    ],
-    headingFont: "'Poppins', sans-serif",
-    bodyFont: "'Open Sans', sans-serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap",
-    landingPattern: 'Trust & Authority',
-    styleKeywords: ['Trust & Authority', 'Minimal', 'Credibility essential'],
-  },
-  other: {
-    defaultColor: '#E61E2B',
-    accentColor: '#EA580C',
-    colorPresets: [
-      { name: 'Trinidad Red', value: '#E61E2B' },
-      { name: 'Ocean Blue', value: '#0066CC' },
-      { name: 'Forest Green', value: '#16A34A' },
-      { name: 'Sunset Orange', value: '#EA580C' },
-      { name: 'Royal Purple', value: '#7C3AED' },
-      { name: 'Rose Pink', value: '#EC4899' },
-      { name: 'Charcoal', value: '#1F2937' },
-      { name: 'Gold', value: '#D97706' },
-    ],
-    headingFont: "'Poppins', sans-serif",
-    bodyFont: "'Open Sans', sans-serif",
-    fontImport: "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap",
-    landingPattern: 'Hero + Features + CTA',
-    styleKeywords: ['Minimalism', 'Versatile', 'Clean'],
-  },
-};
-
-// ─── Business Types ────────────────────────────────────────────────────
-
-const BUSINESS_TYPES: BusinessType[] = [
-  {
-    id: 'food',
-    name: 'Food',
-    icon: Utensils,
-    description: 'Cooked this morning. Ready when you reach.',
-    recommendedTemplate: 'restaurant',
-  },
-  {
-    id: 'fashion',
-    name: 'Fashion',
-    icon: Shirt,
-    description: 'Pieces you can try. Prices you can see.',
-    recommendedTemplate: 'fashion',
-  },
-  {
-    id: 'services',
-    name: 'Services',
-    icon: Briefcase,
-    description: 'Book or enquire. No fake reviews.',
-    recommendedTemplate: 'professional',
-  },
-  {
-    id: 'general',
-    name: 'General',
-    icon: ShoppingBag,
-    description: 'In the shop today. Not “ships in 6 weeks.”',
-    recommendedTemplate: 'island-commerce',
-  },
-  {
-    id: 'beauty',
-    name: 'Beauty',
-    icon: Sparkles,
-    description: 'Book the chair. Or take the product home.',
-    recommendedTemplate: 'beauty',
-  },
-  {
-    id: 'home',
-    name: 'Home',
-    icon: StoreIcon,
-    description: 'Treat like general retail.',
-    recommendedTemplate: 'ecommerce',
-  },
-];
-
-// ─── Templates (LAZY-LOADED for performance) ──────────────────────────
-
-const TEMPLATES: Template[] = [
-  {
-    id: 'island-commerce',
-    name: 'Island Commerce ⭐',
-    description: 'Vercel-grade storefront with real product variants (color/size), slide-out cart, and WhatsApp COD checkout.',
-    preview: '🏝️',
-    bestFor: ['Retail', 'Fashion', 'Electronics', 'Best Seller'],
-    componentLoader: () => Promise.resolve({ default: IslandCommerceTemplate as any }),
-    Component: IslandCommerceTemplate,
-  },
-  {
-    id: 'professional',
-    name: 'Professional 3-Column',
-    description: 'Clean, conversion-focused layout. Works for any business.',
-    preview: '🏢',
-    bestFor: ['All Types', 'Most Versatile'],
-    componentLoader: () => Promise.resolve({ default: Premium3ColumnTemplate as any }),
-    Component: Premium3ColumnTemplate,
-  },
-  {
-    id: 'fashion',
-    name: 'Fashion Boutique',
-    description: 'Elegant fashion showcase with image-first design.',
-    preview: '👗',
-    bestFor: ['Fashion', 'Boutiques'],
-    componentLoader: () => Promise.resolve({ default: PremiumFashionTemplate as any }),
-    Component: PremiumFashionTemplate,
-  },
-  {
-    id: 'restaurant',
-    name: 'Restaurant Menu',
-    description: 'Beautiful menu showcase with categories and reservations.',
-    preview: '🍽️',
-    bestFor: ['Restaurants', 'Cafes'],
-    componentLoader: () => Promise.resolve({ default: PremiumRestaurantTemplate as any }),
-    Component: PremiumRestaurantTemplate,
-  },
-  {
-    id: 'beauty',
-    name: 'Beauty & Spa',
-    description: 'Service-focused with stylist profiles and booking.',
-    preview: '💅',
-    bestFor: ['Beauty', 'Wellness'],
-    componentLoader: () => Promise.resolve({ default: PremiumBeautyTemplate as any }),
-    Component: PremiumBeautyTemplate,
-  },
-  {
-    id: 'ecommerce',
-    name: 'Modern E-commerce',
-    description: 'Product grid with filters, search, and reviews.',
-    preview: '🛍️',
-    bestFor: ['Retail', 'Electronics'],
-    componentLoader: () => Promise.resolve({ default: PremiumEcommerceTemplate as any }),
-    Component: PremiumEcommerceTemplate,
-  },
-];
-
-const COLOR_PRESETS = [
-  { name: 'Trinidad Red', value: '#E61E2B' },
-  { name: 'Ocean Blue', value: '#0066CC' },
-  { name: 'Forest Green', value: '#16A34A' },
-  { name: 'Sunset Orange', value: '#EA580C' },
-  { name: 'Royal Purple', value: '#7C3AED' },
-  { name: 'Rose Pink', value: '#EC4899' },
-  { name: 'Charcoal', value: '#1F2937' },
-  { name: 'Gold', value: '#D97706' },
-];
-
-// ─── Helper: build sample storeData for preview rendering ─────────────
-
-function buildSampleStoreData(storeName: string, primaryColor: string, businessType?: string) {
-  const type = (['food', 'fashion', 'beauty', 'services', 'general', 'home'].includes(businessType || '')
-    ? businessType
-    : 'general') as StarterType;
-  const copy = VERTICAL_COPY[type];
-  return {
-    name: storeName || '{{store_name}}',
-    tagline: copy.hero,
-    description: copy.hero,
-    phone: '',
-    whatsapp: '',
-    color_scheme: { primary: primaryColor },
-    address: '{{pickup_address}}',
-    delivery: '',
-    accepts_cod: false,
-    accepts_pickup: false,
-  };
-}
-
-function buildSampleProducts(_storeName: string) {
-  return [];
-}
-
-// ─── Main Component ────────────────────────────────────────────────────
-
-const emptyBuilderState = (): StoreBuilderState => ({
+const emptyState = (): BuilderState => ({
   step: 1,
-  businessType: '',
   templateId: '',
   storeName: '',
-  tagline: '',
-  primaryColor: '#E61E2B',
-  description: '',
-  category: '',
   phone: '',
-  whatsapp: '',
-  wamHandle: '',
+  pickupAddress: '',
+  island: 'Trinidad',
+  specialty: '',
+  hours: '',
+  payoutPreference: '',
+  acceptsCashPickup: false,
+  acceptsCod: false,
+  whatsappE164: '',
+  recommendChat: '',
+  heroHeadline: '',
+  heroSub: '',
+  about: '',
+  faq: [],
+  how: [],
+  agentWrote: null,
+  agentWarning: '',
+  foodAttested: false,
 });
+
+async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
+  const token = getToken();
+  const res = await fetch('/api/onboard/draft', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Draft failed (${res.status})`);
+  return data;
+}
 
 const StoreBuilderV3: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [state, setState] = useState<StoreBuilderState>(emptyBuilderState);
+  const [state, setState] = useState<BuilderState>(emptyState);
+  const [wamConfigured, setWamConfigured] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchWamStatus().then((s) => setWamConfigured(s.configured));
-    try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
     const raw = searchParams.get('template') || '';
-    const mapped = GALLERY_TO_BUILDER[raw] || (TEMPLATES.some((t) => t.id === raw) ? raw : '');
-    if (mapped) {
-      setState((prev) => ({ ...prev, templateId: mapped, step: prev.businessType ? 2 : 1 }));
+    if (raw) {
+      const id = resolveStarterId(raw);
+      setState((prev) => ({
+        ...prev,
+        templateId: id,
+        heroHeadline: prev.heroHeadline || STORE_STARTERS[id].heroHeadline,
+      }));
     }
   }, [searchParams]);
 
-  const [showPreview, setShowPreview] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [wamConfigured, setWamConfigured] = useState(false);
-
-  // Full-size template preview modal state
-  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
-  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
-
-  // Auto-save draft to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.warn('Could not save draft:', e);
-    }
-  }, [state]);
-
-  // ESC key closes the full-size preview modal
-  useEffect(() => {
-    if (!previewTemplate) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPreviewTemplate(null);
-    };
-    window.addEventListener('keydown', onKey);
-    // Lock body scroll while modal is open
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [previewTemplate]);
-
-  const updateState = useCallback((updates: Partial<StoreBuilderState>) => {
-    setState(prev => ({ ...prev, ...updates }));
+  const update = useCallback((patch: Partial<BuilderState>) => {
+    setState((prev) => ({ ...prev, ...patch }));
     setError(null);
   }, []);
 
-  const goToStep = useCallback((step: 1 | 2 | 3 | 4) => {
-    setState(prev => ({ ...prev, step }));
+  const go = (step: Step) => {
+    setState((prev) => ({ ...prev, step }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  };
 
-  // Determine which steps are "completed" (can navigate back to them via stepper)
-  const isStepComplete = useCallback((stepNum: 1 | 2 | 3 | 4): boolean => {
-    if (stepNum < state.step) return true;
-    if (stepNum === 1) return !!state.businessType;
-    if (stepNum === 2) return !!state.templateId;
-    if (stepNum === 3) return !!state.storeName.trim();
-    return false;
-  }, [state.step, state.businessType, state.templateId, state.storeName]);
+  const previewModel: StorefrontModel = useMemo(() => {
+    const id = (state.templateId || 'general') as StarterId;
+    const starter = STORE_STARTERS[id];
+    const wa = normalizeWhatsappE164(state.whatsappE164);
+    return {
+      templateId: id,
+      storeName: state.storeName.trim() || 'Your store',
+      island: state.island,
+      specialty: state.specialty,
+      hours: state.hours,
+      pickupAddress: state.pickupAddress,
+      whatsappE164: wa,
+      currency: 'TT$',
+      acceptsCashPickup: state.acceptsCashPickup,
+      acceptsCod: state.acceptsCod,
+      wamLive: wamConfigured && state.payoutPreference === 'wam',
+      reviewCount: 0,
+      items: [],
+      hero: {
+        headline: state.heroHeadline || starter.heroHeadline,
+        sub: state.heroSub || [state.specialty, state.island].filter(Boolean).join(' · '),
+      },
+      about: state.about,
+      faq: state.faq.length ? state.faq : defaultFaq({
+        acceptsPickup: state.acceptsCashPickup,
+        acceptsCod: state.acceptsCod,
+        hours: state.hours,
+        pickupAddress: state.pickupAddress,
+      }),
+      how: state.how.length ? state.how : defaultHowSteps({
+        templateId: id,
+        acceptsPickup: state.acceptsCashPickup,
+        acceptsCod: state.acceptsCod,
+        wamLive: wamConfigured && state.payoutPreference === 'wam',
+      }),
+      mode: 'merchant_preview',
+    };
+  }, [state, wamConfigured]);
 
-  // Can the user jump to this step via the stepper?
-  const canGoToStep = useCallback((stepNum: 1 | 2 | 3 | 4): boolean => {
-    // Always allow going back to a completed or current step
-    if (stepNum <= state.step) return true;
-    // Allow going forward only if prerequisites are met
-    if (stepNum === 2) return !!state.businessType;
-    if (stepNum === 3) return !!state.templateId;
-    if (stepNum === 4) return !!state.storeName.trim();
-    return false;
-  }, [state.step, state.businessType, state.templateId, state.storeName]);
+  const applyDraft = (draft: DraftCopy, warning?: string) => {
+    update({
+      templateId: draft.templateId,
+      heroHeadline: draft.hero?.headline || STORE_STARTERS[draft.templateId].heroHeadline,
+      heroSub: draft.hero?.sub || '',
+      about: draft.about || '',
+      faq: draft.faq || [],
+      how: draft.how || [],
+      agentWrote: !!draft.agentWrote,
+      agentWarning: warning || (draft.agentWrote ? '' : 'Grok is not writing this site. The form and locked copy are shown instead.'),
+    });
+  };
 
-  // ─── Step 1: Business Type ────────────────────────────────────────────
+  const handleRecommend = async () => {
+    if (!state.recommendChat.trim()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await requestDraft({
+        storeName: state.storeName.trim() || 'Your store',
+        chat: state.recommendChat.trim(),
+        templateId: state.templateId || undefined,
+      });
+      applyDraft(result.draft, result.warning);
+      go(2);
+    } catch (err: any) {
+      setError(err.message || 'Could not recommend a starter.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDraft = async () => {
+    if (!state.storeName.trim()) {
+      setError('Store name is required');
+      return;
+    }
+    if (!state.templateId) {
+      setError('Pick a starter first');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await requestDraft({
+        storeName: state.storeName.trim(),
+        templateId: state.templateId,
+        phone: state.phone,
+        pickupAddress: state.pickupAddress,
+        island: state.island,
+        specialty: state.specialty,
+        hours: state.hours,
+        payoutPreference: state.payoutPreference || undefined,
+        acceptsCashPickup: state.acceptsCashPickup,
+        acceptsCod: state.acceptsCod,
+        whatsappE164: normalizeWhatsappE164(state.whatsappE164) || undefined,
+      });
+      applyDraft(result.draft, result.warning);
+      go(3);
+    } catch (err: any) {
+      setError(err.message || 'Could not build a draft.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!state.storeName.trim() || !state.templateId) {
+      setError('Name and starter are required');
+      return;
+    }
+    if (state.templateId === 'food' && !state.foodAttested) {
+      setError('Food shops must attest to food-safety before publish.');
+      return;
+    }
+    if (!getToken()) {
+      navigate('/signup?next=/create-store');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const wa = normalizeWhatsappE164(state.whatsappE164);
+      const store = await storesApi.create({
+        name: state.storeName.trim(),
+        description: state.about.trim() || undefined,
+        category: state.templateId,
+        phone: state.phone.trim() || undefined,
+        whatsapp: wa || undefined,
+        accepts_cod: state.acceptsCod,
+        accepts_pickup: state.acceptsCashPickup,
+        pickup_address: state.pickupAddress.trim() || undefined,
+        island: state.island || undefined,
+        template_id: state.templateId,
+        theme_config: {
+          template_id: state.templateId,
+          business_type: state.templateId,
+          hours: state.hours || undefined,
+          specialty: state.specialty || undefined,
+          payout_preference: state.payoutPreference || undefined,
+          hero: { headline: state.heroHeadline, sub: state.heroSub },
+          about: state.about,
+          faq: state.faq,
+          how: state.how,
+          food_attestation: state.templateId === 'food' ? true : undefined,
+          kitchen_check: state.templateId === 'food' && state.foodAttested ? 'auto_approved' : undefined,
+          agent_wrote: state.agentWrote === true,
+        },
+      });
+      navigate(`/store/${store.slug}`);
+    } catch (err: any) {
+      setError(err.message || 'Could not publish.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          What kind of business?
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          We'll recommend the best template for you
-        </p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Pick a starter</h2>
+        <p className="text-gray-600">Six types. Same chrome. Grok can recommend one — still one of these six.</p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {BUSINESS_TYPES.map((type) => {
-          const Icon = type.icon;
-          const isSelected = state.businessType === type.id;
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {STARTER_IDS.map((id) => {
+          const s = STORE_STARTERS[id];
+          const selected = state.templateId === id;
           return (
             <button
-              key={type.id}
+              key={id}
               type="button"
-              onClick={() => {
-                const ds = DESIGN_SYSTEMS[type.id];
-                updateState({
-                  businessType: type.id,
-                  templateId: type.recommendedTemplate,
-                  primaryColor: ds?.defaultColor || '#E61E2B',
-                });
-              }}
-              className={`p-6 border-2 rounded-xl text-left transition-all ${
-                isSelected
-                  ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg scale-105'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md'
+              onClick={() => update({ templateId: id, heroHeadline: s.heroHeadline })}
+              className={`text-left rounded-2xl border-2 p-5 min-h-[160px] transition ${
+                selected ? 'border-stone-800 bg-stone-50' : 'border-gray-200 hover:border-stone-400'
               }`}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div
-                  className={`p-3 rounded-lg ${
-                    isSelected
-                      ? 'bg-red-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  <Icon className="w-6 h-6" />
-                </div>
-                {isSelected && (
-                  <Check className="w-6 h-6 text-red-500" />
-                )}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                {type.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {type.description}
-              </p>
+              <div className="text-xl font-semibold" style={{ fontFamily: 'Georgia, serif' }}>{s.name}</div>
+              <p className="text-sm text-gray-600 mt-2">{s.useWhen}</p>
+              <p className="text-xs text-gray-500 mt-3">{s.heroHeadline}</p>
             </button>
           );
         })}
       </div>
-
-      <div className="flex justify-end pt-4">
+      <div className="rounded-2xl border border-gray-200 p-4 space-y-3">
+        <label className="block text-sm font-medium text-gray-800">Or describe the shop and let Grok pick one of the six</label>
+        <textarea
+          value={state.recommendChat}
+          onChange={(e) => update({ recommendChat: e.target.value })}
+          rows={2}
+          className="w-full rounded-xl border border-gray-300 px-3 py-3 min-h-[44px]"
+          placeholder="e.g. evening roti from Tunapuna"
+        />
         <button
           type="button"
-          onClick={() => goToStep(2)}
-          disabled={!state.businessType}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+          onClick={handleRecommend}
+          disabled={busy || !state.recommendChat.trim()}
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 rounded-xl bg-stone-800 text-white font-semibold disabled:opacity-50"
+        >
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          Recommend a starter
+        </button>
+      </div>
+      <div className="flex justify-end">
+        <button
+          type="button"
+          disabled={!state.templateId}
+          onClick={() => go(2)}
+          className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
         >
           Continue <ArrowRight className="w-4 h-4" />
         </button>
@@ -524,800 +333,193 @@ const StoreBuilderV3: React.FC = () => {
     </div>
   );
 
-  // ─── Step 2: Template ────────────────────────────────────────────────
-
-  const renderStep2 = () => {
-    const recommendedType = BUSINESS_TYPES.find(t => t.id === state.businessType);
-
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Pick a template
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Don't worry — you can customize everything later. Click <span className="font-semibold text-red-600 dark:text-red-400">Preview Full Size</span> to see any template live.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {TEMPLATES.map((template) => {
-            const isRecommended = recommendedType?.recommendedTemplate === template.id;
-            const isSelected = state.templateId === template.id;
-            return (
-              <div
-                key={template.id}
-                className={`relative p-6 border-2 rounded-xl transition-all ${
-                  isSelected
-                    ? 'border-red-500 bg-red-50 dark:bg-red-950/20 shadow-lg'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                {isRecommended && (
-                  <div className="absolute -top-3 left-4 px-3 py-1 bg-yellow-400 text-yellow-900 text-xs font-semibold rounded-full flex items-center gap-1">
-                    <Sparkle className="w-3 h-3" /> Recommended
-                  </div>
-                )}
-                <div className="flex items-start gap-4">
-                  <div className="text-5xl flex-shrink-0">{template.preview}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {template.name}
-                      </h3>
-                      {isSelected && <Check className="w-5 h-5 text-red-500 flex-shrink-0" />}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      {template.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {template.bestFor.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => updateState({ templateId: template.id })}
-                        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                          isSelected
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-red-600 dark:hover:bg-red-600 dark:hover:text-white'
-                        }`}
-                      >
-                        <Check className="w-4 h-4" />
-                        {isSelected ? 'Selected' : 'Select'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreviewTemplate(template);
-                          setPreviewDevice('desktop');
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      >
-                        <Maximize2 className="w-4 h-4" />
-                        Preview Full Size
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="flex justify-between pt-4">
-          <button
-            type="button"
-            onClick={() => goToStep(1)}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
+  const renderStep2 = () => (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Tell us about the shop</h2>
+        <p className="text-gray-600">Grok prefills hero and about from this. It does not invent catalog items.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Field label="Business name *" value={state.storeName} onChange={(v) => update({ storeName: v })} placeholder="Your shop name" />
+        <Field label="Phone" value={state.phone} onChange={(v) => update({ phone: v })} placeholder="868…" />
+        <Field label="Pickup address" value={state.pickupAddress} onChange={(v) => update({ pickupAddress: v })} placeholder="Street, area" />
+        <label className="block">
+          <span className="block text-sm font-medium text-gray-700 mb-2">Island / country</span>
+          <select
+            value={state.island}
+            onChange={(e) => update({ island: e.target.value })}
+            className="w-full min-h-[44px] rounded-xl border border-gray-300 px-3"
           >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-          <button
-            type="button"
-            onClick={() => goToStep(3)}
-            disabled={!state.templateId}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+            <option>Trinidad</option>
+            <option>Tobago</option>
+            <option>Trinidad & Tobago</option>
+          </select>
+        </label>
+        <Field label="Specialty (optional)" value={state.specialty} onChange={(v) => update({ specialty: v })} placeholder="roti, linen, fades…" />
+        <Field label="Hours (buyer-visible, free text)" value={state.hours} onChange={(v) => update({ hours: v })} placeholder="Leave blank to hide" />
+        <label className="block md:col-span-2">
+          <span className="block text-sm font-medium text-gray-700 mb-2">Payout preference</span>
+          <select
+            value={state.payoutPreference}
+            onChange={(e) => update({ payoutPreference: e.target.value as BuilderState['payoutPreference'] })}
+            className="w-full min-h-[44px] rounded-xl border border-gray-300 px-3"
           >
-            Continue <ArrowRight className="w-4 h-4" />
-          </button>
+            <option value="">Not chosen yet</option>
+            <option value="cash_vendor_keeps">Cash — vendor keeps</option>
+            <option value="bank_transfer">Bank transfer</option>
+            {wamConfigured ? <option value="wam">Wam</option> : null}
+          </select>
+        </label>
+        <label className="flex items-center gap-3 min-h-[44px]">
+          <input type="checkbox" checked={state.acceptsCashPickup} onChange={(e) => update({ acceptsCashPickup: e.target.checked })} />
+          <span>Cash on pickup</span>
+        </label>
+        <label className="flex items-center gap-3 min-h-[44px]">
+          <input type="checkbox" checked={state.acceptsCod} onChange={(e) => update({ acceptsCod: e.target.checked })} />
+          <span>Cash on delivery</span>
+        </label>
+        <div className="md:col-span-2">
+          <Field
+            label="WhatsApp E.164 (optional — only if you type it)"
+            value={state.whatsappE164}
+            onChange={(v) => update({ whatsappE164: v })}
+            placeholder="+1868…"
+          />
+          <p className="text-xs text-gray-500 mt-1">We never invent a number. Button stays hidden until this is a real E.164.</p>
         </div>
       </div>
-    );
-  };
-
-  // ─── Full-Size Template Preview Modal (#4) ──────────────────────────
-
-  const renderPreviewModal = () => {
-    if (!previewTemplate) return null;
-    const TemplateComponent = previewTemplate.Component;
-    const storeData = buildSampleStoreData(state.storeName, state.primaryColor, state.businessType);
-    const sampleProducts = buildSampleProducts(state.storeName);
-    const isMobile = previewDevice === 'mobile';
-
-    return (
-      <div
-        className="fixed inset-0 z-[9999] flex flex-col"
-        style={{ background: 'rgba(0,0,0,0.85)' }}
-      >
-        {/* Modal top bar */}
-        <div
-          className="flex items-center justify-between px-4 py-3 text-white flex-shrink-0"
-          style={{ background: '#111' }}
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xl flex-shrink-0">{previewTemplate.preview}</span>
-            <div className="min-w-0">
-              <div className="font-bold text-sm truncate">{previewTemplate.name}</div>
-              <div className="text-xs text-gray-400 truncate">Full-size template preview</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Desktop / Mobile toggle */}
-            <div className="flex items-center rounded-lg overflow-hidden border border-gray-600">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice('desktop')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  !isMobile ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Monitor className="w-4 h-4" /> Desktop
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice('mobile')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  isMobile ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <Smartphone className="w-4 h-4" /> Mobile
-              </button>
-            </div>
-
-            {/* Use This Template */}
-            <button
-              type="button"
-              onClick={() => {
-                updateState({ templateId: previewTemplate.id });
-                setPreviewTemplate(null);
-              }}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
-            >
-              <Check className="w-4 h-4" /> Use This Template
-            </button>
-
-            {/* Close */}
-            <button
-              type="button"
-              onClick={() => setPreviewTemplate(null)}
-              className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-white transition-colors"
-              aria-label="Close preview"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Preview area */}
-        <div
-          className="flex-1 overflow-auto"
-          style={{ background: '#f3f4f6' }}
-        >
-          <div
-            className={isMobile ? 'mx-auto my-4' : 'w-full'}
-            style={isMobile ? { width: '390px', maxWidth: '100%' } : {}}
-          >
-            <div
-              className="bg-white shadow-lg"
-              style={{
-                borderRadius: isMobile ? '16px' : '0',
-                overflow: 'hidden',
-              }}
-            >
-              <SafeBoundary name={`PreviewModal-${previewTemplate.id}`}>
-                <TemplateComponent
-                  storeName={state.storeName || 'Sample Store'}
-                  storeData={storeData}
-                  products={sampleProducts}
-                  primaryColor={state.primaryColor}
-                />
-              </SafeBoundary>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom hint bar */}
-        <div
-          className="flex items-center justify-center px-4 py-2 text-xs text-gray-400 flex-shrink-0"
-          style={{ background: '#111' }}
-        >
-          Press <kbd className="mx-1 px-1.5 py-0.5 bg-gray-700 rounded text-white">ESC</kbd> to close ·
-          Viewing {isMobile ? 'Mobile (390px)' : 'Desktop (full width)'} ·
-          Sample products shown — your real products will appear after launch
-        </div>
-      </div>
-    );
-  };
-
-  // ─── Step 3: Customize ────────────────────────────────────────────────
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Customize your store
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Add your brand. Takes 1 minute.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Form */}
-        <div className="space-y-4 lg:col-span-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Store Name *
-            </label>
-            <input
-              type="text"
-              value={state.storeName}
-              onChange={(e) => updateState({ storeName: e.target.value })}
-              placeholder="e.g. Maria's Boutique"
-              maxLength={50}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tagline
-            </label>
-            <input
-              type="text"
-              value={state.tagline}
-              onChange={(e) => updateState({ tagline: e.target.value })}
-              placeholder="e.g. Trinidad's premier fashion boutique"
-              maxLength={100}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              value={state.description}
-              onChange={(e) => updateState({ description: e.target.value })}
-              placeholder="Tell customers about your business..."
-              rows={3}
-              maxLength={500}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={state.phone}
-                onChange={(e) => updateState({ phone: e.target.value })}
-                placeholder="868-XXX-XXXX"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                WhatsApp
-              </label>
-              <input
-                type="tel"
-                value={state.whatsapp}
-                onChange={(e) => updateState({ whatsapp: e.target.value })}
-                placeholder="868-XXX-XXXX"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Brand Color
-            </label>
-
-            {/* Full hex color picker (native color wheel) */}
-            <div className="flex items-center gap-3 mb-3">
-              <input
-                type="color"
-                value={state.primaryColor}
-                onChange={(e) => updateState({ primaryColor: e.target.value })}
-                className="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-700 cursor-pointer bg-transparent p-0"
-                aria-label="Pick a custom brand color"
-              />
-              <div>
-                <span className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Hex</span>
-                <p className="font-mono text-sm font-bold text-gray-900 dark:text-white">{state.primaryColor}</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-2 font-semibold uppercase tracking-wide">Quick picks</p>
-            <div className="grid grid-cols-4 gap-2">
-              {(DESIGN_SYSTEMS[state.businessType]?.colorPresets || COLOR_PRESETS).map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  onClick={() => updateState({ primaryColor: preset.value })}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    state.primaryColor === preset.value
-                      ? 'border-gray-900 dark:border-white scale-105'
-                      : 'border-transparent hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: preset.value }}
-                  title={preset.name}
-                >
-                  <span className="sr-only">{preset.name}</span>
-                  {state.primaryColor === preset.value && (
-                    <Check className="w-5 h-5 text-white mx-auto" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Live Template Preview */}
-        <div className="lg:col-span-3">
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-white">
-            <div className="text-xs uppercase tracking-wider text-gray-500 mb-3 flex items-center justify-between">
-              <span>Live Template Preview</span>
-              <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded-full">
-                {TEMPLATES.find(t => t.id === state.templateId)?.name || 'Preview'}
-              </span>
-            </div>
-            <div className="rounded-lg overflow-hidden border border-gray-200 bg-white" style={{ maxHeight: '600px', overflow: 'auto' }}>
-              <div className="light-mode-preview">
-              <SafeBoundary name="Step3Preview">
-                {(() => {
-                  const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
-                  if (!selectedTemplate) return (
-                    <div className="flex items-center justify-center p-12 text-gray-800 font-medium text-lg">
-                      Select a template to see preview
-                    </div>
-                  );
-                  const TemplateComponent = selectedTemplate.Component;
-                  const storeData = buildSampleStoreData(state.storeName, state.primaryColor, state.businessType);
-                  const sampleProducts = buildSampleProducts(state.storeName);
-                  return (
-                    <TemplateComponent
-                      storeName={state.storeName || 'Your Store Name'}
-                      storeData={storeData}
-                      products={sampleProducts}
-                      primaryColor={state.primaryColor}
-                    />
-                  );
-                })()}
-              </SafeBoundary>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-3 text-center">
-              This is a live preview with sample data. Your real products will appear here.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-between pt-4">
-        <button
-          type="button"
-          onClick={() => goToStep(2)}
-          className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors"
-        >
+      <div className="flex justify-between">
+        <button type="button" onClick={() => go(1)} className="inline-flex items-center gap-2 min-h-[44px] px-4 text-gray-700">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <button
           type="button"
-          onClick={() => goToStep(4)}
-          disabled={!state.storeName.trim()}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+          onClick={handleDraft}
+          disabled={busy || !state.storeName.trim()}
+          className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
         >
-          Continue <ArrowRight className="w-4 h-4" />
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          Draft my store
         </button>
       </div>
     </div>
   );
 
-  // ─── Step 4: Review & Launch ────────────────────────────────────────
-
-  const handleLaunch = async () => {
-    setCreating(true);
-    setError(null);
-
-    try {
-      if (!getToken()) {
-        navigate('/signup?next=/create-store');
-        return;
-      }
-
-      const handle = state.wamHandle.trim();
-      const store = await storesApi.create({
-        name: state.storeName.trim(),
-        description: state.description.trim() || undefined,
-        category: state.businessType,
-        phone: state.phone.trim() || undefined,
-        whatsapp: state.whatsapp.trim() || undefined,
-        accepts_cod: true,
-        accepts_pickup: true,
-        wam_handle: wamConfigured && handle ? handle : undefined,
-        template_id: state.templateId,
-        theme_config: {
-          template_id: state.templateId,
-          business_type: state.businessType,
-          color: state.primaryColor,
-          tagline: state.tagline.trim() || undefined,
-        },
-      });
-
-      localStorage.removeItem(DRAFT_KEY);
-      navigate(`/store/${store.slug}`);
-    } catch (err: any) {
-      console.error('Launch error:', err);
-      setError(err?.message || 'Something went wrong. Please try again.');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const renderStep4 = () => {
-    const selectedTemplate = TEMPLATES.find(t => t.id === state.templateId);
-    const selectedType = BUSINESS_TYPES.find(t => t.id === state.businessType);
-
-    return (
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Ready to launch! 🚀
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Review your store. After launch it is at{' '}
-            <span className="font-mono text-sm">https://juvay.app/store/&lt;slug&gt;</span>
-            {' '}(HTTPS, same origin). The slug is assigned when you launch.
-          </p>
+  const renderStep3 = () => (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Preview {state.storeName || 'your store'}</h2>
+        <p className="text-gray-600">
+          {state.agentWrote
+            ? 'Grok wrote the copy below. Edit anything. Regenerating is optional.'
+            : state.agentWarning || 'Showing locked copy. The agent did not write this site.'}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-2 space-y-3">
+          <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v })} />
+          <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v })} />
+          <label className="block">
+            <span className="block text-sm font-medium text-gray-700 mb-2">About</span>
+            <textarea value={state.about} onChange={(e) => update({ about: e.target.value })} rows={4} className="w-full rounded-xl border border-gray-300 px-3 py-3" />
+          </label>
+          <p className="text-xs text-gray-500">Catalog stays empty until you add a real item. No Sample Product N.</p>
         </div>
-
-        <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 space-y-4">
-          <div className="flex items-start gap-4">
-            <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
-              style={{ backgroundColor: state.primaryColor }}
-            >
-              {state.storeName.charAt(0).toUpperCase() || 'S'}
-            </div>
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {state.storeName}
-              </h3>
-              {state.tagline && (
-                <p className="text-gray-600 dark:text-gray-400">{state.tagline}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div>
-              <div className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">
-                Business Type
-              </div>
-              <div className="font-semibold text-gray-900 dark:text-white">
-                {selectedType?.name}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">
-                Template
-              </div>
-              <div className="font-semibold text-gray-900 dark:text-white">
-                {selectedTemplate?.name}
-              </div>
-            </div>
-            {state.phone && (
-              <div>
-                <div className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">
-                  Phone
-                </div>
-                <div className="font-semibold text-gray-900 dark:text-white">
-                  {state.phone}
-                </div>
-              </div>
-            )}
-            {state.whatsapp && (
-              <div>
-                <div className="text-xs uppercase text-gray-500 dark:text-gray-400 mb-1">
-                  WhatsApp
-                </div>
-                <div className="font-semibold text-gray-900 dark:text-white">
-                  {state.whatsapp}
-                </div>
-              </div>
-            )}
-          </div>
-          {wamConfigured && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Seller Wam handle (required for paid rail)
-              </label>
-              <input
-                type="text"
-                value={state.wamHandle}
-                onChange={(e) => setState((prev) => ({ ...prev, wamHandle: e.target.value }))}
-                placeholder="Your Wam handle — leave blank for cash only"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
-              />
-              <p className="text-xs text-gray-500 mt-2">Cash pickup and COD stay on. No invented handle.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Optional: Show template preview */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowPreview(!showPreview)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-          >
-            {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showPreview ? 'Hide' : 'Show'} template preview
-          </button>
-
-          {showPreview && selectedTemplate && (
-            <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-white dark:bg-gray-900" style={{ maxHeight: '500px', overflow: 'auto' }}>
-              <SafeBoundary name="TemplatePreview">
-                <Suspense fallback={<TemplateLoader />}>
-                  <LazyTemplate loader={selectedTemplate.componentLoader} storeName={state.storeName} primaryColor={state.primaryColor} />
-                </Suspense>
-              </SafeBoundary>
-            </div>
-          )}
-        </div>
-
-        {error && (
-          <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-red-900 dark:text-red-100">Could not create store</div>
-              <div className="text-sm text-red-700 dark:text-red-300 mt-1">{error}</div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between pt-4">
-          <button
-            type="button"
-            onClick={() => goToStep(3)}
-            disabled={creating}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors disabled:opacity-50"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-          <button
-            type="button"
-            onClick={handleLaunch}
-            disabled={creating}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl"
-          >
-            {creating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Launching your store...
-              </>
-            ) : (
-              <>
-                Launch Store <ArrowRight className="w-5 h-5" />
-              </>
-            )}
-          </button>
+        <div className="lg:col-span-3 border border-gray-200 rounded-2xl overflow-hidden max-h-[720px] overflow-y-auto">
+          <JuvayStorefront model={previewModel} />
         </div>
       </div>
-    );
-  };
-
-  // ─── Stepper Header ───────────────────────────────────────────────────
-
-  const renderStepper = () => (
-    <nav className="mb-6" aria-label="Wizard progress">
-      <ol className="flex items-center w-full">
-        {STEPS.map((stepDef, idx) => {
-          const isActive = state.step === stepDef.num;
-          const isComplete = isStepComplete(stepDef.num);
-          const isClickable = canGoToStep(stepDef.num);
-          const isLast = idx === STEPS.length - 1;
-
-          return (
-            <li
-              key={stepDef.num}
-              className={`flex items-center ${isLast ? 'flex-shrink-0' : 'flex-1'}`}
-            >
-              <button
-                type="button"
-                onClick={() => isClickable && goToStep(stepDef.num)}
-                disabled={!isClickable}
-                className={`flex items-center gap-2 group ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
-              >
-                {/* Circle with number / checkmark */}
-                <span
-                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold flex-shrink-0 transition-all ${
-                    isActive
-                      ? 'bg-red-600 text-white ring-4 ring-red-100 dark:ring-red-950/40 scale-110'
-                      : isComplete
-                        ? 'bg-red-600 text-white group-hover:bg-red-700'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                  }`}
-                >
-                  {isComplete && !isActive ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    stepDef.num
-                  )}
-                </span>
-                {/* Label */}
-                <span
-                  className={`text-sm font-semibold hidden sm:inline transition-colors ${
-                    isActive
-                      ? 'text-gray-900 dark:text-white'
-                      : isComplete
-                        ? 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                        : 'text-gray-400 dark:text-gray-500'
-                  }`}
-                >
-                  {stepDef.short}
-                </span>
-              </button>
-
-              {/* Connector line */}
-              {!isLast && (
-                <div
-                  className={`flex-1 h-0.5 mx-2 transition-colors ${
-                    state.step > stepDef.num
-                      ? 'bg-red-500'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+      <div className="flex justify-between">
+        <button type="button" onClick={() => go(2)} className="inline-flex items-center gap-2 min-h-[44px] px-4 text-gray-700">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <button type="button" onClick={() => go(4)} className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold">
+          Review publish <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
   );
 
-  // ─── Render ────────────────────────────────────────────────────────────
+  const renderStep4 = () => (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Publish when you choose</h2>
+        <p className="text-gray-600">Preview first. Publish is a separate action. Nothing goes live until you tap Publish.</p>
+      </div>
+      <div className="rounded-2xl border border-gray-200 p-5 space-y-2">
+        <div className="text-2xl font-semibold">{state.storeName}</div>
+        <div className="text-gray-600">{STORE_STARTERS[state.templateId as StarterId]?.name} · {state.island}</div>
+        <div className="text-sm text-gray-500">{state.heroHeadline}</div>
+        <div className="text-sm text-gray-500">Catalog: empty until you add a real item.</div>
+      </div>
+      {state.templateId === 'food' && (
+        <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <input type="checkbox" checked={state.foodAttested} onChange={(e) => update({ foodAttested: e.target.checked })} className="mt-1" />
+          <span className="text-sm text-amber-950">
+            I attest this kitchen follows food-safety rules I am responsible for. A kitchen-check record of <code>auto_approved</code> is stored only — it does not publish the shop.
+          </span>
+        </label>
+      )}
+      <div className="flex justify-between">
+        <button type="button" onClick={() => go(3)} disabled={busy} className="inline-flex items-center gap-2 min-h-[44px] px-4 text-gray-700">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <button
+          type="button"
+          onClick={handlePublish}
+          disabled={busy || (state.templateId === 'food' && !state.foodAttested)}
+          className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
+        >
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          Publish store
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            >
-              <Store className="w-4 h-4" /> Juvay
-            </button>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Step {state.step} of {STEPS.length} · {STEPS[state.step - 1].label}
+    <SafeBoundary name="StoreBuilder">
+      <div className="min-h-screen bg-[#f7f4ef] py-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="mb-6 flex items-center justify-between text-sm text-gray-600">
+            <span>Create store</span>
+            <span>Step {state.step} of 4</span>
+          </div>
+          <div className="h-2 bg-stone-200 rounded-full mb-6 overflow-hidden">
+            <div className="h-full bg-stone-800 transition-all" style={{ width: `${(state.step / 4) * 100}%` }} />
+          </div>
+          {error && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-800 text-sm">
+              <AlertCircle className="w-4 h-4 mt-0.5" />
+              {error}
             </div>
-          </div>
-
-          {/* Stepper */}
-          {renderStepper()}
-
-          {/* Progress bar */}
-          <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-500"
-              style={{ width: `${(state.step / STEPS.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Steps */}
-        <SafeBoundary name={`StoreBuilder-Step${state.step}`}>
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8">
+          )}
+          <div className="bg-white rounded-3xl border border-stone-200 p-6 md:p-8">
             {state.step === 1 && renderStep1()}
             {state.step === 2 && renderStep2()}
             {state.step === 3 && renderStep3()}
             {state.step === 4 && renderStep4()}
           </div>
-        </SafeBoundary>
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-          Your progress is auto-saved. You can close this and come back later.
         </div>
       </div>
-
-      {/* Full-size template preview modal */}
-      {previewTemplate && renderPreviewModal()}
-    </div>
+    </SafeBoundary>
   );
 };
 
-// ─── Lazy Template Loader ────────────────────────────────────────────
-
-const TemplateLoader: React.FC = () => (
-  <div className="flex items-center justify-center p-12">
-    <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
-    <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading preview...</span>
-  </div>
+const Field: React.FC<{ label: string; value: string; onChange: (v: string) => void; placeholder?: string }> = ({
+  label, value, onChange, placeholder,
+}) => (
+  <label className="block">
+    <span className="block text-sm font-medium text-gray-700 mb-2">{label}</span>
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full min-h-[44px] rounded-xl border border-gray-300 px-3"
+    />
+  </label>
 );
 
-interface LazyTemplateProps {
-  loader: () => Promise<{ default: React.ComponentType<any> }>;
-  storeName: string;
-  primaryColor: string;
-}
-
-const LazyTemplate: React.FC<LazyTemplateProps> = ({ loader, storeName, primaryColor }) => {
-  const Template = React.useMemo(() => lazy(loader), [loader]);
-
-  // Load industry-specific fonts dynamically (UI/UX Pro Max design system)
-  useEffect(() => {
-    const id = 'trinibuild-template-fonts';
-    const existing = document.getElementById(id);
-    if (existing) existing.remove();
-    const link = document.createElement('link');
-    link.id = id;
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Cormorant:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(link);
-    return () => { link.remove(); };
-  }, []);
-
-  // Build a minimal storeData object from wizard state so templates render
-  const storeData: any = {
-    name: storeName,
-    tagline: storeName ? `Welcome to ${storeName}` : '',
-    description: storeName ? `${storeName} — quality products and service in Trinidad & Tobago.` : '',
-    phone: '',
-    whatsapp: '',
-    color_scheme: { primary: primaryColor },
-    banner_url: undefined,
-  };
-
-  // Seed realistic sample products per template type so the preview looks alive
-  const sampleProducts: any[] = (() => {
-    if (!storeName) return [];
-    const base = [
-      { id: 's1', name: `${storeName} Special`, description: 'Our signature product', price: 199.99, image_url: '', status: 'active', stock: 10, category: 'Featured' },
-      { id: 's2', name: 'Premium Choice', description: 'Top rated by customers', price: 149.99, image_url: '', status: 'active', stock: 5, category: 'Best Seller' },
-      { id: 's3', name: 'Value Pack', description: 'Great value for money', price: 89.99, image_url: '', status: 'active', stock: 20, category: 'Value' },
-    ];
-    return base;
-  })();
-
-  return (
-    <div style={{ '--brand-color': primaryColor } as React.CSSProperties}>
-      <Template storeName={storeName} storeData={storeData} products={sampleProducts} primaryColor={primaryColor} />
-    </div>
-  );
-};
-
-// Export wrapped in error boundary
 const StoreBuilderWithBoundary: React.FC = () => (
   <SafeBoundary name="StoreBuilder">
     <StoreBuilderV3 />

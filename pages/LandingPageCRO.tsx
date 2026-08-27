@@ -31,18 +31,18 @@ const TICKER_MERCHANTS = [
 ];
 
 const STATS_ROW = [
-  { value: '14', label: 'store templates' },
+  { value: '6', label: 'store starters' },
   { value: '5 min', label: 'to launch' },
   { value: '🇹🇹', label: 'built in T&T' },
 ];
 
 const STORE_SHOWCASE = [
-  { name: 'Fashion Boutique', category: 'Fashion & Apparel', location: 'Product grid · variants · lookbook', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
-  { name: 'Roti & Food Shop', category: 'Food & Beverage', location: 'Menu · WhatsApp ordering · COD', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  { name: 'Tech & Gadgets', category: 'Electronics', location: 'Specs · comparisons · warranty', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
-  { name: 'Beauty & Cosmetics', category: 'Beauty & Cosmetics', location: 'Shade match · bundles · subscribe', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
-  { name: 'Furniture & Home', category: 'Furniture & Home', location: 'Sale pricing · trust badges', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
-  { name: 'Auto & Accessories', category: 'Auto Parts', location: 'Part finder · vehicle match', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
+  { name: 'Fashion', category: 'Fashion', location: 'Lookbook · grid · try in store', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
+  { name: 'Food', category: 'Food', location: 'Menu · cash or pickup · hours', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
+  { name: 'Services', category: 'Services', location: 'Book a time · cash when you come', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
+  { name: 'Beauty', category: 'Beauty', location: 'Retail shades and kits', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
+  { name: 'Home', category: 'Home', location: 'Furniture · price on the piece', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
+  { name: 'General', category: 'General', location: 'One-page shop · cash or pickup', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
 ];
 
 const TESTIMONIALS_REMOVED = true; // (Removed fabricated reviews — replaced by honest WHY_TRINIBUILD section above.)
