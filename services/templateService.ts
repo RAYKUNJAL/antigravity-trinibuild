@@ -25,7 +25,7 @@ export interface TemplateSection {
   cro_elements: string[];
 }
 
-function starterToTemplate(id: StarterId, galleryId = id): StoreTemplate {
+function starterToTemplate(id: StarterId, galleryId: string = id): StoreTemplate {
   const s = STORE_STARTERS[id];
   return {
     id: galleryId,

@@ -117,15 +117,18 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                   height: 220,
                   overflow: 'hidden',
                   border: 'none',
-                  padding: 0,
+                  padding: '40px 16px 58px',
                   cursor: 'pointer',
                   position: 'relative',
-                  background: starter.palette.bg,
+                  background: starter.palette.heroBg,
+                  color: starter.palette.heroText,
+                  textAlign: 'left',
                 }}
               >
-                <div style={{ transform: 'scale(0.42)', transformOrigin: 'top left', width: '238%', height: '238%', pointerEvents: 'none' }}>
-                  <JuvayStorefront model={illustrativeModel(starter.id)} />
+                <div style={{ fontFamily: starter.palette.headingFont, fontSize: 22, lineHeight: 1.15, maxWidth: '90%' }}>
+                  {starter.heroHeadline}
                 </div>
+                <div style={{ marginTop: 10, fontSize: 12, opacity: 0.75 }}>{starter.name} · empty catalog</div>
                 <div style={{ position: 'absolute', top: 10, left: 10, background: starter.palette.accent, color: starter.palette.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 10, fontWeight: 800 }}>
                   ILLUSTRATIVE
                 </div>
