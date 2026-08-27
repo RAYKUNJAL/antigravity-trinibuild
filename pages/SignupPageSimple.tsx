@@ -47,7 +47,7 @@ export const SignupPageSimple: React.FC = () => {
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           email,
           password,
@@ -56,8 +56,13 @@ export const SignupPageSimple: React.FC = () => {
           ref: searchParams.get('ref') || undefined,
         }),
       });
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        throw new Error('Signup API is not mounted. GET /api/ must return JSON, not the site shell.');
+      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Signup failed (${res.status})`);
+      if (!data.token || !data.user?.id) throw new Error('Signup did not return an account.');
       if (data.token) setToken(data.token);
       const user = data.user || {};
       const sessionUser = {

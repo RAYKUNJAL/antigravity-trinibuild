@@ -70,6 +70,26 @@ const sign = (user) => {
   return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 };
 
+/** GET /api and GET /api/ must be JSON — never the SPA shell. */
+function apiRoot(_req, res) {
+  res.json({
+    ok: true,
+    service: 'juvay',
+    signup: 'POST /api/signup',
+    login: 'POST /api/login',
+  });
+}
+app.get('/api', apiRoot);
+app.get('/api/', apiRoot);
+app.get('/api/signup', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/signup', allow: 'POST' });
+});
+app.options('/api/signup', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(204).end();
+});
+
 // ═══════════════════════════════════════════════════════════
 // AUTH ROUTES (replaces Supabase Auth)
 // ═══════════════════════════════════════════════════════════
@@ -147,6 +167,7 @@ app.post('/api/wam/webhook', async (req, res) => {
 });
 
 async function handleSignup(req, res) {
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Auth is not configured' });
   const { email, password, full_name, phone, ref, island } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
   if (String(password).length < PASSWORD_MIN) {

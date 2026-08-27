@@ -3,10 +3,16 @@
 Live today: only `/api/wam/` is proxied. `GET /api/` still returns the SPA shell.
 Signup must **not** use `api.juvay.app` (NXDOMAIN). Do not invent that DNS.
 
-After deploy of `deploy/nginx-juvay.conf`, these same-origin paths must hit Node on `127.0.0.1:3001` (`server/index.js`):
+Install **one** of:
+- `deploy/nginx-juvay.conf` (nginx)
+- `deploy/Caddyfile-juvay` (Caddy)
+
+Both must proxy `/api` and `/api/*` to Node on `127.0.0.1:3001` (`server/index.js`) so `GET /api/` is JSON, not the SPA.
 
 | Method | Path | Why |
 |--------|------|-----|
+| GET | `/api` and `/api/` | Probe — JSON `{ ok, signup: "POST /api/signup" }` |
+| GET | `/api/signup` | 405 JSON — Use POST |
 | POST | `/api/signup` | Stranger account create |
 | POST | `/api/login` | Sign in |
 | GET | `/api/auth/me` | Session |
