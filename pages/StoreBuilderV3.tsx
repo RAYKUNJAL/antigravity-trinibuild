@@ -433,7 +433,7 @@ const StoreBuilderV3: React.FC = () => {
           {busy ? 'Working…' : 'Recommend a starter'}
         </button>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ position: 'sticky', bottom: 0, zIndex: 12, background: ISLAND.sand, borderTop: '1px solid #e6dfd4', padding: '12px 0', display: 'flex', justifyContent: 'flex-end' }}>
         <button
           type="button"
           disabled={!state.templateId}
