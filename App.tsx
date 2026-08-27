@@ -69,6 +69,7 @@ import {
 import { MessagingCenter } from './pages/admin/MessagingCenter';
 import { Automations } from './pages/admin/Automations';
 import { Legal } from './pages/Legal';
+import { StaticLegalRedirect } from './components/StaticLegalRedirect';
 import { RealEstate } from './pages/RealEstate';
 import { ListProperty } from './pages/ListProperty';
 import { RealEstateAgentDashboard } from './pages/RealEstateAgentDashboard';
@@ -397,9 +398,14 @@ const App: React.FC = () => {
               <Route path="/events" element={<Events />} />
               <Route path="/contact" element={<Contact />} />
 
-              {/* Legal Documents */}
-              <Route path="/terms" element={<Legal type="terms" />} />
-              <Route path="/privacy" element={<Legal type="privacy" />} />
+              {/* Legal pack: static HTML owned by R&R Digital Solutions. Not TriniBuild. */}
+              <Route path="/terms" element={<StaticLegalRedirect href="/terms.html" />} />
+              <Route path="/privacy" element={<StaticLegalRedirect href="/privacy.html" />} />
+              <Route path="/refund" element={<StaticLegalRedirect href="/refund.html" />} />
+              <Route path="/legal/terms" element={<StaticLegalRedirect href="/terms.html" />} />
+              <Route path="/legal/privacy" element={<StaticLegalRedirect href="/privacy.html" />} />
+              <Route path="/legal/refund" element={<StaticLegalRedirect href="/refund.html" />} />
+              <Route path="/legal/merchant-agreement" element={<StaticLegalRedirect href="/merchant-agreement.html" />} />
               <Route path="/contractor-agreement" element={<ContractorSignup />} />
               <Route path="/liability-waiver" element={<Legal type="liability-waiver" />} />
               <Route path="/affiliate-terms" element={<Legal type="affiliate-terms" />} />

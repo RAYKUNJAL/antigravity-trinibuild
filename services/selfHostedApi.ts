@@ -118,9 +118,11 @@ export const subscriptionApi = {
     const form = new FormData();
     form.append('proof', file);
     form.append('reference_code', reference_code);
+    const token = getToken();
+    if (!token) throw new Error('Sign in required');
     const res = await fetch(`${API_BASE}/subscription/bank-pay/proof`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: form,
     });
     if (!res.ok) throw new Error('Upload failed');
