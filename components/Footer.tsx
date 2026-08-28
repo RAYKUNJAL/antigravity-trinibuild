@@ -50,7 +50,6 @@ export const Footer: React.FC = () => {
               <li><Link to="/classifieds" className="text-sm text-gray-400 hover:text-white transition-colors">Marketplace</Link></li>
               <li><Link to="/create-store" className="text-sm text-gray-400 hover:text-white transition-colors">Create Free Store</Link></li>
               <li><Link to="/templates" className="text-sm text-gray-400 hover:text-white transition-colors">Store Templates</Link></li>
-              <li><Link to="/rides" className="text-sm text-gray-400 hover:text-white transition-colors">Rides & Delivery</Link></li>
               <li><Link to="/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">Jobs Board</Link></li>
               <li><Link to="/real-estate" className="text-sm text-gray-400 hover:text-white transition-colors">Real Estate</Link></li>
             </ul>
@@ -76,7 +75,6 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Digital</h3>
             <ul className="space-y-2.5">
-              <li><Link to="/gift-cards" className="text-sm text-gray-400 hover:text-white transition-colors">Gift Cards</Link></li>
               <li><Link to="/documents" className="text-sm text-gray-400 hover:text-white transition-colors">AI Document Assistant</Link></li>
               <li><Link to="/products/ai-add" className="text-sm text-gray-400 hover:text-white transition-colors">AI Product Lister</Link></li>
               <li><Link to="/tax-dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">VAT Tax Tracker</Link></li>
@@ -92,7 +90,6 @@ export const Footer: React.FC = () => {
               <li><Link to="/loyalty" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Rewards & Loyalty <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">EARN</span></Link></li>
               <li><Link to="/earn" className="text-sm text-gray-400 hover:text-white transition-colors">Earn With Us</Link></li>
               <li><Link to="/affiliate" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Program</Link></li>
-              <li><Link to="/drive-with-us" className="text-sm text-gray-400 hover:text-white transition-colors">Drive With Us</Link></li>
               <li><Link to="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">Blog</Link></li>
               <li><Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About</Link></li>
               <li><Link to="/contact" className="text-sm text-gray-400 hover:text-white transition-colors">Contact</Link></li>

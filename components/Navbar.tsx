@@ -29,7 +29,6 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
 ];
 
 const DIGITAL_DROPDOWN: DropdownItem[] = [
-  { name: 'Gift Cards', path: '/gift-cards', icon: Gift, description: 'Steam, iTunes, Google Play' },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
   { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign, description: 'BIR-ready tax reports' },
 ];
@@ -42,7 +41,6 @@ const MOBILE_LINKS = [
   { name: 'Directory', path: '/directory', icon: Store },
   { name: 'Explore', path: '/explore', icon: ShoppingBag },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
-  { name: 'Gift Cards', path: '/gift-cards', icon: Gift },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText },
   { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign },
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
