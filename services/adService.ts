@@ -15,53 +15,38 @@ export interface AdCampaign {
 
 const CAMPAIGNS_KEY = 'trinibuild_ad_campaigns';
 
-const DEFAULT_CAMPAIGNS: AdCampaign[] = [
-  {
-    id: 'c1',
-    clientName: 'Massy Motors',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    targetUrl: '/rides',
-    placements: ['home', 'rides'],
-    isPaidClient: true,
-    active: true,
-    views: 1250,
-    clicks: 45
-  },
-  {
-    id: 'c2',
-    clientName: 'Republic Bank',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    targetUrl: '/real-estate',
-    placements: ['home', 'real_estate', 'jobs'],
-    isPaidClient: true,
-    active: true,
-    views: 980,
-    clicks: 32
-  },
-  {
-    id: 'c3',
-    clientName: 'KFC Trinidad',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    targetUrl: '/directory',
-    placements: ['marketplace', 'tickets'],
-    isPaidClient: false,
-    active: true,
-    views: 450,
-    clicks: 12
-  }
-];
+const DEMO_CAMPAIGN_IDS = new Set(['c1', 'c2', 'c3']);
 
-// Initialize campaigns if empty
-if (!localStorage.getItem(CAMPAIGNS_KEY)) {
-  localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(DEFAULT_CAMPAIGNS));
-}
+const isDemoCampaign = (campaign: AdCampaign): boolean => DEMO_CAMPAIGN_IDS.has(campaign.id);
+
+const readStoredCampaigns = (): AdCampaign[] => {
+  if (typeof localStorage === 'undefined') return [];
+  const stored = localStorage.getItem(CAMPAIGNS_KEY);
+  if (!stored) return [];
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const persistCampaigns = (campaigns: AdCampaign[]): void => {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+};
 
 export const getCampaigns = (): AdCampaign[] => {
-  const stored = localStorage.getItem(CAMPAIGNS_KEY);
-  return stored ? JSON.parse(stored) : DEFAULT_CAMPAIGNS;
+  const stored = readStoredCampaigns();
+  const honest = stored.filter(campaign => !isDemoCampaign(campaign));
+  if (honest.length !== stored.length) {
+    persistCampaigns(honest);
+  }
+  return honest;
 };
 
 export const saveCampaign = (campaign: AdCampaign): void => {
+  if (isDemoCampaign(campaign)) return;
   const campaigns = getCampaigns();
   const index = campaigns.findIndex(c => c.id === campaign.id);
   if (index >= 0) {
@@ -69,24 +54,21 @@ export const saveCampaign = (campaign: AdCampaign): void => {
   } else {
     campaigns.push(campaign);
   }
-  localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+  persistCampaigns(campaigns);
 };
 
 export const deleteCampaign = (id: string): void => {
   const campaigns = getCampaigns().filter(c => c.id !== id);
-  localStorage.setItem(CAMPAIGNS_KEY, JSON.stringify(campaigns));
+  persistCampaigns(campaigns);
 };
 
 export const getAdsForPage = (page: string): AdCampaign[] => {
   const campaigns = getCampaigns();
 
-  // Filter by page placement and active status
   const relevantAds = campaigns.filter(c =>
     c.active && c.placements.includes(page as any)
   );
 
-  // Sort: Paid Clients First (Traffic Boost), then random shuffle for fairness among same tier
-  // For this demo, we'll just sort by isPaidClient
   return relevantAds.sort((a, b) => {
     if (a.isPaidClient && !b.isPaidClient) return -1;
     if (!a.isPaidClient && b.isPaidClient) return 1;

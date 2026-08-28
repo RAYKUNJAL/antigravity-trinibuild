@@ -298,11 +298,11 @@ const BankTransferPanel: React.FC<{
         </div>
         <div className="space-y-3">
           {[
-            ['Bank', store.bank_name || 'Republic Bank TT'],
+            store.bank_name ? ['Bank', store.bank_name] : null,
             ['Account Name', store.bank_holder || store.name],
-            ['Account #', store.bank_account || '1234567890'],
+            store.bank_account ? ['Account #', store.bank_account] : null,
             ['Amount', `TT$${amount.toFixed(2)}`],
-          ].map(([label, value]) => (
+          ].filter((row): row is [string, string] => Array.isArray(row)).map(([label, value]) => (
             <div key={label} className="flex items-center justify-between">
               <span className="text-xs text-blue-600 font-semibold">{label}</span>
               <div className="flex items-center gap-2">

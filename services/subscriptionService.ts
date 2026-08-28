@@ -30,10 +30,10 @@ export interface BankPaymentDetails {
 }
 
 export const BANK_ACCOUNTS = [
-  { bank: 'Republic Bank', branch: 'Park Street, Port of Spain', account: '200-456-7890', routing: 'REPBTTPS' },
-  { bank: 'First Citizens Bank', branch: 'Frederick Street, Port of Spain', account: '010-234-5678', routing: 'FCIETTPS' },
-  { bank: 'Scotiabank T&T', branch: 'Independence Square, Port of Spain', account: '006-123-4567', routing: 'NOSCTTPS' },
-  { bank: 'RBC Royal Bank', branch: 'Park Street, Port of Spain', account: '105-789-0123', routing: 'ROYCTTPS' },
+  { bank: 'Republic Bank', branch: 'Park Street, Port of Spain' },
+  { bank: 'First Citizens Bank', branch: 'Frederick Street, Port of Spain' },
+  { bank: 'Scotiabank T&T', branch: 'Independence Square, Port of Spain' },
+  { bank: 'RBC Royal Bank', branch: 'Park Street, Port of Spain' },
 ];
 
 export const subscriptionService = {
@@ -89,7 +89,7 @@ export const subscriptionService = {
       amount_ttd,
       bank_name: bank.bank,
       branch: bank.branch,
-      account_number: bank.account,
+      account_number: '',
       account_name: 'R&R Digital Solutions Ltd',
       reference_code,
       status: 'pending',
@@ -102,7 +102,7 @@ export const subscriptionService = {
 
     return {
       account_name: 'R&R Digital Solutions Ltd',
-      account_number: bank.account,
+      account_number: '',
       bank_name: bank.bank,
       branch: bank.branch,
       reference_code,

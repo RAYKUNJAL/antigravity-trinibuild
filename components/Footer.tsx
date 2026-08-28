@@ -76,7 +76,6 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Digital</h3>
             <ul className="space-y-2.5">
-              <li><Link to="/digital" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Game Pass & Streaming <span className="text-[9px] bg-purple-500 text-white px-1 rounded-full font-bold">NEW</span></Link></li>
               <li><Link to="/gift-cards" className="text-sm text-gray-400 hover:text-white transition-colors">Gift Cards</Link></li>
               <li><Link to="/documents" className="text-sm text-gray-400 hover:text-white transition-colors">AI Document Assistant</Link></li>
               <li><Link to="/products/ai-add" className="text-sm text-gray-400 hover:text-white transition-colors">AI Product Lister</Link></li>

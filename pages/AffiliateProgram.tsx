@@ -291,7 +291,7 @@ export const AffiliateProgram: React.FC = () => {
                      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8 flex justify-between items-center">
                         <div>
                            <h3 className="font-bold text-lg mb-1">Banking Details</h3>
-                           <p className="text-sm text-gray-500">Republic Bank •••• 4521</p>
+                           <p className="text-sm text-gray-500">Add your payout bank. No account is on file.</p>
                         </div>
                         <button className="text-blue-600 font-bold text-sm hover:underline">Edit</button>
                      </div>
