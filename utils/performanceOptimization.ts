@@ -101,7 +101,7 @@ export const generateSEOMetadata = (page: {
   path: string;
   type?: string;
 }): SEOMetadata => {
-  const baseUrl = 'https://trinibuild.com';
+  const baseUrl = 'https://juvay.app';
   const fullTitle = `${page.title} | TriniBuild - Trinidad's #1 E-Commerce Platform`;
   
   return {

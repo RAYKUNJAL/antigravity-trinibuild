@@ -15,7 +15,7 @@ import { Sparkles, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 
-// AI backend base URL. In prod set VITE_AI_SERVER_URL to the deployed AI server (e.g. https://trinibuild.com/ai).
+// AI backend base URL. In prod set VITE_AI_SERVER_URL to the deployed AI server (e.g. https://juvay.app/ai).
 const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
 // Free, signed-out visitors get a small number of demo scans before we ask them to sign up.
 const FREE_SCAN_LIMIT = 2;

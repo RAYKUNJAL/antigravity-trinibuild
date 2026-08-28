@@ -494,7 +494,7 @@ export const updateSchedulerSettings = async (
 export const generateSitemap = async (): Promise<string> => {
     const blogs = await getPublishedBlogs(1000, 0);
 
-    const baseUrl = 'https://trinibuild.com';
+    const baseUrl = 'https://juvay.app';
 
     const urls = blogs.map(blog => `
     <url>
