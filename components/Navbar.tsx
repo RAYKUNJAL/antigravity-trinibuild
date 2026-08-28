@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Truck, CalendarDays, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Sparkles, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Truck, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { IslandSelector } from './IslandFilter';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
@@ -25,7 +25,6 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag, description: 'List & sell anything fast' },
   { name: 'For Drivers', path: '/rides', icon: Truck, description: 'Earn delivering across T&T' },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
-  { name: 'For Event Hosts', path: '/tickets', icon: CalendarDays, description: 'Fetes, concerts, shows' },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon, description: 'Buy, rent, sell property' },
 ];
 
@@ -57,7 +56,6 @@ const MOBILE_LINKS = [
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
   { name: 'For Drivers', path: '/rides', icon: Truck },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase },
-  { name: 'For Event Hosts', path: '/tickets', icon: CalendarDays },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon },
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
   { name: 'My Rewards', path: '/loyalty', icon: Star },

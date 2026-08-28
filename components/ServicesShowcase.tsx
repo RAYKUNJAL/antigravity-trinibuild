@@ -153,7 +153,7 @@ export const ServicesShowcase: React.FC<Props> = ({
 
   const headline =
     title ??
-    (currentSlug ? 'Explore other TriniBuild services' : 'Everything you need to grow in T&T');
+    (currentSlug ? 'Explore other Juvay services' : 'Everything you need to grow in T&T');
   const sub =
     subtitle ??
     (currentSlug
@@ -165,7 +165,7 @@ export const ServicesShowcase: React.FC<Props> = ({
   return (
     <section
       className={`w-full ${isCompact ? 'py-12 bg-gray-50' : 'py-16 md:py-24 bg-white'}`}
-      aria-label="TriniBuild services"
+      aria-label="Juvay services"
     >
       <div className="max-w-6xl mx-auto px-4">
         {!isCompact && (
