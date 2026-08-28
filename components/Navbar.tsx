@@ -40,6 +40,9 @@ const MOBILE_LINKS = [
   { name: 'Directory', path: '/directory', icon: Store },
   { name: 'Explore', path: '/explore', icon: ShoppingBag },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
+  { name: 'Rides', path: '/rides', icon: Car },
+  { name: 'Drive', path: '/drive', icon: Car },
+  { name: 'School run', path: '/rides/school-run', icon: Car },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText },
   { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign },
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
@@ -204,6 +207,15 @@ export const Navbar: React.FC = () => {
             </Link>
             <Link to="/classifieds" className={lc('/classifieds')}>
               Market
+            </Link>
+            <Link to="/rides" className={lc('/rides')}>
+              Rides
+            </Link>
+            <Link to="/drive" className={lc('/drive')}>
+              Drive
+            </Link>
+            <Link to="/rides/school-run" className={lc('/rides/school-run')}>
+              School run
             </Link>
 
             {/* Digital — hover dropdown */}
