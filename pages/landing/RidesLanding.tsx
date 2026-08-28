@@ -29,9 +29,6 @@ export const RidesLanding: React.FC = () => {
                      Whether you have a car, a van, or a bike. Apply to drive. Juvay does not publish a fare split or weekly income figure.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
-                     <Link to="/drive/signup" className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors shadow-lg flex items-center justify-center">
-                        Start Driving <Car className="ml-2 h-5 w-5" />
-                     </Link>
                      <Link to="/rides" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
                         Rides status
                      </Link>
