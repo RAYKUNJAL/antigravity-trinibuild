@@ -556,10 +556,9 @@ export const performSearch = async (
     const searchResults = await Promise.all(searchPromises);
 
     // Format into blocks
-    const verticalLabels: Record<SearchVertical, { label: string; icon: string; see_more: string }> = {
+    const verticalLabels: Partial<Record<SearchVertical, { label: string; icon: string; see_more: string }>> = {
         jobs: { label: 'Jobs & Gigs', icon: 'briefcase', see_more: '/jobs' },
         real_estate: { label: 'Real Estate', icon: 'home', see_more: '/real-estate' },
-        events: { label: 'Events & Tickets', icon: 'ticket', see_more: '/tickets' },
         rideshare: { label: 'Rides', icon: 'car', see_more: '/rides' },
         marketplace: { label: 'Marketplace', icon: 'shopping-bag', see_more: '/marketplace' },
         stores: { label: 'Stores', icon: 'store', see_more: '/marketplace' },
@@ -569,15 +568,18 @@ export const performSearch = async (
     };
 
     const blocks: SearchResultBlock[] = searchResults
-        .filter(r => r.results.length > 0)
-        .map(r => ({
-            vertical: r.vertical,
-            label: verticalLabels[r.vertical].label,
-            icon: verticalLabels[r.vertical].icon,
-            results: r.results.sort((a, b) => b.relevance_score - a.relevance_score),
-            total_count: r.results.length,
-            see_more_url: verticalLabels[r.vertical].see_more + (intent.location ? `?location=${intent.location.slug}` : '')
-        }));
+        .filter(r => r.results.length > 0 && verticalLabels[r.vertical])
+        .map(r => {
+            const meta = verticalLabels[r.vertical]!;
+            return {
+                vertical: r.vertical,
+                label: meta.label,
+                icon: meta.icon,
+                results: r.results.sort((a, b) => b.relevance_score - a.relevance_score),
+                total_count: r.results.length,
+                see_more_url: meta.see_more + (intent.location ? `?location=${intent.location.slug}` : '')
+            };
+        });
 
     // Generate search suggestions
     const suggestions = generateSuggestions(intent);

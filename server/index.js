@@ -224,6 +224,10 @@ async function handleLogin(req, res) {
   }
   res.json({ user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role }, token: sign(user) });
 }
+app.get('/api/login', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/login', allow: 'POST' });
+});
 app.post('/api/login', handleLogin);
 app.post('/api/auth/login', handleLogin);
 

@@ -171,25 +171,6 @@ export const BLOG_VERTICALS: BlogVertical[] = [
         related_features: ["marketplace", "free_webpages"]
     },
     {
-        key: "tickets",
-        label: "Events & Tickets",
-        search_intent_examples: [
-            "events in {{location_name}}",
-            "{{location_name}} fetes tickets",
-            "buy tickets in {{location_name}}",
-            "parties in {{location_name}}",
-            "upcoming events {{location_name}}"
-        ],
-        topic_templates: [
-            "How to Promote and Sell Event Tickets in {{location_name}} Using TriniBuild",
-            "Fetes, Shows and Fundraisers in {{location_name}}: A New Way to Sell Tickets Online",
-            "Step-by-Step: Listing Your {{location_name}} Event on TriniBuild's Ticket Platform",
-            "The Complete Guide to Event Promotion in {{location_name}}",
-            "Why {{location_name}} Promoters Are Switching to TriniBuild E-Tick"
-        ],
-        related_features: ["tickets", "free_webpages"]
-    },
-    {
         key: "real_estate",
         label: "Real Estate & Rentals",
         search_intent_examples: [

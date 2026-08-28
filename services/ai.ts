@@ -138,12 +138,12 @@ PLATFORM SERVICES:
 - Business Directory (52 categories across T&T)
 - Digital Services (Game Pass, Netflix, Spotify — codes are not for sale; not a live rail)
 - TriniRides (ride-share, TT$25 base + TT$4/km, GPS tracked)
-- Real Estate listings, Jobs board, Events & Tickets
+- Real Estate listings, Jobs board
 - AI Document Assistant (/documents) — job letters, visa letters, proof of income
 - VAT Tax Tracker, Referral Program (/earn)
 
 PRICING: Hustle (Free) | Pro ($199 TTD/mo) | Premium ($399 TTD/mo) | Business ($799 TTD/mo)
-ROUTES: /create-store, /directory, /digital, /rides, /real-estate, /jobs, /tickets, /documents, /earn, /pricing, /blog
+ROUTES: /create-store, /directory, /digital, /rides, /real-estate, /jobs, /documents, /earn, /pricing, /blog
 
 ═══ T&T BANKING KNOWLEDGE ═══
 MAJOR BANKS & WHAT THEY OFFER SMALL BUSINESSES:
