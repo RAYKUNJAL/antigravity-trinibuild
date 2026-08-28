@@ -17,6 +17,18 @@ const { isWamConfigured, verifyWamSignature } = require('./wam');
 const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
 const { buildOnboardVision } = require('./onboardVision');
 const { validateMerchantItem } = require('./merchantItem');
+const { createRides } = require('./rides');
+
+const rides = createRides({
+  storePath: process.env.RIDES_STORE_PATH || undefined,
+});
+
+function methodNotAllowed(allow, usePath) {
+  return (_req, res) => {
+    res.set('Allow', allow);
+    res.status(405).json({ error: `Use ${allow} ${usePath}`, allow });
+  };
+}
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -605,6 +617,94 @@ app.post('/api/admin/bank-pay/:id/verify', auth, adminOnly, async (req, res) => 
     );
   }
   res.json(p);
+});
+
+// ─── Rides v1 (cash-first). File store. Not pay→fulfill. ─────
+app.get('/api/rides/listed', (_req, res) => {
+  res.json(rides.ridesDirectory());
+});
+app.get('/api/drive/apply', methodNotAllowed('POST', '/api/drive/apply'));
+app.post('/api/drive/apply', optionalAuth, (req, res) => {
+  const result = rides.apply({ ...req.body, userId: req.user?.id || req.body?.userId });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/me', optionalAuth, (req, res) => {
+  const result = rides.me({ phone: req.query.phone, id: req.query.id, userId: req.user?.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/subscription', (_req, res) => {
+  res.json(rides.subscriptionStatus());
+});
+app.get('/api/drive/subscription/wam', methodNotAllowed('POST', '/api/drive/subscription/wam'));
+app.post('/api/drive/subscription/wam', optionalAuth, (req, res) => {
+  const result = rides.startSubscriptionWam({
+    phone: req.body?.phone || req.query.phone,
+    id: req.body?.id || req.body?.driverId,
+    userId: req.user?.id,
+  });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/admin/drive/applications', auth, adminOnly, (_req, res) => {
+  res.json(rides.adminApplications());
+});
+app.post('/api/admin/drive/:id/approve', auth, adminOnly, (req, res) => {
+  const result = rides.approve(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/admin/drive/:id/subscribe', auth, adminOnly, (req, res) => {
+  const result = rides.markSubscribed(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/rides/offers', methodNotAllowed('POST', '/api/rides/offers'));
+app.post('/api/rides/offers', (req, res) => {
+  const result = rides.createOffer(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/offers', (req, res) => {
+  const result = rides.driverOffers({ phone: req.query.phone, id: req.query.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/accept', (req, res) => {
+  const result = rides.acceptOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/counter', (req, res) => {
+  const result = rides.counterOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/agree', (req, res) => {
+  const result = rides.agreeOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/cancel', (req, res) => {
+  const result = rides.cancelOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/rides/trips/:id', (req, res) => {
+  const result = rides.getTrip(req.params.id, { shareToken: req.query.t || req.query.shareToken });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-paid', (req, res) => {
+  const result = rides.cashPaid(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-received', (req, res) => {
+  const result = rides.cashReceived(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
 });
 
 // ─── Health check ────────────────────────────────────────────

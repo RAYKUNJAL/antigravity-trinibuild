@@ -43,6 +43,9 @@ import { Earn } from './pages/Earn';
 import { DriverOnboarding } from './pages/DriverOnboarding';
 import { DriverHub } from './pages/DriverHub';
 import { DriveWithUs } from './pages/DriveWithUs';
+import { DriveApply } from './pages/DriveApply';
+import { DrivePay } from './pages/DrivePay';
+import { RideTrip } from './pages/RideTrip';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
@@ -281,6 +284,9 @@ const App: React.FC = () => {
 
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
+              <Route path="/rides/trip/:id" element={<RideTrip />} />
+              <Route path="/drive" element={<DriveApply />} />
+              <Route path="/drive/pay" element={<DrivePay />} />
               <Route path="/drive-with-us" element={<DriveWithUs />} />
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
               <Route path="/driver/signup" element={<DriverSignupAI />} />

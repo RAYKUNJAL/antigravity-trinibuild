@@ -51,4 +51,7 @@ __pycache__/
 *.py[cod]
 
 .env
-ai_server/.envuploads/
+ai_server/.env
+uploads/
+data/rides-v1.json
+data/rides-kyc/
