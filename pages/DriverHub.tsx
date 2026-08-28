@@ -329,10 +329,13 @@ export const DriverHub: React.FC = () => {
                     <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg text-white">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-sm opacity-90">Rating</div>
-                            <Star className="h-4 w-4 fill-current" />
+                            {typeof earnings?.rating === 'number' ? <Star className="h-4 w-4 fill-current" /> : null}
                         </div>
-                        <div className="text-3xl font-bold">{earnings?.rating.toFixed(1) || '5.0'}</div>
-                        <div className="text-xs opacity-90 mt-1">Excellent service!</div>
+                        {typeof earnings?.rating === 'number' ? (
+                            <div className="text-3xl font-bold">{earnings.rating.toFixed(1)}</div>
+                        ) : (
+                            <div className="text-sm opacity-90 mt-1">No rating yet</div>
+                        )}
                     </div>
                 </div>
 
