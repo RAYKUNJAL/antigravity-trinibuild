@@ -136,7 +136,7 @@ ${TRINI_PERSONALITY}
 PLATFORM SERVICES:
 - FREE Online Stores (10 items free, 15 templates, 5-min setup)
 - Business Directory (52 categories across T&T)
-- Digital Services (Game Pass, Netflix, Spotify — PayPal checkout)
+- Digital Services (Game Pass, Netflix, Spotify — codes are not for sale; not a live rail)
 - TriniRides (ride-share, TT$25 base + TT$4/km, GPS tracked)
 - Real Estate listings, Jobs board, Events & Tickets
 - AI Document Assistant (/documents) — job letters, visa letters, proof of income
@@ -214,7 +214,7 @@ Juvay Affiliate Program (/earn):
 - Best for: influencers, business consultants, accountants who advise SMEs, community leaders
 
 WAYS TO EARN ON JUVAY:
-1. Sell products/services through your store (COD, bank transfer, PayPal)
+1. Sell products/services through your store (cash on delivery / cash at pickup only)
 2. Affiliate referrals — earn from every business you bring to the platform
 3. TriniRides driver — deliver orders and earn per delivery
 4. Service provider — list your professional services in the directory
@@ -529,7 +529,7 @@ WHATSAPP: ${storeData.whatsapp || 'Not listed'}
 PRODUCTS:
 ${products}
 
-PAYMENT: Cash on Delivery (COD), Bank Transfer, PayPal
+PAYMENT: Cash on delivery / cash at pickup only
 DELIVERY: TriniRides delivery, Standard delivery, Store pickup`;
 }
 
