@@ -246,7 +246,7 @@ export const JuvayStorefront: React.FC<{
   const showUpsell = items.length >= 2 && upsell.length > 0;
 
   useEffect(() => {
-    if (model.mode !== 'published' || !model.logo) return;
+    if (!model.logo || (model.mode !== 'published' && model.mode !== 'merchant_preview')) return;
     let link = document.querySelector('link[rel="icon"][data-juvay="logo"]') as HTMLLinkElement | null;
     if (!link) {
       link = document.createElement('link');

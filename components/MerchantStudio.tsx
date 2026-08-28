@@ -208,8 +208,8 @@ export const MerchantStudio: React.FC<{
 
       <section style={{ display: 'grid', gap: 8 }}>
         <div style={{ fontSize: 13, fontWeight: 600 }}>SEO</div>
-        <input value={seoTitle} onChange={(e) => onSeo(e.target.value, seoDescription)} placeholder={seo.title} style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }} />
-        <textarea value={seoDescription} onChange={(e) => onSeo(seoTitle, e.target.value)} placeholder={seo.description} rows={3} style={{ width: '100%', minHeight: 66, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
+        <input value={seoTitle || seo.title} onChange={(e) => onSeo(e.target.value, seoDescription || seo.description)} placeholder={seo.title} style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }} />
+        <textarea value={seoDescription || seo.description} onChange={(e) => onSeo(seoTitle || seo.title, e.target.value)} placeholder={seo.description} rows={3} style={{ width: '100%', minHeight: 66, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
         <div style={{ fontSize: 12, color: '#6b6256' }}>Slug preview {slugPreview(storeName)}</div>
         <div style={{ fontSize: 12, color: '#6b6256' }}>OG image = hero photo.</div>
       </section>

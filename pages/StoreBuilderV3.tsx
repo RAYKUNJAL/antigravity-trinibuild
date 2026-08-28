@@ -289,6 +289,7 @@ const StoreBuilderV3: React.FC = () => {
   }, [state, wamConfigured]);
 
   const applyDraft = (draft: DraftCopy, warning?: string) => {
+    const seo = defaultSeo(state.storeName, state.island, draft.about || '');
     update({
       templateId: draft.templateId,
       heroHeadline: draft.hero?.headline || STORE_STARTERS[draft.templateId].heroHeadline,
@@ -297,6 +298,8 @@ const StoreBuilderV3: React.FC = () => {
       trustChips: draft.trustChips || [],
       faq: draft.faq || [],
       how: draft.how || [],
+      seoTitle: state.seoTitle || seo.title,
+      seoDescription: state.seoDescription || seo.description,
       agentWrote: !!draft.agentWrote,
       agentWarning: warning || (draft.agentWrote ? '' : 'Grok is not writing this site. The form and locked copy are shown instead.'),
     });
@@ -772,6 +775,7 @@ const StoreBuilderV3: React.FC = () => {
                 {proposed.changedFields.includes('announcement') ? <div><strong>Announcement</strong> {proposed.announcement || '(empty — rails only)'}</div> : null}
                 {proposed.changedFields.includes('seo') ? <div><strong>SEO</strong> {proposed.seoTitle}</div> : null}
                 {proposed.changedFields.includes('social') ? <div><strong>Social</strong> updated</div> : null}
+                {proposed.changedFields.includes('logo') ? <div><strong>Logo</strong> {proposed.logo ? 'Keep / use proposed logo' : 'Clear logo, use wordmark'}</div> : null}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" onClick={applyProposed} style={{ minHeight: 44, padding: '0 14px', border: 'none', background: '#141414', color: ISLAND.sand }}>Apply this patch</button>
                   <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
@@ -785,7 +789,8 @@ const StoreBuilderV3: React.FC = () => {
             <button type="button" onClick={() => setPreviewWidth(390)} style={{ minHeight: 44, padding: '0 14px', border: previewWidth === 390 ? '2px solid #141414' : '1px solid #cfc8bc', background: ISLAND.sand }}>390 mobile</button>
             <button type="button" onClick={() => setPreviewWidth(1280)} style={{ minHeight: 44, padding: '0 14px', border: previewWidth === 1280 ? '2px solid #141414' : '1px solid #cfc8bc', background: ISLAND.sand }}>1280 desktop</button>
           </div>
-        <div className="juvay-preview-frame" style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto', width: '100%', maxWidth: previewWidth, marginInline: previewWidth === 390 ? 'auto' : 0 }}>
+        <div className="juvay-preview-frame" style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto', width: '100%' }}>
+          <div style={{ width: previewWidth, minWidth: previewWidth, marginInline: previewWidth === 390 ? 'auto' : 0 }}>
           <JuvayStorefront
             model={previewModel}
             editor={{
@@ -797,6 +802,7 @@ const StoreBuilderV3: React.FC = () => {
               onHeroUpload: (dataUrl) => update({ heroImage: dataUrl }),
             }}
           />
+          </div>
         </div>
         </div>
       </div>
