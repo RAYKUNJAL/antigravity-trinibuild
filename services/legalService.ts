@@ -44,7 +44,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         effectiveDate: '2025-01-01',
         content: [
             'Welcome to TriniBuild. By creating an account or using any part of the platform (marketplace, job board, rideshare, real estate, ticketing, storefronts, webpages, or affiliate tools), you agree to these Terms of Service.',
-            'TriniBuild is a digital platform that allows users to create webpages, conduct business, post listings, sell tickets, offer services, and earn as independent contractors.',
+            'Juvay is a digital platform that allows users to create webpages, conduct business, post listings, offer services, and earn as independent contractors. It does not sell event tickets.',
             'By using the platform, you acknowledge: (1) You are at least 18 years old; (2) You accept all policies listed within this document; (3) You understand TriniBuild provides tools and connections but is not responsible for the actions of independent users.'
         ]
     },
@@ -140,7 +140,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         effectiveDate: '2025-01-01',
         content: [
             'Event creators are responsible for event safety, legality, refunds, and attendee communication.',
-            'TriniBuild only provides the digital infrastructure to sell tickets.',
+            'Juvay does not sell event tickets. The /tickets route stays empty until a real event exists.',
             'No refunds will be issued by TriniBuild unless required by law.',
             'Event owners must comply with local regulations and venue requirements.'
         ]

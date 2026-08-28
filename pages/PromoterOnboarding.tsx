@@ -352,8 +352,8 @@ ${new Date().toLocaleDateString()}`;
                         </button>
                      </div>
 
-                     <button onClick={() => navigate('/tickets')} className="bg-trini-black text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-800 shadow-xl">
-                        Go to Promoter Dashboard
+                     <button onClick={() => navigate('/create-store')} className="bg-trini-black text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-800 shadow-xl">
+                        Create a store
                      </button>
                   </div>
                )}

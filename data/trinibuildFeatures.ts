@@ -94,24 +94,6 @@ export const TRINIBUILD_FEATURES: TriniBuildFeature[] = [
         ]
     },
     {
-        key: "tickets",
-        label: "Tickets & Events",
-        summary: "Create and sell tickets for fetes, shows, and local events.",
-        internal_url: "/tickets",
-        benefits: [
-            "E-ticket generation with QR codes",
-            "Event promotion tools",
-            "Secure ticket scanning",
-            "Instant payouts",
-            "Audience analytics"
-        ],
-        anchor_examples: [
-            "sell tickets for your event",
-            "promote your fete on TriniBuild",
-            "create event tickets"
-        ]
-    },
-    {
         key: "rideshare",
         label: "Rideshare & Delivery",
         summary: "Offer or request rides and deliveries through the platform.",
@@ -222,7 +204,7 @@ export const BLOG_VERTICALS: BlogVertical[] = [
             "How {{location_name}} Is Going Digital with TriniBuild",
             "Everything You Can Do on TriniBuild in {{location_name}}"
         ],
-        related_features: ["free_webpages", "marketplace", "jobs", "real_estate", "tickets", "rideshare"]
+        related_features: ["free_webpages", "marketplace", "jobs", "real_estate", "rideshare"]
     }
 ];
 
