@@ -23,6 +23,7 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon, description: 'Build your free store in 5 minutes', badge: 'Free', badgeColor: 'bg-green-500' },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed, description: 'Menus, reservations, COD orders' },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag, description: 'List & sell anything fast' },
+  { name: 'Juvay Rides', path: '/rides', icon: Car, description: 'Cash island rides / parent school-run' },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon, description: 'Buy, rent, sell property' },
 ];
@@ -48,6 +49,7 @@ const MOBILE_LINKS = [
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
+  { name: 'Juvay Rides', path: '/rides', icon: Car },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon },
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
