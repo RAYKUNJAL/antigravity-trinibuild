@@ -620,8 +620,43 @@ app.post('/api/admin/bank-pay/:id/verify', auth, adminOnly, async (req, res) => 
 });
 
 // ─── Rides v1 (cash-first). File store. Not pay→fulfill. ─────
-app.get('/api/rides/listed', (_req, res) => {
-  res.json(rides.ridesDirectory());
+app.get('/api/rides/listed', (req, res) => {
+  res.json(rides.ridesDirectory({
+    island: req.query.island,
+    schoolRun: req.query.schoolRun,
+  }));
+});
+app.get('/api/rides/children', (req, res) => {
+  res.json(rides.listChildren({ parentPhone: req.query.parentPhone }));
+});
+app.get('/api/rides/children/add', methodNotAllowed('POST', '/api/rides/children'));
+app.post('/api/rides/children', (req, res) => {
+  const result = rides.addChild(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/admin/drive/:id/school-run', auth, adminOnly, (req, res) => {
+  const result = rides.approveSchoolRun(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/drive/pin', (req, res) => {
+  const result = rides.setDirectoryPin(
+    { phone: req.body?.phone, id: req.body?.id || req.body?.driverId },
+    { pinLat: req.body?.pinLat, pinLng: req.body?.pinLng },
+  );
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/start', (req, res) => {
+  const result = rides.startTrip(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/track', (req, res) => {
+  const result = rides.reportTrack(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
 });
 app.get('/api/drive/apply', methodNotAllowed('POST', '/api/drive/apply'));
 app.post('/api/drive/apply', optionalAuth, (req, res) => {

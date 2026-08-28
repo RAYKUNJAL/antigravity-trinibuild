@@ -11,15 +11,31 @@ const crypto = require('crypto');
 
 const HONEST_EMPTY_LINE_1 = 'Rides are unavailable on this origin.';
 const HONEST_EMPTY_LINE_2 = 'No drivers are listed. Juvay does not invent a fare or a live booking button.';
+const SCHOOL_RUN_COPY = 'This is a parent-booked school run, not a teen dating app, not unattended street hail.';
+const LIVE_ISLANDS = ['Trinidad', 'Tobago'];
 
 const KYC_FIELDS = ['permitPhoto', 'insurancePhoto', 'platePhoto', 'facePhoto'];
+
+function normalizeIsland(value) {
+  const raw = String(value || '').trim();
+  if (raw === 'Trinidad' || raw === 'Tobago') return raw;
+  return raw;
+}
+
+function isLiveIsland(value) {
+  return LIVE_ISLANDS.includes(normalizeIsland(value));
+}
+
+function inTtBounds(lat, lng) {
+  return lat >= 10.0 && lat <= 11.45 && lng >= -62.05 && lng <= -60.4;
+}
 
 function defaultStorePath() {
   return path.join(__dirname, '..', 'data', 'rides-v1.json');
 }
 
 function emptyState() {
-  return { drivers: [], offers: [], trips: [], affiliateCredits: [], wamIntents: [] };
+  return { drivers: [], offers: [], trips: [], affiliateCredits: [], wamIntents: [], children: [] };
 }
 
 function digitsOnly(value) {
@@ -40,6 +56,7 @@ function readStore(storePath) {
       trips: Array.isArray(parsed.trips) ? parsed.trips : [],
       affiliateCredits: Array.isArray(parsed.affiliateCredits) ? parsed.affiliateCredits : [],
       wamIntents: Array.isArray(parsed.wamIntents) ? parsed.wamIntents : [],
+      children: Array.isArray(parsed.children) ? parsed.children : [],
     };
   } catch {
     return emptyState();
@@ -56,12 +73,19 @@ function photoPresent(value) {
 }
 
 function publicDriver(driver) {
+  const pinLat = Number(driver.pinLat);
+  const pinLng = Number(driver.pinLng);
+  const hasPin = Number.isFinite(pinLat) && Number.isFinite(pinLng) && inTtBounds(pinLat, pinLng);
   return {
     id: driver.id,
     name: driver.name,
     plate: driver.plate,
     phone: driver.phone,
     wamHandle: driver.wamHandle || '',
+    island: driver.island || 'Trinidad',
+    schoolRunApproved: driver.schoolRunApproved === true,
+    pinLat: hasPin ? pinLat : null,
+    pinLng: hasPin ? pinLng : null,
   };
 }
 
@@ -95,8 +119,15 @@ function createRides(opts = {}) {
     return driver && driver.approved === true && driver.subscriptionPaid === true;
   }
 
-  function listedDrivers() {
-    return load().drivers.filter(isListed).map(publicDriver);
+  function listedDrivers(query = {}) {
+    const island = query.island ? normalizeIsland(query.island) : '';
+    const schoolRun = query.schoolRun === true || query.schoolRun === '1' || query.schoolRun === 'true';
+    return load().drivers.filter((d) => {
+      if (!isListed(d)) return false;
+      if (island && d.island !== island) return false;
+      if (schoolRun && d.schoolRunApproved !== true) return false;
+      return true;
+    }).map(publicDriver);
   }
 
   function honestEmpty() {
@@ -106,16 +137,20 @@ function createRides(opts = {}) {
       listed: [],
       line1: HONEST_EMPTY_LINE_1,
       line2: HONEST_EMPTY_LINE_2,
+      liveIslands: LIVE_ISLANDS,
     };
   }
 
-  function ridesDirectory() {
-    const listed = listedDrivers();
+  function ridesDirectory(query = {}) {
+    const island = query.island ? normalizeIsland(query.island) : '';
+    if (island && !isLiveIsland(island)) return honestEmpty();
+    const listed = listedDrivers(query);
     if (listed.length === 0) return honestEmpty();
     return {
       unavailable: false,
       listedCount: listed.length,
       listed,
+      liveIslands: LIVE_ISLANDS,
     };
   }
 
@@ -125,15 +160,20 @@ function createRides(opts = {}) {
     const plate = String(body.plate || '').trim();
     const wamHandle = String(body.wamHandle || '').trim();
     const affiliateRef = String(body.affiliateRef || body.ref || '').trim();
+    const islandRaw = body.island == null || String(body.island).trim() === '' ? 'Trinidad' : normalizeIsland(body.island);
+    const schoolRunRequested = body.schoolRunRequested === true || body.schoolRunRequested === 'true';
     if (!name) return { error: 'Name is required', status: 400 };
     if (phone.length < 7) return { error: 'A real phone number is required', status: 400 };
     if (!plate) return { error: 'Plate is required', status: 400 };
+    if (!isLiveIsland(islandRaw)) {
+      return { error: 'Only Trinidad and Tobago are live islands. Other islands stay empty.', status: 400 };
+    }
     for (const field of KYC_FIELDS) {
       if (!photoPresent(body[field])) {
         return { error: `KYC photo required: ${field}`, status: 400 };
       }
     }
-    if (body.lat != null || body.lng != null || body.map || body.eta) {
+    if (body.lat != null || body.lng != null || body.pinLat != null || body.pinLng != null || body.map || body.eta) {
       return { error: 'No map, ETA, or location on apply', status: 400 };
     }
 
@@ -146,6 +186,11 @@ function createRides(opts = {}) {
       plate,
       wamHandle,
       affiliateRef,
+      island: islandRaw,
+      schoolRunRequested,
+      schoolRunApproved: existing?.schoolRunApproved === true,
+      pinLat: existing?.pinLat ?? null,
+      pinLng: existing?.pinLng ?? null,
       userId: body.userId || existing?.userId || null,
       permitPhoto: true,
       insurancePhoto: true,
@@ -158,7 +203,7 @@ function createRides(opts = {}) {
       updatedAt: now(),
     };
     if (existing) {
-      Object.assign(existing, driver, { approved: false, subscriptionPaid: existing.subscriptionPaid === true });
+      Object.assign(existing, driver, { approved: false, subscriptionPaid: existing.subscriptionPaid === true, schoolRunApproved: existing.schoolRunApproved === true });
     } else {
       state.drivers.push(driver);
     }
@@ -185,6 +230,10 @@ function createRides(opts = {}) {
       phone: driver.phone,
       plate: driver.plate,
       wamHandle: driver.wamHandle || '',
+      island: driver.island || 'Trinidad',
+      schoolRunRequested: driver.schoolRunRequested === true,
+      schoolRunApproved: driver.schoolRunApproved === true,
+      schoolRunListed: listed && driver.schoolRunApproved === true,
       approved: driver.approved === true,
       subscriptionPaid: driver.subscriptionPaid === true,
       listed,
@@ -223,6 +272,69 @@ function createRides(opts = {}) {
     driver.updatedAt = now();
     save(state);
     return { driver: statusView(driver), listed: isListed(driver), fulfill: false };
+  }
+
+  function approveSchoolRun(driverId) {
+    const state = load();
+    const driver = state.drivers.find((d) => d.id === driverId);
+    if (!driver) return { error: 'Application not found', status: 404 };
+    if (isListed(driver) !== true) {
+      return { error: 'Not listed for kids until the driver is approved, subscribed, and school-run flagged.', status: 400 };
+    }
+    if (driver.schoolRunRequested !== true) {
+      return { error: 'Driver did not request school-run eligibility', status: 400 };
+    }
+    driver.schoolRunApproved = true;
+    driver.updatedAt = now();
+    save(state);
+    return { driver: statusView(driver), fulfill: false };
+  }
+
+  function setDirectoryPin(query = {}, body = {}) {
+    const driver = findDriver(query);
+    if (!isListed(driver)) return { error: 'Only a listed driver can drop a directory pin. No ghost cars.', status: 400 };
+    const lat = Number(body.pinLat);
+    const lng = Number(body.pinLng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !inTtBounds(lat, lng)) {
+      return { error: 'Type a real Trinidad or Tobago map point. We do not invent nearby.', status: 400 };
+    }
+    const state = load();
+    const row = state.drivers.find((d) => d.id === driver.id);
+    row.pinLat = lat;
+    row.pinLng = lng;
+    row.updatedAt = now();
+    save(state);
+    return { driver: publicDriver(row), fulfill: false };
+  }
+
+  function addChild(body = {}) {
+    const parentPhone = digitsOnly(body.parentPhone);
+    const name = String(body.name || '').trim();
+    const school = String(body.school || '').trim();
+    if (parentPhone.length < 7) return { error: 'Parent phone is required', status: 400 };
+    if (!name) return { error: 'Child name is required', status: 400 };
+    if (!school) return { error: 'School is required — type the real school. We do not invent schools.', status: 400 };
+    const state = load();
+    const child = {
+      id: newId('kid'),
+      parentPhone,
+      name,
+      school,
+      photo: photoPresent(body.photo),
+      createdAt: now(),
+    };
+    state.children.push(child);
+    save(state);
+    return { child: { id: child.id, name: child.name, school: child.school, parentPhone, photo: child.photo } };
+  }
+
+  function listChildren(query = {}) {
+    const parentPhone = digitsOnly(query.parentPhone);
+    if (parentPhone.length < 7) return { children: [], empty: true };
+    const children = load().children
+      .filter((c) => c.parentPhone === parentPhone)
+      .map((c) => ({ id: c.id, name: c.name, school: c.school, parentPhone: c.parentPhone, photo: c.photo === true }));
+    return { children, empty: children.length === 0 };
   }
 
   function markSubscribed(driverId) {
@@ -307,13 +419,19 @@ function createRides(opts = {}) {
     if (!isListed(driver)) {
       return { error: 'That driver is not listed. No invented fare or live booking.', status: 400 };
     }
+    const kind = body.kind === 'school_run' ? 'school_run' : 'ride';
+    if (kind === 'school_run' && driver.schoolRunApproved !== true) {
+      return { error: 'Not listed for kids until school-run eligibility is approved.', status: 400 };
+    }
     const pickup = String(body.pickup || '').trim();
     const drop = String(body.drop || '').trim();
-    const riderPhone = digitsOnly(body.riderPhone);
+    const riderPhone = digitsOnly(kind === 'school_run' ? (body.parentPhone || body.riderPhone) : body.riderPhone);
     const pay = body.pay === 'wam' ? 'wam' : 'cash';
     const offerTtd = body.offerTtd;
     if (!pickup || !drop) return { error: 'Pickup and drop are required', status: 400 };
-    if (riderPhone.length < 7) return { error: 'Rider phone is required', status: 400 };
+    if (riderPhone.length < 7) {
+      return { error: kind === 'school_run' ? 'Parent phone is required' : 'Rider phone is required', status: 400 };
+    }
     if (offerTtd === undefined || offerTtd === null || String(offerTtd).trim() === '') {
       return { error: 'Offer a TTD amount. Juvay does not quote a fare.', status: 400 };
     }
@@ -322,11 +440,29 @@ function createRides(opts = {}) {
     if (pay === 'wam' && !driver.wamHandle) {
       return { error: 'This listed driver has no Wam handle. Cash only. Wam is wam.com, not WhatsApp.', status: 400 };
     }
+    let child = null;
+    let parentStartPin = null;
+    if (kind === 'school_run') {
+      const stateKids = load();
+      child = stateKids.children.find((c) => c.id === body.childId && c.parentPhone === riderPhone);
+      if (!child) return { error: 'Child profile not found for this parent. Empty child list stays empty.', status: 400 };
+      parentStartPin = String(body.startPin || '').trim();
+      if (!/^\d{4}$/.test(parentStartPin)) {
+        return { error: 'Parent must set a 4-digit start PIN. The trip does not start until the driver enters it.', status: 400 };
+      }
+    }
     const state = load();
     const offer = {
       id: newId('off'),
+      kind,
       driverId: driver.id,
       riderPhone,
+      parentPhone: kind === 'school_run' ? riderPhone : null,
+      childId: child ? child.id : null,
+      childName: child ? child.name : null,
+      school: child ? child.school : null,
+      parentStartPin,
+      shareAlways: kind === 'school_run',
       pickup,
       drop,
       offerTtd: ttd,
@@ -395,8 +531,8 @@ function createRides(opts = {}) {
     if (role === 'driver' && !actorMatchesDriver(offer, body)) {
       return { error: 'Only the listed driver can agree as driver', status: 403 };
     }
-    if (role === 'rider' && digitsOnly(body.riderPhone) !== offer.riderPhone) {
-      return { error: 'Only the rider who offered can agree', status: 403 };
+    if (role === 'rider' && digitsOnly(body.riderPhone || body.parentPhone) !== offer.riderPhone) {
+      return { error: offer.kind === 'school_run' ? 'Only the parent who booked can agree' : 'Only the rider who offered can agree', status: 403 };
     }
     if (role === 'driver') offer.driverAgreed = true;
     if (role === 'rider') offer.riderAgreed = true;
@@ -429,7 +565,15 @@ function createRides(opts = {}) {
       pay: offer.pay,
       cashPaid: false,
       cashReceived: false,
-      startPin: String(Math.floor(1000 + Math.random() * 9000)),
+      kind: offer.kind || 'ride',
+      parentPhone: offer.parentPhone || null,
+      childId: offer.childId || null,
+      childName: offer.childName || null,
+      school: offer.school || null,
+      startPin: offer.kind === 'school_run' ? offer.parentStartPin : String(Math.floor(1000 + Math.random() * 9000)),
+      started: false,
+      lastPoint: null,
+      shareAlways: offer.kind === 'school_run',
       shareToken: crypto.randomBytes(8).toString('hex'),
       juvayTakePct: offer.pay === 'wam' ? 7.5 : 0,
       processingPassThrough: offer.pay === 'wam',
@@ -476,7 +620,9 @@ function createRides(opts = {}) {
       status: trip.status,
       startPin: shareOk ? trip.startPin : undefined,
       sharePath: `/rides/trip/${trip.id}?t=${trip.shareToken}`,
-      sosCopy: 'If you are in danger, call local emergency services. Juvay is not a dispatcher. Share this trip link with someone you trust.',
+      sosCopy: trip.kind === 'school_run'
+        ? 'SOS to the parent. Call local emergency services if needed. Juvay is not a dispatcher. This share link is always on for the parent.'
+        : 'If you are in danger, call local emergency services. Juvay is not a dispatcher. Share this trip link with someone you trust.',
       whatsapp: waDigits ? `https://wa.me/${waDigits}` : null,
       whatsappKind: 'listed-driver',
       wamPayOn: trip.pay === 'wam' ? 'https://wam.com' : null,
@@ -486,6 +632,16 @@ function createRides(opts = {}) {
       fulfill: false,
       ratings: null,
       bikeTaxi: false,
+      kind: trip.kind || 'ride',
+      schoolRun: trip.kind === 'school_run',
+      schoolRunCopy: trip.kind === 'school_run' ? SCHOOL_RUN_COPY : null,
+      parentPhone: trip.parentPhone || null,
+      childName: trip.childName || null,
+      school: trip.school || null,
+      started: trip.started === true,
+      lastPoint: trip.status === 'booked' && trip.lastPoint ? trip.lastPoint : null,
+      shareAlways: trip.shareAlways === true,
+      kidNeverPays: trip.kind === 'school_run',
     };
   }
 
@@ -503,7 +659,16 @@ function createRides(opts = {}) {
     const trip = state.trips.find((t) => t.id === tripId);
     if (!trip) return { error: 'Trip not found', status: 404 };
     if (trip.pay !== 'cash') return { error: 'This trip is not cash', status: 400 };
-    if (digitsOnly(body.riderPhone) !== trip.riderPhone) return { error: 'Only the rider taps cash paid', status: 403 };
+    if (trip.kind === 'school_run') {
+      if (body.childPhone || body.kidPhone) {
+        return { error: 'Never cash to the child. Parent pays at pickup or Wam from the parent.', status: 403 };
+      }
+      if (digitsOnly(body.parentPhone || body.riderPhone) !== trip.parentPhone) {
+        return { error: 'Only the parent taps cash paid. The child never sees cash confirm.', status: 403 };
+      }
+    } else if (digitsOnly(body.riderPhone) !== trip.riderPhone) {
+      return { error: 'Only the rider taps cash paid', status: 403 };
+    }
     trip.cashPaid = true;
     trip.updatedAt = now();
     save(state);
@@ -523,6 +688,46 @@ function createRides(opts = {}) {
     trip.updatedAt = now();
     save(state);
     return { trip: tripView(trip), debt: false };
+  }
+
+  function startTrip(tripId, body = {}) {
+    const state = load();
+    const trip = state.trips.find((t) => t.id === tripId);
+    if (!trip) return { error: 'Trip not found', status: 404 };
+    if (trip.status !== 'booked') return { error: 'Trip is not accepted', status: 400 };
+    const driver = findDriver({ id: trip.driverId });
+    if (!driver || digitsOnly(body.driverPhone) !== driver.phone) {
+      return { error: 'Only the listed driver can enter the start PIN', status: 403 };
+    }
+    if (String(body.pin || '').trim() !== String(trip.startPin)) {
+      return { error: 'Start PIN does not match. Trip does not start.', status: 403 };
+    }
+    trip.started = true;
+    trip.updatedAt = now();
+    save(state);
+    return { trip: tripView(trip), started: true };
+  }
+
+  function reportTrack(tripId, body = {}) {
+    const state = load();
+    const trip = state.trips.find((t) => t.id === tripId);
+    if (!trip) return { error: 'Trip not found', status: 404 };
+    if (trip.status !== 'booked') {
+      return { error: 'Live tracking is only inside an accepted trip. No radar.', status: 400 };
+    }
+    const driver = findDriver({ id: trip.driverId });
+    if (!driver || digitsOnly(body.driverPhone) !== driver.phone) {
+      return { error: 'Only the listed driver on this trip can share a point', status: 403 };
+    }
+    const lat = Number(body.lat);
+    const lng = Number(body.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !inTtBounds(lat, lng)) {
+      return { error: 'Type a real point on Trinidad or Tobago. No ghost cars.', status: 400 };
+    }
+    trip.lastPoint = { lat, lng, at: now() };
+    trip.updatedAt = now();
+    save(state);
+    return { trip: tripView(trip), fulfill: false };
   }
 
   function driverOffers(query = {}) {
@@ -558,6 +763,12 @@ function createRides(opts = {}) {
     apply,
     me,
     approve,
+    approveSchoolRun,
+    setDirectoryPin,
+    addChild,
+    listChildren,
+    startTrip,
+    reportTrack,
     markSubscribed,
     subscriptionStatus,
     startSubscriptionWam,
@@ -585,5 +796,7 @@ module.exports = {
   defaultRides,
   HONEST_EMPTY_LINE_1,
   HONEST_EMPTY_LINE_2,
+  SCHOOL_RUN_COPY,
+  LIVE_ISLANDS,
   KYC_FIELDS,
 };

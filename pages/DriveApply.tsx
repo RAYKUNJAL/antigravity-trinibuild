@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { applyToDrive, fetchDriverOffers, acceptRideOffer, counterRideOffer, agreeRideOffer, readImageAsDataUrl } from '../services/ridesApi';
+import { IslandRideMap } from '../components/IslandRideMap';
+import { applyToDrive, fetchDriverOffers, acceptRideOffer, counterRideOffer, agreeRideOffer, readImageAsDataUrl, setDriverPin } from '../services/ridesApi';
 
 /**
  * /drive apply. KYC only. No map. We will not show cars that are not you.
@@ -11,6 +12,10 @@ export const DriveApply: React.FC = () => {
   const [plate, setPlate] = useState('');
   const [wamHandle, setWamHandle] = useState('');
   const [affiliateRef, setAffiliateRef] = useState('');
+  const [island, setIsland] = useState('Trinidad');
+  const [schoolRunRequested, setSchoolRunRequested] = useState(false);
+  const [pinLat, setPinLat] = useState('');
+  const [pinLng, setPinLng] = useState('');
   const [photos, setPhotos] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -39,6 +44,8 @@ export const DriveApply: React.FC = () => {
         plate,
         wamHandle,
         affiliateRef,
+        island,
+        schoolRunRequested,
         permitPhoto: photos.permitPhoto,
         insurancePhoto: photos.insurancePhoto,
         platePhoto: photos.platePhoto,
@@ -66,11 +73,20 @@ export const DriveApply: React.FC = () => {
       <div className="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 p-8">
         <h1 className="text-2xl font-black text-gray-900 mb-2">Apply to drive</h1>
         <p className="text-gray-600 mb-2">We will not show cars that are not you.</p>
-        <p className="text-sm text-gray-500 mb-6">
-          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until you are approved and the subscription is confirmed. No map on this page.
+        <p className="text-sm text-gray-500 mb-4">
+          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until you are approved and the subscription is confirmed. The map is the island — apply does not invent a location.
         </p>
+        <IslandRideMap island={island} pins={[]} />
+        <p className="text-xs text-gray-500 mt-2 mb-4">No ghost cars on apply. A directory pin is only after you are listed and you type a real point.</p>
 
         <form onSubmit={submit} className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Island
+            <select value={island} onChange={(e) => setIsland(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3">
+              <option>Trinidad</option>
+              <option>Tobago</option>
+            </select>
+          </label>
           <label className="block text-sm font-medium text-gray-700">
             Name
             <input required value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
@@ -107,6 +123,10 @@ export const DriveApply: React.FC = () => {
             Affiliate ref (optional — 10% of the subscription, not the trip)
             <input value={affiliateRef} onChange={(e) => setAffiliateRef(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
           </label>
+          <label className="flex items-start gap-3 min-h-[44px] text-sm text-gray-700">
+            <input type="checkbox" checked={schoolRunRequested} onChange={(e) => setSchoolRunRequested(e.target.checked)} className="mt-1" />
+            <span>School-run eligible — same permit, insurance, plate, face, and phone. A person must approve this flag. Not listed for kids until then. Parent-booked only. Not a teen dating app. Not unattended street hail.</span>
+          </label>
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
           <button type="submit" disabled={busy} className="w-full min-h-[44px] rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40">
             {busy ? 'Submitting…' : 'Submit application'}
@@ -119,7 +139,26 @@ export const DriveApply: React.FC = () => {
             <p>Subscription confirmed: {result.driver.subscriptionPaid ? 'yes' : 'no'}</p>
             <p>Listed: {result.driver.listed ? 'yes' : 'no'}</p>
             <p>{result.driver.goOnlineReason || result.goOnline?.reason}</p>
+            <p>School-run requested: {result.driver.schoolRunRequested ? 'yes' : 'no'} · approved: {result.driver.schoolRunApproved ? 'yes' : 'no'}</p>
             <Link to="/drive/pay" className="inline-block text-stone-900 font-semibold underline">Subscription status</Link>
+            {result.driver.listed ? (
+              <form
+                className="space-y-2 pt-3"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    await setDriverPin({ phone, pinLat, pinLng });
+                  } catch (err: any) {
+                    setError(err.message);
+                  }
+                }}
+              >
+                <p className="text-sm">Directory pin only after listed. Type a real Trinidad or Tobago point. We do not invent nearby.</p>
+                <input value={pinLat} onChange={(e) => setPinLat(e.target.value)} placeholder="Latitude" className="w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
+                <input value={pinLng} onChange={(e) => setPinLng(e.target.value)} placeholder="Longitude" className="w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
+                <button type="submit" className="min-h-[44px] px-4 border border-gray-900 rounded-xl">Save pin</button>
+              </form>
+            ) : null}
           </div>
         ) : null}
 

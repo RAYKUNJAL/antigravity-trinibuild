@@ -46,6 +46,7 @@ import { DriveWithUs } from './pages/DriveWithUs';
 import { DriveApply } from './pages/DriveApply';
 import { DrivePay } from './pages/DrivePay';
 import { RideTrip } from './pages/RideTrip';
+import { SchoolRun } from './pages/SchoolRun';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
@@ -284,6 +285,7 @@ const App: React.FC = () => {
 
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
+              <Route path="/rides/school-run" element={<SchoolRun />} />
               <Route path="/rides/trip/:id" element={<RideTrip />} />
               <Route path="/drive" element={<DriveApply />} />
               <Route path="/drive/pay" element={<DrivePay />} />

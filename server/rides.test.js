@@ -171,5 +171,79 @@ assert.strictEqual(credits[0].of, 'sub');
 assert.strictEqual(credits[0].notOf, 'trip');
 assert.strictEqual(credits[0].creditCents, 500);
 
+const otherIsland = priced.ridesDirectory({ island: 'Jamaica' });
+assert.strictEqual(otherIsland.listedCount, 0);
+assert.strictEqual(otherIsland.line1, 'Rides are unavailable on this origin.');
+assert.strictEqual(otherIsland.line2, 'No drivers are listed. Juvay does not invent a fare or a live booking button.');
+
+const kidsEmpty = priced.listChildren({ parentPhone: '8685550400' });
+assert.strictEqual(kidsEmpty.empty, true);
+assert.deepStrictEqual(kidsEmpty.children, []);
+
+const schoolStore = tmpStore();
+const school = createRides({ storePath: schoolStore, getEnv: (k) => env[k] });
+const schoolApply = school.apply(kyc({ phone: '8685550200', schoolRunRequested: true, island: 'Trinidad' }));
+school.approve(schoolApply.driver.id);
+school.markSubscribed(schoolApply.driver.id);
+assert.strictEqual(school.ridesDirectory({ schoolRun: true }).listedCount, 0, 'not listed for kids until flag approved');
+const kidsFlag = school.approveSchoolRun(schoolApply.driver.id);
+assert.strictEqual(kidsFlag.driver.schoolRunApproved, true);
+assert.strictEqual(school.ridesDirectory({ schoolRun: true }).listedCount, 1);
+
+const noKid = school.createOffer({
+  kind: 'school_run',
+  driverId: schoolApply.driver.id,
+  pickup: 'Home',
+  drop: 'School',
+  parentPhone: '8685550400',
+  offerTtd: 30,
+  pay: 'cash',
+  startPin: '2468',
+});
+assert.ok(noKid.error.includes('Child profile'));
+
+const child = school.addChild({ parentPhone: '8685550400', name: 'Asha', school: 'St. Joseph\'s' });
+assert.ok(child.child.id);
+const schoolOffer = school.createOffer({
+  kind: 'school_run',
+  driverId: schoolApply.driver.id,
+  pickup: 'Home',
+  drop: 'School gate',
+  parentPhone: '8685550400',
+  childId: child.child.id,
+  offerTtd: 30,
+  pay: 'cash',
+  startPin: '2468',
+});
+school.acceptOffer(schoolOffer.offer.id, { driverPhone: '8685550200' });
+school.agreeOffer(schoolOffer.offer.id, { role: 'driver', driverPhone: '8685550200' });
+const schoolBook = school.agreeOffer(schoolOffer.offer.id, { role: 'rider', parentPhone: '8685550400' });
+assert.strictEqual(schoolBook.trip.kind, 'school_run');
+assert.strictEqual(schoolBook.trip.started, false);
+assert.ok(schoolBook.trip.schoolRunCopy.includes('not a teen dating app'));
+assert.strictEqual(schoolBook.trip.shareAlways, true);
+assert.strictEqual(schoolBook.trip.lastPoint, null);
+
+const noTrack = school.reportTrack(schoolBook.trip.id, { driverPhone: '8685550200', lat: 10.65, lng: -61.4 });
+assert.ok(noTrack.trip || noTrack.error);
+const startFail = school.startTrip(schoolBook.trip.id, { driverPhone: '8685550200', pin: '0000' });
+assert.ok(startFail.error);
+const started = school.startTrip(schoolBook.trip.id, { driverPhone: '8685550200', pin: '2468' });
+assert.strictEqual(started.started, true);
+const tracked = school.reportTrack(schoolBook.trip.id, { driverPhone: '8685550200', lat: 10.65, lng: -61.4 });
+assert.ok(tracked.trip.lastPoint);
+assert.strictEqual(tracked.trip.lastPoint.lat, 10.65);
+
+const kidCash = school.cashPaid(schoolBook.trip.id, { childPhone: '8685550999', riderPhone: '8685550400' });
+assert.ok(kidCash.error.includes('Never cash to the child'));
+const parentCash = school.cashPaid(schoolBook.trip.id, { parentPhone: '8685550400' });
+assert.strictEqual(parentCash.debt, false);
+
+const ghostPin = school.setDirectoryPin({ phone: '8685550200' }, { pinLat: 40.7, pinLng: -74 });
+assert.ok(ghostPin.error);
+const realPin = school.setDirectoryPin({ phone: '8685550200' }, { pinLat: 10.66, pinLng: -61.51 });
+assert.strictEqual(realPin.driver.pinLat, 10.66);
+
 fs.unlinkSync(storePath);
+fs.unlinkSync(schoolStore);
 console.log('rides.test.js ok');
