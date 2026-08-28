@@ -35,21 +35,21 @@ export const Home: React.FC = () => {
    return (
       <>
          <Helmet>
-            <title>TriniBuild - Start Selling Online in Trinidad & Tobago | Free Store Builder</title>
+            <title>Juvay - Start Selling Online in Trinidad & Tobago | Free Store Builder</title>
             <meta name="description" content="The easiest way to start selling online in Trinidad & Tobago. Get a free website, 5 free listings, no credit card required. Shop local, support local businesses." />
-            <meta name="keywords" content="Trinidad online store, Trinidad marketplace, sell online Trinidad, Tobago business, TriniBuild, free store builder, local shopping T&T" />
-            <link rel="canonical" href="https://trinibuild.com/" />
+            <meta name="keywords" content="Trinidad online store, Trinidad marketplace, sell online Trinidad, Tobago business, Juvay, free store builder, local shopping T&T" />
+            <link rel="canonical" href="https://juvay.app/" />
 
             {/* Open Graph */}
-            <meta property="og:title" content="TriniBuild - For We, By We - Trinidad & Tobago Business Platform" />
+            <meta property="og:title" content="Juvay - For We, By We - Trinidad & Tobago Business Platform" />
             <meta property="og:description" content="The easiest way to start selling online in Trinidad & Tobago. Free website, 5 free listings, no credit card required." />
             <meta property="og:type" content="website" />
-            <meta property="og:url" content="https://trinibuild.com/" />
-            <meta property="og:image" content="https://trinibuild.com/og-image.jpg" />
+            <meta property="og:url" content="https://juvay.app/" />
+            <meta property="og:image" content="https://juvay.app/og-image.jpg" />
 
             {/* Twitter Card */}
             <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:title" content="TriniBuild - Start Selling Online in Trinidad & Tobago" />
+            <meta name="twitter:title" content="Juvay - Start Selling Online in Trinidad & Tobago" />
             <meta name="twitter:description" content="Free store builder for Trinidad & Tobago businesses. No credit card required." />
 
             {/* Structured Data */}
@@ -57,12 +57,12 @@ export const Home: React.FC = () => {
                {JSON.stringify({
                   "@context": "https://schema.org",
                   "@type": "WebSite",
-                  "name": "TriniBuild",
-                  "url": "https://trinibuild.com/",
+                  "name": "Juvay",
+                  "url": "https://juvay.app/",
                   "description": "The easiest way to start selling online in Trinidad & Tobago",
                   "potentialAction": {
                      "@type": "SearchAction",
-                     "target": "https://trinibuild.com/#/search?q={search_term_string}",
+                     "target": "https://juvay.app/#/search?q={search_term_string}",
                      "query-input": "required name=search_term_string"
                   }
                })}
@@ -96,7 +96,7 @@ export const Home: React.FC = () => {
 
                   {/* Logo */}
                   <div className="mb-8 flex justify-center">
-                     <img src="/trinibuild-logo.png" alt="TriniBuild Logo" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
+                     <img src="/trinibuild-logo.png" alt="Juvay Logo" className="h-24 md:h-32 w-auto drop-shadow-2xl" />
                   </div>
 
                   {/* Functional Headline - NEW */}
@@ -106,7 +106,7 @@ export const Home: React.FC = () => {
 
                   {/* Hero Content */}
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-white mb-6 leading-tight tracking-tight drop-shadow-2xl">
-                     TriniBuild: <span className="text-trini-red">For We,</span> <span className="text-trini-gold">By We</span>
+                     Juvay: <span className="text-trini-red">For We,</span> <span className="text-trini-gold">By We</span>
                   </h1>
 
                   {/* Value Icons - NEW */}
@@ -182,7 +182,7 @@ export const Home: React.FC = () => {
                <div className="text-center mb-16">
                   <h2 className="text-3xl md:text-5xl font-display font-bold text-gray-900 mb-6">Everything You Need, Right Here in T&T</h2>
                   <p className="text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
-                     With TriniBuild, we put all the pieces together. Want to sell your goods? Open a marketplace store. Need to list your property? We got a real estate hub. Looking to offer rides or find a job? It’s all here, easy as doubles on a Saturday morning. One login, one platform, and all the tools that get you moving.
+                     With Juvay, we put all the pieces together. Want to sell your goods? Open a marketplace store. Need to list your property? We got a real estate hub. Looking to offer rides or find a job? It’s all here, easy as doubles on a Saturday morning. One login, one platform, and all the tools that get you moving.
                   </p>
                   <div className="mt-8">
                      <Link to="/get-started" className="inline-flex items-center text-trini-red font-bold text-lg hover:underline">
@@ -320,7 +320,7 @@ export const Home: React.FC = () => {
                   <div className="bg-gray-50 rounded-3xl p-8 md:p-16 shadow-xl border border-gray-100">
                      <div className="max-w-4xl mx-auto text-center">
                         <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-8">
-                           We Know the Struggle: That’s Why We Made TriniBuild
+                           We Know the Struggle: That’s Why We Made Juvay
                         </h2>
                         <p className="text-xl text-gray-600 mb-10 leading-relaxed">
                            Look, we know how it goes in T&T. Banking’s a hassle. Getting a website feels like a big-company thing. And sometimes it feels like nobody building nothing for we. Well, that’s why we built this. On Juvay, you don’t need a credit card to get started. Get a free website and list your first 5 items on us. We set you up as your own boss and give you the tools to handle your business.
@@ -496,7 +496,7 @@ export const Home: React.FC = () => {
                <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
                   <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-8">We Made This for We People</h2>
                   <p className="text-xl text-gray-400 mb-10 leading-relaxed">
-                     This isn’t some foreign platform trying to fit into we island life. This is homegrown, just like a good pelau. We know the vibes. We know the challenges. And we built TriniBuild so that every vendor, every creative, every hustler in T&T can have their own space. This is ‘For We, By We.’
+                     This isn’t some foreign platform trying to fit into we island life. This is homegrown, just like a good pelau. We know the vibes. We know the challenges. And we built Juvay so that every vendor, every creative, every hustler in T&T can have their own space. This is ‘For We, By We.’
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                      <Link to="/get-started" className="px-8 py-4 bg-trini-red text-white rounded-full font-bold text-lg shadow-lg hover:bg-red-700 transition-colors flex items-center justify-center">

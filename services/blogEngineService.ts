@@ -1,5 +1,5 @@
 /**
- * TriniBuild Location Blog Engine Service
+ * Juvay Location Blog Engine Service
  * 
  * AI-powered blog generation for SEO-optimized, location-specific content
  * targeting all cities, towns, and villages in Trinidad & Tobago.
@@ -8,7 +8,7 @@
 import { aiService } from "./ai";
 import { TrinidadLocation, TRINIDAD_LOCATIONS, getLocationBySlug } from "../data/trinidadLocations";
 import {
-    TriniBuildFeature,
+    JuvayFeature,
     BlogVertical,
     TRINIBUILD_FEATURES,
     BLOG_VERTICALS,
@@ -174,7 +174,7 @@ export const generateSEOPlan = async (
     const features = getFeaturesForVertical(vertical.key);
     const featureSummaries = features.map(f => `${f.label}: ${f.summary}`).join('\n');
 
-    const systemPrompt = `You are an SEO strategist for TriniBuild, a platform in Trinidad & Tobago that gives people free webpages and tools for marketplace stores, jobs, real estate, tickets and rideshare.
+    const systemPrompt = `You are an SEO strategist for Juvay, a platform in Trinidad & Tobago that gives people free webpages and tools for marketplace stores, jobs, real estate, tickets and rideshare.
 
 Your task is to create an SEO content plan for a location-specific blog article.`;
 
@@ -189,7 +189,7 @@ ${location.isCapital ? '- This is the capital city.' : ''}
 
 **Vertical:** ${vertical.label} (key: ${vertical.key})
 
-**TriniBuild Features to Highlight:**
+**Juvay Features to Highlight:**
 ${featureSummaries}
 
 **Example Topic Templates:**
@@ -203,7 +203,7 @@ ${vertical.topic_templates.map(t => replaceTemplateVars(t, { location_name: loca
 5. Create a detailed outline (H2, H3 headings) showing:
    - Problem/pain point intro
    - How life is now in ${location.name} (local challenges)
-   - How TriniBuild solves it
+   - How Juvay solves it
    - Step-by-step guide
    - Optional local story
    - Conclusion with benefits
@@ -231,19 +231,19 @@ Return ONLY valid JSON:
         console.error("SEO Plan Generation Error:", error);
         // Return fallback plan
         return {
-            seo_title: `${vertical.label} in ${location.name} | TriniBuild`,
-            meta_description: `Find the best ${vertical.label.toLowerCase()} opportunities in ${location.name}, Trinidad & Tobago. TriniBuild helps you connect with local ${vertical.label.toLowerCase()}.`,
+            seo_title: `${vertical.label} in ${location.name} | Juvay`,
+            meta_description: `Find the best ${vertical.label.toLowerCase()} opportunities in ${location.name}, Trinidad & Tobago. Juvay helps you connect with local ${vertical.label.toLowerCase()}.`,
             url_slug: `${vertical.key}-in-${location.slug}`,
             primary_keyword: `${vertical.label.toLowerCase()} in ${location.name}`,
             secondary_keywords: [
-                `TriniBuild ${location.name}`,
+                `Juvay ${location.name}`,
                 `${location.name} ${vertical.key}`,
                 `online ${vertical.label.toLowerCase()} ${location.name}`
             ],
             outline_headings: [
                 { level: 'h2', text: `The Challenge: Finding ${vertical.label} in ${location.name}` },
-                { level: 'h2', text: `How TriniBuild Solves This Problem` },
-                { level: 'h2', text: `Getting Started with TriniBuild in ${location.name}` },
+                { level: 'h2', text: `How Juvay Solves This Problem` },
+                { level: 'h2', text: `Getting Started with Juvay in ${location.name}` },
                 { level: 'h2', text: `Success Stories from ${location.name}` },
                 { level: 'h2', text: `Take Action Today` }
             ],
@@ -271,7 +271,7 @@ export const generateDraftContent = async (
     const wordTarget = options.word_count_target || 1200;
     const toneVariant = options.tone_variant || 'default';
 
-    const systemPrompt = `You are a content writer for TriniBuild, the leading digital platform in Trinidad & Tobago. Write engaging, SEO-optimized blog posts that resonate with local readers.
+    const systemPrompt = `You are a content writer for Juvay, the leading digital platform in Trinidad & Tobago. Write engaging, SEO-optimized blog posts that resonate with local readers.
 
 **Writing Style:**
 - Tone: Friendly, practical, locally-aware, empowering
@@ -291,11 +291,11 @@ ${JSON.stringify(seoPlan, null, 2)}
 **Location:** ${location.name} (${location.region_or_municipality}, ${location.island})
 **Vertical:** ${vertical.label}
 
-**TriniBuild Features to Mention:**
+**Juvay Features to Mention:**
 ${features.map(f => `- ${f.label}: ${f.summary}`).join('\n')}
 
 **Article Structure (Follow this):**
-1. **Intro** (2-3 paragraphs): Name the location, state the core pain point, introduce TriniBuild as the solution. Add [CTA:soft_intro] marker.
+1. **Intro** (2-3 paragraphs): Name the location, state the core pain point, introduce Juvay as the solution. Add [CTA:soft_intro] marker.
 
 2. **H2: The Local Challenge** (3-4 paragraphs): Describe specific challenges people face in ${location.name} regarding ${vertical.label.toLowerCase()}. Mention:
    - Traditional ways that don't work well
@@ -303,12 +303,12 @@ ${features.map(f => `- ${f.label}: ${f.summary}`).join('\n')}
    - Lack of digital tools
    - Distance from opportunities
 
-3. **H2: How TriniBuild Solves This** (4-5 paragraphs): Feature-focused section explaining the solution. Add [CTA:primary] marker after this section.
+3. **H2: How Juvay Solves This** (4-5 paragraphs): Feature-focused section explaining the solution. Add [CTA:primary] marker after this section.
 
-4. **H2: Step-by-Step Guide** (numbered steps): How to get started on TriniBuild for ${vertical.label.toLowerCase()} in ${location.name}. Add [CTA:secondary] marker.
+4. **H2: Step-by-Step Guide** (numbered steps): How to get started on Juvay for ${vertical.label.toLowerCase()} in ${location.name}. Add [CTA:secondary] marker.
 
 ${options.include_hypothetical_story !== false ? `
-5. **H2: A ${location.name} Success Story** (2-3 paragraphs): Brief hypothetical example of a local person/business benefiting from TriniBuild.
+5. **H2: A ${location.name} Success Story** (2-3 paragraphs): Brief hypothetical example of a local person/business benefiting from Juvay.
 ` : ''}
 
 6. **Conclusion** (2 paragraphs): Recap benefits, emphasize it's free, strong final [CTA:final] marker.
@@ -407,7 +407,7 @@ export const polishAndFinalize = async (
         const freePageFeature = TRINIBUILD_FEATURES.find(f => f.key === 'free_webpages')!;
         if (!internalLinksUsed.find(l => l.feature_key === 'free_webpages')) {
             internalLinksUsed.push({
-                anchor_text: 'create your free TriniBuild page',
+                anchor_text: 'create your free Juvay page',
                 url: freePageFeature.internal_url,
                 feature_key: 'free_webpages'
             });
@@ -426,21 +426,21 @@ export const polishAndFinalize = async (
         "description": seoPlan.meta_description,
         "author": {
             "@type": "Organization",
-            "name": "TriniBuild"
+            "name": "Juvay"
         },
         "publisher": {
             "@type": "Organization",
-            "name": "TriniBuild",
+            "name": "Juvay",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://trinibuild.com/logo.png"
+                "url": "https://juvay.app/logo.png"
             }
         },
         "datePublished": new Date().toISOString(),
         "dateModified": new Date().toISOString(),
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": `https://trinibuild.com/blog/${seoPlan.url_slug}`
+            "@id": `https://juvay.app/blog/${seoPlan.url_slug}`
         },
         "keywords": [seoPlan.primary_keyword, ...seoPlan.secondary_keywords].join(', '),
         "about": {
@@ -458,11 +458,11 @@ export const polishAndFinalize = async (
         "og:type": "article",
         "og:title": seoPlan.seo_title,
         "og:description": seoPlan.meta_description,
-        "og:url": `https://trinibuild.com/blog/${seoPlan.url_slug}`,
-        "og:site_name": "TriniBuild",
+        "og:url": `https://juvay.app/blog/${seoPlan.url_slug}`,
+        "og:site_name": "Juvay",
         "og:locale": "en_TT",
         "article:published_time": new Date().toISOString(),
-        "article:author": "TriniBuild",
+        "article:author": "Juvay",
         "article:section": vertical.label,
         "article:tag": seoPlan.primary_keyword
     };
@@ -470,7 +470,7 @@ export const polishAndFinalize = async (
     // Generate Twitter Card tags
     const twitterCard = {
         "twitter:card": "summary_large_image",
-        "twitter:site": "@TriniBuild",
+        "twitter:site": "@Juvay",
         "twitter:title": seoPlan.seo_title,
         "twitter:description": seoPlan.meta_description
     };

@@ -10,7 +10,7 @@ export const Earn: React.FC = () => {
       <div className="bg-trini-black text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
-            Make Money on <span className="text-trini-red">TriniBuild</span>
+            Make Money on <span className="text-trini-red">Juvay</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
             One platform, three ways to earn. Join thousands of Trinbagonians building their future with us.
@@ -82,33 +82,10 @@ export const Earn: React.FC = () => {
         </div>
       </div>
 
-      {/* Testimonials / Social Proof */}
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12">Who's earning with TriniBuild?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6">
-              <div className="flex items-center justify-center mb-4">
-                <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Sarah J." />
-              </div>
-              <p className="text-gray-600 italic mb-4">"I started selling my homemade pepper sauce here. Now I ship cases to Tobago weekly!"</p>
-              <p className="font-bold text-gray-900">- Sarah J., Chaguanas</p>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center justify-center mb-4">
-                <img src="https://images.unsplash.com/photo-1542596594-649edbc13630?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="David R." />
-              </div>
-              <p className="text-gray-600 italic mb-4">"Driving part-time helped me pay off my car loan. The app is super easy to use."</p>
-              <p className="font-bold text-gray-900">- David R., Port of Spain</p>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center justify-center mb-4">
-                <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=200&auto=format&fit=crop" className="w-20 h-20 rounded-full border-4 border-white shadow-md object-cover" alt="Amanda K." />
-              </div>
-              <p className="text-gray-600 italic mb-4">"Found a graphic design gig in 2 days. The profile builder is great."</p>
-              <p className="font-bold text-gray-900">- Amanda K., Arima</p>
-            </div>
-          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Earn on Juvay</h2>
+          <p className="text-gray-600">Empty until a real person is listed. Juvay does not invent earners.</p>
         </div>
       </div>
 
@@ -118,7 +95,7 @@ export const Earn: React.FC = () => {
           <h2 className="text-3xl font-bold text-white mb-6">Not sure where to start?</h2>
           <p className="text-white/80 text-lg mb-8">Create a free account and explore the dashboard. You can add any service later.</p>
           <Link to="/auth" className="inline-block bg-white text-trini-teal font-bold px-10 py-4 rounded-full shadow-lg hover:bg-gray-100 text-lg">
-            Join TriniBuild Free
+            Join Juvay Free
           </Link>
         </div>
       </div>

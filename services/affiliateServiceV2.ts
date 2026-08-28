@@ -372,6 +372,6 @@ export const affiliateServiceV2 = {
     },
 
     generateUniversalLink(referralCode: string): string {
-        return `https://trinibuild.com/ref/${referralCode}`;
+        return `https://juvay.app/ref/${referralCode}`;
     }
 };

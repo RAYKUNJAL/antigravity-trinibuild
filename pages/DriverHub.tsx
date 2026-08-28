@@ -88,7 +88,7 @@ export const DriverHub: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
-                            <h1 className="text-xl font-bold">TriniBuild <span className="text-yellow-400">Go</span></h1>
+                            <h1 className="text-xl font-bold">Juvay <span className="text-yellow-400">Rides</span></h1>
                             <span className="ml-4 px-3 py-1 bg-yellow-400 text-trini-black rounded-full text-xs font-bold">
                                 DRIVER
                             </span>

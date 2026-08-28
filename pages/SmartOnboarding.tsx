@@ -88,7 +88,7 @@ export const SmartOnboarding: React.FC = () => {
                 {
                     id: 'delivery',
                     title: 'How You Getting It to Them?',
-                    aiPrompt: 'Set up your delivery options (TriniBuild Go, Own Driver, or Pickup)',
+                    aiPrompt: 'Set up your delivery options (Juvay Rides, Own Driver, or Pickup)',
                     fields: ['deliveryMethod', 'deliveryZones'],
                     optional: true
                 }
@@ -183,7 +183,7 @@ export const SmartOnboarding: React.FC = () => {
             },
             deliveryMethod: {
                 options: [
-                    { value: 'trinibuild-go', label: 'TriniBuild Go (Recommended)', icon: '🚚', description: 'Free drivers, real-time tracking' },
+                    { value: 'trinibuild-go', label: 'Juvay Rides', icon: '🚚', description: 'Listed drivers only. Offer, don’t quote.' },
                     { value: 'own-delivery', label: 'My Own Delivery', icon: '🏍️', description: 'Use your own drivers' },
                     { value: 'pickup-only', label: 'Pickup Only', icon: '🏪', description: 'Customers collect from store' }
                 ],
@@ -287,8 +287,8 @@ export const SmartOnboarding: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Get Started - TriniBuild | Smart Onboarding</title>
-                <meta name="description" content="Join TriniBuild in minutes with our AI-powered onboarding. Start selling, driving, or shopping in Trinidad & Tobago." />
+                <title>Get Started - Juvay | Smart Onboarding</title>
+                <meta name="description" content="Join Juvay in minutes with our AI-powered onboarding. Start selling, driving, or shopping in Trinidad & Tobago." />
             </Helmet>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -301,7 +301,7 @@ export const SmartOnboarding: React.FC = () => {
                                     <span className="text-white font-bold text-xl">T</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-xl font-bold text-gray-900">TriniBuild</h1>
+                                    <h1 className="text-xl font-bold text-gray-900">Juvay</h1>
                                     <p className="text-xs text-gray-500">Smart Onboarding</p>
                                 </div>
                             </div>
@@ -326,7 +326,7 @@ export const SmartOnboarding: React.FC = () => {
                                     AI-Powered Onboarding
                                 </div>
                                 <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-                                    Welcome to TriniBuild!
+                                    Welcome to Juvay!
                                 </h2>
                                 <p className="text-xl text-gray-600 mb-8">
                                     Let's get you set up in less than 2 minutes. What you want to do?
@@ -420,7 +420,7 @@ export const SmartOnboarding: React.FC = () => {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center space-x-2 mb-2">
-                                            <span className="font-bold text-gray-900">TriniBuild AI</span>
+                                            <span className="font-bold text-gray-900">Juvay AI</span>
                                             <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">SMART</span>
                                         </div>
                                         <p className="text-gray-700">{currentStepData?.aiPrompt}</p>

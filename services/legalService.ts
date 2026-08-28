@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-// All legal document types supported by TriniBuild
+// All legal document types supported by Juvay
 export type DocumentType =
     | 'terms_of_service'
     | 'privacy_policy'
@@ -40,27 +40,27 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
     terms_of_service: {
         type: 'terms_of_service',
         version: '2.0.0',
-        title: 'TriniBuild Terms of Service',
+        title: 'Juvay Terms of Service',
         effectiveDate: '2025-01-01',
         content: [
-            'Welcome to TriniBuild. By creating an account or using any part of the platform (marketplace, job board, rideshare, real estate, ticketing, storefronts, webpages, or affiliate tools), you agree to these Terms of Service.',
+            'Welcome to Juvay. By creating an account or using any part of the platform (marketplace, job board, rideshare, real estate, ticketing, storefronts, webpages, or affiliate tools), you agree to these Terms of Service.',
             'Juvay is a digital platform that allows users to create webpages, conduct business, post listings, offer services, and earn as independent contractors. It does not sell event tickets.',
-            'By using the platform, you acknowledge: (1) You are at least 18 years old; (2) You accept all policies listed within this document; (3) You understand TriniBuild provides tools and connections but is not responsible for the actions of independent users.'
+            'By using the platform, you acknowledge: (1) You are at least 18 years old; (2) You accept all policies listed within this document; (3) You understand Juvay provides tools and connections but is not responsible for the actions of independent users.'
         ]
     },
 
     privacy_policy: {
         type: 'privacy_policy',
         version: '2.0.0',
-        title: 'TriniBuild Privacy Policy',
+        title: 'Juvay Privacy Policy',
         effectiveDate: '2025-01-01',
         content: [
-            'TriniBuild collects, stores, and processes data to operate the platform, improve services, and enable your business activity.',
+            'Juvay collects, stores, and processes data to operate the platform, improve services, and enable your business activity.',
             'Data We Collect: Personal details, contact information, business information, listing data, messages, browsing activity, sales history, rideshare trips, ticket purchases, job interactions, and AI-generated content.',
-            'Data Ownership: TriniBuild owns all data stored or created on the platform. You grant us full rights to store, use, analyze, and process this data.',
-            'Marketing Usage: By using TriniBuild, you consent to receiving marketing emails, SMS notifications, push notifications, and platform promotions.',
+            'Data Ownership: Juvay owns all data stored or created on the platform. You grant us full rights to store, use, analyze, and process this data.',
+            'Marketing Usage: By using Juvay, you consent to receiving marketing emails, SMS notifications, push notifications, and platform promotions.',
             'Third-Party Sharing: We may share data with payment processors, verification services, analytics partners, or legal authorities when required.',
-            'Cookies: TriniBuild uses cookies and tracking technologies to improve user experience and platform performance.',
+            'Cookies: Juvay uses cookies and tracking technologies to improve user experience and platform performance.',
             'AI Processing: Your data may be used to train and improve internal algorithms, recommendation systems, or fraud detection.',
             'Your Rights: You may request copies of your data or request account deletion. Deleting your account does not remove platform-owned operational or historical data.',
             'Security: We use industry-standard security systems but cannot guarantee absolute data protection.'
@@ -73,10 +73,10 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Independent Contractor Agreement',
         effectiveDate: '2025-01-01',
         content: [
-            'By using TriniBuild to offer services, ride services, deliveries, listings, or digital goods, you acknowledge you are an Independent Contractor, not an employee.',
+            'By using Juvay to offer services, ride services, deliveries, listings, or digital goods, you acknowledge you are an Independent Contractor, not an employee.',
             'You handle your own taxes, NIS contributions, business registration, licensing, and compliance.',
             'You waive all employment claims, including paid leave, NIS employer contributions, insurance, health benefits, severance, and vacation pay.',
-            'TriniBuild does not guarantee work, earnings, bookings, clients, or transactions.',
+            'Juvay does not guarantee work, earnings, bookings, clients, or transactions.',
             'You operate entirely at your own risk and accept full responsibility for interactions with customers or third parties.'
         ]
     },
@@ -84,13 +84,13 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
     affiliate_agreement: {
         type: 'affiliate_agreement',
         version: '2.0.0',
-        title: 'TriniBuild Affiliate Program Agreement',
+        title: 'Juvay Affiliate Program Agreement',
         effectiveDate: '2025-01-01',
         content: [
             'All users are automatically enrolled as affiliate earners.',
-            'You may earn commissions for referring new users or customers to TriniBuild.',
+            'You may earn commissions for referring new users or customers to Juvay.',
             'Affiliate commissions are not wages—they are independent contractor earnings.',
-            'TriniBuild may modify payout rates or program rules at any time.',
+            'Juvay may modify payout rates or program rules at any time.',
             'Commissions may be withheld if fraud, misuse, or policy violations occur.'
         ]
     },
@@ -103,7 +103,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         content: [
             'Vendors may sell products, services, food, digital goods, or listings on the platform.',
             'You are responsible for product accuracy, delivery, safety, legality, refunds, and customer communication.',
-            'TriniBuild is not responsible for disputes between vendors and customers.',
+            'Juvay is not responsible for disputes between vendors and customers.',
             'Prohibited items include weapons, contraband, counterfeit goods, illegal substances, and unauthorized financial services.'
         ]
     },
@@ -116,7 +116,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         content: [
             'Drivers operate as independent contractors.',
             'You must maintain a valid driver\'s license, insurance, inspection, and safe working vehicle.',
-            'TriniBuild is not responsible for accidents, injuries, damages, theft, or incidents involving drivers or passengers.',
+            'Juvay is not responsible for accidents, injuries, damages, theft, or incidents involving drivers or passengers.',
             'Drivers accept full responsibility for compliance with transportation laws.'
         ]
     },
@@ -129,7 +129,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         content: [
             'Users may post properties for rent, sale, or lease.',
             'You confirm that you are the legal owner, authorized agent, or have permission to list the property.',
-            'TriniBuild is not responsible for fraudulent listings, landlord disputes, tenant issues, deposits, or contracts.'
+            'Juvay is not responsible for fraudulent listings, landlord disputes, tenant issues, deposits, or contracts.'
         ]
     },
 
@@ -141,7 +141,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         content: [
             'Event creators are responsible for event safety, legality, refunds, and attendee communication.',
             'Juvay does not sell event tickets. The /tickets route stays empty until a real event exists.',
-            'No refunds will be issued by TriniBuild unless required by law.',
+            'No refunds will be issued by Juvay unless required by law.',
             'Event owners must comply with local regulations and venue requirements.'
         ]
     },
@@ -153,7 +153,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         effectiveDate: '2025-01-01',
         content: [
             'Job posters must provide accurate descriptions and comply with all labor laws.',
-            'TriniBuild is not an employer and does not verify job legitimacy.',
+            'Juvay is not an employer and does not verify job legitimacy.',
             'Users must exercise caution when applying, interviewing, or submitting documents.'
         ]
     },
@@ -164,8 +164,8 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Data Ownership & Marketing Consent',
         effectiveDate: '2025-01-01',
         content: [
-            'By using TriniBuild, you grant the platform full rights to store, process, analyze, and utilize all user-generated data.',
-            'TriniBuild may use your data for advertising, internal analytics, AI training, remarketing, SMS, and email campaigns.',
+            'By using Juvay, you grant the platform full rights to store, process, analyze, and utilize all user-generated data.',
+            'Juvay may use your data for advertising, internal analytics, AI training, remarketing, SMS, and email campaigns.',
             'You consent to receiving promotional messages unless explicitly opted out.',
             'Operational messages cannot be opted out of.'
         ]
@@ -177,9 +177,9 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Financial Document Generation Consent',
         effectiveDate: '2025-01-01',
         content: [
-            'TriniBuild may generate job letters, proof-of-income documents, tax summaries, earnings reports, and contractor verification letters.',
+            'Juvay may generate job letters, proof-of-income documents, tax summaries, earnings reports, and contractor verification letters.',
             'These documents are based solely on your platform activity.',
-            'You authorize TriniBuild to produce these documents for your personal use or to send to banks, embassies, or third parties upon request.'
+            'You authorize Juvay to produce these documents for your personal use or to send to banks, embassies, or third parties upon request.'
         ]
     },
 
@@ -189,7 +189,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Limitation of Liability',
         effectiveDate: '2025-01-01',
         content: [
-            'TriniBuild is not responsible for loss of income, damages, accidents, fraud, injuries, disputes, or failed transactions.',
+            'Juvay is not responsible for loss of income, damages, accidents, fraud, injuries, disputes, or failed transactions.',
             'Users accept full responsibility for their actions inside and outside the platform.',
             'Use of the platform is at your own risk.'
         ]
@@ -201,7 +201,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Account Suspension & Termination Policy',
         effectiveDate: '2025-01-01',
         content: [
-            'TriniBuild may suspend or terminate accounts for fraud, abuse, illegal activity, harassment, non-payment, chargebacks, or policy violations.',
+            'Juvay may suspend or terminate accounts for fraud, abuse, illegal activity, harassment, non-payment, chargebacks, or policy violations.',
             'Users may delete their account at any time, but operational data remains archived for security and compliance.'
         ]
     },
@@ -212,7 +212,7 @@ const LEGAL_DOCUMENTS: Record<DocumentType, Omit<LegalDocument, 'id'>> = {
         title: 'Dispute Resolution',
         effectiveDate: '2025-01-01',
         content: [
-            'All disputes must first be submitted to TriniBuild Support.',
+            'All disputes must first be submitted to Juvay Support.',
             'If unresolved, matters will be handled under the laws of Trinidad & Tobago.',
             'Users agree to arbitration before legal action.'
         ]

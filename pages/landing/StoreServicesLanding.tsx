@@ -281,7 +281,7 @@ export const StoreServicesLanding: React.FC = () => {
 
                                 {/* Apps that work together callout */}
                                 <div className="rounded-2xl p-4 mb-8" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Works with your full TriniBuild stack</p>
+                                    <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Works with your full Juvay stack</p>
                                     <div className="flex flex-wrap gap-2">
                                         {[
                                             { label: '📊 Tax Dashboard', desc: 'Every pickup auto-logged' },
@@ -506,8 +506,8 @@ export const StoreServicesLanding: React.FC = () => {
                                     <ContactMethod
                                         icon={<Mail className="h-6 w-6" />}
                                         label="Email"
-                                        value="stores@trinibuild.com"
-                                        href="mailto:stores@trinibuild.com"
+                                        value="support@juvay.app"
+                                        href="mailto:support@juvay.app"
                                     />
                                     <ContactMethod
                                         icon={<MapPin className="h-6 w-6" />}

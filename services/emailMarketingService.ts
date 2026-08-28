@@ -114,7 +114,7 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
   <div style="background:#f9fafb;padding:20px;text-align:center;font-size:12px;color:#9ca3af">
     <p>{{store_name}} • Trinidad & Tobago</p>
     <p><a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | <a href="https://trinibuild.com/privacy" style="color:#9ca3af">Privacy Policy</a></p>
-    <p style="margin-top:8px">Powered by TriniBuild 🇹🇹</p>
+    <p style="margin-top:8px">Powered by Juvay 🇹🇹</p>
   </div>
 </div>`
     },
@@ -143,7 +143,7 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
     <p style="font-size:13px;color:#9ca3af">Offer expires at midnight tonight</p>
   </div>
   <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#9ca3af">
-    <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by TriniBuild 🇹🇹
+    <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by Juvay 🇹🇹
   </div>
 </div>`
     },
@@ -175,7 +175,7 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
     </div>
   </div>
   <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#9ca3af">
-    {{store_name}} • <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by TriniBuild 🇹🇹
+    {{store_name}} • <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by Juvay 🇹🇹
   </div>
 </div>`
     }

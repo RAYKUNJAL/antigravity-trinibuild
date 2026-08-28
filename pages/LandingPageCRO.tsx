@@ -505,7 +505,7 @@ export const LandingPageCRO: React.FC = () => {
             '@type': 'SoftwareApplication',
             name: 'Juvay',
             description: 'Free online store builder for Trinidad & Tobago businesses with cash on delivery support',
-            url: 'https://trinibuild.com/',
+            url: 'https://juvay.app/',
             applicationCategory: 'ECommerce',
             operatingSystem: 'Web',
             offers: {

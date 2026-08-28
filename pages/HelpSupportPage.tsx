@@ -16,7 +16,7 @@ export const HelpSupportPage: React.FC = () => {
       category: 'Getting Started',
       items: [
         {
-          q: 'How do I create a store on TriniBuild?',
+          q: 'How do I create a store on Juvay?',
           a: 'Click "Create Store" and follow our 3-step wizard. It takes less than 2 minutes! Add your business name, choose a category, and you\'re ready to start listing products.'
         },
         {
@@ -24,7 +24,7 @@ export const HelpSupportPage: React.FC = () => {
           a: 'No! Juvay is free to start. No setup fees, no credit card required. Start with 5 free product listings. Starter (TT$99/mo) and Business (TT$329/mo) open when Wam can take that money. One TTD table on /pricing. No USD menu.'
         },
         {
-          q: 'Can I use TriniBuild if I don\'t have a bank account?',
+          q: 'Can I use Juvay if I don\'t have a bank account?',
           a: 'Yes! Cash on Delivery (COD) is our default payment method. Customers pay you in cash when they receive their order. No bank account or payment processing needed.'
         }
       ]
@@ -110,7 +110,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I have multiple stores?',
-          a: 'Not with one account. Create a separate TriniBuild account for each business. Or upgrade to Business plan for multi-user account management.'
+          a: 'Not with one account. Create a separate Juvay account for each business. Or upgrade to Business plan for multi-user account management.'
         },
         {
           q: 'How do I upgrade to Pro or Business?',
@@ -175,7 +175,7 @@ export const HelpSupportPage: React.FC = () => {
             How Can We Help?
           </motion.h1>
           <motion.p variants={item} className="text-lg text-gray-600 mb-8">
-            Find answers to your questions about TriniBuild, or contact our support team.
+            Find answers to your questions about Juvay, or contact our support team.
           </motion.p>
 
           {/* Search */}
@@ -299,7 +299,7 @@ export const HelpSupportPage: React.FC = () => {
           <Users className="w-12 h-12 mx-auto mb-4" />
           <h2 className="text-3xl font-black mb-4">Join Our Community</h2>
           <p className="text-red-100 mb-8 text-lg">
-            Connect with other TriniBuild merchants, share tips, and learn from their success
+            Connect with other Juvay merchants, share tips, and learn from their success
           </p>
           <button className="bg-white text-[#E61E2B] px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
             Join Facebook Community

@@ -78,7 +78,7 @@ export const ReferralProgramPage: React.FC = () => {
             <Gift className="w-16 h-16" />
           </motion.div>
           <motion.h1 variants={item} className="text-5xl font-black mb-6">
-            Earn with TriniBuild
+            Earn with Juvay
           </motion.h1>
           <motion.p variants={item} className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Refer merchants and earn recurring commissions. Build passive income while helping Caribbean businesses grow online.
@@ -272,7 +272,7 @@ export const ReferralProgramPage: React.FC = () => {
                 a: 'Monthly payouts on the 1st of each month via bank transfer. No minimum threshold.'
               },
               {
-                q: 'Can I promote TriniBuild?',
+                q: 'Can I promote Juvay?',
                 a: 'Yes! Share on social media, your website, email lists, podcasts, or anywhere. We provide marketing materials.'
               },
               {

@@ -57,7 +57,7 @@ export const PartnershipPage: React.FC = () => {
   const opportunities = [
     {
       title: 'Payment Processors',
-      description: 'Integrate your payment gateway to reach TriniBuild merchants',
+      description: 'Integrate your payment gateway to reach Juvay merchants',
       icon: '💰'
     },
     {
@@ -82,7 +82,7 @@ export const PartnershipPage: React.FC = () => {
     },
     {
       title: 'Technology Vendors',
-      description: 'Build tools and plugins on TriniBuild platform',
+      description: 'Build tools and plugins on Juvay platform',
       icon: '🔧'
     }
   ];
@@ -101,7 +101,7 @@ export const PartnershipPage: React.FC = () => {
             Partnerships & Integrations
           </motion.h1>
           <motion.p variants={item} className="text-xl text-red-100">
-            Build on TriniBuild to reach Caribbean merchants as we grow — starting in Trinidad & Tobago
+            Build on Juvay to reach Caribbean merchants as we grow — starting in Trinidad & Tobago
           </motion.p>
         </div>
       </motion.section>
@@ -203,7 +203,7 @@ export const PartnershipPage: React.FC = () => {
       >
         <div className="max-w-4xl mx-auto">
           <motion.h2 variants={item} className="text-3xl font-black text-center mb-12">
-            Why Partner with TriniBuild?
+            Why Partner with Juvay?
           </motion.h2>
           <div className="grid md:grid-cols-2 gap-8">
             {[
@@ -220,7 +220,7 @@ export const PartnershipPage: React.FC = () => {
               {
                 icon: BarChart3,
                 title: 'High Engagement',
-                description: 'Merchants on TriniBuild are 3x more likely to upgrade vs industry average'
+                description: 'Merchants on Juvay are 3x more likely to upgrade vs industry average'
               },
               {
                 icon: Shield,
@@ -235,7 +235,7 @@ export const PartnershipPage: React.FC = () => {
               {
                 icon: Smile,
                 title: 'Support',
-                description: 'Dedicated partnership team to help you succeed with TriniBuild merchants'
+                description: 'Dedicated partnership team to help you succeed with Juvay merchants'
               }
             ].map((reason, idx) => {
               const Icon = reason.icon;

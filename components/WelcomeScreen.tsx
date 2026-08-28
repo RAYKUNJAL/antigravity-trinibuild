@@ -16,7 +16,7 @@ const AIAssistantModal = ({ service, onClose }: { service: string, onClose: () =
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 flex justify-between items-center text-white">
                     <div className="flex items-center gap-2">
                         <Sparkles className="w-5 h-5" />
-                        <h3 className="font-bold text-lg">TriniBuild AI Assistant</h3>
+                        <h3 className="font-bold text-lg">Juvay AI Assistant</h3>
                     </div>
                     <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition-colors">
                         <X className="w-5 h-5" />
@@ -267,7 +267,7 @@ export const WelcomeScreen = () => {
 
                                 {/* Bottom Text Overlay */}
                                 <div className="absolute bottom-8 left-8 text-white">
-                                    <p className="font-bold text-lg">TriniBuild {selectedService === 'triniworks' ? 'TriniWorks' : selectedService.charAt(0).toUpperCase() + selectedService.slice(1)}</p>
+                                    <p className="font-bold text-lg">Juvay {selectedService === 'triniworks' ? 'Jobs' : selectedService.charAt(0).toUpperCase() + selectedService.slice(1)}</p>
                                     <p className="text-white/80 text-sm">Empowering Local Business</p>
                                 </div>
                             </div>

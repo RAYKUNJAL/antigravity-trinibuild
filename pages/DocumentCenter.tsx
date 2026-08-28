@@ -357,8 +357,8 @@ export default function DocumentCenter() {
               {/* Official header */}
               <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-sm">TriniBuild Platform — Official Document</p>
-                  <p className="text-gray-400 text-xs">R&R Digital Solutions Ltd · trinibuild.com</p>
+                  <p className="font-bold text-sm">Juvay Platform — Official Document</p>
+                  <p className="text-gray-400 text-xs">R&R Digital Solutions Ltd · juvay.app</p>
                 </div>
                 <FileText className="w-6 h-6 text-gray-400" />
               </div>

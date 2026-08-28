@@ -560,7 +560,7 @@ export const StoreDashboard: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{store?.name || 'Dashboard'} - TriniBuild</title>
+        <title>{store?.name || 'Dashboard'} - Juvay</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -607,7 +607,7 @@ export const StoreDashboard: React.FC = () => {
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
             >
-              <Home className="w-4 h-4" /> Back to TriniBuild
+              <Home className="w-4 h-4" /> Back to Juvay
             </button>
           </div>
         </aside>
