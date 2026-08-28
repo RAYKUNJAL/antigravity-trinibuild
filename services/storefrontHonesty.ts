@@ -5,6 +5,7 @@
 
 import type { StarterId, StorefrontBlock } from './storeStarters';
 import { STORE_STARTERS } from './storeStarters';
+import type { FontPair, MerchantColors } from './merchantTheme';
 
 export interface StorefrontVariant {
   id: string;
@@ -49,9 +50,18 @@ export interface StorefrontModel {
   items?: StorefrontItem[];
   hero?: { headline: string; sub?: string; image?: string };
   about?: string;
+  phone?: string;
   trustChips?: string[];
   faq?: Array<{ q: string; a: string }>;
   how?: Array<{ title: string; body: string }>;
+  colors?: MerchantColors;
+  fontPair?: FontPair;
+  logo?: string;
+  announcement?: string;
+  showAbout?: boolean;
+  showContact?: boolean;
+  seo?: { title?: string; description?: string };
+  social?: { instagram?: string; facebook?: string; tiktok?: string };
   mode?: StorefrontMode;
 }
 
@@ -197,12 +207,29 @@ export function closedFoodNextOpen(model: StorefrontModel): string {
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
 }
 
-/** One announcement line from live rails only. Never free shipping / money-back. */
+/** Merchant-typed bar, else live-rail chips only. Never free shipping / money-back. */
 export function announcementLine(model: StorefrontModel): string {
+  const typed = String(model.announcement || '').trim();
+  if (typed) return typed;
   const bits: string[] = [];
   if (model.acceptsCashPickup) bits.push('Cash at pickup');
   if (model.acceptsCod) bits.push('COD');
   return bits.join(' · ');
+}
+
+export function showAboutSection(model: StorefrontModel): boolean {
+  if (model.showAbout === false) return false;
+  return !!String(model.about || '').trim();
+}
+
+export function showContactSection(model: StorefrontModel): boolean {
+  if (model.showContact === false) return false;
+  return !!(
+    String(model.phone || '').trim()
+    || normalizeWhatsappE164(model.whatsappE164)
+    || String(model.hours || '').trim()
+    || String(model.pickupAddress || '').trim()
+  );
 }
 
 const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;

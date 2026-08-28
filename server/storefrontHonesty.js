@@ -109,6 +109,30 @@ function itemIsSellable(item) {
   return item.inStock !== false;
 }
 
+function announcementLine(model) {
+  const typed = String((model && model.announcement) || '').trim();
+  if (typed) return typed;
+  const bits = [];
+  if (model && model.acceptsCashPickup) bits.push('Cash at pickup');
+  if (model && model.acceptsCod) bits.push('COD');
+  return bits.join(' · ');
+}
+
+function showAboutSection(model) {
+  if (!model || model.showAbout === false) return false;
+  return !!String(model.about || '').trim();
+}
+
+function showContactSection(model) {
+  if (!model || model.showContact === false) return false;
+  return !!(
+    String(model.phone || '').trim()
+    || normalizeWhatsappE164(model.whatsappE164)
+    || String(model.hours || '').trim()
+    || String(model.pickupAddress || '').trim()
+  );
+}
+
 const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
 
 function merchantUploadedHero(model) {
@@ -142,4 +166,7 @@ module.exports = {
   itemIsSellable,
   merchantUploadedHero,
   showIllustrativeBanner,
+  announcementLine,
+  showAboutSection,
+  showContactSection,
 };

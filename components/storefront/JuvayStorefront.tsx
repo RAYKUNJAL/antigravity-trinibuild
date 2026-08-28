@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ISLAND, STORE_STARTERS, type StarterId } from '../../services/storeStarters';
+import { applyMerchantTheme, socialHref } from '../../services/merchantTheme';
 import {
   announcementLine,
   closedFoodNextOpen,
@@ -12,6 +13,8 @@ import {
   realTrustChips,
   reviewBadge,
   shouldRenderBlock,
+  showAboutSection,
+  showContactSection,
   showIllustrativeBanner,
   showOrderCta,
   showWhatsApp,
@@ -159,7 +162,8 @@ export const JuvayStorefront: React.FC<{
   editor?: StorefrontEditor;
 }> = ({ model, onPrimaryCta, editor }) => {
   const starter = STORE_STARTERS[model.templateId];
-  const p = starter.palette;
+  const p = applyMerchantTheme(starter.palette, { colors: model.colors, fontPair: model.fontPair });
+  const buy = { background: p.accent, color: p.accentText, border: 'none' };
   const items = liveItems(model);
   const featured = featuredItems(model);
   const badge = reviewBadge(model.reviewCount);
@@ -231,15 +235,33 @@ export const JuvayStorefront: React.FC<{
     document.getElementById('juvay-catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const ghost = starter.heroLayout === 'bleed';
+  const ghost = starter.heroLayout === 'bleed' && !model.colors?.accent;
   const ctaStyle: React.CSSProperties = ghost
     ? { ...SMALL_CTA, background: 'transparent', color: p.heroText, border: `1px solid ${p.heroText}` }
-    : { ...SMALL_CTA, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' };
+    : { ...SMALL_CTA, ...buy };
   const heroSrc = resolveHeroSrc(model);
   const chips = realTrustChips(model);
 
   const upsell = items.filter((i) => i.inStock !== false && !cart.some((l) => l.item.id === i.id)).slice(0, 1);
   const showUpsell = items.length >= 2 && upsell.length > 0;
+
+  useEffect(() => {
+    if (model.mode !== 'published' || !model.logo) return;
+    let link = document.querySelector('link[rel="icon"][data-juvay="logo"]') as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      link.setAttribute('data-juvay', 'logo');
+      document.head.appendChild(link);
+    }
+    link.href = model.logo;
+  }, [model.logo, model.mode]);
+
+  const socials = [
+    { key: 'instagram' as const, href: socialHref('instagram', model.social?.instagram) },
+    { key: 'facebook' as const, href: socialHref('facebook', model.social?.facebook) },
+    { key: 'tiktok' as const, href: socialHref('tiktok', model.social?.tiktok) },
+  ].filter((row) => row.href);
 
   return (
     <div style={{ minHeight: '100%', background: p.bg, color: p.text, fontFamily: p.bodyFont }}>
@@ -270,7 +292,10 @@ export const JuvayStorefront: React.FC<{
           background: p.surface,
         }}
       >
-        <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 600 }}>
+        <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+          {model.logo ? (
+            <img src={model.logo} alt="" width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          ) : null}
           {model.storeName || starter.name}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12 }}>
@@ -398,19 +423,32 @@ export const JuvayStorefront: React.FC<{
       {shouldRenderBlock('trust', model) && chips.length > 0 ? (
         <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface }}>
           {chips.map((chip) => (
-            <span key={chip} style={{ fontSize: 12, color: ISLAND.teal, border: `1px solid ${p.border}`, padding: '4px 10px' }}>{chip}</span>
+            <span key={chip} style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>{chip}</span>
           ))}
         </div>
       ) : null}
 
-      {model.about || editor ? (
+      {(showAboutSection(model) || editor) ? (
         <section style={{ padding: '40px 6vw', maxWidth: 'calc(40ch + 12vw)' }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, margin: '0 0 10px' }}>About</h2>
           <EditableText
             field="about"
             editor={editor}
             value={model.about || ''}
             style={{ margin: 0, fontSize: 16, lineHeight: 1.65, color: p.muted, maxWidth: '40ch' }}
           />
+        </section>
+      ) : null}
+
+      {showContactSection(model) ? (
+        <section style={{ padding: '8px 6vw 36px', maxWidth: 560 }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, margin: '0 0 10px' }}>Contact / Hours</h2>
+          {model.hours ? <div style={{ marginBottom: 6 }}>{model.hours}</div> : null}
+          {model.pickupAddress ? <div style={{ marginBottom: 6 }}>{model.pickupAddress}</div> : null}
+          {model.phone ? <div style={{ marginBottom: 6 }}>{model.phone}</div> : null}
+          {wa ? (
+            <a href={waHref(wa, `Hello ${model.storeName}`)} style={{ color: p.accent }}>WhatsApp</a>
+          ) : null}
         </section>
       ) : null}
 
@@ -463,7 +501,7 @@ export const JuvayStorefront: React.FC<{
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {price ? <strong style={{ color: ISLAND.pepper }}>{price}</strong> : null}
                     {itemIsSellable(item) ? (
-                      <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>Add</button>
+                      <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, ...buy }}>Add</button>
                     ) : (
                       <span style={{ fontSize: 12, color: p.muted }}>Out of stock</span>
                     )}
@@ -513,6 +551,13 @@ export const JuvayStorefront: React.FC<{
         <footer style={{ padding: '36px 6vw 48px', borderTop: `1px solid ${p.border}`, color: p.muted, fontSize: 13 }}>
           <div style={{ fontFamily: p.headingFont, color: p.text, fontSize: 20, marginBottom: 6 }}>{model.storeName || starter.name}</div>
           {model.island ? <div>{model.island}</div> : null}
+          {socials.length ? (
+            <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
+              {socials.map((row) => (
+                <a key={row.key} href={row.href} style={{ color: p.accent, textTransform: 'capitalize' }}>{row.key}</a>
+              ))}
+            </div>
+          ) : null}
           <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
             <a href="/terms.html" style={{ color: ISLAND.teal }}>Terms</a>
             <a href="/privacy.html" style={{ color: ISLAND.teal }}>Privacy</a>
@@ -552,7 +597,7 @@ export const JuvayStorefront: React.FC<{
           <button
             type="button"
             onClick={() => (cartCount ? setCartOpen(true) : scrollToCatalog())}
-            style={{ minHeight: 44, minWidth: 140, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none', fontWeight: 700 }}
+            style={{ minHeight: 44, minWidth: 140, ...buy, fontWeight: 700 }}
           >
             {cta}
           </button>
@@ -580,7 +625,7 @@ export const JuvayStorefront: React.FC<{
               type="button"
               disabled={!pickedVariant}
               onClick={() => addLine(picker, picker.variants?.find((v) => v.id === pickedVariant))}
-              style={{ ...SMALL_CTA, width: '100%', height: 44, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}
+              style={{ ...SMALL_CTA, width: '100%', height: 44, ...buy }}
             >
               Add
             </button>
@@ -645,7 +690,7 @@ export const JuvayStorefront: React.FC<{
               {wa ? (
                 <a
                   href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => `${l.item.name} x${l.qty}`).join(', ')}. ${face}`)}
-                  style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: ISLAND.mango, color: ISLAND.mangoInk, textDecoration: 'none', fontWeight: 700 }}
+                  style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: p.accent, color: p.accentText, textDecoration: 'none', fontWeight: 700 }}
                 >
                   WhatsApp this order
                 </a>
@@ -695,7 +740,7 @@ const CatalogCard: React.FC<{
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           {price ? <span style={{ color: ISLAND.pepper, fontWeight: 600 }}>{price}</span> : <span />}
           {sellable ? (
-            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 72, background: ISLAND.mango, color: ISLAND.mangoInk, border: 'none' }}>
+            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 72, background: p.accent, color: p.accentText, border: 'none' }}>
               {needsVariant ? 'Pick' : 'Add'}
             </button>
           ) : (

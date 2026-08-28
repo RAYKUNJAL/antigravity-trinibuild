@@ -336,11 +336,17 @@ export const StorefrontV2: React.FC = () => {
 
     if (storeUsesStarter(store)) {
         const model = storeToStorefrontModel(store, products, isPreview ? 'merchant_preview' : 'published');
+        const seoTitle = model.seo?.title || `${store.name} · Juvay`;
+        const seoDesc = model.seo?.description || store.description || `${store.name} on Juvay`;
+        const ogImage = model.hero?.image || model.logo || '';
         return (
             <>
                 <Helmet>
-                    <title>{store.name} · Juvay</title>
-                    <meta name="description" content={store.description || `${store.name} on Juvay`} />
+                    <title>{seoTitle}</title>
+                    <meta name="description" content={seoDesc} />
+                    {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+                    {ogImage ? <meta name="twitter:image" content={ogImage} /> : null}
+                    {model.logo ? <link rel="icon" href={model.logo} /> : null}
                 </Helmet>
                 {isPreview && (
                     <div className="bg-yellow-500 text-gray-900 text-center py-3 px-4 text-sm font-bold">

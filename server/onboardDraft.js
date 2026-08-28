@@ -4,6 +4,14 @@
  */
 
 const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto'];
+const {
+  parseColorInstruction,
+  parseFontInstruction,
+  sanitizeColors,
+  sanitizeFontPair,
+  sanitizeSeo,
+  sanitizeSocial,
+} = require('./merchantTheme');
 
 const HERO = {
   food: 'Cooked this morning. Ready when you reach.',
@@ -298,6 +306,12 @@ function currentCopy(bodyCurrent, templateId) {
     trustChips: Array.isArray(current.trustChips)
       ? current.trustChips.map((c) => String(c || '').trim()).filter(Boolean).slice(0, 6)
       : [],
+    colors: current.colors && typeof current.colors === 'object' ? current.colors : {},
+    fontPair: ['starter', 'serif_sans', 'all_sans'].includes(current.fontPair) ? current.fontPair : 'starter',
+    logo: String(current.logo || ''),
+    announcement: String(current.announcement || '').slice(0, 120),
+    seo: current.seo && typeof current.seo === 'object' ? current.seo : {},
+    social: current.social && typeof current.social === 'object' ? current.social : {},
   };
 }
 
@@ -340,10 +354,20 @@ function merchantOwnedImage(value) {
   return !!img && !STARTER_HERO_RE.test(img);
 }
 
+function sameJson(a, b) {
+  return JSON.stringify(a || {}) === JSON.stringify(b || {});
+}
+
 function mergePatch(current, rawPatch) {
   const patch = rawPatch && typeof rawPatch === 'object' ? rawPatch : {};
   const hero = patch.hero && typeof patch.hero === 'object' ? patch.hero : {};
   const nextImage = allowedProposedHeroImage(hero.image);
+  const nextColors = sanitizeColors(patch.colors) || current.colors || {};
+  const nextFont = sanitizeFontPair(patch.fontPair) || current.fontPair || 'starter';
+  const nextLogo = patch.logo === '' ? '' : (current.logo || '');
+  const nextAnnouncement = patch.announcement != null ? String(patch.announcement).slice(0, 120) : current.announcement;
+  const nextSeo = sanitizeSeo(patch.seo) || current.seo || {};
+  const nextSocial = sanitizeSocial(patch.social) || current.social || {};
   const next = {
     templateId: current.templateId,
     hero: {
@@ -356,6 +380,12 @@ function mergePatch(current, rawPatch) {
     trustChips: Array.isArray(patch.trustChips)
       ? patch.trustChips.map((c) => String(c || '').trim()).filter(Boolean).slice(0, 6)
       : current.trustChips,
+    colors: nextColors,
+    fontPair: nextFont,
+    logo: nextLogo || '',
+    announcement: nextAnnouncement || '',
+    seo: nextSeo,
+    social: nextSocial,
   };
   const changedFields = [];
   if (next.hero.headline !== current.hero.headline) changedFields.push('hero.headline');
@@ -364,19 +394,48 @@ function mergePatch(current, rawPatch) {
   if (next.about !== current.about) changedFields.push('about');
   if (next.hours !== current.hours) changedFields.push('hours');
   if (JSON.stringify(next.trustChips) !== JSON.stringify(current.trustChips)) changedFields.push('trustChips');
+  if (!sameJson(next.colors, current.colors || {})) changedFields.push('colors');
+  if (next.fontPair !== (current.fontPair || 'starter')) changedFields.push('fontPair');
+  if (next.logo !== (current.logo || '')) changedFields.push('logo');
+  if (next.announcement !== (current.announcement || '')) changedFields.push('announcement');
+  if (!sameJson(next.seo, current.seo || {})) changedFields.push('seo');
+  if (!sameJson(next.social, current.social || {})) changedFields.push('social');
   const conflicts = [];
   if (changedFields.includes('hero.headline') && current.hero.headline) conflicts.push('hero.headline');
   if (changedFields.includes('hero.image') && merchantOwnedImage(current.hero.image)) conflicts.push('hero.image');
   if (changedFields.includes('about') && current.about) conflicts.push('about');
   if (changedFields.includes('hours') && current.hours) conflicts.push('hours');
   if (changedFields.includes('trustChips') && current.trustChips.length) conflicts.push('trustChips');
+  if (changedFields.includes('colors') && current.colors && (current.colors.accentSource === 'hex' || current.colors.accent)) {
+    conflicts.push('colors');
+  }
+  if (changedFields.includes('announcement') && current.announcement) conflicts.push('announcement');
+  if (changedFields.includes('seo') && current.seo && (current.seo.title || current.seo.description)) conflicts.push('seo');
   const shown = {
     hero: { headline: next.hero.headline, sub: next.hero.sub, image: next.hero.image },
     about: next.about,
     hours: next.hours,
     trustChips: next.trustChips,
+    colors: next.colors,
+    fontPair: next.fontPair,
+    logo: next.logo,
+    announcement: next.announcement,
+    seo: next.seo,
+    social: next.social,
   };
   return { proposed: stripProducts(next), changedFields, conflicts, patch: stripProducts(shown) };
+}
+
+function localPatchFromInstruction(instruction) {
+  const patch = {};
+  const colors = parseColorInstruction(instruction);
+  if (colors) patch.colors = colors;
+  const fontPair = parseFontInstruction(instruction);
+  if (fontPair) patch.fontPair = fontPair;
+  const t = String(instruction || '');
+  const ann = t.match(/announcement[:\s]+["“]?([^"”\n]+)["”]?/i);
+  if (ann) patch.announcement = ann[1].trim().slice(0, 120);
+  return patch;
 }
 
 async function callGrokPatch(input) {
@@ -386,13 +445,15 @@ async function callGrokPatch(input) {
   const model = (process.env.LLM_MODEL || 'grok-4-fast').trim();
   const system = [
     'You propose store copy patches for Juvay.',
-    'Return JSON only: { hero?: { headline?, sub?, image? }, about?, hours?, trustChips? }.',
+    'Return JSON only: { hero?: { headline?, sub?, image? }, about?, hours?, trustChips?, colors?: { accent?, heroBg?, surface? }, fontPair?, announcement?, seo?: { title?, description? }, social?: { instagram?, facebook?, tiktok? } }.',
     'Only include fields the merchant asked to change.',
+    'colors.accent / heroBg / surface must be #rrggbb island colors (mango #FFC300, teal #0D9488, ink #141414, cocoa, amber, sand #FFF8F0).',
+    'fontPair must be starter | serif_sans | all_sans.',
     'Do not invent products, prices, SKUs, WhatsApp, payment rails, or shop names.',
     'Do not mention PayPal, Linx, Michelin, free shipping, or TriniBuild.',
-    'Do not include products, items, catalog, or skus.',
+    'Do not include products, items, catalog, skus, or logo data URLs.',
     'hero.image may only be empty (clear merchant photo) or a starter path /templates/heroes/{food|fashion|services|general|beauty|home|electronics|auto}.jpg.',
-    'If the merchant already wrote a field, you may propose a rewrite but the client will show the patch first.',
+    'If the merchant already wrote a field or typed a hex, you may propose a rewrite but the client will show the patch first.',
   ].join(' ');
   const user = JSON.stringify({
     instruction: input.instruction,
@@ -435,24 +496,29 @@ async function buildOnboardPatch(body) {
   const checked = validatePatchInput(body || {});
   if (checked.error) return { error: checked.error, status: 400 };
   const input = checked.input;
+  const local = localPatchFromInstruction(input.instruction);
   if (!grokConfigured()) {
-    const empty = mergePatch(input.current, {});
+    const merged = mergePatch(input.current, local);
     return {
-      ...empty,
+      ...merged,
       agentWrote: false,
-      warning: 'Grok is not writing this change. Nothing was overwritten.',
+      warning: merged.changedFields.length
+        ? 'Grok is not writing this change. A local color/font read is proposed — apply it to confirm.'
+        : 'Grok is not writing this change. Nothing was overwritten.',
     };
   }
   try {
     const grok = await callGrokPatch(input);
-    const merged = mergePatch(input.current, grok);
+    const merged = mergePatch(input.current, { ...local, ...(grok || {}) });
     return { ...merged, agentWrote: true };
   } catch (err) {
-    const empty = mergePatch(input.current, {});
+    const merged = mergePatch(input.current, local);
     return {
-      ...empty,
+      ...merged,
       agentWrote: false,
-      warning: 'Grok did not write this change. Your copy is unchanged.',
+      warning: merged.changedFields.length
+        ? 'Grok did not write this change. A local color/font read is proposed — apply it to confirm.'
+        : 'Grok did not write this change. Your copy is unchanged.',
       detail: err.message,
     };
   }
@@ -474,5 +540,6 @@ module.exports = {
   validatePatchInput,
   mergePatch,
   currentCopy,
+  localPatchFromInstruction,
   buildOnboardPatch,
 };

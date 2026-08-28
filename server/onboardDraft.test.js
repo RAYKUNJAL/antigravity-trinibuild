@@ -105,6 +105,34 @@ assert.strictEqual(clean.templateId, 'food');
   assert.match(patched.warning, /not writing|unchanged/i);
   assert.ok(!('products' in patched.proposed));
 
+  const mango = mergePatch(current, { colors: { accent: '#FFC300' } });
+  assert.ok(mango.changedFields.includes('colors'));
+  assert.strictEqual(mango.proposed.colors.accent, '#ffc300');
+  assert.ok(!('products' in mango.proposed));
+
+  const colorAsk = await buildOnboardPatch({
+    instruction: 'make the button mango gold',
+    templateId: 'food',
+    current,
+  });
+  assert.ok(colorAsk.changedFields.includes('colors'));
+  assert.strictEqual(colorAsk.proposed.colors.accent, '#ffc300');
+  assert.strictEqual(colorAsk.agentWrote, false);
+
+  const darker = await buildOnboardPatch({
+    instruction: 'darker hero',
+    templateId: 'food',
+    current,
+  });
+  assert.ok(darker.changedFields.includes('colors'));
+  assert.strictEqual(darker.proposed.colors.heroBg, '#141414');
+
+  const typedHex = mergePatch(
+    { ...current, colors: { accent: '#112233', accentSource: 'hex' } },
+    { colors: { accent: '#ffc300' } },
+  );
+  assert.ok(typedHex.conflicts.includes('colors'));
+
   if (prev === undefined) delete process.env.LLM_API_KEY;
   else process.env.LLM_API_KEY = prev;
   console.log('onboardDraft.test.js ok');

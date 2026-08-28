@@ -30,6 +30,19 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
       specs: mapProductSpecs(p.specs || p.specifications),
       inStock: p.in_stock === false || p.inStock === false || p.stock === 0 ? false : true,
     }));
+  if (!items.length && theme.first_item && String(theme.first_item.name || '').trim()) {
+    const variant = String(theme.first_item.variant || '').trim();
+    items.push({
+      id: 'first',
+      name: String(theme.first_item.name).trim(),
+      price: theme.first_item.price != null && Number.isFinite(Number(theme.first_item.price)) ? Number(theme.first_item.price) : null,
+      imageUrl: theme.first_item.image || '',
+      variants: variant ? [{ id: 'v1', title: variant }] : [],
+      inStock: true,
+    });
+  } else if (items[0] && theme.first_item?.variant && !(items[0].variants && items[0].variants.length)) {
+    items[0] = { ...items[0], variants: [{ id: 'v1', title: String(theme.first_item.variant) }] };
+  }
 
   const whatsappE164 = normalizeWhatsappE164(store?.whatsapp || theme.whatsappE164 || store?.whatsappE164);
   const hours = theme.hours || (typeof store?.operating_hours === 'string' ? store.operating_hours : '');
@@ -62,6 +75,15 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
       image: theme.hero?.image || '',
     },
     about: theme.about || store?.description || '',
+    phone: store?.phone || theme.phone || '',
+    colors: theme.colors && typeof theme.colors === 'object' ? theme.colors : undefined,
+    fontPair: theme.fontPair === 'serif_sans' || theme.fontPair === 'all_sans' || theme.fontPair === 'starter' ? theme.fontPair : undefined,
+    logo: typeof theme.logo === 'string' ? theme.logo : '',
+    announcement: typeof theme.announcement === 'string' ? theme.announcement : '',
+    showAbout: theme.pages?.about !== false,
+    showContact: theme.pages?.contact !== false,
+    seo: theme.seo && typeof theme.seo === 'object' ? theme.seo : undefined,
+    social: theme.social && typeof theme.social === 'object' ? theme.social : undefined,
     trustChips: Array.isArray(theme.trustChips) ? theme.trustChips : [],
     faq: Array.isArray(theme.faq) && theme.faq.length ? theme.faq : defaultFaq({
       acceptsPickup,

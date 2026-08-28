@@ -13,6 +13,9 @@ const {
   mapProductSpecs,
   itemIsSellable,
   showIllustrativeBanner,
+  announcementLine,
+  showAboutSection,
+  showContactSection,
 } = require('./storefrontHonesty');
 
 function food(partial = {}) {
@@ -97,5 +100,13 @@ assert.strictEqual(showIllustrativeBanner({
 assert.strictEqual(showIllustrativeBanner({
   templateId: 'food', storeName: 'Food', mode: 'published', hero: { headline: 'x', image: 'data:image/jpeg;base64,abc' },
 }), false);
+
+assert.strictEqual(announcementLine(food({ acceptsCashPickup: true, acceptsCod: true })), 'Cash at pickup · COD');
+assert.strictEqual(announcementLine(food({ announcement: 'Closed Carnival Monday', acceptsCod: true })), 'Closed Carnival Monday');
+assert.ok(!announcementLine(food({ acceptsCashPickup: true })).toLowerCase().includes('shipping'));
+assert.strictEqual(showAboutSection(food({ about: 'We bake.' })), true);
+assert.strictEqual(showAboutSection(food({ about: 'We bake.', showAbout: false })), false);
+assert.strictEqual(showContactSection(food({ hours: 'Wed–Sat' })), true);
+assert.strictEqual(showContactSection(food({ hours: 'Wed–Sat', showContact: false })), false);
 
 console.log('storefrontHonesty.test.js ok');

@@ -6,11 +6,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { storesApi, getToken } from '../services/selfHostedApi';
+import { storesApi, productsApi, getToken } from '../services/selfHostedApi';
 import { fetchWamStatus } from '../services/wamStatus';
 import { STORE_STARTERS, STARTER_IDS, ISLAND, resolveStarterId, defaultFaq, defaultHowSteps, type StarterId } from '../services/storeStarters';
 import { normalizeWhatsappE164, type StorefrontModel } from '../services/storefrontHonesty';
+import { defaultSeo, type FontPair, type MerchantColors } from '../services/merchantTheme';
 import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
+import { MerchantStudio } from '../components/MerchantStudio';
 import { SafeBoundary } from '../components/SafeBoundary';
 
 type Step = 1 | 2 | 3 | 4;
@@ -49,6 +51,21 @@ interface BuilderState {
   agentWrote: boolean | null;
   agentWarning: string;
   foodAttested: boolean;
+  colors: MerchantColors;
+  fontPair: FontPair;
+  logo: string;
+  announcement: string;
+  showAbout: boolean;
+  showContact: boolean;
+  seoTitle: string;
+  seoDescription: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  itemName: string;
+  itemPrice: string;
+  itemImage: string;
+  itemVariant: string;
 }
 
 const emptyState = (): BuilderState => ({
@@ -75,6 +92,21 @@ const emptyState = (): BuilderState => ({
   agentWrote: null,
   agentWarning: '',
   foodAttested: false,
+  colors: {},
+  fontPair: 'starter',
+  logo: '',
+  announcement: '',
+  showAbout: true,
+  showContact: true,
+  seoTitle: '',
+  seoDescription: '',
+  instagram: '',
+  facebook: '',
+  tiktok: '',
+  itemName: '',
+  itemPrice: '',
+  itemImage: '',
+  itemVariant: '',
 });
 
 async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
@@ -121,6 +153,9 @@ const StoreBuilderV3: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [patchChat, setPatchChat] = useState('');
+  const [previewWidth, setPreviewWidth] = useState<390 | 1280>(390);
+  const historyRef = React.useRef<BuilderState[]>([]);
+  const stateRef = React.useRef<BuilderState>(emptyState());
   const [proposed, setProposed] = useState<{
     heroHeadline: string;
     heroSub: string;
@@ -128,6 +163,15 @@ const StoreBuilderV3: React.FC = () => {
     about: string;
     hours: string;
     trustChips: string[];
+    colors?: MerchantColors;
+    fontPair?: FontPair;
+    logo?: string;
+    announcement?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
     changedFields: string[];
     conflicts: string[];
     warning?: string;
@@ -146,10 +190,32 @@ const StoreBuilderV3: React.FC = () => {
     }
   }, [searchParams]);
 
-  const update = useCallback((patch: Partial<BuilderState>) => {
-    setState((prev) => ({ ...prev, ...patch }));
-    setError(null);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const remember = useCallback(() => {
+    historyRef.current.push(structuredClone(stateRef.current));
+    if (historyRef.current.length > 20) historyRef.current.shift();
   }, []);
+
+  const update = useCallback((patch: Partial<BuilderState>, opts?: { history?: boolean }) => {
+    if (opts?.history !== false) remember();
+    setState((prev) => {
+      const next = { ...prev, ...patch };
+      stateRef.current = next;
+      return next;
+    });
+    setError(null);
+  }, [remember]);
+
+  const undo = () => {
+    const prev = historyRef.current.pop();
+    if (!prev) return;
+    setState(prev);
+    stateRef.current = prev;
+    setError(null);
+  };
 
   const go = (step: Step) => {
     setState((prev) => ({ ...prev, step }));
@@ -160,6 +226,18 @@ const StoreBuilderV3: React.FC = () => {
     const id = (state.templateId || 'general') as StarterId;
     const starter = STORE_STARTERS[id];
     const wa = normalizeWhatsappE164(state.whatsappE164);
+    const price = Number(state.itemPrice);
+    const items = state.itemName.trim()
+      ? [{
+          id: 'first',
+          name: state.itemName.trim(),
+          price: Number.isFinite(price) && state.itemPrice.trim() ? price : null,
+          imageUrl: state.itemImage || '',
+          variants: state.itemVariant.trim() ? [{ id: 'v1', title: state.itemVariant.trim() }] : [],
+          inStock: true,
+        }]
+      : [];
+    const seo = defaultSeo(state.storeName, state.island, state.about);
     return {
       templateId: id,
       storeName: state.storeName.trim() || 'Your store',
@@ -167,19 +245,32 @@ const StoreBuilderV3: React.FC = () => {
       specialty: state.specialty,
       hours: state.hours,
       pickupAddress: state.pickupAddress,
+      phone: state.phone,
       whatsappE164: wa,
       currency: 'TT$',
       acceptsCashPickup: state.acceptsCashPickup,
       acceptsCod: state.acceptsCod,
       wamLive: wamConfigured && state.payoutPreference === 'wam',
       reviewCount: 0,
-      items: [],
+      items,
       hero: {
         headline: state.heroHeadline || starter.heroHeadline,
         sub: state.heroSub || [state.specialty, state.island].filter(Boolean).join(' · '),
         image: state.heroImage || undefined,
       },
       about: state.about,
+      colors: state.colors,
+      fontPair: state.fontPair,
+      logo: state.logo,
+      announcement: state.announcement,
+      showAbout: state.showAbout,
+      showContact: state.showContact,
+      seo: { title: state.seoTitle || seo.title, description: state.seoDescription || seo.description },
+      social: {
+        instagram: state.instagram,
+        facebook: state.facebook,
+        tiktok: state.tiktok,
+      },
       trustChips: state.trustChips,
       faq: state.faq.length ? state.faq : defaultFaq({
         acceptsPickup: state.acceptsCashPickup,
@@ -278,6 +369,12 @@ const StoreBuilderV3: React.FC = () => {
           about: state.about,
           hours: state.hours,
           trustChips: state.trustChips,
+          colors: state.colors,
+          fontPair: state.fontPair,
+          logo: state.logo,
+          announcement: state.announcement,
+          seo: { title: state.seoTitle, description: state.seoDescription },
+          social: { instagram: state.instagram, facebook: state.facebook, tiktok: state.tiktok },
         },
         locked: {
           headline: state.heroHeadline,
@@ -297,6 +394,15 @@ const StoreBuilderV3: React.FC = () => {
         about: result.proposed?.about || state.about,
         hours: result.proposed?.hours || state.hours,
         trustChips: result.proposed?.trustChips || state.trustChips,
+        colors: result.proposed?.colors || state.colors,
+        fontPair: result.proposed?.fontPair || state.fontPair,
+        logo: result.proposed?.logo ?? state.logo,
+        announcement: result.proposed?.announcement ?? state.announcement,
+        seoTitle: result.proposed?.seo?.title || state.seoTitle,
+        seoDescription: result.proposed?.seo?.description || state.seoDescription,
+        instagram: result.proposed?.social?.instagram || state.instagram,
+        facebook: result.proposed?.social?.facebook || state.facebook,
+        tiktok: result.proposed?.social?.tiktok || state.tiktok,
         changedFields: result.changedFields,
         conflicts: result.conflicts || [],
         warning: result.warning,
@@ -317,6 +423,15 @@ const StoreBuilderV3: React.FC = () => {
       about: proposed.about,
       hours: proposed.hours,
       trustChips: proposed.trustChips,
+      colors: proposed.colors || state.colors,
+      fontPair: proposed.fontPair || state.fontPair,
+      logo: proposed.logo ?? state.logo,
+      announcement: proposed.announcement ?? state.announcement,
+      seoTitle: proposed.seoTitle ?? state.seoTitle,
+      seoDescription: proposed.seoDescription ?? state.seoDescription,
+      instagram: proposed.instagram ?? state.instagram,
+      facebook: proposed.facebook ?? state.facebook,
+      tiktok: proposed.tiktok ?? state.tiktok,
     });
     setProposed(null);
     setPatchChat('');
@@ -360,11 +475,48 @@ const StoreBuilderV3: React.FC = () => {
           about: state.about,
           faq: state.faq,
           how: state.how,
+          colors: state.colors,
+          fontPair: state.fontPair,
+          logo: state.logo || undefined,
+          announcement: state.announcement || undefined,
+          pages: { about: state.showAbout, contact: state.showContact },
+          seo: {
+            title: state.seoTitle || defaultSeo(state.storeName, state.island, state.about).title,
+            description: state.seoDescription || defaultSeo(state.storeName, state.island, state.about).description,
+          },
+          social: {
+            instagram: state.instagram || undefined,
+            facebook: state.facebook || undefined,
+            tiktok: state.tiktok || undefined,
+          },
+          first_item: state.itemName.trim()
+            ? {
+                name: state.itemName.trim(),
+                price: Number(state.itemPrice) || undefined,
+                image: state.itemImage || undefined,
+                variant: state.itemVariant.trim() || undefined,
+              }
+            : undefined,
           food_attestation: state.templateId === 'food' ? true : undefined,
           kitchen_check: state.templateId === 'food' && state.foodAttested ? 'auto_approved' : undefined,
           agent_wrote: state.agentWrote === true,
         },
       });
+      if (state.itemName.trim() && store?.id) {
+        const price = Number(state.itemPrice);
+        try {
+          await productsApi.create({
+            store_id: store.id,
+            name: state.itemName.trim(),
+            price: Number.isFinite(price) ? price : undefined,
+            images: state.itemImage ? [state.itemImage] : [],
+            description: state.itemVariant.trim() ? `Variant: ${state.itemVariant.trim()}` : '',
+            status: 'active',
+          });
+        } catch {
+          /* theme_config.first_item still publishes the SKU on the storefront */
+        }
+      }
       navigate(`/store/${store.slug}`);
     } catch (err: any) {
       setError(err.message || 'Could not publish.');
@@ -542,14 +694,51 @@ const StoreBuilderV3: React.FC = () => {
       </div>
       <div className="juvay-preview-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 20 }}>
         <div style={{ display: 'grid', gap: 12 }}>
-          <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v })} />
-          <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v })} />
-          <Field label="Hours" value={state.hours} onChange={(v) => update({ hours: v })} placeholder="Leave blank to hide" />
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" onClick={undo} disabled={!historyRef.current.length} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent', opacity: historyRef.current.length ? 1 : 0.4 }}>Undo last edit</button>
+          </div>
+          <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v }, { history: false })} />
+          <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v }, { history: false })} />
+          <Field label="Hours" value={state.hours} onChange={(v) => update({ hours: v }, { history: false })} placeholder="Leave blank to hide" />
           <label style={{ display: 'block' }}>
             <span style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>About</span>
-            <textarea value={state.about} onChange={(e) => update({ about: e.target.value })} rows={4} style={{ width: '100%', minHeight: 88, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
+            <textarea value={state.about} onChange={(e) => update({ about: e.target.value }, { history: false })} rows={4} style={{ width: '100%', minHeight: 88, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
           </label>
-          <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Ask Grok for a patch — never regenerate-to-edit. Catalog stays empty until you add a real item.</p>
+          <MerchantStudio
+            storeName={state.storeName}
+            island={state.island}
+            about={state.about}
+            colors={state.colors}
+            fontPair={state.fontPair}
+            logo={state.logo}
+            announcement={state.announcement}
+            showAbout={state.showAbout}
+            showContact={state.showContact}
+            seoTitle={state.seoTitle}
+            seoDescription={state.seoDescription}
+            instagram={state.instagram}
+            facebook={state.facebook}
+            tiktok={state.tiktok}
+            itemName={state.itemName}
+            itemPrice={state.itemPrice}
+            itemImage={state.itemImage}
+            itemVariant={state.itemVariant}
+            onColors={(colors) => update({ colors })}
+            onFontPair={(fontPair) => update({ fontPair })}
+            onLogo={(logo) => update({ logo })}
+            onAnnouncement={(announcement) => update({ announcement }, { history: false })}
+            onShowAbout={(showAbout) => update({ showAbout })}
+            onShowContact={(showContact) => update({ showContact })}
+            onSeo={(seoTitle, seoDescription) => update({ seoTitle, seoDescription }, { history: false })}
+            onSocial={(key, value) => update({ [key]: value } as Partial<BuilderState>, { history: false })}
+            onItem={(patch) => update({
+              itemName: patch.name ?? state.itemName,
+              itemPrice: patch.price ?? state.itemPrice,
+              itemImage: patch.image ?? state.itemImage,
+              itemVariant: patch.variant ?? state.itemVariant,
+            }, { history: patch.image ? true : false })}
+          />
+          <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Colors update the live preview — they do not regenerate the site. Gallery cards stay on starter defaults.</p>
           <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 12, display: 'grid', gap: 8 }}>
             <label style={{ fontSize: 14 }}>Ask Grok to propose a change</label>
             <textarea
@@ -578,6 +767,11 @@ const StoreBuilderV3: React.FC = () => {
                 {proposed.changedFields.includes('hours') ? <div><strong>Hours</strong> {proposed.hours}</div> : null}
                 {proposed.changedFields.includes('trustChips') ? <div><strong>Chips</strong> {proposed.trustChips.join(' · ') || '(none)'}</div> : null}
                 {proposed.changedFields.includes('hero.image') ? <div><strong>Hero photo</strong> {proposed.heroImage ? 'Use starter / uploaded photo from this patch' : 'Clear merchant photo, keep starter art'}</div> : null}
+                {proposed.changedFields.includes('colors') ? <div><strong>Colors</strong> {proposed.colors?.accent || ''} {proposed.colors?.heroBg || ''}</div> : null}
+                {proposed.changedFields.includes('fontPair') ? <div><strong>Font</strong> {proposed.fontPair}</div> : null}
+                {proposed.changedFields.includes('announcement') ? <div><strong>Announcement</strong> {proposed.announcement || '(empty — rails only)'}</div> : null}
+                {proposed.changedFields.includes('seo') ? <div><strong>SEO</strong> {proposed.seoTitle}</div> : null}
+                {proposed.changedFields.includes('social') ? <div><strong>Social</strong> updated</div> : null}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" onClick={applyProposed} style={{ minHeight: 44, padding: '0 14px', border: 'none', background: '#141414', color: ISLAND.sand }}>Apply this patch</button>
                   <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
@@ -586,7 +780,12 @@ const StoreBuilderV3: React.FC = () => {
             ) : null}
           </div>
         </div>
-        <div className="juvay-preview-frame" style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto' }}>
+        <div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <button type="button" onClick={() => setPreviewWidth(390)} style={{ minHeight: 44, padding: '0 14px', border: previewWidth === 390 ? '2px solid #141414' : '1px solid #cfc8bc', background: ISLAND.sand }}>390 mobile</button>
+            <button type="button" onClick={() => setPreviewWidth(1280)} style={{ minHeight: 44, padding: '0 14px', border: previewWidth === 1280 ? '2px solid #141414' : '1px solid #cfc8bc', background: ISLAND.sand }}>1280 desktop</button>
+          </div>
+        <div className="juvay-preview-frame" style={{ border: '1px solid #e6dfd4', maxHeight: 720, overflow: 'auto', width: '100%', maxWidth: previewWidth, marginInline: previewWidth === 390 ? 'auto' : 0 }}>
           <JuvayStorefront
             model={previewModel}
             editor={{
@@ -598,6 +797,7 @@ const StoreBuilderV3: React.FC = () => {
               onHeroUpload: (dataUrl) => update({ heroImage: dataUrl }),
             }}
           />
+        </div>
         </div>
       </div>
       <div style={{ position: 'sticky', bottom: 0, zIndex: 12, background: ISLAND.sand, borderTop: '1px solid #e6dfd4', padding: '12px 0', display: 'flex', justifyContent: 'space-between' }}>
@@ -621,7 +821,7 @@ const StoreBuilderV3: React.FC = () => {
         <div className="text-2xl font-semibold">{state.storeName}</div>
         <div className="text-gray-600">{STORE_STARTERS[state.templateId as StarterId]?.name} · {state.island}</div>
         <div className="text-sm text-gray-500">{state.heroHeadline}</div>
-        <div className="text-sm text-gray-500">Catalog: empty until you add a real item.</div>
+        <div className="text-sm text-gray-500">{state.itemName.trim() ? `First item: ${state.itemName.trim()}` : 'Catalog: empty until you add a real item.'}</div>
       </div>
       {state.templateId === 'food' && (
         <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
