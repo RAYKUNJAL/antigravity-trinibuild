@@ -112,7 +112,6 @@ import { LoyaltyPage } from './components/LoyaltyPage';
 import { useGamificationInit } from './services/gamificationIntegration';
 import { BecomeSellerPage } from './pages/BecomeSellerPage';
 import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
-import { GamePassProPage } from './pages/GamePassProPage';
 import { MerchantDashboard } from './pages/MerchantDashboard';
 import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
 import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
@@ -325,9 +324,8 @@ const App: React.FC = () => {
               <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
               <Route path="/marketing/email" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
               
-              {/* 🎮 GAME PASS */}
-              <Route path="/game-pass-pro" element={<GamePassProPage />} />
-              <Route path="/gaming/gamepass" element={<GamePassProPage />} />
+              <Route path="/game-pass-pro" element={<DigitalServicesHub />} />
+              <Route path="/gaming/gamepass" element={<DigitalServicesHub />} />
 
               {/* 📚 SUCCESS & HELP */}
               <Route path="/success-stories" element={<SuccessStoriesPage />} />

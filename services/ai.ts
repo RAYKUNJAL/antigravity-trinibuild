@@ -576,7 +576,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(what|who|tell me about|explain).*(trinibuild|platform|website|this)\b/)) {
-        return "**Juvay** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🎮 Digital services (Game Pass, Netflix, etc.)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
+        return "**Juvay** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
     }
 
     return "I here to help! I could assist with:\n\n• 🏪 **Stores** — create and manage yuh online shop\n• 📄 **Documents** — job letters, visa letters, proof of income\n• 🔍 **Directory** — find any business or service in T&T\n• 🚗 **Rides** — book transportation\n• 🏠 **Real Estate** — property listings\n• 💰 **COD selling** — how cash on delivery works\n\nJust tell meh what yuh need, pardner!";
