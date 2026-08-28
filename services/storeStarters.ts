@@ -70,10 +70,11 @@ export const GALLERY_FILTERS = [
   { id: 'food', name: 'Food' },
   { id: 'fashion', name: 'Fashion' },
   { id: 'services', name: 'Services' },
+  { id: 'general', name: 'General' },
   { id: 'beauty', name: 'Beauty' },
   { id: 'home', name: 'Home' },
-  { id: 'auto', name: 'Auto' },
   { id: 'electronics', name: 'Electronics' },
+  { id: 'auto', name: 'Auto' },
 ];
 
 export const FAQ_PAY_LINE =
