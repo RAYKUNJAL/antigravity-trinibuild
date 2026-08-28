@@ -866,10 +866,10 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
             title: 'Payment',
             items: [[
               form.payment === 'cod' ? '💵 Cash on Delivery' :
-              form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💳 Card / WiPay',
+              form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💵 Cash on Delivery',
               form.payment === 'cod' ? `Prepare TT$${total.toFixed(2)} cash` :
               form.payment === 'bank_transfer' ? (form.transferProof ? '✓ Proof uploaded' : 'No proof uploaded') :
-              'Pay via WiPay checkout'
+              `Prepare TT$${total.toFixed(2)} cash`
             ]]
           }
         ].map(section => (
