@@ -303,7 +303,6 @@ Current user is browsing Juvay.`;
           ) : (
             <MessageCircle className="h-8 w-8 group-hover:rotate-12 transition-transform" />
           )}
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm">1</span>
         </button>
       )}
     </div>

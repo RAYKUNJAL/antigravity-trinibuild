@@ -104,10 +104,6 @@ export const Footer: React.FC = () => {
               <li><a href="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="/refund" className="text-sm text-gray-400 hover:text-white transition-colors">Refund Policy</a></li>
               <li><a href="/legal/merchant-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Merchant Agreement</a></li>
-              <li><Link to="/contractor-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Contractor Agreement</Link></li>
-              <li><Link to="/liability-waiver" className="text-sm text-gray-400 hover:text-white transition-colors">Liability Waiver</Link></li>
-              <li><Link to="/affiliate-terms" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Terms</Link></li>
-              <li><Link to="/document-disclaimer" className="text-sm text-gray-400 hover:text-white transition-colors">Document Disclaimer</Link></li>
               <li><Link to="/legal/all" className="text-sm text-gray-400 hover:text-white transition-colors">All Legal Documents</Link></li>
             </ul>
           </div>
