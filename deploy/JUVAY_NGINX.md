@@ -30,6 +30,9 @@ Static legal (real files, not the 1504 B SPA shell):
 - `/privacy` → `privacy.html`
 - `/refund` → `refund.html`
 - `/legal/merchant-agreement` → `merchant-agreement.html`
+- `= /merchant-agreement` → `merchant-agreement.html` (exact location; 404, not SPA fallback)
+
+Exact static hosts (404, not SPA): `/sitemap.xml`, `/favicon.ico` (falls through to `/juvay-logo.png`), `/juvay-logo.png`.
 
 HTTP apex + www → HTTPS (301 or 308). HSTS on HTTPS. www must not split from apex.
 
