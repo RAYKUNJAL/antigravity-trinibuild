@@ -258,6 +258,10 @@ app.post('/api/onboard/draft', optionalAuth, async (req, res) => {
   }
 });
 
+app.get('/api/onboard/patch', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/onboard/patch', allow: 'POST' });
+});
 app.post('/api/onboard/patch', optionalAuth, async (req, res) => {
   try {
     const result = await buildOnboardPatch(req.body || {});
@@ -280,6 +284,10 @@ app.get('/api/stores/mine', auth, async (req, res) => {
   res.json(rows);
 });
 
+app.get('/api/stores', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/stores', allow: 'POST' });
+});
 app.post('/api/stores', auth, async (req, res) => {
   const {
     name, description, category, phone, whatsapp, address,
@@ -319,6 +327,10 @@ app.get('/api/stores/:slug', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // PRODUCTS
 // ═══════════════════════════════════════════════════════════
+app.get('/api/products', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/products', allow: 'POST' });
+});
 app.post('/api/products', auth, async (req, res) => {
   const { store_id, name, description, category, price, stock, condition, images } = req.body;
   // Verify ownership + plan limits
