@@ -285,7 +285,7 @@ export const Home: React.FC = () => {
                      "Free online store with COD checkout",
                      "AI product listing from a single photo",
                      "Built in Trinidad & Tobago",
-                     "TriniRides · Jobs · Real Estate · Events",
+                     "TriniRides · Jobs · Real Estate",
                      "Founding merchants get 6 months Pro free",
                      "First 5 products free, forever",
                      "Cancel anytime, no questions",
