@@ -79,7 +79,7 @@ export const Classifieds: React.FC = () => {
 
    const handleContact = (title: string, phone?: string) => {
       if (phone) {
-         window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi, I'm interested in your ad on TriniBuild: ${title}`, '_blank');
+         window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=Hi, I'm interested in your ad on Juvay: ${title}`, '_blank');
       } else {
          alert("No phone number provided.");
       }

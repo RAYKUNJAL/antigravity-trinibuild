@@ -102,7 +102,7 @@ export const generateSEOMetadata = (page: {
   type?: string;
 }): SEOMetadata => {
   const baseUrl = 'https://juvay.app';
-  const fullTitle = `${page.title} | TriniBuild - Trinidad's #1 E-Commerce Platform`;
+  const fullTitle = `${page.title} | Juvay`;
   
   return {
     title: fullTitle,
@@ -110,7 +110,7 @@ export const generateSEOMetadata = (page: {
     keywords: [
       'Trinidad e-commerce',
       'Trinidad online store',
-      'TriniBuild',
+      'Juvay',
       'sell online Trinidad',
       'Trinidad marketplace',
       'COD Trinidad',
@@ -170,7 +170,7 @@ export const optimizePageSpeed = {
   preload: [
     { rel: 'preload', href: '/fonts/inter.woff2', as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-    { rel: 'dns-prefetch', href: 'https://cdn.trinibuild.com' }
+    { rel: 'dns-prefetch', href: 'https://juvay.app' }
   ],
   
   // Defer non-critical scripts

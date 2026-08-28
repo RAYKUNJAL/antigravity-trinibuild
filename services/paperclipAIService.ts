@@ -207,7 +207,7 @@ export class SocialMediaAgent {
     };
 
     const excerpt = blogPost.content.substring(0, maxLength[platform as keyof typeof maxLength]);
-    return `${excerpt}... Read more at trinibuild.com/blog/${blogPost.slug} 🇹🇹`;
+    return `${excerpt}... Read more at juvay.app/blog/${blogPost.slug} 🇹🇹`;
   }
 
   private async logActivity(action: string, data: any) {
@@ -232,7 +232,7 @@ export class EmailCampaignAgent {
 
   async createWelcomeSequence(userId: string): Promise<void> {
     const sequence = [
-      { day: 0, subject: 'Welcome to TriniBuild! 🇹🇹', template: 'welcome' },
+      { day: 0, subject: 'Welcome to Juvay! 🇹🇹', template: 'welcome' },
       { day: 1, subject: 'Quick Start Guide - Create Your First Store', template: 'quick_start' },
       { day: 3, subject: 'Trinidad Success Stories', template: 'success_stories' },
       { day: 7, subject: 'Special Offer: 50% Off First Month', template: 'special_offer' }
@@ -256,7 +256,7 @@ export class EmailCampaignAgent {
   private async generateNewsletter(topic: string) {
     return {
       subject: `Trinidad Business News: ${topic}`,
-      content: `Latest updates from TriniBuild...`,
+      content: `Latest updates from Juvay...`,
       template: 'newsletter'
     };
   }

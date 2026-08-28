@@ -212,7 +212,7 @@ export const WorkingAIDemo: React.FC = () => {
             </div>
             <h3 className="text-2xl font-black text-gray-900 mb-2">You've used your free AI scans 🎉</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Create a free TriniBuild account to keep using the AI Product Lister — free accounts get more scans,
+              Create a free Juvay account to keep using the AI Product Lister — free accounts get more scans,
               and paid plans unlock unlimited listings.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

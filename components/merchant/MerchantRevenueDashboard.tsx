@@ -130,7 +130,7 @@ export const MerchantRevenueDashboard: React.FC<{ storeId: string }> = ({
   };
 
   const exportToCSV = () => {
-    let csv = 'TriniBuild Merchant Revenue Report\n';
+    let csv = 'Juvay Merchant Revenue Report\n';
     csv += `Period: ${period}\n\n`;
     csv += 'REVENUE SUMMARY\n';
     csv += `Total Order Value,${metrics.totalOrderValue}\n`;

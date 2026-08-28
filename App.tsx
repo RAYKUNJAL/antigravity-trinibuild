@@ -292,7 +292,7 @@ const App: React.FC = () => {
               <Route path="/drive-with-us" element={<DriveWithUs />} />
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
               <Route path="/driver/signup" element={<DriverSignupAI />} />
-              <Route path="/drive/signup" element={<DriverSignupAI />} />
+              <Route path="/drive/signup" element={<Navigate to="/drive" replace />} />
               <Route path="/driver/hub" element={<DriverHub />} />
               <Route path="/driver/dashboard" element={<DriverHub />} />
 

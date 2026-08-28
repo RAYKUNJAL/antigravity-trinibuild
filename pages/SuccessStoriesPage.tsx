@@ -42,7 +42,7 @@ export const SuccessStoriesPage: React.FC = () => {
           </h1>
 
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            TriniBuild is a brand-new Trinidad-built platform. We don't have a stable of
+            Juvay is a brand-new Trinidad-built platform. We don't have a stable of
             testimonials yet, and we won't invent any. What we do have: a working store
             builder, AI product listing, cash-on-delivery checkout, and a founding offer
             for the first 100 merchants.

@@ -72,7 +72,7 @@ export const Settings: React.FC = () => {
           Platform Settings & API Keys
         </h1>
         <p className="text-gray-500 mt-2">
-          Manage the external service connections for TriniBuild. Keys are stored locally in your browser for this session.
+          Manage the external service connections for Juvay. Keys are stored locally in your browser for this session.
         </p>
       </div>
 
