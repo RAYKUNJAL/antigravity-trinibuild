@@ -287,15 +287,15 @@ export default function AISiteBuilder() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Left panel */}
                 <div className="w-full max-w-xs border-r border-gray-800 bg-black overflow-y-auto p-4 hidden lg:block">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Commercial Templates</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Eight starters</p>
                     <div className="space-y-2 mb-5">
                         {COMMERCIAL_TEMPLATES.map((tpl) => (
-                            <button key={tpl.name} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
+                            <button key={tpl.id} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
                                 className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition-all ${site.theme.preset === tpl.theme.preset ? 'border-white bg-gray-900' : 'border-gray-800 hover:border-gray-600'}`}>
                                 <div className="w-10 h-10 rounded-lg shrink-0" style={{ background: `linear-gradient(135deg, ${tpl.theme.primary}, ${tpl.theme.secondary})` }} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold truncate">{tpl.name} {tpl.tier === 'pro' && <span className="text-[9px] font-black text-[#FFD700] ml-1">PRO</span>}</p>
-                                    <p className="text-[11px] text-gray-500 truncate">{tpl.category}</p>
+                                    <p className="text-sm font-bold truncate">{tpl.name}</p>
+                                    <p className="text-[11px] text-gray-500 truncate">{tpl.id}</p>
                                 </div>
                             </button>
                         ))}

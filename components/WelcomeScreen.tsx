@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, Car, Briefcase, Home, Ticket, Wrench, Sparkles, X, MessageSquare, ArrowRight } from 'lucide-react';
+import { Store, Car, Briefcase, Home, Wrench, Sparkles, X, MessageSquare, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Placeholder AI Assistant Modal
@@ -104,19 +104,6 @@ export const WelcomeScreen = () => {
             activeTabClass: "bg-purple-600 text-white shadow-md",
             textClass: "text-purple-600"
         },
-        events: {
-            icon: <Ticket className="w-5 h-5" />,
-            title: "Real Tickets. No Scalpers.",
-            subtitle: "Secure event tickets with instant verification. From fetes to concerts.",
-            cta: "Browse Events",
-            features: ["Verified Tickets", "Instant Delivery", "Secure Payment"],
-            heroImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80",
-            colorName: "pink",
-            bgClass: "bg-pink-600",
-            hoverClass: "hover:bg-pink-700",
-            activeTabClass: "bg-pink-600 text-white shadow-md",
-            textClass: "text-pink-600"
-        },
         triniworks: {
             icon: <Wrench className="w-5 h-5" />,
             title: "Hire Vetted Pros",
@@ -141,7 +128,6 @@ export const WelcomeScreen = () => {
             case 'rides': navigate('/rides'); break;
             case 'jobs': navigate('/jobs'); break;
             case 'living': navigate('/real-estate'); break;
-            case 'events': navigate('/tickets'); break;
             case 'triniworks': navigate('/jobs'); break; // Fallback for now/new route
         }
     };

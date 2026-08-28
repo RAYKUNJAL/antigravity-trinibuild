@@ -79,7 +79,6 @@ import { AffiliateProgram } from './pages/AffiliateProgram';
 import { CROSignupFlow } from './pages/CROSignupFlow';
 import { SignupPageSimple } from './pages/SignupPageSimple';
 import { SmartOnboarding } from './pages/SmartOnboarding';
-import { JuvayOnboarding } from './pages/JuvayOnboarding';
 import { JuvayDashboard } from './pages/JuvayDashboard';
 import { ExplorePage } from './pages/ExplorePage';
 
@@ -262,7 +261,7 @@ const App: React.FC = () => {
 
               {/* Core Flows */}
               <Route path="/signup" element={<SignupPageSimple />} />
-              <Route path="/get-started" element={<ProtectedRoute><JuvayOnboarding /></ProtectedRoute>} />
+              <Route path="/get-started" element={<Navigate to="/create-store" replace />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Navigate to="/login" replace />} />

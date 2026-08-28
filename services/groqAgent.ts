@@ -101,8 +101,9 @@ export async function recommendTemplate(brief: BusinessBrief, templateNames: str
     );
     if (ai) { try { const r = JSON.parse(ai); if (templateNames.includes(r.template)) return r; } catch { } }
     const map: Record<string, string> = {
-        'Food & Restaurant': 'Island Kitchen', 'Fashion & Clothing': 'Runway Noir',
-        'Beauty & Wellness': 'Coconut Luxe', 'Electronics': 'Tech Slate', 'Services': 'Trade Pro',
+        'Food & Restaurant': 'Food', 'Fashion & Clothing': 'Fashion',
+        'Beauty & Wellness': 'Beauty', 'Electronics': 'Electronics', 'Services': 'Services',
+        Home: 'Home', Auto: 'Auto', General: 'General',
     };
     return { template: map[brief.category] || templateNames[0], reason: 'Matched to your business category.' };
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, Ticket, UserCheck, Clock, FileText, Store, Building2, Users, Sparkles, DollarSign, MessageCircle } from 'lucide-react';
+import { Search, MapPin, Star, TrendingUp, Briefcase, ShoppingCart, Car, Truck, ArrowRight, Check, ShieldCheck, Globe, Play, ExternalLink, Volume2, VolumeX, Wand2, Zap, ChevronRight, Settings, Wallet, CreditCard, Heart, Home as HomeIcon, UserCheck, Clock, FileText, Store, Building2, Users, Sparkles, DollarSign, MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAdConfig, AdConfig } from '../services/adService';
 import { AdSpot } from '../components/AdSpot';
@@ -255,22 +255,6 @@ export const Home: React.FC = () => {
                         <div>
                            <h3 className="text-xl font-bold text-gray-900">Rides</h3>
                            <p className="text-sm text-gray-500">Safe, tracked rides across T&T.</p>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Tickets / Events */}
-                  <div className="relative group overflow-hidden rounded-3xl bg-pink-50 shadow-lg border border-pink-100 cursor-pointer hover:shadow-xl transition-all" onClick={() => navigate('/tickets')}>
-                     <div className="p-6 h-full flex flex-col justify-between min-h-[200px]">
-                        <div className="flex justify-between items-start">
-                           <div className="bg-pink-500 w-10 h-10 rounded-lg flex items-center justify-center text-white">
-                              <Ticket className="h-5 w-5" />
-                           </div>
-                           <span className="bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded-full">Hot</span>
-                        </div>
-                        <div>
-                           <h3 className="text-xl font-bold text-gray-900">Events</h3>
-                           <p className="text-sm text-gray-500">Legit tickets. No scalpers.</p>
                         </div>
                      </div>
                   </div>

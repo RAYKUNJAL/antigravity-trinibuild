@@ -6,6 +6,7 @@
 // ALWAYS works even if the AI backend is offline.
 // =============================================================
 import { supabase } from './supabaseClient';
+import { STARTER_IDS, STORE_STARTERS } from './storeStarters';
 
 // ---------- Types ----------
 export type SectionType =
@@ -92,24 +93,37 @@ export const THEME_PRESETS: Record<string, SiteTheme> = {
     },
 };
 
-// ---------- COMMERCIAL TEMPLATES (full presets: theme + typography + hero style) ----------
+// ---------- Eight store starters (same ids as /templates and /create-store) ----------
 export interface CommercialTemplate {
-    name: string; tier: 'free' | 'pro'; category: string; theme: SiteTheme; heroStyle: 'gradient' | 'split' | 'minimal';
+    id: string; name: string; tier: 'free' | 'pro'; category: string; theme: SiteTheme; heroStyle: 'gradient' | 'split' | 'minimal';
 }
-export const COMMERCIAL_TEMPLATES: CommercialTemplate[] = [
-    { name: 'Island Kitchen', tier: 'free', category: 'Food & Restaurant', heroStyle: 'gradient',
-      theme: { preset: 'islandKitchen', primary: '#D9432C', secondary: '#F5A524', background: '#141210', surface: '#1E1B17', text: '#FBF7F0', muted: '#A89F92', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '18px' } },
-    { name: 'Runway Noir', tier: 'free', category: 'Fashion & Clothing', heroStyle: 'minimal',
-      theme: { preset: 'runwayNoir', primary: '#111111', secondary: '#C9A96A', background: '#FAFAF8', surface: '#FFFFFF', text: '#111111', muted: '#6E6A63', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '2px' } },
-    { name: 'Coconut Luxe', tier: 'pro', category: 'Beauty & Wellness', heroStyle: 'split',
-      theme: { preset: 'coconutLuxe', primary: '#8C5E3C', secondary: '#D9B896', background: '#FBF6F0', surface: '#FFFFFF', text: '#2E2118', muted: '#8A7563', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '26px' } },
-    { name: 'Tech Slate', tier: 'free', category: 'Electronics', heroStyle: 'gradient',
-      theme: { preset: 'techSlate', primary: '#3B82F6', secondary: '#22D3EE', background: '#0A0F1A', surface: '#111827', text: '#F1F5F9', muted: '#7C8AA0', headingFont: "'Inter', sans-serif", bodyFont: "'Inter', sans-serif", radius: '12px' } },
-    { name: 'Trade Pro', tier: 'free', category: 'Services', heroStyle: 'split',
-      theme: { preset: 'tradePro', primary: '#166534', secondary: '#EAB308', background: '#FCFDF9', surface: '#FFFFFF', text: '#14201A', muted: '#5F6F66', headingFont: "'Inter', sans-serif", bodyFont: "'Inter', sans-serif", radius: '10px' } },
-    { name: 'Carnival Nights', tier: 'pro', category: 'Events', heroStyle: 'gradient',
-      theme: { preset: 'carnivalNights', primary: '#E61E2B', secondary: '#FFD700', background: '#0B0508', surface: '#171015', text: '#FFF8F0', muted: '#A08D96', headingFont: "'Playfair Display', Georgia, serif", bodyFont: "'Inter', sans-serif", radius: '16px' } },
-];
+const HERO_STYLE_FROM_LAYOUT: Record<string, 'gradient' | 'split' | 'minimal'> = {
+    split: 'split',
+    bleed: 'minimal',
+    overlay: 'gradient',
+};
+export const COMMERCIAL_TEMPLATES: CommercialTemplate[] = STARTER_IDS.map((id) => {
+    const s = STORE_STARTERS[id];
+    return {
+        id: s.id,
+        name: s.name,
+        tier: 'free',
+        category: s.name,
+        heroStyle: HERO_STYLE_FROM_LAYOUT[s.heroLayout] || 'gradient',
+        theme: {
+            preset: s.id,
+            primary: s.palette.accent,
+            secondary: s.palette.muted,
+            background: s.palette.bg,
+            surface: s.palette.surface,
+            text: s.palette.text,
+            muted: s.palette.muted,
+            headingFont: s.palette.headingFont,
+            bodyFont: s.palette.bodyFont,
+            radius: '12px',
+        },
+    };
+});
 
 const VIBE_TO_PRESET: Record<BusinessBrief['vibe'], string> = {
     vibrant: 'carnival', premium: 'midnightPremium', beachy: 'oceanBreeze',
