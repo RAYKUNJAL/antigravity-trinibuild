@@ -11,6 +11,7 @@ import {
   type FontPair,
   type MerchantColors,
 } from '../services/merchantTheme';
+import { MerchantItemFields, type ItemPatch } from './MerchantItemFields';
 
 function readImage(file: File, onDone: (dataUrl: string) => void) {
   if (!file.type.startsWith('image/')) return;
@@ -61,8 +62,13 @@ export const MerchantStudio: React.FC<{
   tiktok: string;
   itemName: string;
   itemPrice: string;
+  itemQty: string;
+  itemSku: string;
   itemImage: string;
   itemVariant: string;
+  itemDescription: string;
+  storeNameForVision?: string;
+  templateId?: string;
   onColors: (colors: MerchantColors) => void;
   onFontPair: (pair: FontPair) => void;
   onLogo: (dataUrl: string) => void;
@@ -71,11 +77,12 @@ export const MerchantStudio: React.FC<{
   onShowContact: (value: boolean) => void;
   onSeo: (title: string, description: string) => void;
   onSocial: (key: 'instagram' | 'facebook' | 'tiktok', value: string) => void;
-  onItem: (patch: { name?: string; price?: string; image?: string; variant?: string }) => void;
+  onItem: (patch: ItemPatch) => void;
 }> = ({
   storeName, island, about, colors, fontPair, logo, announcement,
   showAbout, showContact, seoTitle, seoDescription, instagram, facebook, tiktok,
-  itemName, itemPrice, itemImage, itemVariant,
+  itemName, itemPrice, itemQty, itemSku, itemImage, itemVariant, itemDescription,
+  storeNameForVision, templateId,
   onColors, onFontPair, onLogo, onAnnouncement, onShowAbout, onShowContact, onSeo, onSocial, onItem,
 }) => {
   const seo = defaultSeo(storeName, island, about);
@@ -194,17 +201,19 @@ export const MerchantStudio: React.FC<{
         </label>
       </section>
 
-      <section style={{ display: 'grid', gap: 8 }}>
-        <div style={{ fontSize: 13, fontWeight: 600 }}>Add first item</div>
-        <input value={itemName} onChange={(e) => onItem({ name: e.target.value })} placeholder="Name" style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }} />
-        <input value={itemPrice} onChange={(e) => onItem({ price: e.target.value })} placeholder="Price TT$" inputMode="decimal" style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }} />
-        <input value={itemVariant} onChange={(e) => onItem({ variant: e.target.value })} placeholder="Optional variant (size / color)" style={{ width: '100%', minHeight: 44, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: '0 12px' }} />
-        <label style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center', border: '1px solid #cfc8bc', padding: '0 12px', cursor: 'pointer', width: 'fit-content' }}>
-          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) readImage(f, (url) => onItem({ image: url })); }} />
-          {itemImage ? 'Replace item photo' : 'Optional photo'}
-        </label>
-        <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>One real SKU. No sample product. No AI price.</p>
-      </section>
+      <MerchantItemFields
+        heading="Add first item"
+        name={itemName}
+        price={itemPrice}
+        qty={itemQty}
+        sku={itemSku}
+        variant={itemVariant}
+        description={itemDescription}
+        image={itemImage}
+        storeName={storeNameForVision || storeName}
+        templateId={templateId}
+        onChange={onItem}
+      />
 
       <section style={{ display: 'grid', gap: 8 }}>
         <div style={{ fontSize: 13, fontWeight: 600 }}>SEO</div>

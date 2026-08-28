@@ -9,6 +9,7 @@ import {
   featuredItems,
   formatPrice,
   itemIsSellable,
+  itemStockLabel,
   liveItems,
   realTrustChips,
   reviewBadge,
@@ -500,10 +501,11 @@ export const JuvayStorefront: React.FC<{
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {price ? <strong style={{ color: ISLAND.pepper }}>{price}</strong> : null}
+                    {itemStockLabel(item) ? <span style={{ fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</span> : null}
                     {itemIsSellable(item) ? (
                       <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, ...buy }}>Add</button>
                     ) : (
-                      <span style={{ fontSize: 12, color: p.muted }}>Out of stock</span>
+                      <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
                     )}
                   </div>
                 </div>
@@ -737,6 +739,7 @@ const CatalogCard: React.FC<{
         <h3 style={{ margin: 0, fontFamily: p.headingFont, fontSize: 16, fontWeight: 500 }}>{item.name}</h3>
         {item.compatibilityNote ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.compatibilityNote}</p> : null}
         {item.specs ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.specs}</p> : null}
+        {itemStockLabel(item) ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</p> : null}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           {price ? <span style={{ color: ISLAND.pepper, fontWeight: 600 }}>{price}</span> : <span />}
           {sellable ? (
@@ -744,7 +747,7 @@ const CatalogCard: React.FC<{
               {needsVariant ? 'Pick' : 'Add'}
             </button>
           ) : (
-            <span style={{ fontSize: 12, color: p.muted }}>Out of stock</span>
+            <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
           )}
         </div>
       </div>

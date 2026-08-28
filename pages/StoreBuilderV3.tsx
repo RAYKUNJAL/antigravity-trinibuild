@@ -64,8 +64,11 @@ interface BuilderState {
   tiktok: string;
   itemName: string;
   itemPrice: string;
+  itemQty: string;
+  itemSku: string;
   itemImage: string;
   itemVariant: string;
+  itemDescription: string;
 }
 
 const emptyState = (): BuilderState => ({
@@ -105,8 +108,11 @@ const emptyState = (): BuilderState => ({
   tiktok: '',
   itemName: '',
   itemPrice: '',
+  itemQty: '',
+  itemSku: '',
   itemImage: '',
   itemVariant: '',
+  itemDescription: '',
 });
 
 async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
@@ -227,14 +233,20 @@ const StoreBuilderV3: React.FC = () => {
     const starter = STORE_STARTERS[id];
     const wa = normalizeWhatsappE164(state.whatsappE164);
     const price = Number(state.itemPrice);
-    const items = state.itemName.trim()
+    const qtyRaw = state.itemQty.trim();
+    const qty = qtyRaw === '' ? null : (/^\d+$/.test(qtyRaw) ? Number(qtyRaw) : null);
+    const hasRealItem = !!(state.itemName.trim() && state.itemPrice.trim() && Number.isFinite(price));
+    const items = hasRealItem
       ? [{
           id: 'first',
           name: state.itemName.trim(),
-          price: Number.isFinite(price) && state.itemPrice.trim() ? price : null,
+          price,
+          description: state.itemDescription.trim() || undefined,
           imageUrl: state.itemImage || '',
           variants: state.itemVariant.trim() ? [{ id: 'v1', title: state.itemVariant.trim() }] : [],
-          inStock: true,
+          qty,
+          sku: state.itemSku.trim() || undefined,
+          inStock: qty === 0 ? false : true,
         }]
       : [];
     const seo = defaultSeo(state.storeName, state.island, state.about);
@@ -492,12 +504,15 @@ const StoreBuilderV3: React.FC = () => {
             facebook: state.facebook || undefined,
             tiktok: state.tiktok || undefined,
           },
-          first_item: state.itemName.trim()
+          first_item: state.itemName.trim() && state.itemPrice.trim()
             ? {
                 name: state.itemName.trim(),
-                price: Number(state.itemPrice) || undefined,
+                price: Number(state.itemPrice),
+                qty: state.itemQty.trim() === '' ? null : Number(state.itemQty),
+                sku: state.itemSku.trim() || undefined,
                 image: state.itemImage || undefined,
                 variant: state.itemVariant.trim() || undefined,
+                description: state.itemDescription.trim() || undefined,
               }
             : undefined,
           food_attestation: state.templateId === 'food' ? true : undefined,
@@ -505,19 +520,21 @@ const StoreBuilderV3: React.FC = () => {
           agent_wrote: state.agentWrote === true,
         },
       });
-      if (state.itemName.trim() && store?.id) {
+      if (state.itemName.trim() && state.itemPrice.trim() && store?.id) {
         const price = Number(state.itemPrice);
         try {
           await productsApi.create({
             store_id: store.id,
             name: state.itemName.trim(),
             price: Number.isFinite(price) ? price : undefined,
+            qty: state.itemQty.trim() === '' ? undefined : Number(state.itemQty),
+            sku: state.itemSku.trim() || undefined,
             images: state.itemImage ? [state.itemImage] : [],
-            description: state.itemVariant.trim() ? `Variant: ${state.itemVariant.trim()}` : '',
+            description: state.itemDescription.trim() || (state.itemVariant.trim() ? `Variant: ${state.itemVariant.trim()}` : ''),
             status: 'active',
           });
         } catch {
-          /* theme_config.first_item still publishes the SKU on the storefront */
+          /* theme_config.first_item still publishes the item on the storefront */
         }
       }
       navigate(`/store/${store.slug}`);
@@ -724,8 +741,13 @@ const StoreBuilderV3: React.FC = () => {
             tiktok={state.tiktok}
             itemName={state.itemName}
             itemPrice={state.itemPrice}
+            itemQty={state.itemQty}
+            itemSku={state.itemSku}
             itemImage={state.itemImage}
             itemVariant={state.itemVariant}
+            itemDescription={state.itemDescription}
+            storeNameForVision={state.storeName}
+            templateId={state.templateId || undefined}
             onColors={(colors) => update({ colors })}
             onFontPair={(fontPair) => update({ fontPair })}
             onLogo={(logo) => update({ logo })}
@@ -737,9 +759,12 @@ const StoreBuilderV3: React.FC = () => {
             onItem={(patch) => update({
               itemName: patch.name ?? state.itemName,
               itemPrice: patch.price ?? state.itemPrice,
+              itemQty: patch.qty ?? state.itemQty,
+              itemSku: patch.sku ?? state.itemSku,
               itemImage: patch.image ?? state.itemImage,
               itemVariant: patch.variant ?? state.itemVariant,
-            }, { history: patch.image ? true : false })}
+              itemDescription: patch.description ?? state.itemDescription,
+            }, { history: !!(patch.image || patch.name || patch.description) })}
           />
           <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Colors update the live preview — they do not regenerate the site. Gallery cards stay on starter defaults.</p>
           <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 12, display: 'grid', gap: 8 }}>
@@ -827,7 +852,7 @@ const StoreBuilderV3: React.FC = () => {
         <div className="text-2xl font-semibold">{state.storeName}</div>
         <div className="text-gray-600">{STORE_STARTERS[state.templateId as StarterId]?.name} · {state.island}</div>
         <div className="text-sm text-gray-500">{state.heroHeadline}</div>
-        <div className="text-sm text-gray-500">{state.itemName.trim() ? `First item: ${state.itemName.trim()}` : 'Catalog: empty until you add a real item.'}</div>
+        <div className="text-sm text-gray-500">{state.itemName.trim() && state.itemPrice.trim() ? `First item: ${state.itemName.trim()}` : 'Catalog: empty until you add a real item with a typed name and TT$ price.'}</div>
       </div>
       {state.templateId === 'food' && (
         <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">

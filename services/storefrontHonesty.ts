@@ -25,6 +25,9 @@ export interface StorefrontItem {
   compatibilityNote?: string;
   specs?: string;
   inStock?: boolean;
+  /** Typed count. null/omit = do not claim stock. 0 = sold out. */
+  qty?: number | null;
+  sku?: string;
 }
 
 export type StorefrontMode = 'illustrative' | 'merchant_preview' | 'published';
@@ -197,9 +200,30 @@ export function formatPrice(model: StorefrontModel, price?: number | null): stri
   return `${currencyPrefix(model)}${Number(price).toFixed(0)}`;
 }
 
-/** Explicit false / zero stock only. Missing stock stays sellable. */
+export function parseQty(raw: unknown): number | null {
+  if (raw == null) return null;
+  const text = String(raw).trim();
+  if (text === '') return null;
+  if (!/^\d+$/.test(text)) return null;
+  const n = Number(text);
+  return Number.isInteger(n) && n >= 0 ? n : null;
+}
+
+/** Sold out when qty is 0. Empty qty never prints "In stock". */
+export function itemStockLabel(item: Pick<StorefrontItem, 'qty'> & { stock?: unknown }): string {
+  const qty = item.qty === 0 || item.qty ? item.qty : parseQty(item.stock);
+  if (qty === 0) return 'Sold out';
+  if (qty != null && Number.isFinite(Number(qty)) && Number(qty) > 0) {
+    return `${Number(qty)} on hand`;
+  }
+  return '';
+}
+
+/** qty 0 or explicit inStock false. Empty qty stays sellable — no invented count. */
 export function itemIsSellable(item: StorefrontItem): boolean {
-  return item.inStock !== false;
+  if (item.qty === 0) return false;
+  if (item.inStock === false) return false;
+  return true;
 }
 
 export function closedFoodNextOpen(model: StorefrontModel): string {

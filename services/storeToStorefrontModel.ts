@@ -1,5 +1,5 @@
 import { defaultFaq, defaultHowSteps, resolveStarterId, STORE_STARTERS, type StarterId } from './storeStarters';
-import { mapProductSpecs, mapProductVariants, normalizeWhatsappE164, type StorefrontItem, type StorefrontModel, type StorefrontMode } from './storefrontHonesty';
+import { mapProductSpecs, mapProductVariants, normalizeWhatsappE164, parseQty, type StorefrontItem, type StorefrontModel, type StorefrontMode } from './storefrontHonesty';
 
 function themeOf(store: any): Record<string, any> {
   const raw = store?.theme_config || store?.theme || {};
@@ -17,28 +17,37 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
   const starter = STORE_STARTERS[templateId];
   const items: StorefrontItem[] = (products || [])
     .filter((p) => p && (p.status == null || p.status === 'active') && String(p.name || '').trim())
-    .map((p) => ({
-      id: String(p.id),
-      name: p.name,
-      price: p.price ?? p.base_price ?? null,
-      description: p.description || '',
-      imageUrl: p.image_url || p.images?.[0] || '',
-      featured: !!p.featured,
-      category: p.category || '',
-      variants: mapProductVariants(p.variants || p.options),
-      compatibilityNote: String(p.compatibility_note || p.compatibilityNote || '').trim() || undefined,
-      specs: mapProductSpecs(p.specs || p.specifications),
-      inStock: p.in_stock === false || p.inStock === false || p.stock === 0 ? false : true,
-    }));
-  if (!items.length && theme.first_item && String(theme.first_item.name || '').trim()) {
+    .map((p) => {
+      const qty = parseQty(p.qty ?? p.stock);
+      return {
+        id: String(p.id),
+        name: p.name,
+        price: p.price ?? p.base_price ?? null,
+        description: p.description || '',
+        imageUrl: p.image_url || p.images?.[0] || '',
+        featured: !!p.featured,
+        category: p.category || '',
+        variants: mapProductVariants(p.variants || p.options),
+        compatibilityNote: String(p.compatibility_note || p.compatibilityNote || '').trim() || undefined,
+        specs: mapProductSpecs(p.specs || p.specifications),
+        qty,
+        sku: String(p.sku || '').trim() || undefined,
+        inStock: qty === 0 || p.in_stock === false || p.inStock === false ? false : true,
+      };
+    });
+  if (!items.length && theme.first_item && String(theme.first_item.name || '').trim() && theme.first_item.price != null && String(theme.first_item.price).trim() !== '') {
     const variant = String(theme.first_item.variant || '').trim();
+    const qty = parseQty(theme.first_item.qty);
     items.push({
       id: 'first',
       name: String(theme.first_item.name).trim(),
-      price: theme.first_item.price != null && Number.isFinite(Number(theme.first_item.price)) ? Number(theme.first_item.price) : null,
+      price: Number.isFinite(Number(theme.first_item.price)) ? Number(theme.first_item.price) : null,
+      description: String(theme.first_item.description || '').trim() || undefined,
       imageUrl: theme.first_item.image || '',
       variants: variant ? [{ id: 'v1', title: variant }] : [],
-      inStock: true,
+      qty,
+      sku: String(theme.first_item.sku || '').trim() || undefined,
+      inStock: qty === 0 ? false : true,
     });
   } else if (items[0] && theme.first_item?.variant && !(items[0].variants && items[0].variants.length)) {
     items[0] = { ...items[0], variants: [{ id: 'v1', title: String(theme.first_item.variant) }] };

@@ -105,8 +105,29 @@ function closedFoodNextOpen(model) {
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
 }
 
+function parseQty(raw) {
+  if (raw == null) return null;
+  const text = String(raw).trim();
+  if (text === '') return null;
+  if (!/^\d+$/.test(text)) return null;
+  const n = Number(text);
+  return Number.isInteger(n) && n >= 0 ? n : null;
+}
+
+function itemStockLabel(item) {
+  const qty = item && (item.qty === 0 || item.qty) ? item.qty : parseQty(item && item.stock);
+  if (qty === 0) return 'Sold out';
+  if (qty != null && Number.isFinite(Number(qty)) && Number(qty) > 0) {
+    return `${Number(qty)} on hand`;
+  }
+  return '';
+}
+
 function itemIsSellable(item) {
-  return item.inStock !== false;
+  if (!item) return false;
+  if (item.qty === 0) return false;
+  if (item.inStock === false) return false;
+  return true;
 }
 
 function announcementLine(model) {
@@ -163,6 +184,8 @@ module.exports = {
   closedFoodNextOpen,
   mapProductVariants,
   mapProductSpecs,
+  parseQty,
+  itemStockLabel,
   itemIsSellable,
   merchantUploadedHero,
   showIllustrativeBanner,

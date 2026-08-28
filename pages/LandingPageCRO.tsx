@@ -4,14 +4,13 @@ import {
   ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
   Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
   MessageCircle, MessageSquare, AlertCircle, ChevronDown,
-  Upload, Sparkles, Image as ImageIcon, Tag, ExternalLink
+  ExternalLink
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { ga4Analytics } from '../services/ga4AnalyticsService';
 import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
-import { WorkingAIDemo } from '../components/WorkingAIDemo';
 import { ServicesShowcase } from '../components/ServicesShowcase';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
 
@@ -157,7 +156,7 @@ const WHY_TRINIBUILD = [
   {
     icon: '⚡',
     title: 'Live in about 5 minutes',
-    body: 'Pick a template, add your products with the AI lister, and share your store link the same afternoon.',
+    body: 'Pick a starter, add a real item (photo can draft the name — you type the TT$ price), and share your store link the same afternoon.',
   },
 ];
 
@@ -216,134 +215,24 @@ const MerchantCounter: React.FC = () => {
   );
 };
 
-/* ────────────────────────────────────────────────────────────────────────
-   AI PRODUCT LISTER DEMO — split layout, typewriter before→after
-   ──────────────────────────────────────────────────────────────────────── */
-
-const TYPEWRITER_DESC =
-  'Elegant quartz movement timepiece with a classic stainless steel finish. Perfect for formal occasions or everyday wear. Water-resistant and built to last.';
-
-const ListerDemo: React.FC = () => {
-  // Default to the finished state so the listing card is ALWAYS visible even
-  // if the inView trigger never fires. The typewriter/count-up is purely an
-  // enhancement that replays when scrolled into view.
-  const [typed, setTyped] = useState(TYPEWRITER_DESC);
-  const [showResult, setShowResult] = useState(true);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef, { once: true, amount: 0.1 });
-
-  useEffect(() => {
-    if (!inView) return;
-    // Replay the before→after reveal as an enhancement.
-    setShowResult(false);
-    setTyped('');
-    const reveal = setTimeout(() => setShowResult(true), 800);
-    return () => clearTimeout(reveal);
-  }, [inView]);
-
-  useEffect(() => {
-    if (!showResult) return;
-    // Only run the typewriter if we reset it above; otherwise keep full text.
-    if (typed.length >= TYPEWRITER_DESC.length) return;
-    let i = typed.length;
-    const id = setInterval(() => {
-      i++;
-      setTyped(TYPEWRITER_DESC.slice(0, i));
-      if (i >= TYPEWRITER_DESC.length) clearInterval(id);
-    }, 28);
-    return () => clearInterval(id);
-  }, [showResult]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const tags = ['Luxury Watch', 'Quartz', 'Stainless Steel', 'Classic', 'Water Resistant'];
-
-  return (
-    <section ref={sectionRef} className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <motion.div {...fadeInUp} className="text-center mb-14">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">AI Product Lister</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">From Photo to Listing in Seconds</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload a product photo. Our AI writes the title, SEO description, and keyword tags automatically.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* LEFT — Upload widget */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center"
-          >
-            <div className="w-20 h-20 mx-auto rounded-full bg-indigo-100 flex items-center justify-center mb-4">
-              <Upload className="w-9 h-9 text-indigo-600" />
-            </div>
-            <h3 className="font-bold text-gray-900 mb-1">Upload Product Photo</h3>
-            <p className="text-sm text-gray-500 mb-4">PNG, JPG up to 10MB</p>
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <ImageIcon size={14} /> Or drag & drop
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600">
-              <Sparkles size={16} /> AI is ready
-            </div>
-          </motion.div>
-
-          {/* RIGHT — Before → After result */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            {/* Raw watch photo (before) */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${showResult ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Raw watch"
-                loading="lazy"
-                className="w-full h-72 object-cover rounded-2xl"
-              />
-              <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center">
-                <div className="flex items-center gap-2 text-white font-bold animate-pulse">
-                  <Sparkles size={20} /> Analyzing photo...
-                </div>
-              </div>
-            </div>
-
-            {/* Finished listing card (after) */}
-            <div className={`bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden transition-all duration-500 ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Premium Quartz Timepiece"
-                loading="lazy"
-                className="w-full h-44 object-cover"
-              />
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-black text-gray-900 text-lg">Premium Quartz Timepiece — Classic Edition</h3>
-                </div>
-                <div className="text-2xl font-bold text-trini-red mb-3">TT$1,299</div>
-                <p className="text-sm text-gray-600 mb-4 min-h-[60px]">
-                  {typed}
-                  {typed.length < TYPEWRITER_DESC.length && <span className="animate-pulse">|</span>}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full">
-                      <Tag size={11} /> {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
+const ListerDemo: React.FC = () => (
+  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <div className="max-w-3xl mx-auto text-center">
+      <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">Photo → draft</span>
+      <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Take a photo. Draft a listing. You set the price.</h2>
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+        In create-store, upload or snap a photo. Vision can draft a name and description when the key is on.
+        You type the TT$ price and qty. No invented listing. No AI price.
+      </p>
+      <a
+        href="/create-store"
+        className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
+      >
+        Draft your first item <ArrowRight size={18} />
+      </a>
+    </div>
+  </section>
+);
 
 
 /**
@@ -388,7 +277,7 @@ const HOW_IT_WORKS = [
   {
     step: '2',
     title: 'Add Your Products (Fast)',
-    description: 'Upload photos or use AI to create listings instantly. Works even if you have no barcodes or inventory system.',
+    description: 'Take a photo to draft a name. You type the TT$ price and qty. SKU is optional — island shops often have none.',
     icon: '📸'
   },
   {
@@ -439,8 +328,8 @@ const FEATURES = [
     description: 'Cash on delivery and cash at pickup. Supported online payments appear only when that rail is actually on for the store.'
   },
   {
-    title: 'AI Product Lister',
-    description: 'Take a photo. AI writes the description, picks keywords, prices it. 30 seconds per product.'
+    title: 'Photo listing',
+    description: 'Take a photo. Vision can draft a name and description. You type the TT$ price. It never sets the price.'
   },
   {
     title: 'Order Dashboard',
@@ -685,7 +574,7 @@ export const LandingPageCRO: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
             >
-              Create your free online store in 5 minutes. Add products with AI. Cash on delivery and pickup.
+              Create your free online store in 5 minutes. Photo can draft a name — you type the TT$ price. Cash on delivery and pickup.
               Built in Trinidad & Tobago, launching to founding merchants now.
             </motion.p>
 
@@ -757,11 +646,6 @@ export const LandingPageCRO: React.FC = () => {
         {/* AI PRODUCT LISTER DEMO — split layout, typewriter before→after */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <ListerDemo />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <WorkingAIDemo />
 
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PROOF SECTION - Honest framing (no fake stats, no fake testimonials) */}

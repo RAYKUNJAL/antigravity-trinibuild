@@ -12,6 +12,8 @@ const {
   mapProductVariants,
   mapProductSpecs,
   itemIsSellable,
+  itemStockLabel,
+  parseQty,
   showIllustrativeBanner,
   announcementLine,
   showAboutSection,
@@ -74,6 +76,14 @@ assert.strictEqual(mapProductSpecs({ Storage: '128GB', Color: 'Black' }), 'Stora
 assert.strictEqual(mapProductSpecs(''), '');
 assert.strictEqual(itemIsSellable({ id: '1', name: 'Cable' }), true);
 assert.strictEqual(itemIsSellable({ id: '2', name: 'Pad', inStock: false }), false);
+assert.strictEqual(itemIsSellable({ id: '3', name: 'Towel', qty: 0 }), false);
+assert.strictEqual(itemIsSellable({ id: '4', name: 'Towel', qty: null }), true);
+assert.strictEqual(parseQty(''), null);
+assert.strictEqual(parseQty('0'), 0);
+assert.strictEqual(itemStockLabel({ qty: 0 }), 'Sold out');
+assert.strictEqual(itemStockLabel({ qty: 4 }), '4 on hand');
+assert.strictEqual(itemStockLabel({ name: 'Towel' }), '');
+assert.ok(!itemStockLabel({ name: 'Towel' }).toLowerCase().includes('in stock'));
 
 const electronics = food({
   templateId: 'electronics',
