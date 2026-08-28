@@ -624,6 +624,7 @@ app.get('/api/rides/listed', (req, res) => {
   res.json(rides.ridesDirectory({
     island: req.query.island,
     schoolRun: req.query.schoolRun,
+    serviceType: req.query.serviceType,
   }));
 });
 app.get('/api/rides/children', (req, res) => {

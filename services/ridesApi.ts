@@ -8,10 +8,11 @@ async function parse(res: Response) {
   return data;
 }
 
-export async function fetchListedRides(opts: { island?: string; schoolRun?: boolean } = {}) {
+export async function fetchListedRides(opts: { island?: string; schoolRun?: boolean; serviceType?: string } = {}) {
   const q = new URLSearchParams();
   if (opts.island) q.set('island', opts.island);
   if (opts.schoolRun) q.set('schoolRun', '1');
+  if (opts.serviceType) q.set('serviceType', opts.serviceType);
   const res = await fetch(`/api/rides/listed${q.toString() ? `?${q}` : ''}`, { headers: { Accept: 'application/json' } });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data || data.listedCount === 0 || !Array.isArray(data.listed)) {

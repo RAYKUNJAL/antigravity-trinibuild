@@ -244,6 +244,82 @@ assert.ok(ghostPin.error);
 const realPin = school.setDirectoryPin({ phone: '8685550200' }, { pinLat: 10.66, pinLng: -61.51 });
 assert.strictEqual(realPin.driver.pinLat, 10.66);
 
+const jobsStore = tmpStore();
+const jobsEnv = { RIDES_DRIVER_SUB_CENTS: '5000', WAM_API_KEY: 'test-only-not-for-prod' };
+const jobs = createRides({ storePath: jobsStore, getEnv: (k) => jobsEnv[k] });
+
+const multi = jobs.apply(kyc({ phone: '8685550300', jobTypes: ['rideshare', 'courier', 'delivery'] }));
+assert.deepStrictEqual(multi.driver.jobTypes, ['rideshare', 'courier', 'delivery']);
+jobs.approve(multi.driver.id);
+jobs.markSubscribed(multi.driver.id);
+
+const rideOff = jobs.createOffer({
+  driverId: multi.driver.id,
+  serviceType: 'rideshare',
+  pickup: 'Tunapuna',
+  drop: 'POS',
+  riderPhone: '8685550411',
+  pay: 'cash',
+  offerTtd: 40,
+});
+assert.strictEqual(rideOff.offer.serviceType, 'rideshare');
+const courOff = jobs.createOffer({
+  driverId: multi.driver.id,
+  serviceType: 'courier',
+  pickup: 'Tunapuna',
+  drop: 'POS',
+  riderPhone: '8685550412',
+  pay: 'cash',
+  offerTtd: 25,
+});
+assert.strictEqual(courOff.offer.serviceType, 'courier');
+const delOff = jobs.createOffer({
+  driverId: multi.driver.id,
+  serviceType: 'delivery',
+  pickup: 'Tunapuna',
+  drop: 'POS',
+  riderPhone: '8685550413',
+  pay: 'cash',
+  offerTtd: 20,
+});
+assert.strictEqual(delOff.offer.serviceType, 'delivery');
+jobs.acceptOffer(delOff.offer.id, { driverPhone: '8685550300' });
+jobs.agreeOffer(delOff.offer.id, { role: 'driver', driverPhone: '8685550300' });
+const delBook = jobs.agreeOffer(delOff.offer.id, { role: 'rider', riderPhone: '8685550413' });
+assert.strictEqual(delBook.trip.serviceType, 'delivery');
+
+const onlyRide = jobs.apply(kyc({ phone: '8685550322', jobTypes: ['rideshare'] }));
+jobs.approve(onlyRide.driver.id);
+jobs.markSubscribed(onlyRide.driver.id);
+const badService = jobs.createOffer({
+  driverId: onlyRide.driver.id,
+  serviceType: 'courier',
+  pickup: 'Tunapuna',
+  drop: 'POS',
+  riderPhone: '8685550414',
+  pay: 'cash',
+  offerTtd: 25,
+});
+assert.ok(badService.error.includes('did not apply for that service'));
+
+jobs.apply(kyc({ phone: '8685550300', jobTypes: ['rideshare'] }));
+jobs.approve(multi.driver.id);
+const rejectAccept = jobs.acceptOffer(courOff.offer.id, { driverPhone: '8685550300' });
+assert.ok(rejectAccept.error.includes('did not apply for that service'));
+
+const unsetStore = tmpStore();
+const unsetEnv = {};
+const unsetRides = createRides({ storePath: unsetStore, getEnv: (k) => unsetEnv[k] });
+const unsetApply = unsetRides.apply(kyc({ phone: '8685550311', jobTypes: ['courier', 'delivery'] }));
+assert.deepStrictEqual(unsetApply.driver.jobTypes, ['courier', 'delivery']);
+assert.strictEqual(unsetApply.driver.listed, false);
+assert.ok(unsetApply.goOnline.reason.includes('Apply still works'));
+assert.strictEqual(unsetRides.ridesDirectory().listedCount, 0);
+assert.strictEqual(unsetRides.ridesDirectory().line1, 'Rides are unavailable on this origin.');
+assert.strictEqual(unsetRides.ridesDirectory().line2, 'No drivers are listed. Juvay does not invent a fare or a live booking button.');
+
 fs.unlinkSync(storePath);
 fs.unlinkSync(schoolStore);
+fs.unlinkSync(jobsStore);
+fs.unlinkSync(unsetStore);
 console.log('rides.test.js ok');

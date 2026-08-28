@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { IslandRideMap } from '../components/IslandRideMap';
 import { applyToDrive, fetchDriverOffers, acceptRideOffer, counterRideOffer, agreeRideOffer, readImageAsDataUrl, setDriverPin } from '../services/ridesApi';
+
+const JOB_OPTIONS = [
+  { id: 'rideshare', label: 'Rideshare' },
+  { id: 'courier', label: 'Courier' },
+  { id: 'delivery', label: 'Delivery' },
+] as const;
 
 /**
  * /drive apply. KYC only. No map. We will not show cars that are not you.
@@ -13,6 +18,7 @@ export const DriveApply: React.FC = () => {
   const [wamHandle, setWamHandle] = useState('');
   const [affiliateRef, setAffiliateRef] = useState('');
   const [island, setIsland] = useState('Trinidad');
+  const [jobTypes, setJobTypes] = useState<string[]>(['rideshare']);
   const [schoolRunRequested, setSchoolRunRequested] = useState(false);
   const [pinLat, setPinLat] = useState('');
   const [pinLng, setPinLng] = useState('');
@@ -45,6 +51,7 @@ export const DriveApply: React.FC = () => {
         wamHandle,
         affiliateRef,
         island,
+        jobTypes,
         schoolRunRequested,
         permitPhoto: photos.permitPhoto,
         insurancePhoto: photos.insurancePhoto,
@@ -74,10 +81,8 @@ export const DriveApply: React.FC = () => {
         <h1 className="text-2xl font-black text-gray-900 mb-2">Apply to drive</h1>
         <p className="text-gray-600 mb-2">We will not show cars that are not you.</p>
         <p className="text-sm text-gray-500 mb-4">
-          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until you are approved and the subscription is confirmed. The map is the island — apply does not invent a location.
+          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until you are approved and the subscription is confirmed. Apply does not invent a location.
         </p>
-        <IslandRideMap island={island} pins={[]} />
-        <p className="text-xs text-gray-500 mt-2 mb-4">No ghost cars on apply. A directory pin is only after you are listed and you type a real point.</p>
 
         <form onSubmit={submit} className="space-y-4">
           <label className="block text-sm font-medium text-gray-700">
@@ -87,6 +92,28 @@ export const DriveApply: React.FC = () => {
               <option>Tobago</option>
             </select>
           </label>
+          <fieldset className="text-sm font-medium text-gray-700">
+            <legend className="mb-2">Jobs you want — one driver can take all three</legend>
+            <div className="space-y-2">
+              {JOB_OPTIONS.map((job) => (
+                <label key={job.id} className="flex items-center gap-3 min-h-[44px] font-normal">
+                  <input
+                    type="checkbox"
+                    checked={jobTypes.includes(job.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setJobTypes((prev) => (prev.includes(job.id) ? prev : [...prev, job.id]));
+                        return;
+                      }
+                      setJobTypes((prev) => prev.filter((id) => id !== job.id));
+                      if (job.id === 'rideshare') setSchoolRunRequested(false);
+                    }}
+                  />
+                  {job.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <label className="block text-sm font-medium text-gray-700">
             Name
             <input required value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
@@ -124,11 +151,20 @@ export const DriveApply: React.FC = () => {
             <input value={affiliateRef} onChange={(e) => setAffiliateRef(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
           </label>
           <label className="flex items-start gap-3 min-h-[44px] text-sm text-gray-700">
-            <input type="checkbox" checked={schoolRunRequested} onChange={(e) => setSchoolRunRequested(e.target.checked)} className="mt-1" />
-            <span>School-run eligible — same permit, insurance, plate, face, and phone. A person must approve this flag. Not listed for kids until then. Parent-booked only. Not a teen dating app. Not unattended street hail.</span>
+            <input
+              type="checkbox"
+              checked={schoolRunRequested}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setSchoolRunRequested(on);
+                if (on && !jobTypes.includes('rideshare')) setJobTypes((prev) => ['rideshare', ...prev]);
+              }}
+              className="mt-1"
+            />
+            <span>School-run eligible — sits under rideshare. Same permit, insurance, plate, face, and phone. A person must approve this flag. Not listed for kids until then. Parent-booked only. Not a teen dating app. Not unattended street hail.</span>
           </label>
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
-          <button type="submit" disabled={busy} className="w-full min-h-[44px] rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40">
+          <button type="submit" disabled={busy || jobTypes.length === 0} className="w-full min-h-[44px] rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40">
             {busy ? 'Submitting…' : 'Submit application'}
           </button>
         </form>
@@ -139,6 +175,7 @@ export const DriveApply: React.FC = () => {
             <p>Subscription confirmed: {result.driver.subscriptionPaid ? 'yes' : 'no'}</p>
             <p>Listed: {result.driver.listed ? 'yes' : 'no'}</p>
             <p>{result.driver.goOnlineReason || result.goOnline?.reason}</p>
+            <p>Jobs: {(result.driver.jobTypes || []).join(', ') || 'rideshare'}</p>
             <p>School-run requested: {result.driver.schoolRunRequested ? 'yes' : 'no'} · approved: {result.driver.schoolRunApproved ? 'yes' : 'no'}</p>
             <Link to="/drive/pay" className="inline-block text-stone-900 font-semibold underline">Subscription status</Link>
             {result.driver.listed ? (
@@ -171,7 +208,7 @@ export const DriveApply: React.FC = () => {
             {offers.length === 0 ? <p className="text-sm text-gray-500">No offers yet.</p> : null}
             {offers.map((offer) => (
               <div key={offer.id} className="border border-gray-200 rounded-xl p-3 mb-3 text-sm space-y-2">
-                <p>{offer.pickup} → {offer.drop}</p>
+                <p>{offer.serviceType || 'rideshare'} · {offer.pickup} → {offer.drop}</p>
                 <p>Offer TT${offer.offerTtd}{offer.counterTtd ? ` · counter TT$${offer.counterTtd}` : ''} · {offer.pay} · {offer.status}</p>
                 {offer.status === 'offered' || offer.status === 'countered' ? (
                   <>

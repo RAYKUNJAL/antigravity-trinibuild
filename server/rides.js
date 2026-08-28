@@ -13,6 +13,7 @@ const HONEST_EMPTY_LINE_1 = 'Rides are unavailable on this origin.';
 const HONEST_EMPTY_LINE_2 = 'No drivers are listed. Juvay does not invent a fare or a live booking button.';
 const SCHOOL_RUN_COPY = 'This is a parent-booked school run, not a teen dating app, not unattended street hail.';
 const LIVE_ISLANDS = ['Trinidad', 'Tobago'];
+const JOB_TYPES = ['rideshare', 'courier', 'delivery'];
 
 const KYC_FIELDS = ['permitPhoto', 'insurancePhoto', 'platePhoto', 'facePhoto'];
 
@@ -72,6 +73,35 @@ function photoPresent(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function normalizeJobTypes(value) {
+  if (value == null) return [];
+  const raw = Array.isArray(value) ? value : [value];
+  const out = [];
+  for (const item of raw) {
+    const t = String(item || '').trim().toLowerCase();
+    if (JOB_TYPES.includes(t) && !out.includes(t)) out.push(t);
+  }
+  return out;
+}
+
+function normalizeServiceType(value) {
+  const t = String(value || '').trim().toLowerCase();
+  return JOB_TYPES.includes(t) ? t : '';
+}
+
+function resolveApplyJobTypes(body, schoolRunRequested) {
+  const provided = body.jobTypes !== undefined || body.jobs !== undefined;
+  let jobTypes = normalizeJobTypes(body.jobTypes !== undefined ? body.jobTypes : body.jobs);
+  if (!provided) jobTypes = ['rideshare'];
+  if (schoolRunRequested && !jobTypes.includes('rideshare')) jobTypes = ['rideshare', ...jobTypes];
+  return jobTypes;
+}
+
+function driverJobTypes(driver) {
+  const fromStore = normalizeJobTypes(driver && driver.jobTypes);
+  return fromStore.length ? fromStore : ['rideshare'];
+}
+
 function publicDriver(driver) {
   const pinLat = Number(driver.pinLat);
   const pinLng = Number(driver.pinLng);
@@ -84,6 +114,7 @@ function publicDriver(driver) {
     wamHandle: driver.wamHandle || '',
     island: driver.island || 'Trinidad',
     schoolRunApproved: driver.schoolRunApproved === true,
+    jobTypes: driverJobTypes(driver),
     pinLat: hasPin ? pinLat : null,
     pinLng: hasPin ? pinLng : null,
   };
@@ -122,10 +153,12 @@ function createRides(opts = {}) {
   function listedDrivers(query = {}) {
     const island = query.island ? normalizeIsland(query.island) : '';
     const schoolRun = query.schoolRun === true || query.schoolRun === '1' || query.schoolRun === 'true';
+    const serviceType = normalizeServiceType(query.serviceType);
     return load().drivers.filter((d) => {
       if (!isListed(d)) return false;
       if (island && d.island !== island) return false;
       if (schoolRun && d.schoolRunApproved !== true) return false;
+      if (serviceType && !driverJobTypes(d).includes(serviceType)) return false;
       return true;
     }).map(publicDriver);
   }
@@ -162,7 +195,11 @@ function createRides(opts = {}) {
     const affiliateRef = String(body.affiliateRef || body.ref || '').trim();
     const islandRaw = body.island == null || String(body.island).trim() === '' ? 'Trinidad' : normalizeIsland(body.island);
     const schoolRunRequested = body.schoolRunRequested === true || body.schoolRunRequested === 'true';
+    const jobTypes = resolveApplyJobTypes(body, schoolRunRequested);
     if (!name) return { error: 'Name is required', status: 400 };
+    if (jobTypes.length === 0) {
+      return { error: 'Select at least one job: rideshare, courier, or delivery', status: 400 };
+    }
     if (phone.length < 7) return { error: 'A real phone number is required', status: 400 };
     if (!plate) return { error: 'Plate is required', status: 400 };
     if (!isLiveIsland(islandRaw)) {
@@ -189,6 +226,7 @@ function createRides(opts = {}) {
       island: islandRaw,
       schoolRunRequested,
       schoolRunApproved: existing?.schoolRunApproved === true,
+      jobTypes,
       pinLat: existing?.pinLat ?? null,
       pinLng: existing?.pinLng ?? null,
       userId: body.userId || existing?.userId || null,
@@ -233,6 +271,7 @@ function createRides(opts = {}) {
       island: driver.island || 'Trinidad',
       schoolRunRequested: driver.schoolRunRequested === true,
       schoolRunApproved: driver.schoolRunApproved === true,
+      jobTypes: driverJobTypes(driver),
       schoolRunListed: listed && driver.schoolRunApproved === true,
       approved: driver.approved === true,
       subscriptionPaid: driver.subscriptionPaid === true,
@@ -423,6 +462,16 @@ function createRides(opts = {}) {
     if (kind === 'school_run' && driver.schoolRunApproved !== true) {
       return { error: 'Not listed for kids until school-run eligibility is approved.', status: 400 };
     }
+    let serviceType = 'rideshare';
+    if (kind === 'school_run') {
+      serviceType = 'rideshare';
+    } else if (body.serviceType != null && String(body.serviceType).trim() !== '') {
+      serviceType = normalizeServiceType(body.serviceType);
+      if (!serviceType) return { error: 'Service must be rideshare, courier, or delivery', status: 400 };
+    }
+    if (!driverJobTypes(driver).includes(serviceType)) {
+      return { error: 'This driver did not apply for that service', status: 400 };
+    }
     const pickup = String(body.pickup || '').trim();
     const drop = String(body.drop || '').trim();
     const riderPhone = digitsOnly(kind === 'school_run' ? (body.parentPhone || body.riderPhone) : body.riderPhone);
@@ -455,6 +504,7 @@ function createRides(opts = {}) {
     const offer = {
       id: newId('off'),
       kind,
+      serviceType,
       driverId: driver.id,
       riderPhone,
       parentPhone: kind === 'school_run' ? riderPhone : null,
@@ -497,6 +547,11 @@ function createRides(opts = {}) {
       return { error: 'Offer is not waiting on the driver', status: 400 };
     }
     if (!actorMatchesDriver(offer, body)) return { error: 'Only the listed driver can accept', status: 403 };
+    const driver = findDriver({ id: offer.driverId });
+    const serviceType = offer.serviceType || 'rideshare';
+    if (!driverJobTypes(driver).includes(serviceType)) {
+      return { error: 'This driver did not apply for that service', status: 400 };
+    }
     offer.status = 'accepted';
     offer.driverAgreed = true;
     offer.updatedAt = now();
@@ -566,6 +621,7 @@ function createRides(opts = {}) {
       cashPaid: false,
       cashReceived: false,
       kind: offer.kind || 'ride',
+      serviceType: offer.serviceType || 'rideshare',
       parentPhone: offer.parentPhone || null,
       childId: offer.childId || null,
       childName: offer.childName || null,
@@ -633,6 +689,7 @@ function createRides(opts = {}) {
       ratings: null,
       bikeTaxi: false,
       kind: trip.kind || 'ride',
+      serviceType: trip.serviceType || 'rideshare',
       schoolRun: trip.kind === 'school_run',
       schoolRunCopy: trip.kind === 'school_run' ? SCHOOL_RUN_COPY : null,
       parentPhone: trip.parentPhone || null,
@@ -798,5 +855,6 @@ module.exports = {
   HONEST_EMPTY_LINE_2,
   SCHOOL_RUN_COPY,
   LIVE_ISLANDS,
+  JOB_TYPES,
   KYC_FIELDS,
 };

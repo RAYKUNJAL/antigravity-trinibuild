@@ -46,7 +46,7 @@ export const RideTrip: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-16">
       <div className="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 p-8 space-y-4">
-        <h1 className="text-2xl font-black text-gray-900">{school ? 'School-run trip' : 'Accepted trip'}</h1>
+        <h1 className="text-2xl font-black text-gray-900">{school ? 'School-run trip' : `Accepted ${trip.serviceType || 'rideshare'} job`}</h1>
         {school ? <p className="text-gray-700 font-medium">{trip.schoolRunCopy}</p> : null}
         <IslandRideMap island="Trinidad" pins={[]} tripPoint={trip.lastPoint} />
         <p className="text-xs text-gray-500">Live car point only on this accepted trip. Parent share sees the same map. No tracking outside the trip.</p>
