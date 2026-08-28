@@ -76,7 +76,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I use my own courier?',
-          a: 'Yes. You can arrange your own delivery and mark it as self-delivery, or offer pickup. TriniRides fare is not quoted unless that product is live for that store.'
+          a: 'Yes. You can arrange your own delivery and mark it as self-delivery, or offer pickup. Juvay Rides fare is not quoted unless that product is live for that store.'
         },
         {
           q: 'How do I track deliveries?',
