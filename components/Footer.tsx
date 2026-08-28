@@ -64,7 +64,6 @@ export const Footer: React.FC = () => {
               <li><Link to="/services/stores" className="text-sm text-gray-400 hover:text-white transition-colors">For Online Stores</Link></li>
               <li><Link to="/services/food" className="text-sm text-gray-400 hover:text-white transition-colors">For Restaurants</Link></li>
               <li><Link to="/services/marketplace" className="text-sm text-gray-400 hover:text-white transition-colors">For Marketplaces</Link></li>
-              <li><Link to="/services/rides" className="text-sm text-gray-400 hover:text-white transition-colors">For Drivers</Link></li>
               <li><Link to="/services/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">For Job Seekers</Link></li>
               <li><Link to="/services/living" className="text-sm text-gray-400 hover:text-white transition-colors">For Real Estate</Link></li>
               <li><Link to="/carib-ads" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Advertise with Juvay <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">NEW</span></Link></li>

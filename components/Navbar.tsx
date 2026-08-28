@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Settings, ChevronDown, LogOut, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Truck, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Menu, X, User, Settings, ChevronDown, LogOut, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { IslandSelector } from './IslandFilter';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
@@ -23,7 +23,6 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon, description: 'Build your free store in 5 minutes', badge: 'Free', badgeColor: 'bg-green-500' },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed, description: 'Menus, reservations, COD orders' },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag, description: 'List & sell anything fast' },
-  { name: 'For Drivers', path: '/rides', icon: Truck, description: 'Earn delivering across T&T' },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon, description: 'Buy, rent, sell property' },
 ];
@@ -46,7 +45,6 @@ const MOBILE_LINKS = [
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
-  { name: 'For Drivers', path: '/rides', icon: Truck },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon },
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
