@@ -33,7 +33,7 @@ export const RidesLanding: React.FC = () => {
                         Start Driving <Car className="ml-2 h-5 w-5" />
                      </Link>
                      <Link to="/rides" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
-                        Book a Ride
+                        Rides status
                      </Link>
                   </div>
                </div>
@@ -134,7 +134,7 @@ export const RidesLanding: React.FC = () => {
 
                <div className="mt-12">
                   <Link to="/rides" className="bg-gray-900 text-white px-10 py-4 rounded-full font-bold hover:bg-gray-800 shadow-lg">
-                     Book Now
+                     Rides status
                   </Link>
                </div>
             </div>

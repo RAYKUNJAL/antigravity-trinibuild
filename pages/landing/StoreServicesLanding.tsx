@@ -284,7 +284,6 @@ export const StoreServicesLanding: React.FC = () => {
                                     <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-3">Works with your full TriniBuild stack</p>
                                     <div className="flex flex-wrap gap-2">
                                         {[
-                                            { label: '🚗 TriniRides', desc: 'Book delivery from reservation' },
                                             { label: '📊 Tax Dashboard', desc: 'Every pickup auto-logged' },
                                             { label: '📦 Inventory', desc: 'Stock deducted on scan' },
                                             { label: '💬 WhatsApp', desc: 'Customer + store notified' },

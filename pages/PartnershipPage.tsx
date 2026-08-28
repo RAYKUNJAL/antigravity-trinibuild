@@ -49,7 +49,7 @@ export const PartnershipPage: React.FC = () => {
     },
     {
       name: 'Shipping Partners',
-      description: 'Integrated with TriniRides for delivery tracking',
+      description: 'Seller-arranged delivery when the store offers it',
       icon: '🚗'
     }
   ];

@@ -1168,7 +1168,6 @@ export const ReservationPremiumGate: React.FC<{
           { icon: Package, title: 'Auto Inventory', desc: 'Stock deducted on scan' },
           { icon: TrendingUp, title: 'Tax Dashboard Sync', desc: 'Every pickup logged automatically' },
           { icon: MessageCircle, title: 'WhatsApp Alerts', desc: 'Customer + store get notified' },
-          { icon: Zap, title: 'TriniRides Link', desc: 'Book delivery from reservation' },
           { icon: Shield, title: 'Fraud Protection', desc: 'Tokens expire, scan logs kept' },
         ].map(({ icon: Icon, title, desc }) => (
           <div key={title} className="flex items-start gap-3 bg-white/5 rounded-xl p-3">

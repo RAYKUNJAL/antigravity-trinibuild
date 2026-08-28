@@ -80,7 +80,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How do I track deliveries?',
-          a: 'When using TriniRides, both you and the customer can track the delivery in real-time. For self-delivery, update the order status and send tracking via WhatsApp.'
+          a: 'Pickup and seller-arranged delivery have no live ride tracker on this origin. For self-delivery, update the order status and send tracking via WhatsApp.'
         }
       ]
     },

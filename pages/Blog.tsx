@@ -131,17 +131,6 @@ const allPosts: BlogPost[] = [
     slug: "rideshare-in-scarborough",
     isLocationBlog: true
   },
-  {
-    id: '8',
-    title: "Introducing TriniRides: The Future of Transport",
-    excerpt: "We are expanding! Learn about our new rideshare features and how drivers can earn more.",
-    category: "Platform News",
-    author: "Juvay Team",
-    date: "Nov 25, 2025",
-    image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800",
-    readTime: 4,
-    slug: "introducing-trinirides"
-  }
 ];
 
 // Categories

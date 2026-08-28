@@ -90,7 +90,7 @@ export const SERVICES: ServiceItem[] = [
     slug: 'rides',
     icon: Car,
     title: 'Rides & Delivery',
-    tagline: 'Drive with TriniRides — keep more of your earnings',
+    tagline: 'Rides stay empty until drivers are live',
     cta: 'Drive with us',
     path: '/services/rides',
     accentBg: 'bg-blue-50',

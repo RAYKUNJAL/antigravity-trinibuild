@@ -1,16 +1,16 @@
 /**
  * CODCheckout.tsx
  * Full Cash-on-Delivery checkout system for Juvay
- * Includes TriniRides delivery integration as a shipping option
+ * Cash-on-delivery checkout. Rides/delivery rail is not live.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Banknote, CreditCard, Building2, Car, Package, Store,
+  Banknote, CreditCard, Building2, Package, Store,
   MapPin, Phone, User, ChevronRight, ChevronLeft,
   Clock, Shield, CheckCircle, Zap, AlertCircle, Info,
-  Camera, Upload, Copy, Check, Navigation, Star,
+  Camera, Upload, Copy, Check,
   MessageCircle, Truck, Gift, ArrowRight, X, Loader2
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
@@ -39,7 +39,7 @@ export interface StoreInfo {
 }
 
 type PaymentMethod = 'cod' | 'bank_transfer' | 'card';
-type DeliveryMethod = 'trinirides' | 'standard' | 'express' | 'pickup';
+type DeliveryMethod = 'standard' | 'express' | 'pickup';
 type CheckoutStep = 'details' | 'delivery' | 'payment' | 'review' | 'confirmed';
 
 interface CheckoutState {
@@ -59,34 +59,15 @@ interface CheckoutState {
   cashConfirmed: boolean;
 }
 
-interface TriniRidesDriver {
-  id: string;
-  name: string;
-  rating: number;
-  trips: number;
-  vehicle: string;
-  eta: number; // minutes
-  distance: number; // km
-  photo?: string;
-}
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DELIVERY_FEES: Record<DeliveryMethod, number> = {
-  trinirides: 0,  // calculated dynamically
   standard: 30,
   express: 60,
   pickup: 0,
 };
 
 const FREE_DELIVERY_THRESHOLD = 200;
-
-// Mock nearby TriniRides drivers (would come from ridesService in production)
-const MOCK_DRIVERS: TriniRidesDriver[] = [
-  { id: 'd1', name: 'Marcus A.', rating: 4.9, trips: 847, vehicle: 'Toyota Corolla', eta: 8, distance: 2.1 },
-  { id: 'd2', name: 'Priya S.', rating: 4.8, trips: 1203, vehicle: 'Nissan Tiida', eta: 12, distance: 3.4 },
-  { id: 'd3', name: 'Devon W.', rating: 4.7, trips: 562, vehicle: 'Honda Fit', eta: 15, distance: 4.2 },
-];
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
@@ -129,127 +110,13 @@ const CODTrustBadge: React.FC = () => (
           ✅ Most Popular in Trinidad — 9 in 10 customers choose Cash on Delivery
         </p>
         <div className="flex flex-wrap gap-2 mt-2">
-          {['Inspect before paying', 'Verified drivers', 'WhatsApp updates', 'Easy returns'].map(t => (
+          {['Inspect before paying', 'WhatsApp updates', 'Easy returns'].map(t => (
             <span key={t} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{t}</span>
           ))}
         </div>
       </div>
     </div>
   </motion.div>
-);
-
-// ─── TriniRides Delivery Panel ────────────────────────────────────────────────
-
-const TriniRidesPanel: React.FC<{
-  selected: boolean;
-  onSelect: () => void;
-  fee: number;
-  drivers: TriniRidesDriver[];
-  selectedDriver: TriniRidesDriver | null;
-  onSelectDriver: (d: TriniRidesDriver) => void;
-}> = ({ selected, onSelect, fee, drivers, selectedDriver, onSelectDriver }) => (
-  <div>
-    <motion.button
-      onClick={onSelect}
-      whileTap={{ scale: 0.98 }}
-      className="w-full text-left rounded-2xl border-2 p-4 transition-all mb-0"
-      style={selected
-        ? { borderColor: '#000', background: '#000', color: '#fff' }
-        : { borderColor: '#e5e7eb', background: '#fff' }
-      }
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: selected ? '#FFD700' : '#f3f4f6' }}
-        >
-          <Car size={20} style={{ color: selected ? '#000' : '#6b7280' }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-sm">TriniRides Delivery</span>
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-black"
-              style={{ background: '#FFD700', color: '#000' }}
-            >
-              FASTEST
-            </span>
-          </div>
-          <p className="text-xs mt-0.5" style={{ color: selected ? 'rgba(255,255,255,0.7)' : '#6b7280' }}>
-            Real-time GPS tracking · Verified drivers · Live WhatsApp updates
-          </p>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <p className="font-black text-sm" style={{ color: selected ? '#FFD700' : '#E61E2B' }}>
-            TT${fee}
-          </p>
-          <p className="text-xs" style={{ color: selected ? 'rgba(255,255,255,0.6)' : '#9ca3af' }}>
-            ~{drivers[0]?.eta ?? 15} min
-          </p>
-        </div>
-      </div>
-    </motion.button>
-
-    {/* Driver selection — shown when TriniRides selected */}
-    <AnimatePresence>
-      {selected && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="overflow-hidden"
-        >
-          <div className="mt-3 space-y-2">
-            <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-2">
-              Available Drivers Nearby
-            </p>
-            {drivers.map(driver => (
-              <motion.button
-                key={driver.id}
-                onClick={() => onSelectDriver(driver)}
-                whileHover={{ x: 2 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left"
-                style={selectedDriver?.id === driver.id
-                  ? { borderColor: '#E61E2B', background: '#FEF2F2' }
-                  : { borderColor: '#e5e7eb', background: '#fafafa' }
-                }
-              >
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-sm font-black text-gray-600">
-                  {driver.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900">{driver.name}</p>
-                  <p className="text-xs text-gray-500">{driver.vehicle}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="flex items-center gap-0.5 text-xs text-amber-600 font-bold">
-                      <Star size={10} fill="#d97706" /> {driver.rating}
-                    </span>
-                    <span className="text-xs text-gray-400">{driver.trips.toLocaleString()} trips</span>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-black" style={{ color: '#E61E2B' }}>{driver.eta} min</p>
-                  <p className="text-xs text-gray-400">{driver.distance} km away</p>
-                  {selectedDriver?.id === driver.id && (
-                    <CheckCircle size={14} className="ml-auto mt-1" style={{ color: '#E61E2B' }} />
-                  )}
-                </div>
-              </motion.button>
-            ))}
-            <div className="flex items-center gap-2 mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-              <Navigation size={12} className="text-amber-600 flex-shrink-0" />
-              <p className="text-xs text-amber-700 font-semibold">
-                Driver will be GPS-tracked from pickup to your door. You'll receive WhatsApp updates.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>
 );
 
 // ─── Bank Transfer Panel ──────────────────────────────────────────────────────
@@ -448,9 +315,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
   const [step, setStep] = useState<CheckoutStep>('details');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [nearbyDrivers] = useState<TriniRidesDriver[]>(MOCK_DRIVERS);
-  const [selectedDriver, setSelectedDriver] = useState<TriniRidesDriver | null>(null);
-
   const [form, setForm] = useState<CheckoutState>({
     name: '',
     phone: '',
@@ -473,14 +337,9 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
 
   const deliveryFee = useCallback(() => {
     if (form.delivery === 'pickup') return 0;
-    if (form.delivery === 'trinirides') {
-      // TriniRides fee: base TT$25 + TT$4/km from nearest driver
-      const driver = selectedDriver ?? nearbyDrivers[0];
-      return driver ? Math.round(25 + driver.distance * 4) : 35;
-    }
     if (isFreeDelivery && form.delivery === 'standard') return 0;
     return DELIVERY_FEES[form.delivery];
-  }, [form.delivery, selectedDriver, nearbyDrivers, isFreeDelivery]);
+  }, [form.delivery, isFreeDelivery]);
 
   const total = subtotal + deliveryFee();
 
@@ -492,7 +351,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
       case 'details':
         return !!(form.name.trim() && form.phone.trim() && form.address.trim() && form.city.trim());
       case 'delivery':
-        if (form.delivery === 'trinirides' && !selectedDriver) return false;
         return true;
       case 'payment':
         if (form.payment === 'cod') return form.cashConfirmed;
@@ -503,7 +361,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
       default:
         return false;
     }
-  }, [step, form, selectedDriver]);
+  }, [step, form]);
 
   const stepOrder: CheckoutStep[] = ['details', 'delivery', 'payment', 'review'];
 
@@ -537,14 +395,10 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
           city: form.city,
         },
         paymentMethod: form.payment,
-        deliveryOption: form.delivery === 'trinirides' ? 'express' :
-                        form.delivery === 'express' ? 'express' :
+        deliveryOption: form.delivery === 'express' ? 'express' :
                         form.delivery === 'pickup' ? 'pickup' : 'standard',
         notes: [
           form.notes,
-          form.delivery === 'trinirides' && selectedDriver
-            ? `TriniRides driver: ${selectedDriver.name} (${selectedDriver.vehicle})`
-            : '',
           form.payment === 'bank_transfer' && form.transferProof
             ? `Transfer proof uploaded: ${form.transferProof}`
             : '',
@@ -556,7 +410,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
 
       // WhatsApp confirmation
       if (store.whatsapp) {
-        const driver = form.delivery === 'trinirides' && selectedDriver ? selectedDriver : null;
         const msg = [
           `🛒 *New Order from Juvay*`,
           `Order: ${order.order_number || 'TRN-' + Date.now()}`,
@@ -564,8 +417,8 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
           `Deliver to: ${form.address}, ${form.city}`,
           `Items: ${items.map(i => `${i.quantity}x ${i.name}`).join(', ')}`,
           `Total: TT$${total.toFixed(2)}`,
-          `Payment: ${form.payment === 'cod' ? '💵 Cash on Delivery' : form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💳 Card'}`,
-          `Delivery: ${form.delivery === 'trinirides' ? `🚗 TriniRides (${driver?.name ?? 'TBA'})` : form.delivery}`,
+          `Payment: ${form.payment === 'cod' ? '💵 Cash on Delivery' : form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💵 Cash'}`,
+          `Delivery: ${form.delivery}`,
         ].join('\n');
         window.open(`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
       }
@@ -678,8 +531,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
   const renderDelivery = () => (
     <div className="space-y-4">
       <h2 className="text-xl font-black text-gray-900">Choose Delivery</h2>
-
-      {/* TriniRides fare (TT$25 + TT$4/km) is only shown when that product is live for this store. */}
 
       {/* Standard delivery */}
       <DeliveryOption
@@ -837,7 +688,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
   );
 
   const renderReview = () => {
-    const driver = form.delivery === 'trinirides' && selectedDriver ? selectedDriver : null;
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-black text-gray-900">Review Order</h2>
@@ -855,7 +705,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
             title: 'Delivery',
             items: [
               [
-                form.delivery === 'trinirides' ? `TriniRides${driver ? ` · ${driver.name}` : ''}` :
                 form.delivery === 'express' ? 'Express Delivery' :
                 form.delivery === 'pickup' ? 'Store Pickup' : 'Standard Delivery',
                 form.scheduleNow ? 'As soon as possible' : `${form.scheduledDate} ${form.scheduledTime}`

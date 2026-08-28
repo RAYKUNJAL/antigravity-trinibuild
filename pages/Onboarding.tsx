@@ -127,7 +127,7 @@ export const Onboarding: React.FC = () => {
                 </div>
                 <div className="flex-grow">
                   <h3 className="font-bold text-gray-900">Shopper</h3>
-                  <p className="text-xs text-gray-500">Find Deals, Order Food & Request Rides.</p>
+                  <p className="text-xs text-gray-500">Find deals and local shops.</p>
                   <span className="text-[10px] font-bold text-blue-600 bg-white px-1 rounded mt-1 inline-block">Ecosystem</span>
                 </div>
                 {intent === 'buy' && <CheckCircle className="h-5 w-5 text-blue-500" />}

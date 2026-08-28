@@ -67,10 +67,10 @@ export const WelcomeScreen = () => {
         },
         rides: {
             icon: <Car className="w-5 h-5" />,
-            title: "Safe, Tracked Rides Across T&T",
-            subtitle: "Real-time GPS tracking. Verified drivers. Flat rates—no surge pricing.",
-            cta: "Book a Ride",
-            features: ["Live Tracking", "Verified Drivers", "Fair Pricing"],
+            title: "Rides",
+            subtitle: "Rides stay empty until drivers are live. No invented fare.",
+            cta: "Open rides",
+            features: ["Honest empty", "No invented drivers", "No live booking"],
             heroImage: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
             colorName: "green",
             bgClass: "bg-green-600",
@@ -241,7 +241,7 @@ export const WelcomeScreen = () => {
                                 </div>
                                 <div className="text-left">
                                     <p className="text-xs text-gray-500">
-                                        <strong className="text-gray-900">Sarah from Port of Spain</strong> just {selectedService === 'marketplace' ? 'launched a store' : selectedService === 'rides' ? 'booked a ride' : 'posted a job'}
+                                        <strong className="text-gray-900">Sarah from Port of Spain</strong> just {selectedService === 'marketplace' ? 'launched a store' : selectedService === 'rides' ? 'opened rides' : 'posted a job'}
                                     </p>
                                     <p className={`${currentService.textClass} text-xs font-bold mt-0.5 flex items-center gap-1`}>
                                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span> 2 min ago

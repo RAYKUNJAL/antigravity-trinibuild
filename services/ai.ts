@@ -137,7 +137,6 @@ PLATFORM SERVICES:
 - FREE Online Stores (10 items free, 15 templates, 5-min setup)
 - Business Directory (52 categories across T&T)
 - Digital Services (Game Pass, Netflix, Spotify — codes are not for sale; not a live rail)
-- TriniRides (ride-share, TT$25 base + TT$4/km, GPS tracked)
 - Real Estate listings, Jobs board
 - AI Document Assistant (/documents) — job letters, visa letters, proof of income
 - VAT Tax Tracker, Referral Program (/earn)
@@ -216,9 +215,8 @@ Juvay Affiliate Program (/earn):
 WAYS TO EARN ON JUVAY:
 1. Sell products/services through your store (cash on delivery / cash at pickup only)
 2. Affiliate referrals — earn from every business you bring to the platform
-3. TriniRides driver — deliver orders and earn per delivery
-4. Service provider — list your professional services in the directory
-5. Content creator — blog and attract traffic to your store
+3. Service provider — list your professional services in the directory
+4. Content creator — blog and attract traffic to your store
 
 ═══ T&T WORK & BUSINESS ═══
 POPULAR BUSINESS TYPES IN T&T:
@@ -242,7 +240,7 @@ How COD works for Trinidad businesses:
 2. Customer places order — no payment needed upfront
 3. Merchant gets WhatsApp notification with order details
 4. Merchant confirms order and prepares items
-5. Delivery arranged: TriniRides (TT$25 + TT$4/km) or merchant's own driver or customer pickup
+5. Delivery arranged: merchant's own driver or customer pickup
 6. Driver delivers and collects cash or Linx payment at door
 7. Merchant marks order complete in dashboard
 8. Cash reconciled — merchant keeps product amount, delivery fee goes to driver
@@ -347,15 +345,11 @@ PUBLIC TRANSPORT:
 - PH taxis (private hire): Set routes, fixed rates. Stands at City Gate, Curepe Junction, Chaguanas, San Fernando.
 - Water taxi: POS to San Fernando, fast service ~50 min. TT$15 one-way.
 
-TRINIRRIDES:
-- TT$25 base fare + TT$4/km
-- GPS tracked in real-time
-- Cash or digital payment accepted
-- WhatsApp integration for driver communication
-- Driver rating system
-- Delivery service available for businesses (COD collection)
+RIDES:
+- The /rides page stays empty unless live drivers are on this origin.
+- Do not invent a fare, a driver, or a live booking button.
 
-Suggest /rides for booking. Parent: R&R Digital Solutions.`,
+Parent: R&R Digital Solutions.`,
 
     service_expert: `You are Juvay's Service Expert — you connect people with professionals across T&T.
 ${TRINI_PERSONALITY}
@@ -529,7 +523,7 @@ PRODUCTS:
 ${products}
 
 PAYMENT: Cash on delivery / cash at pickup only
-DELIVERY: TriniRides delivery, Standard delivery, Store pickup`;
+DELIVERY: Store pickup or the merchant's own driver. No live ride rail.`;
 }
 
 // ─── Trini Fallback Responses ────────────────────────────────────────────────
@@ -560,11 +554,11 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {
-        return "**How COD works on Juvay:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange delivery (TriniRides or yuh own driver)\n4. Driver delivers and collects cash or Linx payment\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
+        return "**How COD works on Juvay:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange pickup or yuh own delivery\n4. Customer pays cash at pickup or at the door\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
     }
 
     if (msg.match(/\b(ride|taxi|transport|driver|maxi)\b/)) {
-        return "TriniRides got yuh covered:\n\n🚗 TT$25 base + TT$4/km\n📍 GPS tracked\n💬 WhatsApp updates\n💵 Cash accepted\n\nCheck [/rides](/rides) to book!";
+        return "Rides are not a live rail on this origin. Juvay does not invent drivers or fares. The [/rides](/rides) page stays empty until real drivers are on.";
     }
 
     if (msg.match(/\b(property|house|apartment|rent|real estate|land)\b/)) {
