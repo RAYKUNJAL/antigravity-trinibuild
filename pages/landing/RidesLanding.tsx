@@ -213,6 +213,11 @@ export const RidesLanding: React.FC = () => {
               </select>
             </label>
 
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 mb-2">Listed people only. No ghost cars.</p>
+              <IslandRideMap island={island} pins={listed} height="280px" />
+            </div>
+
             {unavailable ? (
               <div className="text-center py-4">
                 <p className="text-gray-600 mb-2">Rides are unavailable on this origin.</p>
@@ -222,10 +227,6 @@ export const RidesLanding: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="mb-6">
-                  <p className="text-sm text-gray-500 mb-2">Listed people only. No ghost cars.</p>
-                  <IslandRideMap island={island} pins={listed} height="280px" />
-                </div>
                 <ul className="space-y-3 mb-6">
                   {listed.map((driver) => (
                     <li key={driver.id}>
