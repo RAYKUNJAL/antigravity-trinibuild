@@ -1,6 +1,16 @@
 /**
  * Same-origin rides v1. No invented fares. Not pay→fulfill.
  */
+import { getToken } from './selfHostedApi';
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 async function parse(res: Response) {
   const data = await res.json().catch(() => ({}));
@@ -141,6 +151,31 @@ export function tapCashReceived(id: string, driverPhone: string) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ driverPhone }),
+  }).then(parse);
+}
+
+export function fetchAdminDriveApplications() {
+  return fetch('/api/admin/drive/applications', { headers: authHeaders() }).then(parse);
+}
+
+export function adminApproveDrive(id: string) {
+  return fetch(`/api/admin/drive/${encodeURIComponent(id)}/approve`, {
+    method: 'POST',
+    headers: authHeaders(),
+  }).then(parse);
+}
+
+export function adminSubscribeDrive(id: string) {
+  return fetch(`/api/admin/drive/${encodeURIComponent(id)}/subscribe`, {
+    method: 'POST',
+    headers: authHeaders(),
+  }).then(parse);
+}
+
+export function adminSchoolRunDrive(id: string) {
+  return fetch(`/api/admin/drive/${encodeURIComponent(id)}/school-run`, {
+    method: 'POST',
+    headers: authHeaders(),
   }).then(parse);
 }
 

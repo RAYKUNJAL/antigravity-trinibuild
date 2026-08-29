@@ -1,7 +1,8 @@
 /**
  * Cash-first Juvay rides v1.
  * File store so apply works without inventing DATABASE_URL or a TTD sub price.
- * Listed = approved AND subscriptionPaid. Webhook/checkout never auto-lists (not pay→fulfill).
+ * Listed = person-approved. If RIDES_DRIVER_SUB_CENTS is later set, listing also needs a person confirm (subscriptionPaid).
+ * Webhook/checkout never auto-lists (not pay→fulfill). Do not invent the cents env.
  * Env name only: RIDES_DRIVER_SUB_CENTS (integer cents). Unset/invalid = no price.
  * Wam = wam.com. WhatsApp = wa.me to a listed driver. Do not mix them.
  */
@@ -147,7 +148,10 @@ function createRides(opts = {}) {
   }
 
   function isListed(driver) {
-    return driver && driver.approved === true && driver.subscriptionPaid === true;
+    if (!driver || driver.approved !== true) return false;
+    const priceCents = subscriptionPriceCents();
+    if (priceCents == null) return true;
+    return driver.subscriptionPaid === true;
   }
 
   function listedDrivers(query = {}) {
@@ -252,7 +256,7 @@ function createRides(opts = {}) {
       goOnline: {
         allowed: false,
         reason: priceCents == null
-          ? 'No driver subscription price is set on this origin. Apply still works. Go-online is blocked until a person sets the price.'
+          ? 'Not listed until a person approves your KYC. No driver subscription price is set on this origin. Apply still works.'
           : 'Not listed until a person approves you and confirms the subscription. Unpaid and unapproved stay unlistable.',
       },
       fulfill: false,
@@ -276,15 +280,17 @@ function createRides(opts = {}) {
       approved: driver.approved === true,
       subscriptionPaid: driver.subscriptionPaid === true,
       listed,
+      pinLat: publicDriver(driver).pinLat,
+      pinLng: publicDriver(driver).pinLng,
       subscriptionPriceCents: priceCents,
       goOnlineBlocked: !listed,
       goOnlineReason: listed
         ? null
-        : priceCents == null
-          ? 'No driver subscription price is set on this origin. Apply still works. Go-online is blocked until a person sets the price.'
-          : driver.approved !== true
-            ? 'A person must approve your KYC. You are not listed.'
-            : 'Subscription is unpaid. You are not listed. Paying on wam.com does not list you until a person confirms.',
+        : driver.approved !== true
+          ? (priceCents == null
+            ? 'A person must approve your KYC. You are not listed. No driver subscription price is set on this origin.'
+            : 'A person must approve your KYC. You are not listed.')
+          : 'Subscription is unpaid. You are not listed. Paying on wam.com does not list you until a person confirms.',
       copy: 'We will not show cars that are not you.',
     };
   }
@@ -318,7 +324,7 @@ function createRides(opts = {}) {
     const driver = state.drivers.find((d) => d.id === driverId);
     if (!driver) return { error: 'Application not found', status: 404 };
     if (isListed(driver) !== true) {
-      return { error: 'Not listed for kids until the driver is approved, subscribed, and school-run flagged.', status: 400 };
+      return { error: 'Not listed for kids until the driver is listed and school-run flagged.', status: 400 };
     }
     if (driver.schoolRunRequested !== true) {
       return { error: 'Driver did not request school-run eligibility', status: 400 };
@@ -412,7 +418,7 @@ function createRides(opts = {}) {
       payOn: 'https://wam.com',
       fulfill: false,
       copy: priceCents == null
-        ? 'No driver subscription price is set on this origin. Apply still works. Go-online is blocked until a person sets the price.'
+        ? 'No driver subscription price is set on this origin. A person-approved driver may be listed. When a price is set, listing requires a person to confirm the subscription. Apply still works.'
         : 'Pay the face amount on wam.com. Wam is not WhatsApp. A person must confirm the subscription before you are listed.',
     };
   }

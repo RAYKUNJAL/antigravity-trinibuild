@@ -48,11 +48,17 @@ const mapped = rides.apply(kyc({ lat: 10.6 }));
 assert.ok(mapped.error.includes('No map'));
 
 assert.strictEqual(rides.ridesDirectory().listedCount, 0, 'unapproved stays unlistable');
+const ghostUnapproved = rides.setDirectoryPin({ phone: '8685550100' }, { pinLat: 10.66, pinLng: -61.51 });
+assert.ok(ghostUnapproved.error.includes('ghost'), 'no ghost pins for unapproved');
 
 const approved = rides.approve(blocked.driver.id);
 assert.strictEqual(approved.driver.approved, true);
-assert.strictEqual(approved.listed, false, 'approved but unpaid stays unlistable');
-assert.strictEqual(rides.ridesDirectory().listedCount, 0);
+assert.strictEqual(approved.listed, true, 'approve-without-price lists');
+assert.strictEqual(rides.ridesDirectory().listedCount, 1);
+assert.strictEqual(rides.ridesDirectory().listed[0].pinLat, null, 'listed without a pin is not a ghost car');
+const nycPin = rides.setDirectoryPin({ phone: '8685550100' }, { pinLat: 40.7, pinLng: -74 });
+assert.ok(nycPin.error);
+assert.strictEqual(rides.ridesDirectory().listed[0].pinLat, null, 'no ghost pins');
 
 const subUnset = rides.startSubscriptionWam({ phone: '8685550100' });
 assert.ok(subUnset.error.includes('Apply still works'));
@@ -68,6 +74,7 @@ env.RIDES_DRIVER_SUB_CENTS = '5000';
 env.WAM_API_KEY = 'test-only-not-for-prod';
 const priced = createRides({ storePath, getEnv: (k) => env[k] });
 assert.strictEqual(priced.subscriptionPriceCents(), 5000);
+assert.strictEqual(priced.ridesDirectory().listedCount, 0, 'price set requires a person to confirm subscription again');
 
 const checkout = priced.startSubscriptionWam({ phone: '8685550100' });
 assert.strictEqual(checkout.payment.amountCents, 5000);
@@ -317,6 +324,10 @@ assert.ok(unsetApply.goOnline.reason.includes('Apply still works'));
 assert.strictEqual(unsetRides.ridesDirectory().listedCount, 0);
 assert.strictEqual(unsetRides.ridesDirectory().line1, 'Rides are unavailable on this origin.');
 assert.strictEqual(unsetRides.ridesDirectory().line2, 'No drivers are listed. Juvay does not invent a fare or a live booking button.');
+const unsetApproved = unsetRides.approve(unsetApply.driver.id);
+assert.strictEqual(unsetApproved.listed, true, 'approve-without-price lists');
+assert.strictEqual(unsetRides.ridesDirectory().listedCount, 1);
+assert.strictEqual(unsetRides.ridesDirectory().listed[0].pinLat, null, 'no ghost pins');
 const emptyAdminStore = tmpStore();
 const emptyAdmin = createRides({ storePath: emptyAdminStore, getEnv: () => undefined }).adminApplications();
 assert.deepStrictEqual(emptyAdmin.applications, []);

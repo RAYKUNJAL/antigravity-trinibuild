@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Car, Package, ShoppingBag, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO';
+import { IslandRideMap } from '../../components/IslandRideMap';
 import { agreeRideOffer, createRideOffer, fetchListedRides } from '../../services/ridesApi';
 
 type ServiceType = 'rideshare' | 'courier' | 'delivery';
@@ -19,7 +20,7 @@ export const RidesLanding: React.FC = () => {
   const [island, setIsland] = useState('Trinidad');
   const [serviceType, setServiceType] = useState<ServiceType>('rideshare');
   const [unavailable, setUnavailable] = useState(true);
-  const [listed, setListed] = useState<Array<{ id: string; name: string; plate: string; phone: string; wamHandle?: string; jobTypes?: string[] }>>([]);
+  const [listed, setListed] = useState<Array<{ id: string; name: string; plate: string; phone: string; wamHandle?: string; jobTypes?: string[]; pinLat?: number | null; pinLng?: number | null }>>([]);
   const [selected, setSelected] = useState('');
   const [pickup, setPickup] = useState('');
   const [drop, setDrop] = useState('');
@@ -30,20 +31,31 @@ export const RidesLanding: React.FC = () => {
   const [offer, setOffer] = useState<any>(null);
 
   useEffect(() => {
-    fetchListedRides({ island, serviceType })
-      .then((data) => {
-        if (data.listedCount > 0 && Array.isArray(data.listed) && data.listed.length > 0) {
-          setUnavailable(false);
-          setListed(data.listed);
-        } else {
+    let cancelled = false;
+    const loadListed = () => {
+      fetchListedRides({ island, serviceType })
+        .then((data) => {
+          if (cancelled) return;
+          if (data.listedCount > 0 && Array.isArray(data.listed) && data.listed.length > 0) {
+            setUnavailable(false);
+            setListed(data.listed);
+          } else {
+            setUnavailable(true);
+            setListed([]);
+          }
+        })
+        .catch(() => {
+          if (cancelled) return;
           setUnavailable(true);
           setListed([]);
-        }
-      })
-      .catch(() => {
-        setUnavailable(true);
-        setListed([]);
-      });
+        });
+    };
+    loadListed();
+    const timer = window.setInterval(loadListed, 20000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
   }, [island, serviceType]);
 
   const selectedDriver = listed.find((d) => d.id === selected);
@@ -210,6 +222,10 @@ export const RidesLanding: React.FC = () => {
               </div>
             ) : (
               <>
+                <div className="mb-6">
+                  <p className="text-sm text-gray-500 mb-2">Listed people only. No ghost cars.</p>
+                  <IslandRideMap island={island} pins={listed} height="280px" />
+                </div>
                 <ul className="space-y-3 mb-6">
                   {listed.map((driver) => (
                     <li key={driver.id}>

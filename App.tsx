@@ -5,6 +5,7 @@ import SitemapXml from './pages/SitemapXml';
 import PublishedSite from './pages/PublishedSite';
 import DriverPassPage from './pages/DriverPassPage';
 import AdminPaymentsVerify from './pages/AdminPaymentsVerify';
+import { AdminDriveDesk } from './pages/AdminDriveDesk';
 import MerchantPickupQueue from './pages/MerchantPickupQueue';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
@@ -207,6 +208,7 @@ const App: React.FC = () => {
             <Route path="/sitemap.xml" element={<SitemapXml />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
             <Route path="/admin/payments" element={<AdminRoute><AdminPaymentsVerify /></AdminRoute>} />
+            <Route path="/admin/drive" element={<AdminRoute><AdminDriveDesk /></AdminRoute>} />
             <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
             <Route path="/pickups" element={<MerchantPickupQueue />} />
             <Route path="/driver/pass" element={<DriverPassPage />} />

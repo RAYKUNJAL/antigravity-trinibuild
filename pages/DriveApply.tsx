@@ -81,7 +81,7 @@ export const DriveApply: React.FC = () => {
         <h1 className="text-2xl font-black text-gray-900 mb-2">Apply to drive</h1>
         <p className="text-gray-600 mb-2">We will not show cars that are not you.</p>
         <p className="text-sm text-gray-500 mb-4">
-          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until you are approved and the subscription is confirmed. Apply does not invent a location.
+          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until a person approves you. If a subscription price is later set, listing needs a person to confirm it. Apply does not invent a location.
         </p>
 
         <form onSubmit={submit} className="space-y-4">
