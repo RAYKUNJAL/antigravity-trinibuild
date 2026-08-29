@@ -686,16 +686,19 @@ app.post('/api/drive/subscription/wam', optionalAuth, (req, res) => {
 app.get('/api/admin/drive/applications', auth, adminOnly, (_req, res) => {
   res.json(rides.adminApplications());
 });
+app.get('/api/admin/drive/:id/approve', methodNotAllowed('POST', '/api/admin/drive/:id/approve'));
 app.post('/api/admin/drive/:id/approve', auth, adminOnly, (req, res) => {
   const result = rides.approve(req.params.id);
   if (result.error) return res.status(result.status || 400).json({ error: result.error });
   res.json(result);
 });
+app.get('/api/admin/drive/:id/subscribe', methodNotAllowed('POST', '/api/admin/drive/:id/subscribe'));
 app.post('/api/admin/drive/:id/subscribe', auth, adminOnly, (req, res) => {
   const result = rides.markSubscribed(req.params.id);
   if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
   res.json(result);
 });
+app.get('/api/admin/drive/:id/school-run', methodNotAllowed('POST', '/api/admin/drive/:id/school-run'));
 app.get('/api/rides/offers', methodNotAllowed('POST', '/api/rides/offers'));
 app.post('/api/rides/offers', (req, res) => {
   const result = rides.createOffer(req.body || {});
@@ -751,6 +754,11 @@ app.get('/api/health', async (req, res) => {
   } catch {
     res.status(500).json({ status: 'error', db: 'disconnected' });
   }
+});
+
+// /api/* never falls through to the SPA shell. Unmatched API paths stay JSON.
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
 
 app.listen(PORT, () => console.log(`🇹🇹 TriniBuild API running on :${PORT}`));

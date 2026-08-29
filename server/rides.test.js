@@ -317,9 +317,14 @@ assert.ok(unsetApply.goOnline.reason.includes('Apply still works'));
 assert.strictEqual(unsetRides.ridesDirectory().listedCount, 0);
 assert.strictEqual(unsetRides.ridesDirectory().line1, 'Rides are unavailable on this origin.');
 assert.strictEqual(unsetRides.ridesDirectory().line2, 'No drivers are listed. Juvay does not invent a fare or a live booking button.');
+const emptyAdminStore = tmpStore();
+const emptyAdmin = createRides({ storePath: emptyAdminStore, getEnv: () => undefined }).adminApplications();
+assert.deepStrictEqual(emptyAdmin.applications, []);
+assert.strictEqual(emptyAdmin.fulfill, false);
 
 fs.unlinkSync(storePath);
 fs.unlinkSync(schoolStore);
 fs.unlinkSync(jobsStore);
 fs.unlinkSync(unsetStore);
+if (fs.existsSync(emptyAdminStore)) fs.unlinkSync(emptyAdminStore);
 console.log('rides.test.js ok');
