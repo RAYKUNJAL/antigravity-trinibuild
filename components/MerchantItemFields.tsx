@@ -180,6 +180,27 @@ export const MerchantItemFields: React.FC<{
         </p>
         {warning ? <div style={{ fontSize: 13, color: '#6b6256', border: '1px solid #e6dfd4', padding: 10 }}>{warning}</div> : null}
         {error ? <div style={{ fontSize: 13, color: '#E31C23' }}>{error}</div> : null}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <button
+            type="button"
+            onClick={applyDraft}
+            disabled={!proposed}
+            style={{
+              minHeight: 44,
+              padding: '0 14px',
+              border: 'none',
+              background: '#141414',
+              color: ISLAND.sand,
+              cursor: proposed ? 'pointer' : 'not-allowed',
+              opacity: proposed ? 1 : 0.45,
+            }}
+          >
+            Apply draft
+          </button>
+          {proposed ? (
+            <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
+          ) : null}
+        </div>
         {proposed ? (
           <div style={{ border: '1px solid #cfc8bc', padding: 12, display: 'grid', gap: 8, background: '#fff' }}>
             <div style={{ fontSize: 13, color: '#6b6256' }}>
@@ -188,10 +209,6 @@ export const MerchantItemFields: React.FC<{
             <div><strong>Name</strong> {proposed.name || '(empty)'}</div>
             {proposed.description ? <div><strong>Description</strong> {proposed.description}</div> : null}
             {proposed.tags.length ? <div style={{ fontSize: 12, color: '#6b6256' }}>{proposed.tags.join(' · ')}</div> : null}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              <button type="button" onClick={applyDraft} style={{ minHeight: 44, padding: '0 14px', border: 'none', background: '#141414', color: ISLAND.sand }}>Apply draft</button>
-              <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
-            </div>
           </div>
         ) : null}
       </div>

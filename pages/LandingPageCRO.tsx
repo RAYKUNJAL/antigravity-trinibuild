@@ -276,7 +276,7 @@ const ListerDemo: React.FC = () => {
             to="/create-store"
             className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
           >
-            Continue to create-store <ArrowRight size={18} />
+            Apply to create-store <ArrowRight size={18} />
           </Link>
         </div>
       </div>
