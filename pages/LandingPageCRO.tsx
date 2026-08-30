@@ -13,6 +13,7 @@ import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
 import { ServicesShowcase } from '../components/ServicesShowcase';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
+import { MerchantItemFields, type ItemPatch } from '../components/MerchantItemFields';
 
 /* ────────────────────────────────────────────────────────────────────────
    SOCIAL PROOF DATA
@@ -215,24 +216,73 @@ const MerchantCounter: React.FC = () => {
   );
 };
 
-const ListerDemo: React.FC = () => (
-  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-    <div className="max-w-3xl mx-auto text-center">
-      <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">Photo → draft</span>
-      <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Take a photo. Draft a listing. You set the price.</h2>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-        In create-store, upload or snap a photo. Vision can draft a name and description when the key is on.
-        You type the TT$ price and qty. No invented listing. No AI price.
-      </p>
-      <a
-        href="/create-store"
-        className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
-      >
-        Draft your first item <ArrowRight size={18} />
-      </a>
-    </div>
-  </section>
-);
+const emptyLandingItem = () => ({
+  name: '',
+  price: '',
+  qty: '',
+  sku: '',
+  variant: '',
+  description: '',
+  image: '',
+});
+
+/** Honest Photo → draft on `/`. Same camera + POST /api/onboard/vision as create-store. Never writes price. */
+const ListerDemo: React.FC = () => {
+  const [item, setItem] = useState(emptyLandingItem);
+
+  const onChange = (patch: ItemPatch) => {
+    setItem((prev) => ({
+      ...prev,
+      ...patch,
+      name: patch.name ?? prev.name,
+      price: patch.price ?? prev.price,
+      qty: patch.qty ?? prev.qty,
+      sku: patch.sku ?? prev.sku,
+      variant: patch.variant ?? prev.variant,
+      description: patch.description ?? prev.description,
+      image: patch.image ?? prev.image,
+    }));
+  };
+
+  return (
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-xl mx-auto">
+        <div className="text-center mb-8">
+          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">Photo → draft</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Take a photo. Draft a listing. You set the price.</h2>
+          <p className="text-lg text-gray-600">
+            Same camera as create-store. Vision may draft a name and description when the key is on.
+            You type the TT$ price and qty. Empty photo stays empty. No invented listing. No AI price.
+          </p>
+        </div>
+        <div className="text-left rounded-2xl border border-gray-200 p-5 sm:p-6 bg-gray-50">
+          <MerchantItemFields
+            heading="First item"
+            name={item.name}
+            price={item.price}
+            qty={item.qty}
+            sku={item.sku}
+            variant={item.variant}
+            description={item.description}
+            image={item.image}
+            onChange={onChange}
+          />
+        </div>
+        <p className="text-sm text-gray-500 mt-4 text-center">
+          This snap does not create a store. Continue in create-store when you want to publish.
+        </p>
+        <div className="text-center mt-4">
+          <Link
+            to="/create-store"
+            className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
+          >
+            Continue to create-store <ArrowRight size={18} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 
 /**
@@ -626,7 +676,7 @@ export const LandingPageCRO: React.FC = () => {
         <SocialProofTicker />
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* AI PRODUCT LISTER DEMO — split layout, typewriter before→after */}
+        {/* Honest Photo → draft — same camera as create-store. No typewriter. */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <ListerDemo />
 
