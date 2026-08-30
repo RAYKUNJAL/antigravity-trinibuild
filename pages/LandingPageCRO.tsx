@@ -226,7 +226,7 @@ const emptyLandingItem = () => ({
   image: '',
 });
 
-/** Honest Photo → draft on `/`. Same camera + POST /api/onboard/vision as create-store. Never writes price. */
+/** Honest Photo-assisted listing on `/`. Same camera + POST /api/onboard/vision as create-store. Never writes price. */
 const ListerDemo: React.FC = () => {
   const [item, setItem] = useState(emptyLandingItem);
 
@@ -246,37 +246,37 @@ const ListerDemo: React.FC = () => {
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-xl mx-auto">
-        <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">Photo → draft</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Take a photo. Draft a listing. You set the price.</h2>
-          <p className="text-lg text-gray-600">
-            Same camera as create-store. Vision may draft a name and description when the key is on.
-            You type the TT$ price and qty. Empty photo stays empty. No invented listing. No AI price.
+      <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold tracking-wide mb-3">Photo-assisted listing</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Snap a product. Start the listing faster.</h2>
+          <p className="text-lg text-gray-600 mb-3">
+            Take or upload a photo and Juvay can suggest a product name and description. You still enter the TT$ price, quantity, and any optional details before anything is saved.
+          </p>
+          <p className="text-sm text-gray-500">
+            No photo means no draft. Juvay never invents a product or sets your price.
           </p>
         </div>
-        <div className="text-left rounded-2xl border border-gray-200 p-5 sm:p-6 bg-gray-50">
-          <MerchantItemFields
-            heading="First item"
-            name={item.name}
-            price={item.price}
-            qty={item.qty}
-            sku={item.sku}
-            variant={item.variant}
-            description={item.description}
-            image={item.image}
-            onChange={onChange}
-          />
+        <MerchantItemFields
+          presentation="landing"
+          name={item.name}
+          price={item.price}
+          qty={item.qty}
+          sku={item.sku}
+          variant={item.variant}
+          description={item.description}
+          image={item.image}
+          onChange={onChange}
+        />
+        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600 text-center">
+          This demo shows how product drafting works. Your store is only created when you continue to setup.
         </div>
-        <p className="text-sm text-gray-500 mt-4 text-center">
-          This snap does not create a store. Continue in create-store when you want to publish.
-        </p>
-        <div className="text-center mt-4">
+        <div className="text-center mt-5">
           <Link
             to="/create-store"
             className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
           >
-            Apply to create-store <ArrowRight size={18} />
+            Continue to create store <ArrowRight size={18} />
           </Link>
         </div>
       </div>
