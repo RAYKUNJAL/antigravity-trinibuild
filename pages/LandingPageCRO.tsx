@@ -676,7 +676,7 @@ export const LandingPageCRO: React.FC = () => {
         <SocialProofTicker />
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* Honest Photo → draft — same camera as create-store. No typewriter. */}
+        {/* Honest Photo-assisted listing — same camera as create-store. No typewriter. */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <ListerDemo />
 
