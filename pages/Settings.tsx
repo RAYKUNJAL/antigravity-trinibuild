@@ -8,8 +8,7 @@ import { testApiKey } from '../services/geminiService';
 export const Settings: React.FC = () => {
   const [keys, setKeys] = useState({
     gemini: '',
-    whatsappToken: '',
-    paypalClient: ''
+    whatsappToken: ''
   });
   const [saved, setSaved] = useState(false);
 
@@ -20,8 +19,7 @@ export const Settings: React.FC = () => {
   useEffect(() => {
     setKeys({
       gemini: localStorage.getItem('gemini_api_key') || '',
-      whatsappToken: localStorage.getItem('whatsapp_api_token') || '',
-      paypalClient: localStorage.getItem('paypal_client_id') || ''
+      whatsappToken: localStorage.getItem('whatsapp_api_token') || ''
     });
   }, []);
 
@@ -29,7 +27,6 @@ export const Settings: React.FC = () => {
     e.preventDefault();
     localStorage.setItem('gemini_api_key', keys.gemini);
     localStorage.setItem('whatsapp_api_token', keys.whatsappToken);
-    localStorage.setItem('paypal_client_id', keys.paypalClient);
 
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -58,7 +55,7 @@ export const Settings: React.FC = () => {
   const handleReset = () => {
     if (window.confirm("Are you sure you want to clear all stored keys?")) {
       localStorage.clear();
-      setKeys({ gemini: '', whatsappToken: '', paypalClient: '' });
+      setKeys({ gemini: '', whatsappToken: '' });
       setGeminiStatus(null);
       window.location.reload();
     }

@@ -120,24 +120,6 @@ export const subscriptionService = {
     if (error) throw error;
   },
 
-  async upgradePlanPayPal(user_id: string, plan_slug: string, paypal_subscription_id: string): Promise<void> {
-    const now = new Date();
-    const expires = new Date(now);
-    expires.setMonth(expires.getMonth() + 1);
-
-    const { error } = await supabase.from('user_plan_subscriptions').upsert({
-      user_id,
-      plan_slug,
-      source: 'paypal',
-      paypal_subscription_id,
-      status: 'active',
-      started_at: now.toISOString(),
-      expires_at: expires.toISOString(),
-    }, { onConflict: 'user_id' });
-
-    if (error) throw error;
-  },
-
   async checkFeatureAccess(user_id: string, feature: keyof PlanTier): Promise<boolean> {
     const { plan } = await this.getUserPlan(user_id);
     if (!plan) return false;
