@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
   Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
   MessageCircle, MessageSquare, AlertCircle, ChevronDown,
-  Upload, Sparkles, Image as ImageIcon, Tag, ExternalLink
+  ExternalLink
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { ga4Analytics } from '../services/ga4AnalyticsService';
 import { facebookPixel } from '../services/facebookPixelService';
 import { abTesting } from '../services/abTestingService';
-import { WorkingAIDemo } from '../components/WorkingAIDemo';
 import { ServicesShowcase } from '../components/ServicesShowcase';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
+import { MerchantItemFields, type ItemPatch } from '../components/MerchantItemFields';
 
 /* ────────────────────────────────────────────────────────────────────────
    SOCIAL PROOF DATA
@@ -31,18 +31,20 @@ const TICKER_MERCHANTS = [
 ];
 
 const STATS_ROW = [
-  { value: '14', label: 'store templates' },
+  { value: '8', label: 'store starters' },
   { value: '5 min', label: 'to launch' },
   { value: '🇹🇹', label: 'built in T&T' },
 ];
 
 const STORE_SHOWCASE = [
-  { name: 'Fashion Boutique', category: 'Fashion & Apparel', location: 'Product grid · variants · lookbook', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
-  { name: 'Roti & Food Shop', category: 'Food & Beverage', location: 'Menu · WhatsApp ordering · COD', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  { name: 'Tech & Gadgets', category: 'Electronics', location: 'Specs · comparisons · warranty', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
-  { name: 'Beauty & Cosmetics', category: 'Beauty & Cosmetics', location: 'Shade match · bundles · subscribe', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
-  { name: 'Furniture & Home', category: 'Furniture & Home', location: 'Sale pricing · trust badges', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
-  { name: 'Auto & Accessories', category: 'Auto Parts', location: 'Part finder · vehicle match', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
+  { name: 'Food', category: 'Food', location: 'Menu · cash or pickup · hours', img: '/templates/heroes/food.jpg' },
+  { name: 'Fashion', category: 'Fashion', location: 'Lookbook · grid · try in store', img: '/templates/heroes/fashion.jpg' },
+  { name: 'Services', category: 'Services', location: 'Book a time · cash when you come', img: '/templates/heroes/services.jpg' },
+  { name: 'Beauty', category: 'Beauty', location: 'Retail shades and kits', img: '/templates/heroes/beauty.jpg' },
+  { name: 'Home', category: 'Home', location: 'Furniture · price on the piece', img: '/templates/heroes/home.jpg' },
+  { name: 'General', category: 'General', location: 'One-page shop · cash or pickup', img: '/templates/heroes/general.jpg' },
+  { name: 'Electronics', category: 'Electronics', location: 'Variant before add · specs if typed', img: '/templates/heroes/electronics.jpg' },
+  { name: 'Auto', category: 'Auto', location: 'Search + grid · merchant fit note', img: '/templates/heroes/auto.jpg' },
 ];
 
 const TESTIMONIALS_REMOVED = true; // (Removed fabricated reviews — replaced by honest WHY_TRINIBUILD section above.)
@@ -155,7 +157,7 @@ const WHY_TRINIBUILD = [
   {
     icon: '⚡',
     title: 'Live in about 5 minutes',
-    body: 'Pick a template, add your products with the AI lister, and share your store link the same afternoon.',
+    body: 'Pick a starter, add a real item (photo can draft the name — you type the TT$ price), and share your store link the same afternoon.',
   },
 ];
 
@@ -214,129 +216,68 @@ const MerchantCounter: React.FC = () => {
   );
 };
 
-/* ────────────────────────────────────────────────────────────────────────
-   AI PRODUCT LISTER DEMO — split layout, typewriter before→after
-   ──────────────────────────────────────────────────────────────────────── */
+const emptyLandingItem = () => ({
+  name: '',
+  price: '',
+  qty: '',
+  sku: '',
+  variant: '',
+  description: '',
+  image: '',
+});
 
-const TYPEWRITER_DESC =
-  'Elegant quartz movement timepiece with a classic stainless steel finish. Perfect for formal occasions or everyday wear. Water-resistant and built to last.';
-
+/** Honest Photo-assisted listing on `/`. Same camera + POST /api/onboard/vision as create-store. Never writes price. */
 const ListerDemo: React.FC = () => {
-  // Default to the finished state so the listing card is ALWAYS visible even
-  // if the inView trigger never fires. The typewriter/count-up is purely an
-  // enhancement that replays when scrolled into view.
-  const [typed, setTyped] = useState(TYPEWRITER_DESC);
-  const [showResult, setShowResult] = useState(true);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const [item, setItem] = useState(emptyLandingItem);
 
-  useEffect(() => {
-    if (!inView) return;
-    // Replay the before→after reveal as an enhancement.
-    setShowResult(false);
-    setTyped('');
-    const reveal = setTimeout(() => setShowResult(true), 800);
-    return () => clearTimeout(reveal);
-  }, [inView]);
-
-  useEffect(() => {
-    if (!showResult) return;
-    // Only run the typewriter if we reset it above; otherwise keep full text.
-    if (typed.length >= TYPEWRITER_DESC.length) return;
-    let i = typed.length;
-    const id = setInterval(() => {
-      i++;
-      setTyped(TYPEWRITER_DESC.slice(0, i));
-      if (i >= TYPEWRITER_DESC.length) clearInterval(id);
-    }, 28);
-    return () => clearInterval(id);
-  }, [showResult]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const tags = ['Luxury Watch', 'Quartz', 'Stainless Steel', 'Classic', 'Water Resistant'];
+  const onChange = (patch: ItemPatch) => {
+    setItem((prev) => ({
+      ...prev,
+      ...patch,
+      name: patch.name ?? prev.name,
+      price: patch.price ?? prev.price,
+      qty: patch.qty ?? prev.qty,
+      sku: patch.sku ?? prev.sku,
+      variant: patch.variant ?? prev.variant,
+      description: patch.description ?? prev.description,
+      image: patch.image ?? prev.image,
+    }));
+  };
 
   return (
-    <section ref={sectionRef} className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <motion.div {...fadeInUp} className="text-center mb-14">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">AI Product Lister</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">From Photo to Listing in Seconds</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload a product photo. Our AI writes the title, SEO description, and keyword tags automatically.
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold tracking-wide mb-3">Photo-assisted listing</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Snap a product. Start the listing faster.</h2>
+          <p className="text-lg text-gray-600 mb-3">
+            Take or upload a photo and Juvay can suggest a product name and description. You still enter the TT$ price, quantity, and any optional details before anything is saved.
           </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* LEFT — Upload widget */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center"
+          <p className="text-sm text-gray-500">
+            No photo means no draft. Juvay never invents a product or sets your price.
+          </p>
+        </div>
+        <MerchantItemFields
+          presentation="landing"
+          name={item.name}
+          price={item.price}
+          qty={item.qty}
+          sku={item.sku}
+          variant={item.variant}
+          description={item.description}
+          image={item.image}
+          onChange={onChange}
+        />
+        <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600 text-center">
+          This demo shows how product drafting works. Your store is only created when you continue to setup.
+        </div>
+        <div className="text-center mt-5">
+          <Link
+            to="/create-store"
+            className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors min-h-[44px]"
           >
-            <div className="w-20 h-20 mx-auto rounded-full bg-indigo-100 flex items-center justify-center mb-4">
-              <Upload className="w-9 h-9 text-indigo-600" />
-            </div>
-            <h3 className="font-bold text-gray-900 mb-1">Upload Product Photo</h3>
-            <p className="text-sm text-gray-500 mb-4">PNG, JPG up to 10MB</p>
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <ImageIcon size={14} /> Or drag & drop
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600">
-              <Sparkles size={16} /> AI is ready
-            </div>
-          </motion.div>
-
-          {/* RIGHT — Before → After result */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            {/* Raw watch photo (before) */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${showResult ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Raw watch"
-                loading="lazy"
-                className="w-full h-72 object-cover rounded-2xl"
-              />
-              <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center">
-                <div className="flex items-center gap-2 text-white font-bold animate-pulse">
-                  <Sparkles size={20} /> Analyzing photo...
-                </div>
-              </div>
-            </div>
-
-            {/* Finished listing card (after) */}
-            <div className={`bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden transition-all duration-500 ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Premium Quartz Timepiece"
-                loading="lazy"
-                className="w-full h-44 object-cover"
-              />
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-black text-gray-900 text-lg">Premium Quartz Timepiece — Classic Edition</h3>
-                </div>
-                <div className="text-2xl font-bold text-trini-red mb-3">TT$1,299</div>
-                <p className="text-sm text-gray-600 mb-4 min-h-[60px]">
-                  {typed}
-                  {typed.length < TYPEWRITER_DESC.length && <span className="animate-pulse">|</span>}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full">
-                      <Tag size={11} /> {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
+            Continue to create store <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     </section>
@@ -386,7 +327,7 @@ const HOW_IT_WORKS = [
   {
     step: '2',
     title: 'Add Your Products (Fast)',
-    description: 'Upload photos or use AI to create listings instantly. Works even if you have no barcodes or inventory system.',
+    description: 'Take a photo to draft a name. You type the TT$ price and qty. SKU is optional — island shops often have none.',
     icon: '📸'
   },
   {
@@ -437,8 +378,8 @@ const FEATURES = [
     description: 'Cash on delivery and cash at pickup. Supported online payments appear only when that rail is actually on for the store.'
   },
   {
-    title: 'AI Product Lister',
-    description: 'Take a photo. AI writes the description, picks keywords, prices it. 30 seconds per product.'
+    title: 'Photo listing',
+    description: 'Take a photo. Vision can draft a name and description. You type the TT$ price. It never sets the price.'
   },
   {
     title: 'Order Dashboard',
@@ -534,23 +475,6 @@ export const LandingPageCRO: React.FC = () => {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [variant, setVariant] = useState('control');
-  const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Mobile sticky CTA: show only after the hero has scrolled out of view
-  useEffect(() => {
-    const heroEl = heroRef.current;
-    if (!heroEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Show sticky CTA once hero is no longer visible (scrolled past)
-        setShowStickyCTA(!entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-    observer.observe(heroEl);
-    return () => observer.disconnect();
-  }, []);
 
   // Initialize analytics and tracking
   useEffect(() => {
@@ -631,7 +555,7 @@ export const LandingPageCRO: React.FC = () => {
             '@type': 'SoftwareApplication',
             name: 'Juvay',
             description: 'Free online store builder for Trinidad & Tobago businesses with cash on delivery support',
-            url: 'https://trinibuild.com/',
+            url: 'https://juvay.app/',
             applicationCategory: 'ECommerce',
             operatingSystem: 'Web',
             offers: {
@@ -649,7 +573,7 @@ export const LandingPageCRO: React.FC = () => {
         {/* HERO - PRIMARY CONVERSION ZONE */}
         {/* ════════════════════════════════════════════════════════════════ */}
 
-        <section ref={heroRef} className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
+        <section className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-trini-red/10 rounded-full blur-3xl -z-0"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-trini-red/5 rounded-full blur-3xl -z-0"></div>
@@ -683,7 +607,7 @@ export const LandingPageCRO: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
             >
-              Create your free online store in 5 minutes. Add products with AI. Cash on delivery and pickup.
+              Create your free online store in 5 minutes. Photo can draft a name — you type the TT$ price. Cash on delivery and pickup.
               Built in Trinidad & Tobago, launching to founding merchants now.
             </motion.p>
 
@@ -752,14 +676,9 @@ export const LandingPageCRO: React.FC = () => {
         <SocialProofTicker />
 
         {/* ════════════════════════════════════════════════════════════════ */}
-        {/* AI PRODUCT LISTER DEMO — split layout, typewriter before→after */}
+        {/* Honest Photo-assisted listing — same camera as create-store. No typewriter. */}
         {/* ════════════════════════════════════════════════════════════════ */}
         <ListerDemo />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <WorkingAIDemo />
 
         {/* ════════════════════════════════════════════════════════════════ */}
         {/* PROOF SECTION - Honest framing (no fake stats, no fake testimonials) */}
@@ -1042,22 +961,6 @@ export const LandingPageCRO: React.FC = () => {
           </div>
         </section>
       </div>
-
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {/* MOBILE STICKY CTA — appears after scrolling past the hero */}
-      {/* Hidden on md+ screens. z-40 sits below modal overlays but above content. */}
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {showStickyCTA && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] px-4 py-3">
-          <button
-            onClick={() => handleStartFree('mobile_sticky_cta')}
-            className="w-full py-3.5 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-md"
-          >
-            Start My Free Store
-            <ArrowRight className="w-5 h-5" />
-          </button>
-        </div>
-      )}
     </>
   );
 };

@@ -11,7 +11,7 @@
     "test-session": "node scripts/test-session.js",
     "lint": "eslint src --ext .tsx,.ts --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"Tests coming soon\"",
+    "test": "node server/wam.test.js && node server/onboardDraft.test.js && node server/storefrontHonesty.test.js && node server/merchantTheme.test.js && node server/onboardVision.test.js && node server/merchantItem.test.js && node server/rides.test.js",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },

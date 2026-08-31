@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Settings, ChevronDown, LogOut, Gamepad2, FileText, Store, ShoppingCart, Car, Briefcase, Building2, Ticket, DollarSign, Sparkles, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Truck, CalendarDays, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Menu, X, User, Settings, ChevronDown, LogOut, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { IslandSelector } from './IslandFilter';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
@@ -23,19 +23,14 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon, description: 'Build your free store in 5 minutes', badge: 'Free', badgeColor: 'bg-green-500' },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed, description: 'Menus, reservations, COD orders' },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag, description: 'List & sell anything fast' },
-  { name: 'For Drivers', path: '/rides', icon: Truck, description: 'Earn delivering across T&T' },
+  { name: 'Juvay Rides', path: '/rides', icon: Car, description: 'Cash island rides / parent school-run' },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
-  { name: 'For Event Hosts', path: '/tickets', icon: CalendarDays, description: 'Fetes, concerts, shows' },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon, description: 'Buy, rent, sell property' },
 ];
 
 const DIGITAL_DROPDOWN: DropdownItem[] = [
-  { name: 'Game Pass & Streaming', path: '/digital', icon: Gamepad2, description: 'PS Plus, Xbox, Netflix', badge: 'New', badgeColor: 'bg-purple-500' },
-  { name: 'Gift Cards', path: '/gift-cards', icon: Gift, description: 'Steam, iTunes, Google Play' },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
-  { name: 'AI Product Lister', path: '/products/ai-add', icon: Sparkles, description: 'Photo → listing in 10s', badge: 'AI', badgeColor: 'bg-indigo-500' },
   { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign, description: 'BIR-ready tax reports' },
-  { name: 'Premium Features', path: '/pricing', icon: Star, description: 'Unlock unlimited power' },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -46,18 +41,16 @@ const MOBILE_LINKS = [
   { name: 'Directory', path: '/directory', icon: Store },
   { name: 'Explore', path: '/explore', icon: ShoppingBag },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
-  { name: 'Game Pass & Streaming', path: '/digital', icon: Gamepad2 },
-  { name: 'Gift Cards', path: '/gift-cards', icon: Gift },
+  { name: 'Rides', path: '/rides', icon: Car },
+  { name: 'Drive', path: '/drive', icon: Car },
+  { name: 'School run', path: '/rides/school-run', icon: Car },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText },
-  { name: 'AI Product Lister', path: '/products/ai-add', icon: Sparkles },
   { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign },
-  { name: 'Premium Features', path: '/pricing', icon: Star },
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
-  { name: 'For Drivers', path: '/rides', icon: Truck },
+  { name: 'Juvay Rides', path: '/rides', icon: Car },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase },
-  { name: 'For Event Hosts', path: '/tickets', icon: CalendarDays },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon },
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
   { name: 'My Rewards', path: '/loyalty', icon: Star },
@@ -185,7 +178,7 @@ export const Navbar: React.FC = () => {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isTransparent ? 'bg-transparent text-white pt-3' : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md py-1'
+        isTransparent ? 'bg-transparent text-white pt-3' : 'bg-white/95 backdrop-blur-md text-gray-900 shadow-md'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -217,6 +210,15 @@ export const Navbar: React.FC = () => {
             <Link to="/classifieds" className={lc('/classifieds')}>
               Market
             </Link>
+            <Link to="/rides" className={lc('/rides')}>
+              Rides
+            </Link>
+            <Link to="/drive" className={lc('/drive')}>
+              Drive
+            </Link>
+            <Link to="/rides/school-run" className={lc('/rides/school-run')}>
+              School run
+            </Link>
 
             {/* Digital — hover dropdown */}
             <div
@@ -225,7 +227,7 @@ export const Navbar: React.FC = () => {
               onMouseLeave={() => setHoveredMenu(null)}
             >
               <button className={`${lc('/digital')} flex items-center gap-1 cursor-pointer`}>
-                Digital <span className="text-[10px] font-black bg-purple-500 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+                Digital
                 <ChevronDown size={14} className={`transition-transform ${hoveredMenu === 'digital' ? 'rotate-180' : ''}`} />
               </button>
               {hoveredMenu === 'digital' && <DropdownPanel items={DIGITAL_DROPDOWN} onClose={() => setHoveredMenu(null)} />}

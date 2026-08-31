@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Volume2, VolumeX, ExternalLink, Info } from 'lucide-react';
+import { Volume2, VolumeX, ExternalLink } from 'lucide-react';
 import { getAdsForPage, recordImpression, recordClick, AdCampaign } from '../services/adService';
 
 interface AdSpotProps {
@@ -34,23 +34,17 @@ export const AdSpot: React.FC<AdSpotProps> = ({ page, slot, className = '' }) =>
         }
     };
 
+    // Empty catalog = no invented partner slot (e.g. /jobs).
     if (!ad) return null;
 
     return (
         <div className={`relative w-full overflow-hidden rounded-xl shadow-lg group bg-black border border-gray-800 ${className}`}>
-            {/* Label */}
             <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
                 <span className="bg-yellow-400 text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                     Sponsored
                 </span>
-                {ad.isPaidClient && (
-                    <span className="bg-juvay-red text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex items-center">
-                        <Info className="w-3 h-3 mr-1" /> Featured Partner
-                    </span>
-                )}
             </div>
 
-            {/* Video */}
             <video
                 ref={videoRef}
                 src={ad.videoUrl}
@@ -62,7 +56,6 @@ export const AdSpot: React.FC<AdSpotProps> = ({ page, slot, className = '' }) =>
                 onClick={handleClick}
             />
 
-            {/* Controls & Overlay */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 z-20 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="text-white">
                     <p className="text-xs text-gray-300 mb-1">Advertisement</p>
@@ -70,8 +63,9 @@ export const AdSpot: React.FC<AdSpotProps> = ({ page, slot, className = '' }) =>
                     <button
                         onClick={handleClick}
                         className="bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center hover:bg-gray-200 transition-colors"
+                        aria-label="Open advertisement"
                     >
-                        Visit Site <ExternalLink className="ml-1 h-3 w-3" />
+                        <ExternalLink className="h-3 w-3" />
                     </button>
                 </div>
 

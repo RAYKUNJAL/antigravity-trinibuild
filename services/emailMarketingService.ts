@@ -113,8 +113,8 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
   </div>
   <div style="background:#f9fafb;padding:20px;text-align:center;font-size:12px;color:#9ca3af">
     <p>{{store_name}} • Trinidad & Tobago</p>
-    <p><a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | <a href="https://trinibuild.com/privacy" style="color:#9ca3af">Privacy Policy</a></p>
-    <p style="margin-top:8px">Powered by TriniBuild 🇹🇹</p>
+    <p><a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | <a href="https://juvay.app/privacy" style="color:#9ca3af">Privacy Policy</a></p>
+    <p style="margin-top:8px">Powered by Juvay 🇹🇹</p>
   </div>
 </div>`
     },
@@ -143,7 +143,7 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
     <p style="font-size:13px;color:#9ca3af">Offer expires at midnight tonight</p>
   </div>
   <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#9ca3af">
-    <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by TriniBuild 🇹🇹
+    <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by Juvay 🇹🇹
   </div>
 </div>`
     },
@@ -175,7 +175,7 @@ const TRINIDAD_TEMPLATES: Omit<EmailTemplate, 'id' | 'store_id'>[] = [
     </div>
   </div>
   <div style="background:#f9fafb;padding:16px;text-align:center;font-size:11px;color:#9ca3af">
-    {{store_name}} • <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by TriniBuild 🇹🇹
+    {{store_name}} • <a href="{{unsubscribe_url}}" style="color:#9ca3af">Unsubscribe</a> | Powered by Juvay 🇹🇹
   </div>
 </div>`
     }
@@ -317,8 +317,8 @@ export const emailMarketingService = {
             let html = template.body_html
                 .replace(/\{\{store_name\}\}/g, store.name)
                 .replace(/\{\{subscriber_name\}\}/g, subscriber.name || 'there')
-                .replace(/\{\{store_url\}\}/g, `https://trinibuild.com/store/${store.slug}`)
-                .replace(/\{\{unsubscribe_url\}\}/g, `https://trinibuild.com/unsubscribe?email=${subscriber.email}&store=${storeId}`);
+                .replace(/\{\{store_url\}\}/g, `https://juvay.app/store/${store.slug}`)
+                .replace(/\{\{unsubscribe_url\}\}/g, `https://juvay.app/unsubscribe?email=${subscriber.email}&store=${storeId}`);
 
             let subject = template.subject
                 .replace(/\{\{store_name\}\}/g, store.name);
@@ -372,7 +372,7 @@ export const emailMarketingService = {
                 .replace(/\{\{payment_method\}\}/g, orderData.payment_method)
                 .replace(/\{\{delivery_method\}\}/g, orderData.delivery_method)
                 .replace(/\{\{tracking_url\}\}/g, orderData.tracking_url)
-                .replace(/\{\{unsubscribe_url\}\}/g, `https://trinibuild.com/unsubscribe?email=${orderData.email}&store=${storeId}`);
+                .replace(/\{\{unsubscribe_url\}\}/g, `https://juvay.app/unsubscribe?email=${orderData.email}&store=${storeId}`);
 
             let subject = template.subject
                 .replace(/\{\{order_number\}\}/g, orderData.order_number)

@@ -23,7 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       }`}
     >
       <div className="flex items-center justify-between px-5 py-5 border-b border-slate-700">
-        <span className="text-lg font-bold tracking-tight">TriniBuild</span>
+        <span className="text-lg font-bold tracking-tight">Juvay</span>
         <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">
           <X size={20} />
         </button>

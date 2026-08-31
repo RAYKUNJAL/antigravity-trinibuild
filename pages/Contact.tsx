@@ -14,7 +14,7 @@ export const Contact: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Get in touch with <span className="text-trini-red">TriniBuild</span>
+            Get in touch with <span className="text-trini-red">Juvay</span>
           </h1>
           <p className="mt-4 text-xl text-gray-500">
             Whether you're a business owner, driver, or looking for a partnership, we're here to help.
@@ -39,8 +39,7 @@ export const Contact: React.FC = () => {
                   <Mail className="h-6 w-6 text-trini-red mr-4 mt-1" />
                   <div>
                     <p className="font-bold">Email</p>
-                    <p className="text-gray-300">sales@trinibuild.tt</p>
-                    <p className="text-gray-300">support@trinibuild.tt</p>
+                    <p className="text-gray-300">support@juvay.app</p>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -59,10 +58,7 @@ export const Contact: React.FC = () => {
             
             <div className="mt-10">
               <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
-                <p className="italic text-gray-300">
-                  "TriniBuild's support team helped us get our restaurant online in under 24 hours. Fantastic service."
-                </p>
-                <p className="font-bold mt-4">- Roti King, San Juan</p>
+                <p className="text-gray-300">Write us. Empty inbox stays empty until you do.</p>
               </div>
             </div>
           </div>

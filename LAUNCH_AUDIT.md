@@ -39,7 +39,7 @@ _Audit date: 2026-06-25 · Target: first paying merchants next week · Auditor: 
 
 **TriniBuild gets paid (TT$300/mo subscription):**
 - ✅ **Bank Pay** — real: `bank_subscription_payments` insert + Supabase Storage receipt upload, manual verify. **Your one solid paid rail.** (`subscriptionService.ts:69`, `PricingPage.tsx:62`)
-- 🔴 **PayPal "Pay with Card"** — links to `plan_id=${VITE_PAYPAL_PLAN_GROWTH}`; env var **not set** → links to `undefined`. No webhook, so even a real PayPal sub never activates the user (`upgradePlanPayPal` never called). (`PricingPage.tsx:180`, `subscriptionService.ts:123`)
+- 🔴 **PayPal "Pay with Card"** — leftover checkout infra was not a live rail. Honest copy still says PayPal is off / not asked for.
 - 🔴 **Stripe** — dead code; unusable in T&T; reads `VITE_STRIPE_SECRET_KEY` (would leak secret in bundle). Delete. (`stripeService.ts:27`)
 
 **Store customers pay:**

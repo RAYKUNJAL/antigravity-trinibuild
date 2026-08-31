@@ -161,7 +161,7 @@ export const CROSignupFlow: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Join TriniBuild - 30 Seconds | Trinidad & Tobago</title>
+                <title>Join Juvay - 30 Seconds | Trinidad & Tobago</title>
                 <meta name="description" content="Join 10,000+ Trinis. Start selling or shopping in 30 seconds." />
             </Helmet>
 
@@ -174,7 +174,7 @@ export const CROSignupFlow: React.FC = () => {
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-black" style={{ color: '#E61E2B' }}>
-                            TriniBuild
+                            Juvay
                         </h1>
                         <p className="text-gray-600 mt-2">Join in 30 seconds</p>
                     </div>

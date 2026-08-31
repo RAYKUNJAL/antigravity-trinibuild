@@ -45,7 +45,7 @@ export const ReferralDashboard: React.FC = () => {
     const shareOnPlatform = (platform: 'whatsapp' | 'facebook' | 'twitter') => {
         if (!referralLink) return;
 
-        const text = `Join TriniBuild and get your FREE website! Use my link: ${referralLink.referral_url}`;
+        const text = `Join Juvay. Use my link: ${referralLink.referral_url}`;
         let url = '';
 
         switch (platform) {

@@ -141,7 +141,7 @@ export function getDomainOptions(): DomainOption[] {
   return [
     {
       type: 'trinibuild',
-      url: 'https://trinibuild.com/store/{business-slug}',
+      url: 'https://juvay.app/store/{business-slug}',
       price: 0,
       annual: false,
       description: 'Free subdomain on TriniBuild platform',
@@ -204,7 +204,7 @@ export async function createWebsiteWithDomain(
   let url = '';
 
   if (domainOption === 'trinibuild') {
-    url = `https://trinibuild.com/store/${businessSlug}`;
+    url = `https://juvay.app/store/${businessSlug}`;
   } else if (domainOption === 'custom-domain') {
     // Buy domain automatically
     const domain = `${businessSlug}.com.tt`; // or .com if available
@@ -292,7 +292,7 @@ export async function exportWebsiteCode(websiteId: string): Promise<{
 
 7. Deploy to Vercel, Netlify, or your own server
 
-Full docs: https://trinibuild.com/docs/export-code
+Full docs: https://juvay.app/docs/export-code
     `,
   };
 }

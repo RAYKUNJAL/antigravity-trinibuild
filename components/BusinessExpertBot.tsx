@@ -25,7 +25,7 @@ export const BusinessExpertBot: React.FC = () => {
         {
             id: '1',
             sender: 'bot',
-            text: "Hello! I am the TriniBuild Business Expert. I can help you with banking regulations, visa applications, and business registration in Trinidad & Tobago. How can I assist you today?",
+            text: "Hello! I am the Juvay Business Expert. I can help you with banking regulations, visa applications, and business registration in Trinidad & Tobago. How can I assist you today?",
             timestamp: new Date()
         }
     ]);

@@ -66,7 +66,7 @@ export default function AffiliateDashboard() {
   const shareWhatsApp = () => {
     if (!profile) return;
     const link = affiliateSystemService.getReferralLink(profile.referral_code);
-    const msg = encodeURIComponent(`🇹🇹 Start your free online store on TriniBuild!\n\nSell anything with Cash on Delivery — no credit card needed.\n\nJoin here: ${link}\n\nMy code: ${profile.referral_code}`);
+    const msg = encodeURIComponent(`🇹🇹 Start your free online store on Juvay!\n\nSell anything with Cash on Delivery — no credit card needed.\n\nJoin here: ${link}\n\nMy code: ${profile.referral_code}`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 

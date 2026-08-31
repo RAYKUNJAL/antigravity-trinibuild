@@ -269,7 +269,7 @@ export const viralLoopsService = {
         platform: string,
         userId?: string
     ): string {
-        const baseUrl = 'https://trinibuild.com';
+        const baseUrl = 'https://juvay.app';
         const contentUrl = `${baseUrl}/${contentType}/${contentId}`;
         const trackingParam = userId ? `?shared_by=${userId}&platform=${platform}` : `?platform=${platform}`;
 
@@ -343,7 +343,7 @@ export const viralLoopsService = {
 
     generateWidgetCode(userId: string, widgetType: string): string {
         return `<div id="trinibuild-widget-${widgetType}" data-user="${userId}"></div>
-<script src="https://trinibuild.com/widgets/${widgetType}.js"></script>`;
+<script src="https://juvay.app/widgets/${widgetType}.js"></script>`;
     },
 
     // K-Factor Calculation

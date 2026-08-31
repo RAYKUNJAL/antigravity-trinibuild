@@ -101,7 +101,7 @@ export const AllLegalDocuments: React.FC = () => {
                     <h3 className="font-bold text-blue-900 mb-2">Questions about these documents?</h3>
                     <p className="text-sm text-blue-800 mb-4">
                         If you have any questions about our legal agreements, please contact us at{' '}
-                        <a href="mailto:legal@trinibuild.com" className="underline font-medium">legal@trinibuild.com</a>
+                        <a href="mailto:support@juvay.app" className="underline font-medium">support@juvay.app</a>
                     </p>
                     <p className="text-xs text-blue-700">
                         These documents are governed by the laws of Trinidad & Tobago and are subject to periodic updates.

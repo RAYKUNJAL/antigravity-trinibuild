@@ -48,7 +48,7 @@ export function getDomainOptions(): Record<DomainType, DomainOption> {
   return {
     trinibuild: {
       type: 'trinibuild',
-      url: 'https://trinibuild.com/store/{slug}',
+      url: 'https://juvay.app/store/{slug}',
       price: 0,
       annual: false,
       description: 'Free subdomain on TriniBuild platform',
@@ -122,7 +122,7 @@ export async function createWebsiteWithDomain(
 
   // Handle domain creation based on type
   if (domainOption === 'trinibuild') {
-    url = `https://trinibuild.com/store/${businessSlug}`;
+    url = `https://juvay.app/store/${businessSlug}`;
   } else if (domainOption === 'custom-domain' && customDomainName) {
     // Buy domain automatically
     customDomain = `${businessSlug}.com.tt`;
@@ -193,8 +193,8 @@ export async function createWebsiteWithDomain(
 
   // Generate claim URL (with random token for security)
   const claimToken = generateSecureToken();
-  const claimUrl = `https://trinibuild.com/claim/${businessSlug}?token=${claimToken}&id=${websiteData.id}`;
-  const editUrl = `https://trinibuild.com/edit/${businessSlug}?token=${claimToken}`;
+  const claimUrl = `https://juvay.app/claim/${businessSlug}?token=${claimToken}&id=${websiteData.id}`;
+  const editUrl = `https://juvay.app/edit/${businessSlug}?token=${claimToken}`;
 
   console.log(`✅ Website created for ${businessProfile.name}`);
   console.log(`   Domain: ${domainOption}`);
@@ -476,7 +476,7 @@ export async function getWebsiteWithDomain(websiteId: string): Promise<Generated
   }
 
   const claimToken = generateSecureToken();
-  const claimUrl = `https://trinibuild.com/claim/${website.business_name.replace(/\s+/g, '-')}?token=${claimToken}&id=${websiteId}`;
+  const claimUrl = `https://juvay.app/claim/${website.business_name.replace(/\s+/g, '-')}?token=${claimToken}&id=${websiteId}`;
 
   return {
     id: website.id,
@@ -486,7 +486,7 @@ export async function getWebsiteWithDomain(websiteId: string): Promise<Generated
     customDomain: website.custom_domain,
     url: website.url,
     claimUrl,
-    editUrl: `https://trinibuild.com/edit/${website.business_name.replace(/\s+/g, '-')}?token=${claimToken}`,
+    editUrl: `https://juvay.app/edit/${website.business_name.replace(/\s+/g, '-')}?token=${claimToken}`,
     status: website.status,
     reactCode: website.react_code,
     stats: {

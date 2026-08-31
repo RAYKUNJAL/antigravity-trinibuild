@@ -14,6 +14,21 @@ const path = require('path');
 const fs = require('fs');
 
 const { isWamConfigured, verifyWamSignature } = require('./wam');
+const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
+const { buildOnboardVision } = require('./onboardVision');
+const { validateMerchantItem } = require('./merchantItem');
+const { createRides } = require('./rides');
+
+const rides = createRides({
+  storePath: process.env.RIDES_STORE_PATH || undefined,
+});
+
+function methodNotAllowed(allow, usePath) {
+  return (_req, res) => {
+    res.set('Allow', allow);
+    res.status(405).json({ error: `Use ${allow} ${usePath}`, allow });
+  };
+}
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -221,6 +236,10 @@ async function handleLogin(req, res) {
   }
   res.json({ user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role }, token: sign(user) });
 }
+app.get('/api/login', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/login', allow: 'POST' });
+});
 app.post('/api/login', handleLogin);
 app.post('/api/auth/login', handleLogin);
 
@@ -232,11 +251,102 @@ app.get('/api/auth/me', auth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // STORES
 // ═══════════════════════════════════════════════════════════
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return next();
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Auth is not configured' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    return next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+app.post('/api/onboard/draft', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardDraft(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    const payload = { draft: result.draft };
+    if (result.warning) payload.warning = result.warning;
+    res.json(payload);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/onboard/patch', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/onboard/patch', allow: 'POST' });
+});
+app.post('/api/onboard/patch', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardPatch(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json({
+      patch: result.patch,
+      proposed: result.proposed,
+      changedFields: result.changedFields,
+      conflicts: result.conflicts,
+      agentWrote: result.agentWrote === true,
+      warning: result.warning || undefined,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+const visionUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 },
+});
+
+function visionImageFromReq(req) {
+  if (req.file && req.file.buffer) {
+    const mime = String(req.file.mimetype || 'image/jpeg').replace(/[^a-zA-Z0-9/+.-]/g, '') || 'image/jpeg';
+    return `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+  }
+  return req.body?.image || req.body?.dataUrl || req.body?.photo || '';
+}
+
+app.get('/api/onboard/vision', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/onboard/vision', allow: 'POST' });
+});
+app.post('/api/onboard/vision', optionalAuth, (req, res, next) => {
+  const ct = String(req.headers['content-type'] || '');
+  if (ct.includes('multipart/form-data')) {
+    return visionUpload.single('image')(req, res, next);
+  }
+  next();
+}, async (req, res) => {
+  try {
+    const result = await buildOnboardVision({
+      image: visionImageFromReq(req),
+      templateId: req.body?.templateId,
+      storeName: req.body?.storeName,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json({
+      agentWrote: result.agentWrote === true,
+      warning: result.warning || undefined,
+      draft: result.draft,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/stores/mine', auth, async (req, res) => {
   const { rows } = await pool.query(`SELECT * FROM stores WHERE owner_id = $1`, [req.user.id]);
   res.json(rows);
 });
 
+app.get('/api/stores', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/stores', allow: 'POST' });
+});
 app.post('/api/stores', auth, async (req, res) => {
   const {
     name, description, category, phone, whatsapp, address,
@@ -256,7 +366,7 @@ app.post('/api/stores', auth, async (req, res) => {
       [
         req.user.id, name.trim(), slug, description || null, category || null,
         phone || null, whatsapp || null, address || pickup_address || null,
-        accepts_cod !== false, !!accepts_pickup, pickup_address || null,
+        !!accepts_cod, !!accepts_pickup, pickup_address || null,
         wam_handle || null, exact_cash_note !== false, island || null, JSON.stringify(theme),
       ]
     );
@@ -276,8 +386,15 @@ app.get('/api/stores/:slug', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // PRODUCTS
 // ═══════════════════════════════════════════════════════════
+app.get('/api/products', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/products', allow: 'POST' });
+});
 app.post('/api/products', auth, async (req, res) => {
-  const { store_id, name, description, category, price, stock, condition, images } = req.body;
+  const checked = validateMerchantItem(req.body || {});
+  if (checked.error) return res.status(checked.status || 400).json({ error: checked.error });
+  const item = checked.item;
+  const { store_id, category, condition, images } = req.body;
   // Verify ownership + plan limits
   const { rows: store } = await pool.query(`SELECT * FROM stores WHERE id = $1 AND owner_id = $2`, [store_id, req.user.id]);
   if (!store[0]) return res.status(403).json({ error: 'Not your store' });
@@ -292,9 +409,11 @@ app.post('/api/products', auth, async (req, res) => {
   }
 
   const status = req.body.status === 'draft' ? 'draft' : 'active';
+  const stock = item.qty;
+  const sku = item.sku || null;
   const { rows } = await pool.query(
-    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-    [store_id, name, description, category, price, stock || 0, condition || 'new', JSON.stringify(images || []), status]
+    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+    [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', JSON.stringify(images || (item.image ? [item.image] : [])), sku, status]
   );
   res.json(rows[0]);
 });
@@ -308,6 +427,7 @@ const genOrderRef = () => {
 };
 
 app.post('/api/cod/orders', async (req, res) => {
+  // Follow-up: decrement product.stock on a real COD/order write. Not in this path today.
   const { store_id, customer_name, customer_phone, customer_email, customer_address, delivery_area, items, delivery_fee, payment_method, notes } = req.body;
   const subtotal = (items || []).reduce((s, i) => s + i.price * i.quantity, 0);
   const vat = Math.round(subtotal * 0.125 * 100) / 100;
@@ -499,6 +619,133 @@ app.post('/api/admin/bank-pay/:id/verify', auth, adminOnly, async (req, res) => 
   res.json(p);
 });
 
+// ─── Rides v1 (cash-first). File store. Not pay→fulfill. ─────
+app.get('/api/rides/listed', (req, res) => {
+  res.json(rides.ridesDirectory({
+    island: req.query.island,
+    schoolRun: req.query.schoolRun,
+    serviceType: req.query.serviceType,
+  }));
+});
+app.get('/api/rides/children', (req, res) => {
+  res.json(rides.listChildren({ parentPhone: req.query.parentPhone }));
+});
+app.get('/api/rides/children/add', methodNotAllowed('POST', '/api/rides/children'));
+app.post('/api/rides/children', (req, res) => {
+  const result = rides.addChild(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/admin/drive/:id/school-run', auth, adminOnly, (req, res) => {
+  const result = rides.approveSchoolRun(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/drive/pin', (req, res) => {
+  const result = rides.setDirectoryPin(
+    { phone: req.body?.phone, id: req.body?.id || req.body?.driverId },
+    { pinLat: req.body?.pinLat, pinLng: req.body?.pinLng },
+  );
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/start', (req, res) => {
+  const result = rides.startTrip(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/track', (req, res) => {
+  const result = rides.reportTrack(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/apply', methodNotAllowed('POST', '/api/drive/apply'));
+app.post('/api/drive/apply', optionalAuth, (req, res) => {
+  const result = rides.apply({ ...req.body, userId: req.user?.id || req.body?.userId });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/me', optionalAuth, (req, res) => {
+  const result = rides.me({ phone: req.query.phone, id: req.query.id, userId: req.user?.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/subscription', (_req, res) => {
+  res.json(rides.subscriptionStatus());
+});
+app.get('/api/drive/subscription/wam', methodNotAllowed('POST', '/api/drive/subscription/wam'));
+app.post('/api/drive/subscription/wam', optionalAuth, (req, res) => {
+  const result = rides.startSubscriptionWam({
+    phone: req.body?.phone || req.query.phone,
+    id: req.body?.id || req.body?.driverId,
+    userId: req.user?.id,
+  });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/admin/drive/applications', auth, adminOnly, (_req, res) => {
+  res.json(rides.adminApplications());
+});
+app.get('/api/admin/drive/:id/approve', methodNotAllowed('POST', '/api/admin/drive/:id/approve'));
+app.post('/api/admin/drive/:id/approve', auth, adminOnly, (req, res) => {
+  const result = rides.approve(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/admin/drive/:id/subscribe', methodNotAllowed('POST', '/api/admin/drive/:id/subscribe'));
+app.post('/api/admin/drive/:id/subscribe', auth, adminOnly, (req, res) => {
+  const result = rides.markSubscribed(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/admin/drive/:id/school-run', methodNotAllowed('POST', '/api/admin/drive/:id/school-run'));
+app.get('/api/rides/offers', methodNotAllowed('POST', '/api/rides/offers'));
+app.post('/api/rides/offers', (req, res) => {
+  const result = rides.createOffer(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/offers', (req, res) => {
+  const result = rides.driverOffers({ phone: req.query.phone, id: req.query.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/accept', (req, res) => {
+  const result = rides.acceptOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/counter', (req, res) => {
+  const result = rides.counterOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/agree', (req, res) => {
+  const result = rides.agreeOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/cancel', (req, res) => {
+  const result = rides.cancelOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/rides/trips/:id', (req, res) => {
+  const result = rides.getTrip(req.params.id, { shareToken: req.query.t || req.query.shareToken });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-paid', (req, res) => {
+  const result = rides.cashPaid(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-received', (req, res) => {
+  const result = rides.cashReceived(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+
 // ─── Health check ────────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
   try {
@@ -507,6 +754,11 @@ app.get('/api/health', async (req, res) => {
   } catch {
     res.status(500).json({ status: 'error', db: 'disconnected' });
   }
+});
+
+// /api/* never falls through to the SPA shell. Unmatched API paths stay JSON.
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
 
 app.listen(PORT, () => console.log(`🇹🇹 TriniBuild API running on :${PORT}`));

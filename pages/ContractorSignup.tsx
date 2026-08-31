@@ -88,7 +88,7 @@ export const ContractorSignup: React.FC = () => {
                     <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
                         {step === 'agreement' && 'Independent Contractor Agreement'}
                         {step === 'signup' && 'Create Your Account'}
-                        {step === 'success' && 'Welcome to TriniBuild!'}
+                        {step === 'success' && 'Welcome to Juvay!'}
                     </h1>
                     <p className="text-gray-600">
                         {step === 'agreement' && 'Please review and accept the terms to continue'}
@@ -103,14 +103,14 @@ export const ContractorSignup: React.FC = () => {
                         <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-6 flex items-start">
                             <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                             <p className="text-sm text-yellow-800">
-                                This is a legally binding agreement. By using TriniBuild services as a provider, driver, or vendor, you agree to these terms.
+                                This is a legally binding agreement. By using Juvay services as a provider, driver, or vendor, you agree to these terms.
                             </p>
                         </div>
 
                         <div className="prose prose-sm max-w-none mb-8 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-6 bg-gray-50">
                             <h3 className="text-lg font-bold text-gray-900 mb-4">1. Contractor Status</h3>
                             <p className="text-gray-700 mb-4">
-                                The user acknowledges that they are an independent contractor, not an employee of TriniBuild. You are solely responsible for your own taxes, insurance, licenses, and compliance with local laws.
+                                The user acknowledges that they are an independent contractor, not an employee of Juvay. You are solely responsible for your own taxes, insurance, licenses, and compliance with local laws.
                             </p>
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">2. No Employment Claims</h3>
@@ -120,27 +120,27 @@ export const ContractorSignup: React.FC = () => {
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">3. Business Document Rights</h3>
                             <p className="text-gray-700 mb-4">
-                                You grant TriniBuild permission to generate job letters, income summaries, and business-related documents based on your platform activity for your convenience.
+                                You grant Juvay permission to generate job letters, income summaries, and business-related documents based on your platform activity for your convenience.
                             </p>
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">4. Tax Responsibility</h3>
                             <p className="text-gray-700 mb-4">
-                                All income earned through TriniBuild is self-employment income. TriniBuild does not withhold taxes on your behalf.
+                                All income earned through Juvay is self-employment income. Juvay does not withhold taxes on your behalf.
                             </p>
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">5. Platform Fees</h3>
                             <p className="text-gray-700 mb-4">
-                                TriniBuild charges a service fee on transactions processed through the platform. Fee structures are outlined in your dashboard and may vary by service type.
+                                Juvay charges a service fee on transactions processed through the platform. Fee structures are outlined in your dashboard and may vary by service type.
                             </p>
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">6. Liability Waiver</h3>
                             <p className="text-gray-700 mb-4">
-                                TriniBuild is not liable for any disputes, damages, injuries, or losses arising from your business activities on the platform. You operate at your own risk.
+                                Juvay is not liable for any disputes, damages, injuries, or losses arising from your business activities on the platform. You operate at your own risk.
                             </p>
 
                             <h3 className="text-lg font-bold text-gray-900 mb-4">7. Termination</h3>
                             <p className="text-gray-700 mb-4">
-                                Either party may terminate this agreement at any time. TriniBuild reserves the right to suspend or terminate accounts that violate our terms of service.
+                                Either party may terminate this agreement at any time. Juvay reserves the right to suspend or terminate accounts that violate our terms of service.
                             </p>
                         </div>
 
@@ -153,7 +153,7 @@ export const ContractorSignup: React.FC = () => {
                                 className="mt-1 h-5 w-5 text-trini-red border-gray-300 rounded focus:ring-trini-red"
                             />
                             <label htmlFor="agree" className="ml-3 text-sm text-gray-700">
-                                I have read and agree to the Independent Contractor Agreement. I understand that I am not an employee of TriniBuild and am responsible for my own taxes and insurance.
+                                I have read and agree to the Independent Contractor Agreement. I understand that I am not an employee of Juvay and am responsible for my own taxes and insurance.
                             </label>
                         </div>
 
