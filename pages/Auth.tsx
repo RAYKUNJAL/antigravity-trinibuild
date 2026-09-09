@@ -28,15 +28,17 @@ export const Auth: React.FC = () => {
     setError(null);
     try {
       const dest = isLogin ? (searchParams.get('redirect') || '/dashboard') : '/onboarding';
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}${dest}`
         }
       });
       if (error) throw error;
-      // Social signup (non-login) flows to /onboarding via redirectTo above.
-      if (!isLogin) navigate('/onboarding');
+      if (!data?.url) {
+        throw new Error('Social login is not configured on this origin.');
+      }
+      // OAuth redirects when configured. Do not claim signed-in here.
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { Mail, Phone, MapPin } from 'lucide-react';
+
+const SUPPORT_EMAIL = 'support@juvay.app';
 
 export const Contact: React.FC = () => {
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +34,12 @@ export const Contact: React.FC = () => {
                   <Mail className="h-6 w-6 text-trini-red mr-4 mt-1" />
                   <div>
                     <p className="font-bold">Email</p>
-                    <p className="text-gray-300">support@juvay.app</p>
+                    <a
+                      href={`mailto:${SUPPORT_EMAIL}`}
+                      className="text-gray-300 underline hover:text-white"
+                    >
+                      {SUPPORT_EMAIL}
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -55,7 +55,7 @@ export const Contact: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-10">
               <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
                 <p className="text-gray-300">Write us. Empty inbox stays empty until you do.</p>
@@ -63,52 +63,22 @@ export const Contact: React.FC = () => {
             </div>
           </div>
 
-          {/* Contact Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-10">
-            {submitted ? (
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <div className="bg-green-100 p-4 rounded-full mb-6">
-                  <CheckCircle className="h-12 w-12 text-green-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent!</h3>
-                <p className="text-gray-500">
-                  Thank you for reaching out. Our team will get back to you within 24 hours.
-                </p>
-                <button 
-                  onClick={() => setSubmitted(false)} 
-                  className="mt-8 text-trini-red font-bold hover:underline"
-                >
-                  Send another message
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
-                  <input type="text" required className="w-full border border-gray-300 rounded-lg p-3 focus:ring-trini-red focus:border-trini-red" placeholder="John Doe" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
-                  <input type="email" required className="w-full border border-gray-300 rounded-lg p-3 focus:ring-trini-red focus:border-trini-red" placeholder="john@example.com" />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Subject</label>
-                  <select className="w-full border border-gray-300 rounded-lg p-3 focus:ring-trini-red focus:border-trini-red bg-white">
-                    <option>General Inquiry</option>
-                    <option>Sales / Enterprise Plan</option>
-                    <option>Technical Support</option>
-                    <option>Partnership</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Message</label>
-                  <textarea required rows={4} className="w-full border border-gray-300 rounded-lg p-3 focus:ring-trini-red focus:border-trini-red" placeholder="How can we help you?"></textarea>
-                </div>
-                <button type="submit" className="w-full bg-trini-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center">
-                  Send Message <Send className="ml-2 h-5 w-5" />
-                </button>
-              </form>
-            )}
+          {/* Honest contact — no fake send */}
+          <div className="bg-white rounded-2xl shadow-xl p-10 flex flex-col justify-center">
+            <div className="bg-red-50 p-4 rounded-full mb-6 w-fit">
+              <Mail className="h-10 w-10 text-trini-red" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Email support</h3>
+            <p className="text-gray-500 mb-8">
+              This page does not send messages. There is no contact API on this origin.
+              Write {SUPPORT_EMAIL} and we will reply from that inbox.
+            </p>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="w-full bg-trini-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition-colors shadow-lg flex items-center justify-center"
+            >
+              Email {SUPPORT_EMAIL} <Mail className="ml-2 h-5 w-5" />
+            </a>
           </div>
         </div>
       </div>
