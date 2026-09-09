@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Store, ShoppingBag, Package, Truck, Clock, Shield, Star, TrendingUp,
-    Phone, Mail, MessageCircle, MapPin, ChevronRight, Check, Zap, Award,
+    Mail, MessageCircle, MapPin, ChevronRight, Check, Zap, Award,
     Users, DollarSign, BarChart3, Globe, Heart, Gift, Tag, ArrowRight, Copy, QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -491,18 +491,6 @@ export const StoreServicesLanding: React.FC = () => {
                                     Our Trinidad-based team is here to help you succeed. Contact us anytime!
                                 </p>
                                 <div className="space-y-4">
-                                    <ContactMethod
-                                        icon={<Phone className="h-6 w-6" />}
-                                        label="Phone"
-                                        value="+1 (868) 555-BUILD"
-                                        href="tel:+18685552845"
-                                    />
-                                    <ContactMethod
-                                        icon={<MessageCircle className="h-6 w-6" />}
-                                        label="WhatsApp"
-                                        value="+1 (868) 555-BUILD"
-                                        href="https://wa.me/18685552845"
-                                    />
                                     <ContactMethod
                                         icon={<Mail className="h-6 w-6" />}
                                         label="Email"

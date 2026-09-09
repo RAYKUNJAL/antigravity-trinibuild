@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
 
 const SUPPORT_EMAIL = 'support@juvay.app';
 
@@ -22,14 +22,6 @@ export const Contact: React.FC = () => {
             <div>
               <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
               <div className="space-y-6">
-                <div className="flex items-start">
-                  <Phone className="h-6 w-6 text-trini-red mr-4 mt-1" />
-                  <div>
-                    <p className="font-bold">Phone</p>
-                    <p className="text-gray-300">+1 (868) 555-0199</p>
-                    <p className="text-gray-500 text-sm">Mon-Fri, 8am - 5pm</p>
-                  </div>
-                </div>
                 <div className="flex items-start">
                   <Mail className="h-6 w-6 text-trini-red mr-4 mt-1" />
                   <div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
-    Sparkles, MessageCircle, Zap, Check, ArrowRight, User, Mail, Phone,
+    Sparkles, MessageCircle, Zap, Check, ArrowRight, User, Mail,
     MapPin, Briefcase, Store, ChevronRight, Star, Shield, Award, TrendingUp,
     Clock, DollarSign, Users, Package, Truck, Heart
 } from 'lucide-react';
@@ -500,13 +500,9 @@ export const SmartOnboarding: React.FC = () => {
                                     Our Trinidad-based team is here to help you!
                                 </p>
                                 <div className="flex flex-wrap gap-3">
-                                    <a href="https://wa.me/18685552845" className="inline-flex items-center text-sm text-green-600 hover:text-green-700 font-medium">
-                                        <MessageCircle className="h-4 w-4 mr-1" />
-                                        WhatsApp We
-                                    </a>
-                                    <a href="tel:+18685552845" className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium">
-                                        <Phone className="h-4 w-4 mr-1" />
-                                        Call We
+                                    <a href="mailto:support@juvay.app" className="inline-flex items-center text-sm text-trini-red hover:text-red-700 font-medium">
+                                        <Mail className="h-4 w-4 mr-1" />
+                                        support@juvay.app
                                     </a>
                                 </div>
                             </div>

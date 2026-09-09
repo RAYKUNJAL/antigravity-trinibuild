@@ -181,7 +181,7 @@ export default function AISiteBuilder() {
                 </div>
             </motion.div>,
             <motion.div key="p2" {...fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {([['whatsapp', 'WhatsApp number', '868 555 1234'], ['phone', 'Phone', '868 555 1234'], ['email', 'Email', 'hello@yourbiz.com'], ['instagram', 'Instagram', '@yourbiz'], ['address', 'Address', 'Port of Spain']] as const).map(([k, label, ph]) => (
+                {([['whatsapp', 'WhatsApp number', 'Your WhatsApp'], ['phone', 'Phone', 'Your phone'], ['email', 'Email', 'hello@yourbiz.com'], ['instagram', 'Instagram', '@yourbiz'], ['address', 'Address', 'Port of Spain']] as const).map(([k, label, ph]) => (
                     <div key={k} className={k === 'address' ? 'sm:col-span-2' : ''}>
                         <label className="block text-sm font-semibold text-gray-300 mb-2">{label} <span className="text-gray-500">(optional)</span></label>
                         <input value={(brief as any)[k] || ''} onChange={(e) => setBrief({ ...brief, [k]: e.target.value })} placeholder={ph} className={inputCls} />
