@@ -65,9 +65,14 @@ export const AdminDriveDesk: React.FC = () => {
     <div className="min-h-screen bg-black text-white px-4 py-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400 mb-2">Operator</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400 mb-2">/admin/drive only</p>
           <h1 className="text-3xl font-black">Drive queue</h1>
-          <p className="text-sm text-white/50">Approve → list. Flag school-run. Confirm sub only when priceCents is set. No demo drivers.</p>
+          <p className="text-sm text-white/50">Approve → list. Flag school-run. Confirm sub only when priceCents is set. No demo drivers. This desk is /admin/drive — not /admin, not /admin/bypass.</p>
+          <div className="flex flex-wrap gap-2 mt-3 text-xs font-bold">
+            <span className="rounded-full bg-white/10 px-3 py-1">{applications.filter((a) => !a.approved).length} pending KYC</span>
+            <span className="rounded-full bg-yellow-400 text-black px-3 py-1">{applications.filter((a) => a.listed).length} listed</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">{applications.filter((a) => a.schoolRunRequested && !a.schoolRunApproved).length} school-run wait</span>
+          </div>
         </div>
 
         {error ? <p className="text-sm text-red-400">{error}</p> : null}

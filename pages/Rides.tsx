@@ -134,9 +134,15 @@ export const Rides: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl font-black leading-none mb-4">
             You offer.<br /><span className="text-yellow-400">They accept.</span>
           </h1>
-          <p className="text-white/70 max-w-xl mb-6">
+          <p className="text-white/70 max-w-xl mb-4">
             Pickup, drop, your TTD. Listed drivers only. Cash default. Wam is <a href="https://wam.com" className="underline text-yellow-400" target="_blank" rel="noreferrer">wam.com</a> — not WhatsApp. No quoted fare.
           </p>
+          <div className="flex flex-wrap gap-2 mb-6 text-[11px] font-bold uppercase tracking-wide">
+            <span className="rounded-full bg-yellow-400 text-black px-3 py-1">cash default</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">fail-closed</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">{unavailable ? '0 listed' : `${listedCount} listed`}</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">no ghost cars</span>
+          </div>
           <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-xl">
             {SERVICES.map((svc) => {
               const Icon = svc.icon;

@@ -7,10 +7,12 @@ import {
   counterRideOffer,
   fetchDriveMe,
   fetchDriverOffers,
+  fetchRideTrip,
   readImageAsDataUrl,
   setDriverPin,
   startRideTrip,
   tapCashReceived,
+  trackRideTrip,
 } from '../services/ridesApi';
 
 const JOB_OPTIONS = [
@@ -42,7 +44,10 @@ export const DriveApply: React.FC = () => {
   const [offers, setOffers] = useState<any[]>([]);
   const [counterTtd, setCounterTtd] = useState('');
   const [startPin, setStartPin] = useState('');
+  const [tripGpsLat, setTripGpsLat] = useState('');
+  const [tripGpsLng, setTripGpsLng] = useState('');
   const [activeTripId, setActiveTripId] = useState('');
+  const [tripStatus, setTripStatus] = useState<any>(null);
 
   const onPhoto = async (fieldName: string, file?: File) => {
     if (!file) return;
@@ -60,7 +65,14 @@ export const DriveApply: React.FC = () => {
     const inbox = await fetchDriverOffers(p).catch(() => ({ offers: [] }));
     setOffers(inbox.offers || []);
     const booked = (inbox.offers || []).find((o: any) => o.tripId);
-    if (booked?.tripId) setActiveTripId(booked.tripId);
+    if (booked?.tripId) {
+      setActiveTripId(booked.tripId);
+      const trip = await fetchRideTrip(booked.tripId).catch(() => null);
+      setTripStatus(trip?.trip || null);
+    } else {
+      setActiveTripId('');
+      setTripStatus(null);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -168,8 +180,19 @@ export const DriveApply: React.FC = () => {
             <button type="button" onClick={() => loadDesk()} className="text-sm underline text-yellow-400">Refresh</button>
           </div>
 
+          <form
+            className="flex gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try { await loadDesk(); } catch (err: any) { setError(err.message); }
+            }}
+          >
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone on application" className={`flex-1 ${field}`} />
+            <button type="submit" className="min-h-[44px] px-4 rounded-xl border border-yellow-400 text-yellow-400 font-bold">Load desk</button>
+          </form>
+
           {!driver ? (
-            <p className="text-sm text-white/50">Apply or enter the phone on your application, then refresh. Empty stays empty.</p>
+            <p className="text-sm text-white/50">Apply or load the phone on your application. Empty stays empty. No demo drivers.</p>
           ) : (
             <div className="rounded-2xl border border-white/10 p-4 text-sm space-y-1">
               <p className="font-black">{driver.name} · {driver.plate}</p>
@@ -224,21 +247,34 @@ export const DriveApply: React.FC = () => {
                 ) : null}
                 {offer.tripId ? (
                   <div className="space-y-2 pt-2 border-t border-white/10">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-white/40">accept → startPin → tripGps → both-tap cash</p>
+                    {tripStatus ? (
+                      <p className="text-xs text-white/50">started {tripStatus.started ? 'yes' : 'no'} · cash-paid {tripStatus.cashPaid ? 'yes' : 'no'} · cash-received {tripStatus.cashReceived ? 'yes' : 'no'}</p>
+                    ) : null}
                     <Link to={`/rides/trip/${offer.tripId}`} className="underline text-yellow-400">Open trip</Link>
-                    <input value={startPin} onChange={(e) => setStartPin(e.target.value)} placeholder="startPin (4 digits)" className={`w-full ${field}`} />
+                    <input value={startPin} onChange={(e) => setStartPin(e.target.value)} placeholder="startPin → POST /start" className={`w-full ${field}`} />
                     <button
                       type="button"
                       onClick={async () => { await startRideTrip(offer.tripId, phone, startPin); loadDesk(); }}
                       className="w-full min-h-[44px] rounded-xl bg-yellow-400 text-black font-black"
                     >
-                      Start trip (PIN)
+                      startPin
+                    </button>
+                    <input value={tripGpsLat} onChange={(e) => setTripGpsLat(e.target.value)} placeholder="tripGps lat → POST /track" className={`w-full ${field}`} />
+                    <input value={tripGpsLng} onChange={(e) => setTripGpsLng(e.target.value)} placeholder="tripGps lng" className={`w-full ${field}`} />
+                    <button
+                      type="button"
+                      onClick={async () => { await trackRideTrip(offer.tripId, { driverPhone: phone, lat: tripGpsLat, lng: tripGpsLng }); loadDesk(); }}
+                      className="w-full min-h-[44px] rounded-xl border border-white/20"
+                    >
+                      tripGps
                     </button>
                     <button
                       type="button"
                       onClick={async () => { await tapCashReceived(offer.tripId, phone); loadDesk(); }}
                       className="w-full min-h-[44px] rounded-xl border border-white/20"
                     >
-                      Cash received
+                      cash-received
                     </button>
                   </div>
                 ) : null}

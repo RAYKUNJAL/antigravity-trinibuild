@@ -47,7 +47,12 @@ export const SchoolRun: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white px-4 py-10">
       <div className="max-w-xl mx-auto space-y-4">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400">School run</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400">School run · parent-booked</p>
+        <div className="flex flex-wrap gap-2 text-[11px] font-bold uppercase">
+          <span className="rounded-full bg-yellow-400 text-black px-3 py-1">cash default</span>
+          <span className="rounded-full bg-white/10 px-3 py-1">empty kids stay empty</span>
+          <span className="rounded-full bg-white/10 px-3 py-1">startPin 4 digits</span>
+        </div>
         <h1 className="text-3xl font-black">Parent books. Kid rides.</h1>
         <p className="text-white/70 font-medium">This is a parent-booked school run, not a teen dating app, not unattended street hail.</p>
         <p className="text-sm text-white/50">The child is a passenger profile. The kid never pays and never sees cash confirm. Parent pays cash at pickup or Wam from the parent on wam.com.</p>

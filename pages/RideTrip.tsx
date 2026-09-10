@@ -58,7 +58,13 @@ export const RideTrip: React.FC = () => {
         {school && trip.childName ? <p>Passenger {trip.childName} · {trip.school}</p> : null}
         <p>{trip.pickup} → {trip.drop}</p>
         <p>Agreed TT${trip.faceTtd} · {trip.pay === 'cash' ? 'Cash (0% take)' : 'Wam face-only, 7.5% pass-through'}</p>
-        <p className="text-sm">Started: {trip.started ? 'yes' : 'no — driver enters startPin'}</p>
+        <ol className="grid grid-cols-4 gap-1 text-[10px] font-bold uppercase tracking-wide">
+          <li className="rounded-lg bg-yellow-400 text-black px-1 py-2 text-center">accept</li>
+          <li className={`rounded-lg px-1 py-2 text-center ${trip.started ? 'bg-yellow-400 text-black' : 'bg-white/10 text-white/60'}`}>startPin</li>
+          <li className={`rounded-lg px-1 py-2 text-center ${trip.lastPoint ? 'bg-yellow-400 text-black' : 'bg-white/10 text-white/60'}`}>tripGps</li>
+          <li className={`rounded-lg px-1 py-2 text-center ${trip.cashPaid && trip.cashReceived ? 'bg-yellow-400 text-black' : 'bg-white/10 text-white/60'}`}>both-tap</li>
+        </ol>
+        <p className="text-sm">Started: {trip.started ? 'yes' : 'no — driver enters startPin → POST /start'}</p>
         {trip.startPin ? <p className="font-mono text-2xl text-yellow-400">startPin {trip.startPin}</p> : null}
         <p className="text-sm text-white/50">{trip.sosCopy}</p>
         {typeof window !== 'undefined' ? (
@@ -72,7 +78,7 @@ export const RideTrip: React.FC = () => {
         ) : null}
 
         <div className="rounded-2xl border border-white/10 bg-[#111] p-4 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-white/40">Driver — startPin + tripGps</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-white/40">Driver — startPin POST /start · tripGps POST /track</p>
           <label className="block text-sm">
             Driver phone
             <input value={driverPhone} onChange={(e) => setDriverPhone(e.target.value)} className={field} />
@@ -82,12 +88,12 @@ export const RideTrip: React.FC = () => {
             <input value={pin} onChange={(e) => setPin(e.target.value)} className={field} />
           </label>
           <button type="button" onClick={async () => { await startRideTrip(trip.id, driverPhone, pin); load(); }} className="w-full min-h-[44px] rounded-xl bg-yellow-400 text-black font-black">
-            Start trip
+            startPin
           </button>
           <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="tripGps lat" className={`w-full ${field}`} />
           <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="tripGps lng" className={`w-full ${field}`} />
           <button type="button" onClick={async () => { await trackRideTrip(trip.id, { driverPhone, lat, lng }); load(); }} className="w-full min-h-[44px] rounded-xl border border-white/20">
-            Share tripGps
+            tripGps
           </button>
         </div>
 
@@ -114,10 +120,10 @@ export const RideTrip: React.FC = () => {
               }}
               className="w-full min-h-[44px] rounded-xl border border-yellow-400 text-yellow-400 font-bold"
             >
-              {school ? 'Parent paid cash' : 'I paid cash'}
+              {school ? 'cash-paid (parentPhone)' : 'cash-paid (riderPhone)'}
             </button>
             <button type="button" onClick={async () => { await tapCashReceived(trip.id, driverPhone); load(); }} className="w-full min-h-[44px] rounded-xl border border-white/20">
-              I received cash
+              cash-received (driverPhone)
             </button>
             <p className="text-sm">Cash paid: {trip.cashPaid ? 'yes' : 'no'} · Cash received: {trip.cashReceived ? 'yes' : 'no'}</p>
           </div>
