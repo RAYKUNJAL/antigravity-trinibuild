@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { GALLERY_FILTERS, ISLAND, starterList, resolveStarterId, isStarterId, STORE_STARTERS, type StarterId } from '../services/storeStarters';
 import { JuvayStorefront, illustrativeModel } from './storefront/JuvayStorefront';
+import { StarterThumb, StarterCardMeta } from './StarterPreview';
 
 function BrowserChrome({ children }: { children: React.ReactNode }) {
   return (
@@ -17,51 +18,6 @@ function BrowserChrome({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StarterThumb({ id }: { id: StarterId }) {
-  const s = STORE_STARTERS[id];
-  const photo = (
-    <img
-      src={s.heroImage}
-      alt=""
-      width={800}
-      height={450}
-      loading="lazy"
-      decoding="async"
-      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-    />
-  );
-  return (
-    <div style={{ height: 220, background: s.palette.heroBg, color: s.palette.heroText, position: 'relative', overflow: 'hidden' }}>
-      {s.heroLayout === 'split' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100%' }}>
-          <div style={{ padding: '28px 16px 16px' }}>
-            <div style={{ fontFamily: s.palette.headingFont, fontSize: 22, lineHeight: 1.05 }}>{s.heroHeadline}</div>
-            <div style={{ marginTop: 14, width: 72, height: 22, background: ISLAND.mango }} />
-          </div>
-          <div style={{ minHeight: 0, overflow: 'hidden' }}>{photo}</div>
-        </div>
-      ) : s.heroLayout === 'bleed' ? (
-        <div style={{ height: '100%', position: 'relative' }}>
-          {photo}
-          <div style={{ position: 'absolute', left: 18, bottom: 18, right: 18 }}>
-            <div style={{ fontFamily: s.palette.headingFont, fontStyle: 'italic', fontSize: 22, lineHeight: 1.05 }}>{s.heroHeadline}</div>
-            <div style={{ marginTop: 12, width: 72, height: 22, border: `1px solid ${s.palette.heroText}` }} />
-          </div>
-        </div>
-      ) : (
-        <div style={{ height: '100%', position: 'relative' }}>
-          {photo}
-          <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 16 }}>
-            <div>
-              <div style={{ fontFamily: s.palette.headingFont, fontSize: 28 }}>{s.name}</div>
-              <div style={{ fontSize: 11, marginTop: 6, opacity: 0.85 }}>{s.heroHeadline}</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: string }) => void }> = ({
   onSelectTemplate,
@@ -118,7 +74,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
 
   return (
     <div style={{ minHeight: '100vh', background: ISLAND.sand, color: '#1a1a1a', fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" />
+      <link rel="stylesheet" href={STORE_STARTERS.food.palette.fontHref} />
       <div style={{ padding: '56px 24px 28px', textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
         <h1 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 400, margin: '0 0 20px' }}>
           Pick a starter you can actually run
@@ -178,11 +134,8 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                   </div>
                 </BrowserChrome>
               </button>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 12, gap: 8 }}>
-                <div>
-                  <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 16 }}>{starter.name}</div>
-                  <p style={{ margin: '4px 0 0', color: '#6b6256', fontSize: 13, maxWidth: '40ch' }}>{starter.useWhen}</p>
-                </div>
+              <div style={{ marginTop: 12 }}>
+                <StarterCardMeta id={starter.id} />
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button
@@ -219,7 +172,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
             <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6dfd4' }}>
               <div>
                 <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}>{STORE_STARTERS[previewId].name}</div>
-                <div style={{ color: '#6b6256', fontSize: 12, marginTop: 2 }}>Share: /templates/{previewId}?preview=1</div>
+                <div style={{ color: '#6b6256', fontSize: 12, marginTop: 2 }}>ILLUSTRATIVE · Share: /templates/{previewId}?preview=1</div>
               </div>
               <button type="button" onClick={closePreview} aria-label="Close preview" style={{ width: 44, height: 44, border: 'none', background: 'transparent', cursor: 'pointer' }}>
                 <X size={16} />

@@ -5,8 +5,9 @@
 
 const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto'];
 
-const NO_KEY_WARNING = 'Vision is not writing this listing. Type the name and price yourself.';
-const FAIL_WARNING = 'Vision did not write this listing. Type the name and price yourself.';
+const NO_KEY_WARNING = 'Vision is not writing this listing. Type the name and TT$ price yourself.';
+const FAIL_WARNING = 'Vision did not write this listing. Type the name and TT$ price yourself.';
+const CREDITS_WARNING = 'Vision is locked (no credits). Type the name and TT$ price yourself.';
 
 const BANNED_NAME = new RegExp(
   [
@@ -110,12 +111,22 @@ function sanitizeVisionDraft(raw) {
   return { name, description, tags };
 }
 
-function honestNoWrite(warning) {
+function honestNoWrite(warning, extra = {}) {
   return {
     agentWrote: false,
+    locked: extra.locked === true,
     warning,
     draft: emptyDraft(),
+    ...(extra.detail ? { detail: extra.detail } : {}),
   };
+}
+
+function failFromError(err) {
+  const msg = String(err && err.message || '');
+  if (/403|credit|quota|billing|insufficient/i.test(msg)) {
+    return honestNoWrite(CREDITS_WARNING, { locked: true, detail: msg });
+  }
+  return honestNoWrite(FAIL_WARNING, { detail: msg });
 }
 
 async function callGrokVision(input) {
@@ -126,8 +137,11 @@ async function callGrokVision(input) {
   const system = [
     'You draft ONE product listing from a photo for a Trinidad & Tobago shop on Juvay.',
     'Return JSON only: { "name": string, "description": string, "tags": string[] }.',
-    'Name what you actually see. Do not invent a brand, shop, SKU, price, or stock count.',
-    'Description: what the photo shows. No price. No TT$. No qty. No SKU.',
+    'Name: 2-6 words for the object in the photo (color + item). No brand unless the letters are clearly readable on the item.',
+    'Description: 1-2 short sentences. Island merchant tone — plain, specific, what a shopkeeper would type. Only what is visible (material, color, condition, portion if food).',
+    'No hype. No brand stories. No invented shop names.',
+    'Do not invent a brand, shop, SKU, price, stock count, or model number.',
+    'No price. No TT$. No qty. No SKU.',
     'tags: 0-8 short factual words from the photo. No prices.',
     'NEVER include price, suggested_price, sku, qty, stock, products, or items.',
     'NEVER use Sample Product, Premium Quartz, Quartz Timepiece, or a luxury watch demo.',
@@ -137,7 +151,7 @@ async function callGrokVision(input) {
   const hint = [
     input.storeName ? `Store name (do not copy as the product name): ${input.storeName}` : '',
     input.templateId ? `Starter: ${input.templateId}` : '',
-    'Draft name, description, and tags from this photo only.',
+    'Name only what is in this photo. Keep the description short and specific.',
   ].filter(Boolean).join(' ');
 
   const res = await fetch(endpoint, {
@@ -177,7 +191,7 @@ async function buildOnboardVision(body) {
   if (checked.error) return { error: checked.error, status: checked.status || 400 };
   const input = checked.input;
   if (!grokConfigured()) {
-    return honestNoWrite(NO_KEY_WARNING);
+    return honestNoWrite(NO_KEY_WARNING, { locked: true });
   }
   try {
     const raw = await callGrokVision(input);
@@ -185,18 +199,16 @@ async function buildOnboardVision(body) {
     if (!draft.name) {
       return honestNoWrite(FAIL_WARNING);
     }
-    return { agentWrote: true, draft };
+    return { agentWrote: true, locked: false, draft };
   } catch (err) {
-    return {
-      ...honestNoWrite(FAIL_WARNING),
-      detail: err.message,
-    };
+    return failFromError(err);
   }
 }
 
 module.exports = {
   NO_KEY_WARNING,
   FAIL_WARNING,
+  CREDITS_WARNING,
   grokConfigured,
   emptyDraft,
   normalizeImage,

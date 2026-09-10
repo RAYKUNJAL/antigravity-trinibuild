@@ -330,6 +330,7 @@ app.post('/api/onboard/vision', optionalAuth, (req, res, next) => {
     if (result.error) return res.status(result.status || 400).json({ error: result.error });
     res.json({
       agentWrote: result.agentWrote === true,
+      locked: result.locked === true,
       warning: result.warning || undefined,
       draft: result.draft,
     });

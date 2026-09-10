@@ -119,4 +119,18 @@ assert.strictEqual(showAboutSection(food({ about: 'We bake.', showAbout: false }
 assert.strictEqual(showContactSection(food({ hours: 'Wed–Sat' })), true);
 assert.strictEqual(showContactSection(food({ hours: 'Wed–Sat', showContact: false })), false);
 
+const layoutChips = realTrustChips(food({
+  mode: 'illustrative',
+  trustChips: ['Menu', 'Cash / COD', 'Pickup hours'],
+}));
+assert.ok(layoutChips.includes('Menu'));
+assert.ok(layoutChips.includes('Cash / COD'));
+assert.ok(!layoutChips.join(' ').toLowerCase().includes('paypal'));
+assert.ok(!layoutChips.join(' ').toLowerCase().includes('wipay'));
+
+assert.strictEqual(shouldRenderBlock('lookbook', food({ templateId: 'beauty', items: [{ id: '1', name: 'Kit' }] })), true);
+assert.strictEqual(shouldRenderBlock('featured', food({ templateId: 'electronics', items: [{ id: '1', name: 'Phone' }] })), false);
+assert.strictEqual(shouldRenderBlock('grid', food({ templateId: 'electronics', items: [{ id: '1', name: 'Phone' }] })), true);
+assert.strictEqual(shouldRenderBlock('featured', food({ templateId: 'auto', items: [{ id: '1', name: 'Pad' }] })), false);
+
 console.log('storefrontHonesty.test.js ok');

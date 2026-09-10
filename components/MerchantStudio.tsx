@@ -67,6 +67,7 @@ export const MerchantStudio: React.FC<{
   itemImage: string;
   itemVariant: string;
   itemDescription: string;
+  itemTags?: string[];
   storeNameForVision?: string;
   templateId?: string;
   onColors: (colors: MerchantColors) => void;
@@ -81,7 +82,7 @@ export const MerchantStudio: React.FC<{
 }> = ({
   storeName, island, about, colors, fontPair, logo, announcement,
   showAbout, showContact, seoTitle, seoDescription, instagram, facebook, tiktok,
-  itemName, itemPrice, itemQty, itemSku, itemImage, itemVariant, itemDescription,
+  itemName, itemPrice, itemQty, itemSku, itemImage, itemVariant, itemDescription, itemTags,
   storeNameForVision, templateId,
   onColors, onFontPair, onLogo, onAnnouncement, onShowAbout, onShowContact, onSeo, onSocial, onItem,
 }) => {
@@ -91,6 +92,21 @@ export const MerchantStudio: React.FC<{
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      <MerchantItemFields
+        heading="First item — take a picture"
+        name={itemName}
+        price={itemPrice}
+        qty={itemQty}
+        sku={itemSku}
+        variant={itemVariant}
+        description={itemDescription}
+        image={itemImage}
+        tags={itemTags}
+        storeName={storeNameForVision || storeName}
+        templateId={templateId}
+        onChange={onItem}
+      />
+
       <section style={{ display: 'grid', gap: 8 }}>
         <div style={{ fontSize: 13, fontWeight: 600 }}>Accent (CTA)</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -200,20 +216,6 @@ export const MerchantStudio: React.FC<{
           <input type="checkbox" checked={showContact} onChange={(e) => onShowContact(e.target.checked)} /> Contact / Hours (hidden if empty)
         </label>
       </section>
-
-      <MerchantItemFields
-        heading="Add first item"
-        name={itemName}
-        price={itemPrice}
-        qty={itemQty}
-        sku={itemSku}
-        variant={itemVariant}
-        description={itemDescription}
-        image={itemImage}
-        storeName={storeNameForVision || storeName}
-        templateId={templateId}
-        onChange={onItem}
-      />
 
       <section style={{ display: 'grid', gap: 8 }}>
         <div style={{ fontSize: 13, fontWeight: 600 }}>SEO</div>

@@ -13,6 +13,8 @@ import { normalizeWhatsappE164, type StorefrontModel } from '../services/storefr
 import { defaultSeo, type FontPair, type MerchantColors } from '../services/merchantTheme';
 import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
 import { MerchantStudio } from '../components/MerchantStudio';
+import { MerchantItemFields, type ItemPatch } from '../components/MerchantItemFields';
+import { StarterThumb, StarterCardMeta } from '../components/StarterPreview';
 import { SafeBoundary } from '../components/SafeBoundary';
 
 type Step = 1 | 2 | 3 | 4;
@@ -69,6 +71,7 @@ interface BuilderState {
   itemImage: string;
   itemVariant: string;
   itemDescription: string;
+  itemTags: string[];
 }
 
 const emptyState = (): BuilderState => ({
@@ -113,6 +116,7 @@ const emptyState = (): BuilderState => ({
   itemImage: '',
   itemVariant: '',
   itemDescription: '',
+  itemTags: [],
 });
 
 async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
@@ -299,6 +303,19 @@ const StoreBuilderV3: React.FC = () => {
       mode: 'merchant_preview',
     };
   }, [state, wamConfigured]);
+
+  const applyItemPatch = (patch: ItemPatch) => {
+    const next: Partial<BuilderState> = {};
+    if (patch.name != null) next.itemName = patch.name;
+    if (patch.price != null) next.itemPrice = patch.price;
+    if (patch.qty != null) next.itemQty = patch.qty;
+    if (patch.sku != null) next.itemSku = patch.sku;
+    if (patch.image != null) next.itemImage = patch.image;
+    if (patch.variant != null) next.itemVariant = patch.variant;
+    if (patch.description != null) next.itemDescription = patch.description;
+    if (patch.tags != null) next.itemTags = patch.tags;
+    update(next, { history: !!(patch.image || patch.name || patch.description) });
+  };
 
   const applyDraft = (draft: DraftCopy, warning?: string) => {
     const seo = defaultSeo(state.storeName, state.island, draft.about || '');
@@ -551,8 +568,8 @@ const StoreBuilderV3: React.FC = () => {
         <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 400, margin: '0 0 8px' }}>
           Pick a starter
         </h2>
-        <p style={{ color: '#6b6256', maxWidth: '40ch', margin: '0 auto' }}>
-          Eight starters. Same chrome. Grok can recommend one — still one of these eight.
+        <p style={{ color: '#6b6256', maxWidth: '42ch', margin: '0 auto' }}>
+          Eight starters. Same island chrome. Each vertical is its own shop type — menu, rack, book a time, tiles, shades, furniture, gadgets, parts.
         </p>
       </div>
       <div className="juvay-pick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
@@ -578,25 +595,33 @@ const StoreBuilderV3: React.FC = () => {
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
               </div>
-              <div style={{ height: 140, overflow: 'hidden', position: 'relative', background: s.palette.heroBg }}>
-                <img src={s.heroImage} alt="" width={640} height={360} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                {s.heroLayout === 'split' ? (
-                  <div style={{ position: 'absolute', left: 10, top: 12, color: s.palette.heroText, fontFamily: s.palette.headingFont, fontSize: 16, maxWidth: '46%' }}>
-                    {s.heroHeadline}
-                  </div>
-                ) : (
-                  <div style={{ position: 'absolute', left: 12, bottom: 12, color: s.palette.heroText, fontFamily: s.palette.headingFont, fontSize: 18 }}>
-                    {s.name}
-                  </div>
-                )}
-              </div>
+              <StarterThumb id={id} height={168} />
               <div style={{ padding: '12px 12px 14px' }}>
-                <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 16 }}>{s.name}</div>
-                <p style={{ margin: '4px 0 0', color: '#6b6256', fontSize: 13 }}>{s.useWhen}</p>
+                <StarterCardMeta id={id} />
               </div>
             </button>
           );
         })}
+      </div>
+      <div style={{ border: '1px solid #141414', padding: 20, background: '#fff' }}>
+        <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 22, marginBottom: 6 }}>List from a photo</div>
+        <p style={{ margin: '0 0 16px', color: '#6b6256', fontSize: 14, maxWidth: '52ch' }}>
+          Same camera as the landing page. Photo in, name and description out. You type the TT$ price. Apply updates the listing you see — it does not silently overwrite what you typed.
+        </p>
+        <MerchantItemFields
+          presentation="create-store"
+          name={state.itemName}
+          price={state.itemPrice}
+          qty={state.itemQty}
+          sku={state.itemSku}
+          variant={state.itemVariant}
+          description={state.itemDescription}
+          image={state.itemImage}
+          tags={state.itemTags}
+          storeName={state.storeName}
+          templateId={state.templateId || undefined}
+          onChange={applyItemPatch}
+        />
       </div>
       <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 18, display: 'grid', gap: 10 }}>
         <label style={{ fontSize: 14 }}>Or describe the shop and let Grok pick one of the eight</label>
@@ -746,6 +771,7 @@ const StoreBuilderV3: React.FC = () => {
             itemImage={state.itemImage}
             itemVariant={state.itemVariant}
             itemDescription={state.itemDescription}
+            itemTags={state.itemTags}
             storeNameForVision={state.storeName}
             templateId={state.templateId || undefined}
             onColors={(colors) => update({ colors })}
@@ -756,15 +782,7 @@ const StoreBuilderV3: React.FC = () => {
             onShowContact={(showContact) => update({ showContact })}
             onSeo={(seoTitle, seoDescription) => update({ seoTitle, seoDescription }, { history: false })}
             onSocial={(key, value) => update({ [key]: value } as Partial<BuilderState>, { history: false })}
-            onItem={(patch) => update({
-              itemName: patch.name ?? state.itemName,
-              itemPrice: patch.price ?? state.itemPrice,
-              itemQty: patch.qty ?? state.itemQty,
-              itemSku: patch.sku ?? state.itemSku,
-              itemImage: patch.image ?? state.itemImage,
-              itemVariant: patch.variant ?? state.itemVariant,
-              itemDescription: patch.description ?? state.itemDescription,
-            }, { history: !!(patch.image || patch.name || patch.description) })}
+            onItem={applyItemPatch}
           />
           <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>Click the headline or about on the preview to edit. Tap the hero to upload a photo. Colors update the live preview — they do not regenerate the site. Gallery cards stay on starter defaults.</p>
           <div style={{ borderTop: '1px solid #e6dfd4', paddingTop: 12, display: 'grid', gap: 8 }}>
@@ -882,7 +900,7 @@ const StoreBuilderV3: React.FC = () => {
   return (
     <SafeBoundary name="StoreBuilder">
       <div style={{ minHeight: '100vh', background: ISLAND.sand, color: '#1a1a1a', fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" />
+        <link rel="stylesheet" href={STORE_STARTERS.food.palette.fontHref} />
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 16px 64px' }}>
           <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6b6256' }}>
             <span>Create store</span>

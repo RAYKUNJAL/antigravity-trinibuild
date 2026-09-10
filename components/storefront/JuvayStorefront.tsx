@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ISLAND, STORE_STARTERS, type StarterId } from '../../services/storeStarters';
+import { ISLAND, STORE_STARTERS, type StarterId, type StoreStarter } from '../../services/storeStarters';
 import { applyMerchantTheme, socialHref } from '../../services/merchantTheme';
 import {
   announcementLine,
@@ -136,6 +136,292 @@ const HeroPhoto: React.FC<{
   </div>
 );
 
+function heroKicker(model: StorefrontModel, starter: StoreStarter): string {
+  return [model.area, model.island, model.specialty].filter(Boolean).join(' · ') || starter.kicker;
+}
+
+const HeroCopy: React.FC<{
+  model: StorefrontModel;
+  starter: StoreStarter;
+  p: StoreStarter['palette'];
+  editor?: StorefrontEditor;
+  headlineStyle: React.CSSProperties;
+  subStyle?: React.CSSProperties;
+  showKicker?: boolean;
+  kickerStyle?: React.CSSProperties;
+}> = ({ model, starter, p, editor, headlineStyle, subStyle, showKicker = true, kickerStyle }) => (
+  <>
+    {showKicker ? (
+      <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7, ...kickerStyle }}>
+        {heroKicker(model, starter)}
+      </p>
+    ) : null}
+    <EditableText
+      as="h1"
+      field="headline"
+      editor={editor}
+      value={model.hero?.headline || starter.heroHeadline}
+      style={{ fontFamily: p.headingFont, lineHeight: 0.95, margin: '0 0 16px', fontWeight: 600, ...headlineStyle }}
+    />
+    {(model.hero?.sub || editor) ? (
+      <EditableText
+        field="sub"
+        editor={editor}
+        value={model.hero?.sub || ''}
+        style={{ margin: '0 0 22px', fontSize: 15, maxWidth: '40ch', lineHeight: 1.55, opacity: 0.85, ...subStyle }}
+      />
+    ) : null}
+  </>
+);
+
+const HeroBlock: React.FC<{
+  model: StorefrontModel;
+  starter: StoreStarter;
+  p: StoreStarter['palette'];
+  heroSrc: string;
+  editor?: StorefrontEditor;
+  cta: string;
+  ctaStyle: React.CSSProperties;
+  showCta: boolean;
+  closedNote: string;
+  wa: string;
+  featured: StorefrontItem[];
+  scrollToCatalog: () => void;
+}> = ({ model, starter, p, heroSrc, editor, cta, ctaStyle, showCta, closedNote, wa, featured, scrollToCatalog }) => {
+  const action = showCta ? (
+    <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button>
+  ) : (
+    <div style={{ fontWeight: 600 }}>{closedNote}</div>
+  );
+  const foodHours = model.templateId === 'food' && model.hours ? (
+    wa ? (
+      <a href={waHref(wa, `Reserve at ${model.storeName}. Hours: ${model.hours}`)} style={{ marginTop: 14, color: p.heroText, fontSize: 13 }}>
+        Reserve
+      </a>
+    ) : (
+      <div style={{ marginTop: 14, fontSize: 13, opacity: 0.8 }}>Hours: {model.hours}</div>
+    )
+  ) : null;
+  const photo = <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority />;
+  const photoFill = <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />;
+
+  if (starter.heroLayout === 'split' || starter.heroLayout === 'split_reverse' || starter.heroLayout === 'desk') {
+    const copy = (
+      <div style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
+        <HeroCopy model={model} starter={starter} p={p} editor={editor} headlineStyle={{ fontSize: 'clamp(36px, 6vw, 68px)' }} />
+        {action}
+        {starter.heroLayout === 'desk' ? (
+          <div style={{ marginTop: 18, maxWidth: 320, minHeight: 44, border: `1px solid ${p.heroText}`, opacity: 0.55, display: 'flex', alignItems: 'center', padding: '0 12px', fontSize: 13 }}>
+            Search parts. Fit is a merchant note.
+          </div>
+        ) : null}
+        {foodHours}
+      </div>
+    );
+    const reverse = starter.heroLayout === 'split_reverse';
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '70vh' }} className="juvay-hero-split">
+        {reverse ? photo : copy}
+        {reverse ? copy : photo}
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'bleed') {
+    return (
+      <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
+        {photoFill}
+        <div style={{ position: 'absolute', left: '6vw', bottom: '12vh', maxWidth: 420, zIndex: 2, pointerEvents: editor ? 'auto' : undefined }}>
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', fontWeight: 500 }}
+          />
+          {action}
+        </div>
+        {featured[0] && featured[0].price != null ? (
+          <div style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
+            <div style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 14 }}>{featured[0].name}</div>
+            <div style={{ color: ISLAND.pepper, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'stack') {
+    return (
+      <div style={{ background: p.surface, color: p.text }}>
+        <div style={{ position: 'relative', minHeight: '46vh', background: p.field }}>
+          {photoFill}
+        </div>
+        <div style={{ padding: '36px 6vw 40px', maxWidth: 720 }}>
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(36px, 6vw, 60px)', color: p.text }}
+            kickerStyle={{ color: p.muted, opacity: 1 }}
+            subStyle={{ color: p.muted, opacity: 1 }}
+          />
+          {action}
+        </div>
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'rail') {
+    return (
+      <div style={{ position: 'relative', minHeight: '52vh', background: p.field, color: p.heroText }}>
+        {photoFill}
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(10,15,20,0.84)', padding: '28px 6vw', zIndex: 2 }}>
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 500 }}
+            subStyle={{ marginBottom: 16 }}
+          />
+          {action}
+        </div>
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'card') {
+    return (
+      <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.text }}>
+        {photoFill}
+        <div
+          style={{
+            position: 'absolute',
+            right: '6vw',
+            top: '14vh',
+            width: 'min(420px, 42vw)',
+            background: 'rgba(255,248,240,0.96)',
+            padding: '32px 28px',
+            zIndex: 2,
+            pointerEvents: editor ? 'auto' : undefined,
+          }}
+          className="juvay-hero-card"
+        >
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(32px, 4vw, 48px)', color: p.text }}
+            kickerStyle={{ color: p.muted, opacity: 1 }}
+            subStyle={{ color: p.muted, opacity: 1 }}
+          />
+          {action}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
+      {photoFill}
+      <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32, zIndex: 2 }}>
+        <div>
+          <div style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, marginBottom: 10 }}>
+            {model.storeName || starter.name}
+          </div>
+          <EditableText
+            field="headline"
+            editor={editor}
+            value={model.hero?.headline || starter.heroHeadline}
+            style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}
+          />
+          {action}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function EmptyCatalogFrame({ model, p }: { model: StorefrontModel; p: StoreStarter['palette'] }) {
+  const starter = STORE_STARTERS[model.templateId];
+  const ghost = { background: p.field, border: `1px dashed ${p.border}` };
+  const label = (
+    <div style={{ textAlign: 'center', color: p.muted, padding: '8px 12px 0', fontSize: 14 }}>{emptyCatalogCopy(model)}</div>
+  );
+  switch (starter.catalogKind) {
+    case 'menu':
+      return (
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: `1px dashed ${p.border}` }}>
+              <div style={{ width: '40%', height: 14, ...ghost }} />
+              <div style={{ width: 48, height: 14, ...ghost }} />
+            </div>
+          ))}
+          {label}
+        </div>
+      );
+    case 'services':
+      return (
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {[0, 1].map((i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: `1px dashed ${p.border}` }}>
+              <div style={{ width: '36%', height: 16, ...ghost }} />
+              <div style={{ width: 88, height: 32, borderRadius: 999, ...ghost }} />
+            </div>
+          ))}
+          {label}
+        </div>
+      );
+    case 'lookbook':
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }} className="juvay-grid">
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ height: 220, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+    case 'shades':
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }} className="juvay-grid">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ height: 88, borderRadius: 999, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+    case 'furniture':
+      return (
+        <div>
+          <div style={{ height: 260, maxWidth: 560, margin: '0 auto', ...ghost }} />
+          {label}
+        </div>
+      );
+    case 'gadgets':
+    case 'parts':
+    case 'tiles':
+    default:
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }} className="juvay-grid">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ height: starter.catalogKind === 'tiles' ? 140 : 120, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+  }
+}
+
 const EditableText: React.FC<{
   value: string;
   field: StorefrontEditField;
@@ -270,7 +556,7 @@ export const JuvayStorefront: React.FC<{
 
       {isIllustrative && (
         <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, padding: '6px 12px' }}>
-          ILLUSTRATIVE LAYOUT — not a live shop. No sample products.
+          ILLUSTRATIVE — layout only, until you upload a photo. No sample products.
         </div>
       )}
 
@@ -332,92 +618,21 @@ export const JuvayStorefront: React.FC<{
       </header>
 
       {shouldRenderBlock('hero', model) && (
-        <section ref={heroRef as any} style={{ minHeight: '70vh', background: p.heroBg }}>
-          {starter.heroLayout === 'split' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '70vh' }} className="juvay-hero-split">
-              <div style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
-                <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7 }}>
-                  {[model.area, model.island, model.specialty].filter(Boolean).join(' · ') || starter.name}
-                </p>
-                <EditableText
-                  as="h1"
-                  field="headline"
-                  editor={editor}
-                  value={model.hero?.headline || starter.heroHeadline}
-                  style={{ fontFamily: p.headingFont, fontSize: 'clamp(40px, 7vw, 72px)', lineHeight: 0.95, margin: '0 0 16px', fontWeight: 600 }}
-                />
-                {(model.hero?.sub || editor) ? (
-                  <EditableText
-                    field="sub"
-                    editor={editor}
-                    value={model.hero?.sub || ''}
-                    style={{ margin: '0 0 22px', fontSize: 15, maxWidth: '40ch', lineHeight: 1.55, opacity: 0.85 }}
-                  />
-                ) : null}
-                {showCta ? (
-                  <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button>
-                ) : (
-                  <div style={{ fontWeight: 600 }}>{closedNote}</div>
-                )}
-                {model.templateId === 'food' && model.hours ? (
-                  wa ? (
-                    <a href={waHref(wa, `Reserve at ${model.storeName}. Hours: ${model.hours}`)} style={{ marginTop: 14, color: p.heroText, fontSize: 13 }}>
-                      Reserve
-                    </a>
-                  ) : (
-                    <div style={{ marginTop: 14, fontSize: 13, opacity: 0.8 }}>Hours: {model.hours}</div>
-                  )
-                ) : null}
-              </div>
-              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority />
-            </div>
-          ) : starter.heroLayout === 'bleed' ? (
-            <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
-              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />
-              <div style={{ position: 'absolute', left: '6vw', bottom: '12vh', maxWidth: 420, zIndex: 2, pointerEvents: editor ? 'auto' : undefined }}>
-                <EditableText
-                  as="h1"
-                  field="headline"
-                  editor={editor}
-                  value={model.hero?.headline || starter.heroHeadline}
-                  style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', lineHeight: 0.95, margin: '0 0 12px', fontWeight: 500 }}
-                />
-                {(model.hero?.sub || editor) ? (
-                  <EditableText
-                    field="sub"
-                    editor={editor}
-                    value={model.hero?.sub || ''}
-                    style={{ margin: '0 0 18px', fontSize: 14, maxWidth: '40ch', lineHeight: 1.5, opacity: 0.88 }}
-                  />
-                ) : null}
-                {showCta ? <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button> : <div>{closedNote}</div>}
-              </div>
-              {featured[0] && featured[0].price != null ? (
-                <div style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
-                  <div style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 14 }}>{featured[0].name}</div>
-                  <div style={{ color: ISLAND.pepper, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
-              <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />
-              <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32, zIndex: 2 }}>
-                <div>
-                  <div style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, marginBottom: 10 }}>
-                    {model.storeName || starter.name}
-                  </div>
-                  <EditableText
-                    field="headline"
-                    editor={editor}
-                    value={model.hero?.headline || starter.heroHeadline}
-                    style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}
-                  />
-                  {showCta ? <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button> : <div>{closedNote}</div>}
-                </div>
-              </div>
-            </div>
-          )}
+        <section ref={heroRef as any} style={{ minHeight: starter.heroLayout === 'rail' ? '52vh' : starter.heroLayout === 'stack' ? undefined : '70vh', background: p.heroBg }}>
+          <HeroBlock
+            model={model}
+            starter={starter}
+            p={p}
+            heroSrc={heroSrc}
+            editor={editor}
+            cta={cta}
+            ctaStyle={ctaStyle}
+            showCta={showCta}
+            closedNote={closedNote}
+            wa={wa}
+            featured={featured}
+            scrollToCatalog={scrollToCatalog}
+          />
         </section>
       )}
 
@@ -453,7 +668,7 @@ export const JuvayStorefront: React.FC<{
         </section>
       ) : null}
 
-      {(model.templateId === 'auto' || model.templateId === 'electronics') && !empty ? (
+      {(model.templateId === 'auto' || model.templateId === 'electronics') ? (
         <div style={{ padding: '0 6vw 8px' }}>
           <input
             value={query}
@@ -471,7 +686,7 @@ export const JuvayStorefront: React.FC<{
       {(shouldRenderBlock('featured', model) || shouldRenderBlock('featured_combo', model) || shouldRenderBlock('lookbook', model)) && featured.length > 0 ? (
         <section style={{ padding: '8px 6vw 36px' }}>
           <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
-            {model.templateId === 'food' ? 'Today' : model.templateId === 'fashion' ? 'Lookbook' : 'Featured'}
+            {starter.featuredTitle}
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: featured.length === 1 ? '1fr' : 'repeat(4, 1fr)', gap: 28 }} className="juvay-grid">
             {featured.map((item) => (
@@ -483,12 +698,10 @@ export const JuvayStorefront: React.FC<{
 
       <section id="juvay-catalog" style={{ padding: `12px 6vw ${heroGone ? 88 : 48}px` }}>
         <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
-          {model.templateId === 'food' ? 'Menu' : model.templateId === 'services' ? 'Services' : model.templateId === 'fashion' ? 'The rack' : model.templateId === 'auto' ? 'Parts' : model.templateId === 'electronics' ? 'Gadgets' : 'Shop'}
+          {starter.catalogTitle}
         </h2>
         {empty ? (
-          <div style={{ border: `1px dashed ${p.border}`, padding: '48px 20px', textAlign: 'center', color: p.muted, maxWidth: 560, margin: '0 auto' }}>
-            {emptyCatalogCopy(model)}
-          </div>
+          <EmptyCatalogFrame model={model} p={p} />
         ) : shouldRenderBlock('menu', model) || shouldRenderBlock('service_list', model) ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720, margin: '0 auto' }}>
             {visibleItems.map((item) => {
@@ -707,6 +920,7 @@ export const JuvayStorefront: React.FC<{
       <style>{`
         @media (max-width: 800px) {
           .juvay-hero-split { grid-template-columns: 1fr !important; }
+          .juvay-hero-card { position: relative !important; right: auto !important; top: auto !important; width: auto !important; margin: 24px 6vw 32px; }
           .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 20px !important; }
           .juvay-cart { top: auto !important; height: 70vh; border-radius: 16px 16px 0 0; }
         }
@@ -763,7 +977,8 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
     mode: 'illustrative',
     items: [],
     reviewCount: 0,
-    hero: { headline: starter.heroHeadline, sub: starter.useWhen },
+    hero: { headline: starter.heroHeadline, sub: starter.useWhen, image: starter.heroImage },
+    trustChips: starter.chips,
     how: [
       { title: '1. This is a layout', body: 'Blocks skip when they have no real data.' },
       { title: '2. No sample products', body: 'A published shop never fills empty shelves with dummy SKUs.' },
@@ -772,7 +987,7 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
     faq: [
       { q: 'Is this a real shop?', a: 'No. This preview is labeled ILLUSTRATIVE. It is a layout, not a merchant.' },
       { q: 'How do I pay?', a: 'Cash when you collect, or cash on delivery if that option is on. We do not ask for PayPal.' },
-      { q: 'Where are the products?', a: 'There are none. Empty catalog stays empty until you add a real item.' },
+      { q: 'Where are the products?', a: starter.emptyCatalog + ' Empty catalog stays empty until you add a real item.' },
     ],
   };
 }

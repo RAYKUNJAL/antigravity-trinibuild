@@ -99,8 +99,13 @@ export interface CommercialTemplate {
 }
 const HERO_STYLE_FROM_LAYOUT: Record<string, 'gradient' | 'split' | 'minimal'> = {
     split: 'split',
+    split_reverse: 'split',
     bleed: 'minimal',
     overlay: 'gradient',
+    stack: 'minimal',
+    rail: 'minimal',
+    desk: 'split',
+    card: 'minimal',
 };
 export const COMMERCIAL_TEMPLATES: CommercialTemplate[] = STARTER_IDS.map((id) => {
     const s = STORE_STARTERS[id];

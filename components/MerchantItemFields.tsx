@@ -55,6 +55,7 @@ async function requestVision(payload: { image: string; templateId?: string; stor
   if (!res.ok) throw new Error(data.error || `Vision failed (${res.status})`);
   return data as {
     agentWrote: boolean;
+    locked?: boolean;
     warning?: string;
     draft: { name: string; description: string; tags: string[] };
   };
@@ -62,7 +63,7 @@ async function requestVision(payload: { image: string; templateId?: string; stor
 
 export const MerchantItemFields: React.FC<{
   heading?: string;
-  presentation?: 'default' | 'landing';
+  presentation?: 'default' | 'landing' | 'create-store';
   name: string;
   price: string;
   qty: string;
@@ -70,20 +71,24 @@ export const MerchantItemFields: React.FC<{
   variant: string;
   description: string;
   image: string;
+  tags?: string[];
   storeName?: string;
   templateId?: string;
   onChange: (patch: ItemPatch) => void;
 }> = ({
   heading = 'Add item',
   presentation = 'default',
-  name, price, qty, sku, variant, description, image,
+  name, price, qty, sku, variant, description, image, tags = [],
   storeName, templateId, onChange,
 }) => {
   const [busy, setBusy] = useState(false);
   const [warning, setWarning] = useState('');
   const [error, setError] = useState('');
+  const [locked, setLocked] = useState(false);
+  const [applied, setApplied] = useState(false);
   const [proposed, setProposed] = useState<{ name: string; description: string; tags: string[]; conflict: boolean } | null>(null);
   const landing = presentation === 'landing';
+  const createStore = presentation === 'create-store';
 
   const takeFile = (file: File | undefined) => {
     if (!file) return;
@@ -92,6 +97,8 @@ export const MerchantItemFields: React.FC<{
       setProposed(null);
       setWarning('');
       setError('');
+      setLocked(false);
+      setApplied(false);
     });
   };
 
@@ -103,22 +110,29 @@ export const MerchantItemFields: React.FC<{
     setBusy(true);
     setError('');
     setWarning('');
+    setLocked(false);
+    setApplied(false);
     try {
       const result = await requestVision({ image, templateId, storeName });
       if (!result.agentWrote) {
         setProposed(null);
-        setWarning(result.warning || 'Vision is not writing this listing. Type the name and price yourself.');
+        setLocked(result.locked === true || /locked|not writing|did not write|credits/i.test(result.warning || ''));
+        setWarning(result.warning || 'Vision is not writing this listing. Type the name and TT$ price yourself.');
         return;
       }
       const draft = result.draft || { name: '', description: '', tags: [] };
+      const conflict = !!(name.trim() || description.trim());
       setProposed({
         name: draft.name || '',
         description: draft.description || '',
         tags: Array.isArray(draft.tags) ? draft.tags : [],
-        conflict: !!name.trim(),
+        conflict,
       });
     } catch (err: any) {
+      setProposed(null);
+      setLocked(true);
       setError(err.message || 'Could not draft from photo.');
+      setWarning('Vision did not write this listing. Type the name and TT$ price yourself.');
     } finally {
       setBusy(false);
     }
@@ -132,6 +146,7 @@ export const MerchantItemFields: React.FC<{
       tags: proposed.tags,
     });
     setProposed(null);
+    setApplied(true);
   };
 
   const applyBtn = (
@@ -150,7 +165,7 @@ export const MerchantItemFields: React.FC<{
         fontWeight: 700,
       }}
     >
-      Apply draft
+      Apply to this listing
     </button>
   );
 
@@ -221,140 +236,161 @@ export const MerchantItemFields: React.FC<{
         opacity: image ? 1 : 0.45,
       }}
     >
-      {busy ? 'Reading photo…' : landing ? 'Use photo to draft details' : 'Draft from photo'}
+      {busy ? 'Reading photo…' : 'Draft name from photo'}
     </button>
   );
 
-  if (landing) {
+  const lockedPanel = (locked || warning) && !proposed ? (
+    <div style={{ fontSize: 13, color: '#3d3429', border: '1px solid #cfc8bc', background: '#fff', padding: 12 }}>
+      <strong>{locked ? 'Vision locked' : 'Vision did not write'}</strong>
+      <div style={{ marginTop: 6 }}>{warning || 'Type the name and TT$ price yourself. Nothing was invented.'}</div>
+    </div>
+  ) : null;
+
+  const appliedPanel = applied && !proposed ? (
+    <div style={{ fontSize: 13, color: '#14532d', border: '1px solid #84cc16', background: '#f7fee7', padding: 12 }}>
+      Listing draft updated. Name and description below are what you confirmed. Type the TT$ price — it stays empty until you type it.
+    </div>
+  ) : null;
+
+  const proposedPanel = proposed ? (
+    <div style={{ border: '1px solid #cfc8bc', padding: 12, display: 'grid', gap: 8, background: '#fff' }}>
+      <div style={{ fontSize: 13, color: '#6b6256' }}>
+        {proposed.conflict
+          ? 'You already typed a name or description. Apply replaces that text. Keep mine leaves yours.'
+          : 'Confirm this draft to fill name and description. Price and qty stay empty until you type them.'}
+      </div>
+      <div><strong>Name</strong> {proposed.name || '(empty)'}</div>
+      {proposed.description ? <div><strong>Description</strong> {proposed.description}</div> : null}
+      {proposed.tags.length ? <div style={{ fontSize: 12, color: '#6b6256' }}>{proposed.tags.join(' · ')}</div> : null}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {applyBtn}
+        <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>
+          Keep mine
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const listingFields = (
+    <>
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Name</span>
+        <input value={name} onChange={(e) => onChange({ name: e.target.value })} placeholder="What is in the photo" style={fieldStyle} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Description</span>
+        <textarea
+          value={description}
+          onChange={(e) => onChange({ description: e.target.value })}
+          placeholder="What the photo shows (optional)"
+          rows={3}
+          style={{ ...fieldStyle, minHeight: 66, padding: 12 }}
+        />
+      </label>
+      {tags.length ? <div style={{ fontSize: 12, color: '#6b6256' }}>Tags {tags.join(' · ')}</div> : null}
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Price (TT$) — you type this</span>
+        <input value={price} onChange={(e) => onChange({ price: e.target.value })} placeholder="Empty until you type it" inputMode="decimal" style={fieldStyle} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Quantity on hand</span>
+        <input value={qty} onChange={(e) => onChange({ qty: e.target.value })} placeholder="Empty = do not claim stock" inputMode="numeric" style={fieldStyle} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>SKU / code (optional)</span>
+        <input value={sku} onChange={(e) => onChange({ sku: e.target.value })} style={fieldStyle} />
+      </label>
+      <label style={{ display: 'grid', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Variant (size / color, optional)</span>
+        <input value={variant} onChange={(e) => onChange({ variant: e.target.value })} style={fieldStyle} />
+      </label>
+    </>
+  );
+
+  if (landing || createStore) {
     return (
-      <div className="grid md:grid-cols-2 gap-6 text-left">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Step 1 — Add a photo</p>
-          <h3 className="text-xl font-black text-gray-900 mb-2">Use your camera or upload an image</h3>
-          <p className="text-sm text-gray-600 mb-4">Start with a real product photo to draft the basics faster.</p>
+      <div
+        className={landing ? 'grid md:grid-cols-2 gap-6 text-left' : undefined}
+        style={createStore ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 } : undefined}
+        data-juvay-vision={createStore ? 'create-store' : 'landing'}
+      >
+        <div
+          className={landing ? 'rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm' : undefined}
+          style={createStore ? { border: '1px solid #141414', background: '#fff', padding: 20 } : undefined}
+        >
+          <p className={landing ? 'text-xs font-bold uppercase tracking-wider text-gray-500 mb-2' : undefined} style={createStore ? { fontSize: 11, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', margin: '0 0 8px' } : undefined}>
+            Step 1 — Photo
+          </p>
+          <h3 className={landing ? 'text-xl font-black text-gray-900 mb-2' : undefined} style={createStore ? { fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 22, fontWeight: 400, margin: '0 0 8px' } : undefined}>
+            Take a picture of what you sell
+          </h3>
+          <p className={landing ? 'text-sm text-gray-600 mb-4' : undefined} style={createStore ? { margin: '0 0 14px', fontSize: 14, color: '#6b6256' } : undefined}>
+            Vision can draft a name and description from the photo. You type the TT$ price. It never invents a product or a price.
+          </p>
           <div
-            className="mb-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 overflow-hidden flex items-center justify-center"
-            style={{ minHeight: 180 }}
+            className={landing ? 'mb-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 overflow-hidden flex items-center justify-center' : undefined}
+            style={{ minHeight: 180, ...(createStore ? { marginBottom: 14, border: '1px dashed #cfc8bc', background: ISLAND.sand, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}) }}
           >
             {image ? (
-              <img src={image} alt="" className="w-full h-full object-cover" style={{ minHeight: 180, maxHeight: 220 }} />
+              <img src={image} alt="" className={landing ? 'w-full h-full object-cover' : undefined} style={{ width: '100%', minHeight: 180, maxHeight: 220, objectFit: 'cover' }} />
             ) : (
-              <span className="text-sm text-gray-400">Photo preview</span>
+              <span className={landing ? 'text-sm text-gray-400' : undefined} style={createStore ? { fontSize: 13, color: '#6b6256' } : undefined}>No photo yet</span>
             )}
           </div>
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className={landing ? 'flex flex-wrap gap-2 mb-3' : undefined} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
             {takePhoto}
             {uploadPhoto}
           </div>
-          {image ? <div className="mb-3">{draftBtn}</div> : null}
-          {warning ? <div className="text-sm text-gray-600 border border-gray-200 p-3 mb-2">{warning}</div> : null}
-          {error ? <div className="text-sm text-red-600">{error}</div> : null}
+          {image ? <div style={{ marginBottom: 12 }}>{draftBtn}</div> : null}
+          {lockedPanel}
+          {error && !warning ? <div className={landing ? 'text-sm text-red-600' : undefined} style={{ fontSize: 13, color: '#E31C23' }}>{error}</div> : null}
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Step 2 — Review and finish the item</p>
-          <div className="mb-5">
-            <p className="text-sm font-bold text-gray-900 mb-3">Required</p>
-            <label className="block mb-3">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">Product name</span>
-              <input value={name} onChange={(e) => onChange({ name: e.target.value })} style={fieldStyle} />
-            </label>
-            <label className="block mb-3">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">Price (TT$)</span>
-              <input value={price} onChange={(e) => onChange({ price: e.target.value })} inputMode="decimal" style={fieldStyle} />
-            </label>
-            <label className="block">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">Quantity on hand</span>
-              <input value={qty} onChange={(e) => onChange({ qty: e.target.value })} inputMode="numeric" style={fieldStyle} />
-            </label>
+        <div
+          className={landing ? 'rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm' : undefined}
+          style={createStore ? { border: '1px solid #e6dfd4', background: ISLAND.sand, padding: 20, display: 'grid', gap: 10 } : undefined}
+        >
+          <p className={landing ? 'text-xs font-bold uppercase tracking-wider text-gray-500 mb-2' : undefined} style={createStore ? { fontSize: 11, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', margin: 0 } : undefined}>
+            Step 2 — Confirm the listing
+          </p>
+          <p className={landing ? 'text-sm text-gray-600 mb-4' : undefined} style={createStore ? { margin: '0 0 8px', fontSize: 14, color: '#6b6256' } : undefined}>
+            Apply the draft you see, or type over it. Price stays empty until you type TT$.
+          </p>
+          {appliedPanel}
+          {proposedPanel}
+          <div className={landing ? 'grid gap-3' : undefined} style={{ display: 'grid', gap: 10 }}>
+            {listingFields}
           </div>
-          <div className="mb-5">
-            <p className="text-sm font-bold text-gray-900 mb-3">Optional</p>
-            <label className="block mb-3">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">Product description (optional)</span>
-              <textarea
-                value={description}
-                onChange={(e) => onChange({ description: e.target.value })}
-                rows={3}
-                style={{ ...fieldStyle, minHeight: 66, padding: 12 }}
-              />
-            </label>
-            <label className="block mb-3">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">SKU or item code (optional)</span>
-              <input value={sku} onChange={(e) => onChange({ sku: e.target.value })} style={fieldStyle} />
-            </label>
-            <label className="block">
-              <span className="block text-sm font-semibold text-gray-800 mb-1">Variant, such as size or color (optional)</span>
-              <input value={variant} onChange={(e) => onChange({ variant: e.target.value })} style={fieldStyle} />
-            </label>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {applyBtn}
-            {proposed ? (
-              <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
-            ) : null}
-          </div>
-          {proposed ? (
-            <div className="border border-gray-200 p-3 text-sm grid gap-2 bg-gray-50">
-              <div className="text-gray-600">
-                {proposed.conflict ? 'You already typed a name. Apply to replace it, or keep yours.' : 'Vision draft — apply to use it. Price and qty stay empty.'}
-              </div>
-              <div><strong>Name</strong> {proposed.name || '(empty)'}</div>
-              {proposed.description ? <div><strong>Description</strong> {proposed.description}</div> : null}
-              {proposed.tags.length ? <div className="text-gray-500">{proposed.tags.join(' · ')}</div> : null}
-            </div>
-          ) : null}
         </div>
+        <style>{`
+          @media (max-width: 800px) {
+            [data-juvay-vision="create-store"] { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <section style={{ display: 'grid', gap: 8 }}>
+    <section style={{ display: 'grid', gap: 8 }} data-juvay-vision="studio">
       <div style={{ fontSize: 13, fontWeight: 600 }}>{heading}</div>
-      <div style={{ display: 'grid', gap: 8 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {takePhoto}
-          {uploadPhoto}
-        </div>
-        {image ? (
-          <img src={image} alt="" style={{ width: '100%', maxWidth: 220, height: 140, objectFit: 'cover', border: '1px solid #e6dfd4' }} />
-        ) : null}
-        {draftBtn}
-        <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>
-          Photo drafts name and description only. You type TT$ and qty. SKU is optional — empty is fine.
-        </p>
-        {warning ? <div style={{ fontSize: 13, color: '#6b6256', border: '1px solid #e6dfd4', padding: 10 }}>{warning}</div> : null}
-        {error ? <div style={{ fontSize: 13, color: '#E31C23' }}>{error}</div> : null}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {applyBtn}
-          {proposed ? (
-            <button type="button" onClick={() => setProposed(null)} style={{ minHeight: 44, padding: '0 14px', border: '1px solid #141414', background: 'transparent' }}>Keep mine</button>
-          ) : null}
-        </div>
-        {proposed ? (
-          <div style={{ border: '1px solid #cfc8bc', padding: 12, display: 'grid', gap: 8, background: '#fff' }}>
-            <div style={{ fontSize: 13, color: '#6b6256' }}>
-              {proposed.conflict ? 'You already typed a name. Apply to replace it, or keep yours.' : 'Vision draft — apply to use it. Price and qty stay empty.'}
-            </div>
-            <div><strong>Name</strong> {proposed.name || '(empty)'}</div>
-            {proposed.description ? <div><strong>Description</strong> {proposed.description}</div> : null}
-            {proposed.tags.length ? <div style={{ fontSize: 12, color: '#6b6256' }}>{proposed.tags.join(' · ')}</div> : null}
-          </div>
-        ) : null}
+      <p style={{ margin: 0, fontSize: 12, color: '#6b6256' }}>
+        Take or upload a photo. Draft name and description only. You type TT$. Apply updates the fields below — it does not overwrite until you confirm.
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {takePhoto}
+        {uploadPhoto}
       </div>
-      <input value={name} onChange={(e) => onChange({ name: e.target.value })} placeholder="Name" style={fieldStyle} />
-      <textarea
-        value={description}
-        onChange={(e) => onChange({ description: e.target.value })}
-        placeholder="Description (optional)"
-        rows={3}
-        style={{ ...fieldStyle, minHeight: 66, padding: 12 }}
-      />
-      <input value={price} onChange={(e) => onChange({ price: e.target.value })} placeholder="Price TT$ (required)" inputMode="decimal" style={fieldStyle} />
-      <input value={qty} onChange={(e) => onChange({ qty: e.target.value })} placeholder="Qty on hand (empty = do not claim stock)" inputMode="numeric" style={fieldStyle} />
-      <input value={sku} onChange={(e) => onChange({ sku: e.target.value })} placeholder="SKU / code (optional)" style={fieldStyle} />
-      <input value={variant} onChange={(e) => onChange({ variant: e.target.value })} placeholder="Optional variant (size / color)" style={fieldStyle} />
+      {image ? (
+        <img src={image} alt="" style={{ width: '100%', maxWidth: 220, height: 140, objectFit: 'cover', border: '1px solid #e6dfd4' }} />
+      ) : null}
+      {draftBtn}
+      {lockedPanel}
+      {error && !warning ? <div style={{ fontSize: 13, color: '#E31C23' }}>{error}</div> : null}
+      {appliedPanel}
+      {proposedPanel}
+      {listingFields}
     </section>
   );
 };

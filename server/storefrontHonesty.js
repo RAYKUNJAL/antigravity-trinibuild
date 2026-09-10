@@ -5,10 +5,10 @@ const BLOCKS = {
   fashion: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
   services: ['hero', 'trust', 'service_list', 'how', 'sticky', 'faq', 'footer'],
   general: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
-  beauty: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  beauty: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
   home: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
-  electronics: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
-  auto: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  electronics: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  auto: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
 };
 
 function liveItems(model) {
@@ -57,6 +57,10 @@ function realTrustChips(model) {
   if (model.deliveryAreas) chips.push(model.deliveryAreas);
   if (model.hours) chips.push(model.hours);
   if (showWhatsApp(model)) chips.push('WhatsApp');
+  const extras = (model.trustChips || []).map((c) => String(c || '').trim()).filter(Boolean);
+  for (const extra of extras) {
+    if (!chips.includes(extra)) chips.push(extra);
+  }
   return chips;
 }
 

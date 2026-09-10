@@ -224,6 +224,7 @@ const emptyLandingItem = () => ({
   variant: '',
   description: '',
   image: '',
+  tags: [] as string[],
 });
 
 /** Honest Photo-assisted listing on `/`. Same camera + POST /api/onboard/vision as create-store. Never writes price. */
@@ -241,6 +242,7 @@ const ListerDemo: React.FC = () => {
       variant: patch.variant ?? prev.variant,
       description: patch.description ?? prev.description,
       image: patch.image ?? prev.image,
+      tags: patch.tags ?? prev.tags,
     }));
   };
 
@@ -248,13 +250,13 @@ const ListerDemo: React.FC = () => {
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-5xl mx-auto">
         <div className="max-w-3xl mx-auto text-center mb-10">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold tracking-wide mb-3">Photo-assisted listing</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Snap a product. Start the listing faster.</h2>
+          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold tracking-wide mb-3">Photo to listing</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Take a picture. Confirm the name. Type the TT$.</h2>
           <p className="text-lg text-gray-600 mb-3">
-            Take or upload a photo and Juvay can suggest a product name and description. You still enter the TT$ price, quantity, and any optional details before anything is saved.
+            Same camera as create-store. Vision drafts a name and description from the photo. You confirm or edit, then type the TT$ price. Nothing is saved here.
           </p>
           <p className="text-sm text-gray-500">
-            No photo means no draft. Juvay never invents a product or sets your price.
+            No photo means no draft. If vision is locked, type the name and price yourself — we do not invent a listing.
           </p>
         </div>
         <MerchantItemFields
@@ -266,10 +268,11 @@ const ListerDemo: React.FC = () => {
           variant={item.variant}
           description={item.description}
           image={item.image}
+          tags={item.tags}
           onChange={onChange}
         />
         <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 text-sm text-gray-600 text-center">
-          This demo shows how product drafting works. Your store is only created when you continue to setup.
+          Nothing is saved on this page. Continue to create store to keep this listing draft.
         </div>
         <div className="text-center mt-5">
           <Link

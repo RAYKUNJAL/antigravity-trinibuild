@@ -6,6 +6,7 @@ const {
   buildOnboardVision,
   emptyDraft,
   NO_KEY_WARNING,
+  CREDITS_WARNING,
 } = require('./onboardVision');
 
 const TINY = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -67,6 +68,7 @@ assert.strictEqual(stripped.name, 'Cable');
 
   const noKey = await buildOnboardVision({ image: TINY, templateId: 'general' });
   assert.strictEqual(noKey.agentWrote, false);
+  assert.strictEqual(noKey.locked, true);
   assert.strictEqual(noKey.warning, NO_KEY_WARNING);
   assert.deepStrictEqual(noKey.draft, emptyDraft());
   assert.strictEqual(noKey.draft.name, '');
@@ -120,6 +122,18 @@ assert.strictEqual(stripped.name, 'Cable');
   const quartz = await buildOnboardVision({ image: TINY });
   assert.strictEqual(quartz.agentWrote, false);
   assert.strictEqual(quartz.draft.name, '');
+
+  global.fetch = async () => ({
+    ok: false,
+    status: 403,
+    text: async () => 'insufficient credits',
+  });
+  const credits = await buildOnboardVision({ image: TINY, templateId: 'food' });
+  assert.strictEqual(credits.agentWrote, false);
+  assert.strictEqual(credits.locked, true);
+  assert.strictEqual(credits.warning, CREDITS_WARNING);
+  assert.deepStrictEqual(credits.draft, emptyDraft());
+  assert.ok(!('price' in credits.draft));
 
   global.fetch = origFetch;
   if (prev === undefined) delete process.env.LLM_API_KEY;

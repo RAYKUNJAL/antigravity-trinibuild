@@ -27,7 +27,9 @@ export type StorefrontBlock =
   | 'faq'
   | 'footer';
 
-export type HeroLayout = 'split' | 'bleed' | 'overlay';
+export type HeroLayout = 'split' | 'split_reverse' | 'bleed' | 'overlay' | 'stack' | 'rail' | 'desk' | 'card';
+
+export type CatalogKind = 'menu' | 'lookbook' | 'services' | 'tiles' | 'shades' | 'furniture' | 'gadgets' | 'parts';
 
 export interface StarterPalette {
   bg: string;
@@ -53,6 +55,10 @@ export interface StoreStarter {
   cta: string;
   heroHeadline: string;
   heroLayout: HeroLayout;
+  kicker: string;
+  catalogTitle: string;
+  featuredTitle: string;
+  catalogKind: CatalogKind;
   blocks: StorefrontBlock[];
   palette: StarterPalette;
   emptyCatalog: string;
@@ -99,9 +105,13 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     cta: 'Order now',
     heroHeadline: 'Cooked this morning. Ready when you reach.',
     heroLayout: 'split',
+    kicker: 'Menu',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Today',
+    catalogKind: 'menu',
     blocks: ['hero', 'trust', 'featured_combo', 'menu', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the menu yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first plate',
     heroImage: '/templates/heroes/food.jpg',
     palette: {
       bg: '#1c140c',
@@ -123,13 +133,17 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     id: 'fashion',
     name: 'Fashion',
     useWhen: 'Boutique, carnival wear, streetwear. Try it. See the price.',
-    chips: ['Lookbook', 'Product grid', 'Size before add'],
+    chips: ['Lookbook', 'The rack', 'Size before add'],
     cta: 'Shop now',
     heroHeadline: 'Pieces you can try. Prices you can see.',
     heroLayout: 'bleed',
+    kicker: 'Lookbook',
+    catalogTitle: 'The rack',
+    featuredTitle: 'Lookbook',
+    catalogKind: 'lookbook',
     blocks: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No pieces listed yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first piece',
     heroImage: '/templates/heroes/fashion.jpg',
     palette: {
       bg: '#F3EEE6',
@@ -154,7 +168,11 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     chips: ['Service list', 'Book a time', 'Cash when you come'],
     cta: 'Book now',
     heroHeadline: 'Book a time. Pay cash when you come.',
-    heroLayout: 'split',
+    heroLayout: 'split_reverse',
+    kicker: 'Book a time',
+    catalogTitle: 'Services',
+    featuredTitle: 'Services',
+    catalogKind: 'services',
     blocks: ['hero', 'trust', 'service_list', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No services listed yet.',
     merchantEmpty: 'Add your first service',
@@ -179,10 +197,14 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     id: 'general',
     name: 'General',
     useWhen: 'Mixed retail / marketplace stall. The free one-page default.',
-    chips: ['Product grid', 'Cash or pickup', 'One page'],
+    chips: ['One-page shop', 'Cash or pickup', 'Product tiles'],
     cta: 'Shop now',
     heroHeadline: 'Shop local. Cash or pickup.',
     heroLayout: 'overlay',
+    kicker: 'Shop',
+    catalogTitle: 'Shop',
+    featuredTitle: 'On the table',
+    catalogKind: 'tiles',
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing in the shop yet.',
     merchantEmpty: 'Add your first item',
@@ -210,10 +232,14 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     chips: ['Kits & shades', 'Cash on pickup', 'Retail only'],
     cta: 'Shop now',
     heroHeadline: 'Shades and kits. Cash on pickup.',
-    heroLayout: 'overlay',
-    blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    heroLayout: 'card',
+    kicker: 'Retail beauty',
+    catalogTitle: 'Kits',
+    featuredTitle: 'Shades',
+    catalogKind: 'shades',
+    blocks: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No shades or kits listed yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first shade or kit',
     heroImage: '/templates/heroes/beauty.jpg',
     palette: {
       bg: '#FAF6F3',
@@ -235,13 +261,17 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     id: 'home',
     name: 'Home',
     useWhen: 'Furniture and household pieces. Larger tiles. Price on the piece.',
-    chips: ['Furniture grid', 'Pickup', 'Price on the piece'],
+    chips: ['Furniture tile', 'Pickup', 'Price on the piece'],
     cta: 'Shop now',
     heroHeadline: 'Furniture you can see. Price on the piece.',
-    heroLayout: 'overlay',
+    heroLayout: 'stack',
+    kicker: 'Furniture',
+    catalogTitle: 'Furniture',
+    featuredTitle: 'The piece',
+    catalogKind: 'furniture',
     blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No furniture listed yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first piece',
     heroImage: '/templates/heroes/home.jpg',
     palette: {
       bg: '#F3EFE8',
@@ -263,13 +293,17 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     id: 'electronics',
     name: 'Electronics',
     useWhen: 'Phones and gadgets. Color or storage only if the SKU has them.',
-    chips: ['Product grid', 'Variant before add', 'Specs if typed'],
+    chips: ['Search + specs', 'Variant before add', 'Cash or pickup'],
     cta: 'Shop now',
     heroHeadline: 'Phones and gadgets. Price on the piece.',
-    heroLayout: 'overlay',
-    blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    heroLayout: 'rail',
+    kicker: 'Gadgets',
+    catalogTitle: 'Gadgets',
+    featuredTitle: 'Featured',
+    catalogKind: 'gadgets',
+    blocks: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No gadgets listed yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first gadget',
     heroImage: '/templates/heroes/electronics.jpg',
     palette: {
       bg: '#F4F6F6',
@@ -281,7 +315,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#0a0f14',
       heroText: '#e8f4f2',
       border: 'rgba(13,148,136,0.22)',
-      headingFont: "'Source Serif 4', Georgia, serif",
+      headingFont: "'IBM Plex Sans', system-ui, sans-serif",
       bodyFont: "'IBM Plex Sans', system-ui, sans-serif",
       fontHref: SERIF_SANS,
       field: 'linear-gradient(160deg, #0a0f14 0%, #0D9488 52%, #0a0f14 100%)',
@@ -294,10 +328,14 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     chips: ['Search + grid', 'Merchant fit note', 'Cash or pickup'],
     cta: 'Shop now',
     heroHeadline: 'Parts and accessories. Ask if it fits.',
-    heroLayout: 'overlay',
-    blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    heroLayout: 'desk',
+    kicker: 'Parts',
+    catalogTitle: 'Parts',
+    featuredTitle: 'Parts',
+    catalogKind: 'parts',
+    blocks: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No parts listed yet.',
-    merchantEmpty: 'Add your first item',
+    merchantEmpty: 'Add your first part',
     heroImage: '/templates/heroes/auto.jpg',
     palette: {
       bg: '#F6F3EE',
@@ -309,8 +347,8 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#1a1a1a',
       heroText: '#f4efe6',
       border: 'rgba(217,119,6,0.28)',
-      headingFont: "'Fraunces', Georgia, serif",
-      bodyFont: "'Source Sans 3', system-ui, sans-serif",
+      headingFont: "'Source Serif 4', Georgia, serif",
+      bodyFont: "'IBM Plex Sans', system-ui, sans-serif",
       fontHref: SERIF_SANS,
       field: 'linear-gradient(160deg, #1a1a1a 0%, #d97706 46%, #111 100%)',
     },
