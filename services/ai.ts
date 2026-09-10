@@ -241,7 +241,7 @@ How COD works for Trinidad businesses:
 3. Merchant gets WhatsApp notification with order details
 4. Merchant confirms order and prepares items
 5. Delivery arranged: merchant's own driver or customer pickup
-6. Driver delivers and collects cash or Linx payment at door
+6. Driver delivers and collects cash at door
 7. Merchant marks order complete in dashboard
 8. Cash reconciled — merchant keeps product amount, delivery fee goes to driver
 

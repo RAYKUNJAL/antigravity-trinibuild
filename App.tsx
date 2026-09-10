@@ -288,6 +288,7 @@ const App: React.FC = () => {
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
               <Route path="/rides/school-run" element={<SchoolRun />} />
+              <Route path="/rides/trip" element={<RideTrip />} />
               <Route path="/rides/trip/:id" element={<RideTrip />} />
               <Route path="/drive" element={<DriveApply />} />
               <Route path="/drive/pay" element={<DrivePay />} />

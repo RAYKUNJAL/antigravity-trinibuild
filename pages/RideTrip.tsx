@@ -29,6 +29,22 @@ export const RideTrip: React.FC = () => {
 
   useEffect(() => { load(); }, [id]);
 
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-16">
+        <div className="max-w-md text-center space-y-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400">Trip</p>
+          <h1 className="text-3xl font-black">Need a trip id and share token</h1>
+          <p className="text-white/60">
+            This path is empty until an agreed trip shares <span className="text-white/80">/rides/trip/:id?t=…</span>.
+            Juvay does not invent a trip, a fare, or a live car.
+          </p>
+          <Link to="/rides" className="inline-block text-yellow-400 underline font-bold">Back to rides</Link>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-16">
