@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Sparkles, Check, ArrowRight, Mail, Phone, User,
-    Shield, Clock, MessageCircle, Chrome, Facebook
+    Shield, Clock, MessageCircle, Chrome
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
@@ -51,20 +51,6 @@ export const CROSignupFlow: React.FC = () => {
             if (error) throw error;
         } catch (err: any) {
             setError(err.message || 'Google signup failed');
-        }
-    };
-
-    const handleFacebookSignup = async () => {
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'facebook',
-                options: {
-                    redirectTo: `${window.location.origin}/signup?step=complete&type=${formData.userType}`
-                }
-            });
-            if (error) throw error;
-        } catch (err: any) {
-            setError(err.message || 'Facebook signup failed');
         }
     };
 
@@ -232,13 +218,6 @@ export const CROSignupFlow: React.FC = () => {
                                                 >
                                                     <Chrome size={20} />
                                                     Continue with Google
-                                                </button>
-                                                <button
-                                                    onClick={handleFacebookSignup}
-                                                    className="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
-                                                >
-                                                    <Facebook size={20} />
-                                                    Continue with Facebook
                                                 </button>
                                             </div>
 
