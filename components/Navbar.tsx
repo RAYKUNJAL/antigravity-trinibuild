@@ -255,14 +255,24 @@ export const Navbar: React.FC = () => {
             </Link>
 
             {isAdmin && (
-              <Link
-                to="/admin/command-center"
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${
-                  isTransparent ? 'bg-purple-500/80 text-white' : 'bg-purple-600 text-white hover:bg-purple-700'
-                }`}
-              >
-                <Settings size={14} /> Admin
-              </Link>
+              <>
+                <Link
+                  to="/admin/drive"
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${
+                    isTransparent ? 'bg-yellow-400 text-black' : 'bg-yellow-400 text-black hover:bg-yellow-300'
+                  }`}
+                >
+                  <Car size={14} /> Drive queue
+                </Link>
+                <Link
+                  to="/admin/command-center"
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold ${
+                    isTransparent ? 'bg-purple-500/80 text-white' : 'bg-purple-600 text-white hover:bg-purple-700'
+                  }`}
+                >
+                  <Settings size={14} /> Admin
+                </Link>
+              </>
             )}
 
             <div className={`h-6 w-px mx-1 opacity-30 ${isTransparent ? 'bg-white' : 'bg-gray-300'}`} />
@@ -375,13 +385,22 @@ export const Navbar: React.FC = () => {
         {/* Scrollable link list */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {isAdmin && (
-            <Link
-              to="/admin/command-center"
-              onClick={() => setDrawerOpen(false)}
-              className="flex items-center gap-2 mb-3 px-4 py-3 rounded-xl bg-purple-600 text-white font-bold text-sm"
-            >
-              <Settings size={16} /> Admin Command Center
-            </Link>
+            <>
+              <Link
+                to="/admin/drive"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-2 mb-2 px-4 py-3 rounded-xl bg-yellow-400 text-black font-bold text-sm"
+              >
+                <Car size={16} /> Drive queue
+              </Link>
+              <Link
+                to="/admin/command-center"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-2 mb-3 px-4 py-3 rounded-xl bg-purple-600 text-white font-bold text-sm"
+              >
+                <Settings size={16} /> Admin Command Center
+              </Link>
+            </>
           )}
 
           {isLoggedIn && currentUser && (

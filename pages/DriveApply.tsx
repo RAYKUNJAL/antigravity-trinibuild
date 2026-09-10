@@ -107,10 +107,15 @@ export const DriveApply: React.FC = () => {
     <div className="min-h-screen bg-black text-white px-4 py-10">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-6">
         <section className="rounded-3xl border border-white/10 bg-[#111] p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400 mb-2">Drive</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400 mb-2">Drive · apply + desk</p>
+          <div className="flex flex-wrap gap-2 mb-3 text-[11px] font-bold uppercase">
+            <span className="rounded-full bg-yellow-400 text-black px-3 py-1">cash default</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">pin = online</span>
+            <span className="rounded-full bg-white/10 px-3 py-1">no /api/drive/online</span>
+          </div>
           <h1 className="text-3xl font-black mb-2">Apply once. Take three jobs.</h1>
           <p className="text-sm text-white/60 mb-5">
-            We will not show cars that are not you. Listed only after a person approves. Pin is the online signal — POST /api/drive/pin. There is no /api/drive/online.
+            We will not show cars that are not you. Listed only after a person approves at /admin/drive. Pin is the online signal — POST /api/drive/pin. There is no /api/drive/online.
           </p>
           <form onSubmit={submit} className="space-y-3">
             <label className="block text-sm">
