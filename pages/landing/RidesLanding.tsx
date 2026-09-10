@@ -118,12 +118,12 @@ export const RidesLanding: React.FC = () => {
               <Link to="/drive" className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors shadow-lg flex items-center justify-center">
                 Apply as a driver
               </Link>
-              <button type="button" onClick={() => openOffer('rideshare')} className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
+              <Link to="/rides?svc=rideshare" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
                 Need a ride
-              </button>
-              <button type="button" onClick={() => openOffer('courier')} className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
+              </Link>
+              <Link to="/rides?svc=courier" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-black transition-colors flex items-center justify-center">
                 Send a package
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -133,16 +133,24 @@ export function agreeRideOffer(id: string, body: Record<string, unknown>) {
   }).then(parse);
 }
 
+export function cancelRideOffer(id: string, body: Record<string, unknown> = {}) {
+  return fetch(`/api/rides/offers/${id}/cancel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  }).then(parse);
+}
+
 export function fetchRideTrip(id: string, shareToken?: string) {
   const q = shareToken ? `?t=${encodeURIComponent(shareToken)}` : '';
   return fetch(`/api/rides/trips/${id}${q}`, { headers: { Accept: 'application/json' } }).then(parse);
 }
 
-export function tapCashPaid(id: string, riderPhone: string) {
+export function tapCashPaid(id: string, phone: string, as: 'rider' | 'parent' = 'rider') {
   return fetch(`/api/rides/trips/${id}/cash-paid`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ riderPhone }),
+    body: JSON.stringify(as === 'parent' ? { parentPhone: phone } : { riderPhone: phone }),
   }).then(parse);
 }
 

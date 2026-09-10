@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { applyToDrive, fetchDriverOffers, acceptRideOffer, counterRideOffer, agreeRideOffer, readImageAsDataUrl, setDriverPin } from '../services/ridesApi';
+import {
+  acceptRideOffer,
+  agreeRideOffer,
+  applyToDrive,
+  counterRideOffer,
+  fetchDriveMe,
+  fetchDriverOffers,
+  readImageAsDataUrl,
+  setDriverPin,
+  startRideTrip,
+  tapCashReceived,
+} from '../services/ridesApi';
 
 const JOB_OPTIONS = [
   { id: 'rideshare', label: 'Rideshare' },
@@ -8,8 +19,10 @@ const JOB_OPTIONS = [
   { id: 'delivery', label: 'Delivery' },
 ] as const;
 
+const field = 'mt-1 w-full min-h-[44px] border border-white/15 bg-white/5 text-white rounded-xl px-3 placeholder:text-white/40';
+
 /**
- * /drive apply. KYC only. No map. We will not show cars that are not you.
+ * /drive — apply + desk. Pin = online signal. No /api/drive/online.
  */
 export const DriveApply: React.FC = () => {
   const [name, setName] = useState('');
@@ -25,18 +38,29 @@ export const DriveApply: React.FC = () => {
   const [photos, setPhotos] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [driver, setDriver] = useState<any>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [counterTtd, setCounterTtd] = useState('');
+  const [startPin, setStartPin] = useState('');
+  const [activeTripId, setActiveTripId] = useState('');
 
-  const onPhoto = async (field: string, file?: File) => {
+  const onPhoto = async (fieldName: string, file?: File) => {
     if (!file) return;
     try {
-      const dataUrl = await readImageAsDataUrl(file);
-      setPhotos((prev) => ({ ...prev, [field]: dataUrl }));
+      setPhotos((prev) => ({ ...prev, [fieldName]: await readImageAsDataUrl(file) }));
     } catch (e: any) {
       setError(e.message);
     }
+  };
+
+  const loadDesk = async (p = phone) => {
+    if (!p) return;
+    const me = await fetchDriveMe(p);
+    setDriver(me.driver);
+    const inbox = await fetchDriverOffers(p).catch(() => ({ offers: [] }));
+    setOffers(inbox.offers || []);
+    const booked = (inbox.offers || []).find((o: any) => o.tripId);
+    if (booked?.tripId) setActiveTripId(booked.tripId);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -58,9 +82,8 @@ export const DriveApply: React.FC = () => {
         platePhoto: photos.platePhoto,
         facePhoto: photos.facePhoto,
       });
-      setResult(data);
-      const inbox = await fetchDriverOffers(phone).catch(() => ({ offers: [] }));
-      setOffers(inbox.offers || []);
+      setDriver(data.driver);
+      await loadDesk(phone);
     } catch (err: any) {
       setError(err.message || 'Apply failed');
     } finally {
@@ -68,163 +91,162 @@ export const DriveApply: React.FC = () => {
     }
   };
 
-  const refreshOffers = async () => {
-    if (!phone) return;
-    const inbox = await fetchDriverOffers(phone);
-    setOffers(inbox.offers || []);
-    if (inbox.driver) setResult((prev: any) => ({ ...prev, driver: inbox.driver }));
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-16">
-      <div className="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 p-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-2">Apply to drive</h1>
-        <p className="text-gray-600 mb-2">We will not show cars that are not you.</p>
-        <p className="text-sm text-gray-500 mb-4">
-          A person reviews permit, insurance, plate photo, face, and phone. You are not listed until a person approves you. If a subscription price is later set, listing needs a person to confirm it. Apply does not invent a location.
-        </p>
-
-        <form onSubmit={submit} className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Island
-            <select value={island} onChange={(e) => setIsland(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3">
-              <option>Trinidad</option>
-              <option>Tobago</option>
-            </select>
-          </label>
-          <fieldset className="text-sm font-medium text-gray-700">
-            <legend className="mb-2">Jobs you want — one driver can take all three</legend>
-            <div className="space-y-2">
-              {JOB_OPTIONS.map((job) => (
-                <label key={job.id} className="flex items-center gap-3 min-h-[44px] font-normal">
-                  <input
-                    type="checkbox"
-                    checked={jobTypes.includes(job.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setJobTypes((prev) => (prev.includes(job.id) ? prev : [...prev, job.id]));
-                        return;
-                      }
-                      setJobTypes((prev) => prev.filter((id) => id !== job.id));
-                      if (job.id === 'rideshare') setSchoolRunRequested(false);
-                    }}
-                  />
-                  {job.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <label className="block text-sm font-medium text-gray-700">
-            Name
-            <input required value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Phone
-            <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="868…" className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Plate
-            <input required value={plate} onChange={(e) => setPlate(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Permit photo
-            <input required type="file" accept="image/*" onChange={(e) => onPhoto('permitPhoto', e.target.files?.[0])} className="mt-1 w-full" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Insurance photo
-            <input required type="file" accept="image/*" onChange={(e) => onPhoto('insurancePhoto', e.target.files?.[0])} className="mt-1 w-full" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Plate photo
-            <input required type="file" accept="image/*" onChange={(e) => onPhoto('platePhoto', e.target.files?.[0])} className="mt-1 w-full" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Face photo
-            <input required type="file" accept="image/*" onChange={(e) => onPhoto('facePhoto', e.target.files?.[0])} className="mt-1 w-full" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Wam handle (optional — wam.com, not WhatsApp)
-            <input value={wamHandle} onChange={(e) => setWamHandle(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-          </label>
-          <label className="block text-sm font-medium text-gray-700">
-            Affiliate ref (optional — 10% of the subscription, not the trip)
-            <input value={affiliateRef} onChange={(e) => setAffiliateRef(e.target.value)} className="mt-1 w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-          </label>
-          <label className="flex items-start gap-3 min-h-[44px] text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={schoolRunRequested}
-              onChange={(e) => {
-                const on = e.target.checked;
-                setSchoolRunRequested(on);
-                if (on && !jobTypes.includes('rideshare')) setJobTypes((prev) => ['rideshare', ...prev]);
-              }}
-              className="mt-1"
-            />
-            <span>School-run eligible — sits under rideshare. Same permit, insurance, plate, face, and phone. A person must approve this flag. Not listed for kids until then. Parent-booked only. Not a teen dating app. Not unattended street hail.</span>
-          </label>
-          {error ? <p className="text-sm text-red-700">{error}</p> : null}
-          <button type="submit" disabled={busy || jobTypes.length === 0} className="w-full min-h-[44px] rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40">
-            {busy ? 'Submitting…' : 'Submit application'}
-          </button>
-        </form>
-
-        {result?.driver ? (
-          <div className="mt-6 border-t border-gray-200 pt-4 text-sm text-gray-700 space-y-2">
-            <p>Approved: {result.driver.approved ? 'yes' : 'no'}</p>
-            <p>Subscription confirmed: {result.driver.subscriptionPaid ? 'yes' : 'no'}</p>
-            <p>Listed: {result.driver.listed ? 'yes' : 'no'}</p>
-            <p>{result.driver.goOnlineReason || result.goOnline?.reason}</p>
-            <p>Jobs: {(result.driver.jobTypes || []).join(', ') || 'rideshare'}</p>
-            <p>School-run requested: {result.driver.schoolRunRequested ? 'yes' : 'no'} · approved: {result.driver.schoolRunApproved ? 'yes' : 'no'}</p>
-            <Link to="/drive/pay" className="inline-block text-stone-900 font-semibold underline">Subscription status</Link>
-            {result.driver.listed ? (
-              <form
-                className="space-y-2 pt-3"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  try {
-                    await setDriverPin({ phone, pinLat, pinLng });
-                  } catch (err: any) {
-                    setError(err.message);
-                  }
+    <div className="min-h-screen bg-black text-white px-4 py-10">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-6">
+        <section className="rounded-3xl border border-white/10 bg-[#111] p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-400 mb-2">Drive</p>
+          <h1 className="text-3xl font-black mb-2">Apply once. Take three jobs.</h1>
+          <p className="text-sm text-white/60 mb-5">
+            We will not show cars that are not you. Listed only after a person approves. Pin is the online signal — POST /api/drive/pin. There is no /api/drive/online.
+          </p>
+          <form onSubmit={submit} className="space-y-3">
+            <label className="block text-sm">
+              Island
+              <select value={island} onChange={(e) => setIsland(e.target.value)} className={field}>
+                <option className="text-black">Trinidad</option>
+                <option className="text-black">Tobago</option>
+              </select>
+            </label>
+            <fieldset className="text-sm">
+              <legend className="mb-2 font-bold">Jobs — multi-select</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {JOB_OPTIONS.map((job) => (
+                  <label key={job.id} className={`min-h-[44px] rounded-xl border px-2 flex items-center justify-center gap-2 ${jobTypes.includes(job.id) ? 'border-yellow-400 bg-yellow-400/10' : 'border-white/15'}`}>
+                    <input
+                      type="checkbox"
+                      checked={jobTypes.includes(job.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setJobTypes((prev) => (prev.includes(job.id) ? prev : [...prev, job.id]));
+                          return;
+                        }
+                        setJobTypes((prev) => prev.filter((id) => id !== job.id));
+                        if (job.id === 'rideshare') setSchoolRunRequested(false);
+                      }}
+                    />
+                    {job.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className={`w-full ${field}`} />
+            <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone 868…" className={`w-full ${field}`} />
+            <input required value={plate} onChange={(e) => setPlate(e.target.value)} placeholder="Plate" className={`w-full ${field}`} />
+            <label className="block text-xs text-white/50">Permit photo<input required type="file" accept="image/*" onChange={(e) => onPhoto('permitPhoto', e.target.files?.[0])} className="mt-1 w-full" /></label>
+            <label className="block text-xs text-white/50">Insurance photo<input required type="file" accept="image/*" onChange={(e) => onPhoto('insurancePhoto', e.target.files?.[0])} className="mt-1 w-full" /></label>
+            <label className="block text-xs text-white/50">Plate photo<input required type="file" accept="image/*" onChange={(e) => onPhoto('platePhoto', e.target.files?.[0])} className="mt-1 w-full" /></label>
+            <label className="block text-xs text-white/50">Face photo<input required type="file" accept="image/*" onChange={(e) => onPhoto('facePhoto', e.target.files?.[0])} className="mt-1 w-full" /></label>
+            <input value={wamHandle} onChange={(e) => setWamHandle(e.target.value)} placeholder="Wam handle (wam.com, not WhatsApp)" className={`w-full ${field}`} />
+            <input value={affiliateRef} onChange={(e) => setAffiliateRef(e.target.value)} placeholder="Affiliate ref (optional)" className={`w-full ${field}`} />
+            <label className="flex items-start gap-3 text-sm text-white/70">
+              <input
+                type="checkbox"
+                checked={schoolRunRequested}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setSchoolRunRequested(on);
+                  if (on && !jobTypes.includes('rideshare')) setJobTypes((prev) => ['rideshare', ...prev]);
                 }}
-              >
-                <p className="text-sm">Directory pin only after listed. Type a real Trinidad or Tobago point. We do not invent nearby.</p>
-                <input value={pinLat} onChange={(e) => setPinLat(e.target.value)} placeholder="Latitude" className="w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-                <input value={pinLng} onChange={(e) => setPinLng(e.target.value)} placeholder="Longitude" className="w-full min-h-[44px] border border-gray-300 rounded-xl px-3" />
-                <button type="submit" className="min-h-[44px] px-4 border border-gray-900 rounded-xl">Save pin</button>
-              </form>
-            ) : null}
-          </div>
-        ) : null}
+                className="mt-1"
+              />
+              School-run under rideshare — parent-booked only. A person must flag it.
+            </label>
+            {error ? <p className="text-sm text-red-400">{error}</p> : null}
+            <button type="submit" disabled={busy || jobTypes.length === 0} className="w-full min-h-[48px] rounded-xl bg-yellow-400 text-black font-black disabled:opacity-40">
+              {busy ? 'Submitting…' : 'Submit application'}
+            </button>
+          </form>
+        </section>
 
-        {result?.driver ? (
-          <div className="mt-6 border-t border-gray-200 pt-4">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="font-bold text-gray-900">Offers for this phone</h2>
-              <button type="button" onClick={refreshOffers} className="text-sm underline">Refresh</button>
+        <section className="rounded-3xl border border-white/10 bg-[#111] p-6 space-y-4">
+          <div className="flex justify-between items-start gap-3">
+            <div>
+              <h2 className="text-xl font-black">Driver desk</h2>
+              <p className="text-xs text-white/50">GET /api/drive/me · GET /api/drive/offers · POST /api/drive/pin</p>
             </div>
-            {offers.length === 0 ? <p className="text-sm text-gray-500">No offers yet.</p> : null}
+            <button type="button" onClick={() => loadDesk()} className="text-sm underline text-yellow-400">Refresh</button>
+          </div>
+
+          {!driver ? (
+            <p className="text-sm text-white/50">Apply or enter the phone on your application, then refresh. Empty stays empty.</p>
+          ) : (
+            <div className="rounded-2xl border border-white/10 p-4 text-sm space-y-1">
+              <p className="font-black">{driver.name} · {driver.plate}</p>
+              <p>Listed: {driver.listed ? 'yes' : 'no'} · Approved: {driver.approved ? 'yes' : 'no'}</p>
+              <p>goOnlineBlocked: {driver.goOnlineBlocked ? 'yes' : 'no'}</p>
+              {driver.goOnlineReason ? <p className="text-yellow-400">{driver.goOnlineReason}</p> : <p className="text-yellow-400">Listed. Drop a pin to appear on radar.</p>}
+              <p>Jobs: {(driver.jobTypes || []).join(', ')}</p>
+              <p>School-run: {driver.schoolRunApproved ? 'flagged' : driver.schoolRunRequested ? 'requested' : 'no'}</p>
+              <p>subscription priceCents: {driver.subscriptionPriceCents == null ? 'null' : driver.subscriptionPriceCents}</p>
+              <p>Pin: {driver.pinLat != null ? `${driver.pinLat}, ${driver.pinLng}` : 'none'}</p>
+              <Link to="/drive/pay" className="inline-block text-yellow-400 underline">Subscription (Wam.com)</Link>
+            </div>
+          )}
+
+          {driver?.listed ? (
+            <form
+              className="space-y-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await setDriverPin({ phone, pinLat, pinLng });
+                  await loadDesk();
+                } catch (err: any) {
+                  setError(err.message);
+                }
+              }}
+            >
+              <p className="text-sm font-bold">Go online — real Trinidad or Tobago pin</p>
+              <p className="text-xs text-white/40">This is POST /api/drive/pin. Not a fake online toggle.</p>
+              <input value={pinLat} onChange={(e) => setPinLat(e.target.value)} placeholder="Latitude" className={`w-full ${field}`} />
+              <input value={pinLng} onChange={(e) => setPinLng(e.target.value)} placeholder="Longitude" className={`w-full ${field}`} />
+              <button type="submit" className="w-full min-h-[44px] rounded-xl bg-yellow-400 text-black font-black">Save pin / go online</button>
+            </form>
+          ) : null}
+
+          <div>
+            <h3 className="font-black mb-2">Offers</h3>
+            {offers.length === 0 ? <p className="text-sm text-white/40">No offers yet.</p> : null}
             {offers.map((offer) => (
-              <div key={offer.id} className="border border-gray-200 rounded-xl p-3 mb-3 text-sm space-y-2">
-                <p>{offer.serviceType || 'rideshare'} · {offer.pickup} → {offer.drop}</p>
-                <p>Offer TT${offer.offerTtd}{offer.counterTtd ? ` · counter TT$${offer.counterTtd}` : ''} · {offer.pay} · {offer.status}</p>
+              <div key={offer.id} className="border border-white/10 rounded-2xl p-3 mb-3 text-sm space-y-2">
+                <p className="font-bold">{offer.serviceType || 'rideshare'} · {offer.pickup} → {offer.drop}</p>
+                <p>TT${offer.offerTtd}{offer.counterTtd ? ` · counter TT$${offer.counterTtd}` : ''} · {offer.pay} · {offer.status}</p>
                 {offer.status === 'offered' || offer.status === 'countered' ? (
                   <>
-                    <button type="button" onClick={async () => { await acceptRideOffer(offer.id, phone); refreshOffers(); }} className="min-h-[44px] px-3 border border-gray-900 rounded-lg">Accept</button>
+                    <button type="button" onClick={async () => { await acceptRideOffer(offer.id, phone); loadDesk(); }} className="w-full min-h-[44px] rounded-xl bg-yellow-400 text-black font-black">Accept</button>
                     <div className="flex gap-2">
-                      <input value={counterTtd} onChange={(e) => setCounterTtd(e.target.value)} placeholder="Counter TTD" className="min-h-[44px] border border-gray-300 rounded-lg px-3 flex-1" />
-                      <button type="button" onClick={async () => { await counterRideOffer(offer.id, phone, counterTtd); setCounterTtd(''); refreshOffers(); }} className="min-h-[44px] px-3 border border-gray-900 rounded-lg">Counter</button>
+                      <input value={counterTtd} onChange={(e) => setCounterTtd(e.target.value)} placeholder="Counter TTD" className={`flex-1 ${field}`} />
+                      <button type="button" onClick={async () => { await counterRideOffer(offer.id, phone, counterTtd); setCounterTtd(''); loadDesk(); }} className="min-h-[44px] px-3 rounded-xl border border-white/20">Counter</button>
                     </div>
-                    <button type="button" onClick={async () => { await agreeRideOffer(offer.id, { role: 'driver', driverPhone: phone }); refreshOffers(); }} className="min-h-[44px] px-3 border border-gray-900 rounded-lg">Agree</button>
+                    <button type="button" onClick={async () => { await agreeRideOffer(offer.id, { role: 'driver', driverPhone: phone }); loadDesk(); }} className="w-full min-h-[44px] rounded-xl border border-yellow-400 text-yellow-400">Agree</button>
                   </>
                 ) : null}
-                {offer.tripId ? <Link to={`/rides/trip/${offer.tripId}`} className="underline">Open trip</Link> : null}
+                {offer.tripId ? (
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <Link to={`/rides/trip/${offer.tripId}`} className="underline text-yellow-400">Open trip</Link>
+                    <input value={startPin} onChange={(e) => setStartPin(e.target.value)} placeholder="startPin (4 digits)" className={`w-full ${field}`} />
+                    <button
+                      type="button"
+                      onClick={async () => { await startRideTrip(offer.tripId, phone, startPin); loadDesk(); }}
+                      className="w-full min-h-[44px] rounded-xl bg-yellow-400 text-black font-black"
+                    >
+                      Start trip (PIN)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => { await tapCashReceived(offer.tripId, phone); loadDesk(); }}
+                      className="w-full min-h-[44px] rounded-xl border border-white/20"
+                    >
+                      Cash received
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
-        ) : null}
+          {activeTripId ? <p className="text-xs text-white/40">Active trip {activeTripId}</p> : null}
+        </section>
       </div>
     </div>
   );

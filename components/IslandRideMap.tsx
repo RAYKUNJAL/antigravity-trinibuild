@@ -18,16 +18,19 @@ export const IslandRideMap: React.FC<{
   pins?: Array<{ id: string; name: string; plate?: string; pinLat?: number | null; pinLng?: number | null }>;
   tripPoint?: { lat: number; lng: number } | null;
   height?: string;
-}> = ({ island = 'Trinidad', pins = [], tripPoint = null, height = '220px' }) => {
+  dark?: boolean;
+}> = ({ island = 'Trinidad', pins = [], tripPoint = null, height = '220px', dark = false }) => {
   const view = ISLANDS[island] || ISLANDS.Trinidad;
   const listedPins = pins.filter((p) => Number.isFinite(Number(p.pinLat)) && Number.isFinite(Number(p.pinLng)));
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-gray-200" style={{ height }}>
+    <div className={`w-full overflow-hidden rounded-xl ${dark ? 'border border-white/10' : 'border border-gray-200'}`} style={{ height }}>
       <MapContainer center={view.center} zoom={view.zoom} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={dark
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
         />
         {listedPins.map((pin) => (
           <Marker key={pin.id} position={[Number(pin.pinLat), Number(pin.pinLng)]}>
