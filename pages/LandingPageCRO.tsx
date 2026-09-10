@@ -944,11 +944,11 @@ export const LandingPageCRO: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="https://wa.me/1868-YOUR-NUMBER?text=I%20have%20questions%20about%20Juvay"
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+                  href="mailto:support@juvay.app"
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-trini-red hover:bg-red-700 text-white font-semibold rounded-lg transition-colors"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  Chat on WhatsApp
+                  Email support@juvay.app
                 </a>
                 <button
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg transition-colors"

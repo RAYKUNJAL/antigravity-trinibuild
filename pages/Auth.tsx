@@ -117,11 +117,11 @@ export const Auth: React.FC = () => {
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="text-green-500 w-6 h-6" />
-              <span>Local Payments (Linx/Credit Card)</span>
+              <span>Cash on delivery and pickup</span>
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="text-green-500 w-6 h-6" />
-              <span>Instant Delivery Network</span>
+              <span>Wam only when that rail is actually on</span>
             </li>
           </ul>
         </div>

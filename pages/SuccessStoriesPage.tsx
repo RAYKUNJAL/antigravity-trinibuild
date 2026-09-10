@@ -82,13 +82,11 @@ export const SuccessStoriesPage: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="https://wa.me/18680000000"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:support@juvay.app"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp the team
+              Email support@juvay.app
             </a>
           </div>
         </div>

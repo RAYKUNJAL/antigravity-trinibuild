@@ -637,7 +637,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
             </div>
             <div className="flex-1">
               <p className="font-black text-gray-900">💵 Cash on Delivery</p>
-              <p className="text-xs text-gray-500 mt-0.5">Pay with cash or Linx card when driver arrives</p>
+              <p className="text-xs text-gray-500 mt-0.5">Pay with cash when the driver arrives. No card rail.</p>
               <div className="flex gap-2 mt-2 flex-wrap">
                 {['Inspect items first', 'No card needed', 'Safe & secure'].map(t => (
                   <span key={t} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{t}</span>
@@ -673,7 +673,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
                     {form.cashConfirmed && <Check size={11} className="text-white" />}
                   </div>
                   <span className="text-xs text-green-700 font-semibold leading-relaxed">
-                    I confirm I'll have TT${total.toFixed(2)} ready in cash or Linx when the driver arrives.
+                    I confirm I'll have TT${total.toFixed(2)} ready in cash when the driver arrives.
                     I understand I can inspect items before paying.
                   </span>
                 </label>
