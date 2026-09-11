@@ -224,11 +224,11 @@ export const storeService = {
                 await supabase.from('directory_businesses').upsert({
                     name: data.name,
                     slug: data.slug,
-                    description: data.description || `${data.name} on TriniBuild`,
+                    description: data.description || `${data.name} on Juvay`,
                     category: data.category || 'General',
                     address: data.location || '',
                     phone: data.whatsapp || '',
-                    website: `https://trinibuild.com/store/${data.slug}`,
+                    website: `https://juvay.app/store/${data.slug}`,
                     is_verified: true,
                     is_claimed: true,
                     source: 'trinibuild_store',

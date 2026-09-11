@@ -50,10 +50,11 @@ export const Footer: React.FC = () => {
               <li><Link to="/classifieds" className="text-sm text-gray-400 hover:text-white transition-colors">Marketplace</Link></li>
               <li><Link to="/create-store" className="text-sm text-gray-400 hover:text-white transition-colors">Create Free Store</Link></li>
               <li><Link to="/templates" className="text-sm text-gray-400 hover:text-white transition-colors">Store Templates</Link></li>
-              <li><Link to="/rides" className="text-sm text-gray-400 hover:text-white transition-colors">Rides & Delivery</Link></li>
               <li><Link to="/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">Jobs Board</Link></li>
+              <li><Link to="/rides" className="text-sm text-gray-400 hover:text-white transition-colors">Rides</Link></li>
+              <li><Link to="/drive" className="text-sm text-gray-400 hover:text-white transition-colors">Drive</Link></li>
+              <li><Link to="/rides/school-run" className="text-sm text-gray-400 hover:text-white transition-colors">School run</Link></li>
               <li><Link to="/real-estate" className="text-sm text-gray-400 hover:text-white transition-colors">Real Estate</Link></li>
-              <li><Link to="/tickets" className="text-sm text-gray-400 hover:text-white transition-colors">Events & Tickets</Link></li>
             </ul>
           </div>
 
@@ -66,9 +67,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/services/stores" className="text-sm text-gray-400 hover:text-white transition-colors">For Online Stores</Link></li>
               <li><Link to="/services/food" className="text-sm text-gray-400 hover:text-white transition-colors">For Restaurants</Link></li>
               <li><Link to="/services/marketplace" className="text-sm text-gray-400 hover:text-white transition-colors">For Marketplaces</Link></li>
-              <li><Link to="/services/rides" className="text-sm text-gray-400 hover:text-white transition-colors">For Drivers</Link></li>
               <li><Link to="/services/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">For Job Seekers</Link></li>
-              <li><Link to="/services/tickets" className="text-sm text-gray-400 hover:text-white transition-colors">For Event Hosts</Link></li>
               <li><Link to="/services/living" className="text-sm text-gray-400 hover:text-white transition-colors">For Real Estate</Link></li>
               <li><Link to="/carib-ads" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Advertise with Juvay <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">NEW</span></Link></li>
             </ul>
@@ -78,8 +77,6 @@ export const Footer: React.FC = () => {
           <div>
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Digital</h3>
             <ul className="space-y-2.5">
-              <li><Link to="/digital" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Game Pass & Streaming <span className="text-[9px] bg-purple-500 text-white px-1 rounded-full font-bold">NEW</span></Link></li>
-              <li><Link to="/gift-cards" className="text-sm text-gray-400 hover:text-white transition-colors">Gift Cards</Link></li>
               <li><Link to="/documents" className="text-sm text-gray-400 hover:text-white transition-colors">AI Document Assistant</Link></li>
               <li><Link to="/products/ai-add" className="text-sm text-gray-400 hover:text-white transition-colors">AI Product Lister</Link></li>
               <li><Link to="/tax-dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">VAT Tax Tracker</Link></li>
@@ -95,7 +92,6 @@ export const Footer: React.FC = () => {
               <li><Link to="/loyalty" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Rewards & Loyalty <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">EARN</span></Link></li>
               <li><Link to="/earn" className="text-sm text-gray-400 hover:text-white transition-colors">Earn With Us</Link></li>
               <li><Link to="/affiliate" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Program</Link></li>
-              <li><Link to="/drive-with-us" className="text-sm text-gray-400 hover:text-white transition-colors">Drive With Us</Link></li>
               <li><Link to="/blog" className="text-sm text-gray-400 hover:text-white transition-colors">Blog</Link></li>
               <li><Link to="/about" className="text-sm text-gray-400 hover:text-white transition-colors">About</Link></li>
               <li><Link to="/contact" className="text-sm text-gray-400 hover:text-white transition-colors">Contact</Link></li>
@@ -111,10 +107,6 @@ export const Footer: React.FC = () => {
               <li><a href="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="/refund" className="text-sm text-gray-400 hover:text-white transition-colors">Refund Policy</a></li>
               <li><a href="/legal/merchant-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Merchant Agreement</a></li>
-              <li><Link to="/contractor-agreement" className="text-sm text-gray-400 hover:text-white transition-colors">Contractor Agreement</Link></li>
-              <li><Link to="/liability-waiver" className="text-sm text-gray-400 hover:text-white transition-colors">Liability Waiver</Link></li>
-              <li><Link to="/affiliate-terms" className="text-sm text-gray-400 hover:text-white transition-colors">Affiliate Terms</Link></li>
-              <li><Link to="/document-disclaimer" className="text-sm text-gray-400 hover:text-white transition-colors">Document Disclaimer</Link></li>
               <li><Link to="/legal/all" className="text-sm text-gray-400 hover:text-white transition-colors">All Legal Documents</Link></li>
             </ul>
           </div>

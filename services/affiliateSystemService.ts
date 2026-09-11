@@ -206,7 +206,7 @@ export const affiliateSystemService = {
   },
 
   getReferralLink(referral_code: string): string {
-    return `https://trinibuild.com/signup?ref=${referral_code}`;
+    return `https://juvay.app/signup?ref=${referral_code}`;
   },
 
   getTierProgress(profile: AffiliateProfile): { percentage: number; next_tier: string | null; referrals_needed: number } {

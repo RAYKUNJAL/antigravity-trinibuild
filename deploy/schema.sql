@@ -275,7 +275,6 @@ CREATE TABLE IF NOT EXISTS user_plan_subscriptions (
   user_id uuid REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   plan_slug text REFERENCES plan_tiers(slug) DEFAULT 'free',
   source text DEFAULT 'free' CHECK (source IN ('free','paypal','bank_pay','promo','admin')),
-  paypal_subscription_id text,
   bank_payment_id uuid REFERENCES bank_subscription_payments(id),
   status text DEFAULT 'active' CHECK (status IN ('active','cancelled','expired','paused')),
   started_at timestamptz DEFAULT now(),

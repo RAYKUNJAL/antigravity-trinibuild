@@ -92,6 +92,24 @@ export const authService = {
         }
     },
 
+    // Google is the only live OAuth provider (GoTrue external.facebook=false).
+    signInWithGoogle: async (redirectPath: string): Promise<{ error?: string }> => {
+        try {
+            const dest = redirectPath.startsWith('http')
+                ? redirectPath
+                : `${window.location.origin}${redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`}`;
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: dest },
+            });
+            if (error) return { error: error.message };
+            if (!data?.url) return { error: 'Social login is not configured on this origin.' };
+            return {};
+        } catch (error: any) {
+            return { error: error?.message || String(error) };
+        }
+    },
+
     // Logout the user
     logout: async () => {
         await supabase.auth.signOut();

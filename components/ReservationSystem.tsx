@@ -411,7 +411,7 @@ export const QRReceipt: React.FC<{ reservation: ReservationData; onClose?: () =>
         </div>
 
         <p className="text-center text-xs text-gray-400 pb-4">
-          Powered by TriniBuild · trinibuild.com
+          Powered by Juvay · juvay.app
         </p>
       </div>
     </div>
@@ -498,7 +498,7 @@ export const ReservationFlow: React.FC<ReservationFlowProps> = ({
 
       // Notify store via WhatsApp
       if (store.whatsapp) {
-        const msg = `🔔 New pickup reservation!\nCustomer: ${form.name}\nPhone: ${form.phone}\nItems: ${items.map(i => `${i.qty}x ${i.name}`).join(', ')}\nTotal: TT$${subtotal.toFixed(2)}\nPayment: ${paymentMethod.toUpperCase()}\nPickup: ${pickup.day || 'TBC'}\nToken: ${data.qr_code_token.slice(0, 8).toUpperCase()}\nPlease approve in your TriniBuild dashboard.`;
+        const msg = `🔔 New pickup reservation!\nCustomer: ${form.name}\nPhone: ${form.phone}\nItems: ${items.map(i => `${i.qty}x ${i.name}`).join(', ')}\nTotal: TT$${subtotal.toFixed(2)}\nPayment: ${paymentMethod.toUpperCase()}\nPickup: ${pickup.day || 'TBC'}\nToken: ${data.qr_code_token.slice(0, 8).toUpperCase()}\nPlease approve in your Juvay dashboard.`;
         window.open(`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
       }
 
@@ -1168,7 +1168,6 @@ export const ReservationPremiumGate: React.FC<{
           { icon: Package, title: 'Auto Inventory', desc: 'Stock deducted on scan' },
           { icon: TrendingUp, title: 'Tax Dashboard Sync', desc: 'Every pickup logged automatically' },
           { icon: MessageCircle, title: 'WhatsApp Alerts', desc: 'Customer + store get notified' },
-          { icon: Zap, title: 'TriniRides Link', desc: 'Book delivery from reservation' },
           { icon: Shield, title: 'Fraud Protection', desc: 'Tokens expire, scan logs kept' },
         ].map(({ icon: Icon, title, desc }) => (
           <div key={title} className="flex items-start gap-3 bg-white/5 rounded-xl p-3">
@@ -1208,7 +1207,7 @@ export const ReservationPremiumGate: React.FC<{
         Upgrade to Pro — {planPrice} <ArrowRight size={16} />
       </motion.button>
       <p className="text-center text-xs text-gray-500 mt-3">
-        Cancel anytime · No setup fee · Includes all TriniBuild Pro features
+        Cancel anytime · No setup fee · Includes all Juvay Pro features
       </p>
     </div>
 

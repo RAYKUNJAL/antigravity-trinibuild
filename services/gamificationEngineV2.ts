@@ -482,7 +482,7 @@ class GamificationEngine {
       created_at: new Date().toISOString(),
     });
 
-    return `https://trinibuild.com/signup?ref=${refCode}`;
+    return `https://juvay.app/signup?ref=${refCode}`;
   }
 
   async redeemReferral(refCode: string, newUserId: string): Promise<boolean> {

@@ -120,7 +120,7 @@ export function VideoWatermarkPreview({ videoFile, onWatermarked }: VideoWaterma
                                 onChange={(e) => setOptions({ ...options, trinibuildEnabled: e.target.checked })}
                                 className="w-5 h-5"
                             />
-                            <span className="text-white font-semibold">Enable TriniBuild Watermark</span>
+                            <span className="text-white font-semibold">Enable Juvay Watermark</span>
                         </label>
                     </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, Car, Briefcase, Home, Ticket, Wrench, Sparkles, X, MessageSquare, ArrowRight } from 'lucide-react';
+import { Store, Car, Briefcase, Home, Wrench, Sparkles, X, MessageSquare, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Placeholder AI Assistant Modal
@@ -16,7 +16,7 @@ const AIAssistantModal = ({ service, onClose }: { service: string, onClose: () =
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 flex justify-between items-center text-white">
                     <div className="flex items-center gap-2">
                         <Sparkles className="w-5 h-5" />
-                        <h3 className="font-bold text-lg">TriniBuild AI Assistant</h3>
+                        <h3 className="font-bold text-lg">Juvay AI Assistant</h3>
                     </div>
                     <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-full transition-colors">
                         <X className="w-5 h-5" />
@@ -67,10 +67,10 @@ export const WelcomeScreen = () => {
         },
         rides: {
             icon: <Car className="w-5 h-5" />,
-            title: "Safe, Tracked Rides Across T&T",
-            subtitle: "Real-time GPS tracking. Verified drivers. Flat rates—no surge pricing.",
-            cta: "Book a Ride",
-            features: ["Live Tracking", "Verified Drivers", "Fair Pricing"],
+            title: "Rides",
+            subtitle: "Rides stay empty until drivers are live. No invented fare.",
+            cta: "Open rides",
+            features: ["Honest empty", "No invented drivers", "No live booking"],
             heroImage: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80",
             colorName: "green",
             bgClass: "bg-green-600",
@@ -104,19 +104,6 @@ export const WelcomeScreen = () => {
             activeTabClass: "bg-purple-600 text-white shadow-md",
             textClass: "text-purple-600"
         },
-        events: {
-            icon: <Ticket className="w-5 h-5" />,
-            title: "Real Tickets. No Scalpers.",
-            subtitle: "Secure event tickets with instant verification. From fetes to concerts.",
-            cta: "Browse Events",
-            features: ["Verified Tickets", "Instant Delivery", "Secure Payment"],
-            heroImage: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80",
-            colorName: "pink",
-            bgClass: "bg-pink-600",
-            hoverClass: "hover:bg-pink-700",
-            activeTabClass: "bg-pink-600 text-white shadow-md",
-            textClass: "text-pink-600"
-        },
         triniworks: {
             icon: <Wrench className="w-5 h-5" />,
             title: "Hire Vetted Pros",
@@ -141,7 +128,6 @@ export const WelcomeScreen = () => {
             case 'rides': navigate('/rides'); break;
             case 'jobs': navigate('/jobs'); break;
             case 'living': navigate('/real-estate'); break;
-            case 'events': navigate('/tickets'); break;
             case 'triniworks': navigate('/jobs'); break; // Fallback for now/new route
         }
     };
@@ -255,7 +241,7 @@ export const WelcomeScreen = () => {
                                 </div>
                                 <div className="text-left">
                                     <p className="text-xs text-gray-500">
-                                        <strong className="text-gray-900">Sarah from Port of Spain</strong> just {selectedService === 'marketplace' ? 'launched a store' : selectedService === 'rides' ? 'booked a ride' : 'posted a job'}
+                                        <strong className="text-gray-900">Sarah from Port of Spain</strong> just {selectedService === 'marketplace' ? 'launched a store' : selectedService === 'rides' ? 'opened rides' : 'posted a job'}
                                     </p>
                                     <p className={`${currentService.textClass} text-xs font-bold mt-0.5 flex items-center gap-1`}>
                                         <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span> 2 min ago
@@ -281,7 +267,7 @@ export const WelcomeScreen = () => {
 
                                 {/* Bottom Text Overlay */}
                                 <div className="absolute bottom-8 left-8 text-white">
-                                    <p className="font-bold text-lg">TriniBuild {selectedService === 'triniworks' ? 'TriniWorks' : selectedService.charAt(0).toUpperCase() + selectedService.slice(1)}</p>
+                                    <p className="font-bold text-lg">Juvay {selectedService === 'triniworks' ? 'Jobs' : selectedService.charAt(0).toUpperCase() + selectedService.slice(1)}</p>
                                     <p className="text-white/80 text-sm">Empowering Local Business</p>
                                 </div>
                             </div>

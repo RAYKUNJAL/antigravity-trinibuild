@@ -11,14 +11,14 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
       case 'terms':
         return (
           <>
-            <h1>TriniBuild Terms of Service</h1>
+            <h1>Juvay Terms of Service</h1>
             <p className="text-gray-500">Last Updated: November 25, 2025</p>
-            <p className="text-gray-500 text-sm">TriniBuild is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
+            <p className="text-gray-500 text-sm">Juvay is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
 
             <h3>1. Platform Nature</h3>
             <p>
-              TriniBuild, operated by R&R Digital Solutions, is a digital platform providing marketplace, service, job, ride-share, ticketing, and business-document tools.
-              TriniBuild does not employ, supervise, or control users.
+              Juvay, operated by R&R Digital Solutions, is a digital platform providing marketplace, service, job, ride-share, ticketing, and business-document tools.
+              Juvay does not employ, supervise, or control users.
             </p>
 
             <h3>2. Independent Contractor Status</h3>
@@ -39,16 +39,16 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
 
             <h3>5. Liability Limitations</h3>
             <p>
-              TriniBuild is not liable for accidents, injuries, property damage, financial losses, disputes, fraud, downtime, or user-generated content to the maximum extent permissible under law.
+              Juvay is not liable for accidents, injuries, property damage, financial losses, disputes, fraud, downtime, or user-generated content to the maximum extent permissible under law.
             </p>
           </>
         );
       case 'privacy':
         return (
           <>
-            <h1>TriniBuild Privacy Policy</h1>
+            <h1>Juvay Privacy Policy</h1>
             <p className="text-gray-500">Last Updated: November 25, 2025</p>
-            <p className="text-gray-500 text-sm">TriniBuild is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
+            <p className="text-gray-500 text-sm">Juvay is a product of R&R Digital Solutions, Republic of Trinidad and Tobago.</p>
 
             <h3>1. Data Collected</h3>
             <p>
@@ -73,13 +73,13 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-6 flex items-start">
               <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
               <p className="text-sm text-yellow-800">
-                This is a legally binding agreement. By using TriniBuild services as a provider, driver, or vendor, you agree to these terms.
+                This is a legally binding agreement. By using Juvay services as a provider, driver, or vendor, you agree to these terms.
               </p>
             </div>
 
             <h3>1. Contractor Status</h3>
             <p>
-              The user acknowledges that they are an independent contractor, not an employee of TriniBuild. You are solely responsible for your own taxes, insurance, licenses, and compliance with local laws.
+              The user acknowledges that they are an independent contractor, not an employee of Juvay. You are solely responsible for your own taxes, insurance, licenses, and compliance with local laws.
             </p>
 
             <h3>2. No Employment Claims</h3>
@@ -89,12 +89,12 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
 
             <h3>3. Business Document Rights</h3>
             <p>
-              You grant TriniBuild permission to generate job letters, income summaries, and business-related documents based on your platform activity for your convenience.
+              You grant Juvay permission to generate job letters, income summaries, and business-related documents based on your platform activity for your convenience.
             </p>
 
             <h3>4. Tax Responsibility</h3>
             <p>
-              All income earned through TriniBuild is self-employment income. TriniBuild does not withhold taxes on your behalf.
+              All income earned through Juvay is self-employment income. Juvay does not withhold taxes on your behalf.
             </p>
           </>
         );
@@ -108,9 +108,9 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
               User acknowledges all responsibilities and risks associated with transporting passengers, delivering items, or performing services. You operate entirely at your own risk.
             </p>
 
-            <h3>2. TriniBuild Liability Disclaimer</h3>
+            <h3>2. Juvay Liability Disclaimer</h3>
             <p>
-              TriniBuild is not responsible for injuries, accidents, thefts, property damage, or disputes arising from interactions between users.
+              Juvay is not responsible for injuries, accidents, thefts, property damage, or disputes arising from interactions between users.
             </p>
 
             <h3>3. Insurance Requirement</h3>
@@ -126,17 +126,17 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
 
             <h3>1. Automatic Membership</h3>
             <p>
-              All users are automatically considered affiliate partners of TriniBuild.
+              All users are automatically considered affiliate partners of Juvay.
             </p>
 
             <h3>2. Commissions</h3>
             <p>
-              Commission is paid based on approved referrals only. TriniBuild reserves the right to withhold commissions for suspicious activity.
+              Commission is paid based on approved referrals only. Juvay reserves the right to withhold commissions for suspicious activity.
             </p>
 
             <h3>3. Prohibited Actions</h3>
             <p>
-              Spam marketing, false claims, unauthorized advertisements, and misrepresentation of TriniBuild are strictly prohibited and may result in account termination.
+              Spam marketing, false claims, unauthorized advertisements, and misrepresentation of Juvay are strictly prohibited and may result in account termination.
             </p>
           </>
         );
@@ -152,7 +152,7 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
 
             <h3>2. No Employment Relationship</h3>
             <p>
-              The generation of these documents does not imply that TriniBuild employs the user. They are proof of your independent business activity on the platform.
+              The generation of these documents does not imply that Juvay employs the user. They are proof of your independent business activity on the platform.
             </p>
 
             <h3>3. No Guarantee</h3>
@@ -171,14 +171,14 @@ export const Legal: React.FC<LegalProps> = ({ type }) => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="prose prose-red lg:prose-lg mx-auto">
           <div className="flex justify-center mb-8">
-            <img src="/trinibuild-logo.png" alt="TriniBuild Logo" className="h-16 w-auto" />
+            <img src="/trinibuild-logo.png" alt="Juvay Logo" className="h-16 w-auto" />
           </div>
           {renderContent()}
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
           <p>
-            &copy; {new Date().getFullYear()} TriniBuild — A product of R&R Digital Solutions. All rights reserved.
+            &copy; {new Date().getFullYear()} Juvay — A product of R&R Digital Solutions. All rights reserved.
             <br />
             Use of this site constitutes acceptance of our <a href="/terms" className="text-trini-red hover:underline">Terms</a> and <a href="/privacy" className="text-trini-red hover:underline">Privacy Policy</a>.
           </p>

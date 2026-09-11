@@ -15,7 +15,7 @@ import { Sparkles, Loader2, Camera, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
 
-// AI backend base URL. In prod set VITE_AI_SERVER_URL to the deployed AI server (e.g. https://trinibuild.com/ai).
+// AI backend base URL. In prod set VITE_AI_SERVER_URL to the deployed AI server (e.g. https://juvay.app/ai).
 const AI_SERVER = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
 // Free, signed-out visitors get a small number of demo scans before we ask them to sign up.
 const FREE_SCAN_LIMIT = 2;
@@ -212,7 +212,7 @@ export const WorkingAIDemo: React.FC = () => {
             </div>
             <h3 className="text-2xl font-black text-gray-900 mb-2">You've used your free AI scans 🎉</h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Create a free TriniBuild account to keep using the AI Product Lister — free accounts get more scans,
+              Create a free Juvay account to keep using the AI Product Lister — free accounts get more scans,
               and paid plans unlock unlimited listings.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -93,7 +93,7 @@ const PLATFORM_CONFIGS: Record<SocialPlatform, {
 // ============================================
 
 const TT_HASHTAGS: Record<string, string[]> = {
-    general: ['#TriniBuild', '#TrinidadAndTobago', '#TT', '#Trinidad', '#Tobago', '#MadeInTT'],
+    general: ['#Juvay', '#TrinidadAndTobago', '#TT', '#Trinidad', '#Tobago', '#MadeInTT'],
     jobs: ['#TTJobs', '#TrinidadJobs', '#CareersTT', '#HiringTT', '#WorkInTrinidad'],
     real_estate: ['#TTRealEstate', '#TrinidadRentals', '#PropertyTT', '#TrinidadHomes', '#TobagoProperty'],
     events: ['#TTEvents', '#TrinidadEvents', '#WhatsOnTT', '#TrinidadNightlife', '#LimeTT'],
@@ -110,32 +110,32 @@ const CONTENT_TEMPLATES: Record<ContentType, { short: string; long: string; cta:
     listing: {
         short: '🛍️ NEW: {title} - ${price} in {location}',
         long: '🔥 Just Listed!\n\n{title}\n📍 {location}\n💰 ${price}\n\n{description}\n\n{cta}',
-        cta: '👉 Shop now on TriniBuild!'
+        cta: '👉 Shop now on Juvay!'
     },
     event: {
         short: '🎉 {title} - {date} @ {venue}',
         long: '🎊 Don\'t miss this!\n\n{title}\n📅 {date}\n📍 {venue}\n🎫 {price}\n\n{description}\n\n{cta}',
-        cta: '🎟️ Get your tickets on TriniBuild!'
+        cta: '🎟️ View on Juvay!'
     },
     job: {
         short: '💼 Hiring: {title} at {company} in {location}',
         long: '🚀 Career Opportunity!\n\n{company} is hiring:\n💼 {title}\n📍 {location}\n💰 {salary}\n\n{requirements}\n\n{cta}',
-        cta: '📝 Apply now on TriniBuild!'
+        cta: '📝 Apply now on Juvay!'
     },
     property: {
         short: '🏠 For Rent: {bedrooms}BR in {location} - ${price}/mo',
         long: '🏡 New Rental Available!\n\n{title}\n📍 {location}\n🛏️ {bedrooms} Bedrooms | 🚿 {bathrooms} Bathrooms\n💰 ${price}/month\n\n{description}\n\n{cta}',
-        cta: '🔑 View on TriniBuild!'
+        cta: '🔑 View on Juvay!'
     },
     promo: {
         short: '🎁 {promo_title} - Save {discount}%!',
         long: '💥 SPECIAL OFFER!\n\n{promo_title}\n🏷️ Save {discount}%\n⏰ Valid until {expiry}\n\n{description}\n\n{cta}',
-        cta: '🛒 Claim offer on TriniBuild!'
+        cta: '🛒 Claim offer on Juvay!'
     },
     blog: {
         short: '📚 New: {title} | Read now',
         long: '📖 New Article!\n\n{title}\n\n{excerpt}\n\n⏱️ {reading_time} min read\n\n{cta}',
-        cta: '📲 Read on TriniBuild!'
+        cta: '📲 Read on Juvay!'
     },
     engagement: {
         short: '{question}',
@@ -144,8 +144,8 @@ const CONTENT_TEMPLATES: Record<ContentType, { short: string; long: string; cta:
     },
     brand: {
         short: '{message}',
-        long: '{message}\n\n🌴 TriniBuild - Your Local Digital Marketplace',
-        cta: '🔗 trinibuild.com'
+        long: '{message}\n\n🌴 Juvay - Your Local Digital Marketplace',
+        cta: '🔗 juvay.app'
     }
 };
 
@@ -246,7 +246,7 @@ class SocialContentService {
     ): Promise<string> {
         const config = PLATFORM_CONFIGS[platform];
 
-        const prompt = `Write a ${platform} post for TriniBuild (Trinidad & Tobago marketplace).
+        const prompt = `Write a ${platform} post for Juvay (Trinidad & Tobago marketplace).`
 
 Type: ${type}
 Data: ${JSON.stringify(data)}
@@ -491,7 +491,7 @@ Return only the post text.`;
             promo: 'Sale banner, vibrant colors, Trinidad flag colors, exciting promotional design',
             blog: 'Blog header image about {title}, professional, informative, Caribbean context',
             engagement: 'Social media engagement post, colorful, Trinidad culture, community vibes',
-            brand: 'TriniBuild brand imagery, Trinidad marketplace, digital platform, modern Caribbean'
+            brand: 'Juvay brand imagery, Trinidad marketplace, digital platform, modern Caribbean'
         };
 
         return basePrompts[type].replace(/{(\w+)}/g, (_, key) => String(data[key] ?? type));

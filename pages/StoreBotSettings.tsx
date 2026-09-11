@@ -18,7 +18,7 @@ export const StoreBotSettings: React.FC = () => {
     const [botEnabled, setBotEnabled] = useState<boolean>(false);
 
     const [settings, setSettings] = useState({
-        bot_name: 'TriniBuild Support Bot',
+        bot_name: 'Juvay Support Bot',
         bot_persona: 'support_bot',
         bot_system_prompt: ''
     });
@@ -73,7 +73,7 @@ export const StoreBotSettings: React.FC = () => {
                 setStoreName(store.name || 'My Store');
                 setBotEnabled(!!store.bot_enabled);
                 setSettings({
-                    bot_name: store.bot_name || 'TriniBuild Support Bot',
+                    bot_name: store.bot_name || 'Juvay Support Bot',
                     bot_persona: store.bot_persona || 'support_bot',
                     bot_system_prompt: store.bot_system_prompt || ''
                 });

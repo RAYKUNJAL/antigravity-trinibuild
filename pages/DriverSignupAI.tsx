@@ -84,7 +84,7 @@ export const DriverSignupAI: React.FC = () => {
                             AI-Powered Signup - Get Approved in Minutes!
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-                            Join TriniBuild <span className="text-yellow-400">Go</span>
+                            Join Juvay
                         </h1>
                         <p className="text-xl text-gray-300 mb-6">
                             Smart AI assistant guides you through every step

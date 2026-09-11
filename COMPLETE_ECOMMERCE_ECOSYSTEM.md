@@ -370,7 +370,7 @@ import { notificationService } from './services/notificationService';
 await notificationService.notifyOrderPlaced(
     'ORD-123',
     'customer-uuid',
-    '1868-555-1234',
+    '',
     'customer@email.com'
 );
 ```
@@ -384,7 +384,7 @@ const delivery = await deliveryService.createDeliveryRequest({
     storeId: 'store-uuid',
     pickupAddress: 'Store Location, Port of Spain',
     deliveryAddress: 'Customer Address, San Fernando',
-    deliveryPhone: '1868-555-1234',
+    deliveryPhone: '',
     deliveryFee: 50.00,
     packageValue: 200.00
 });

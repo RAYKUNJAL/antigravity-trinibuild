@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Users, Send, Download, Copy, CheckCircle } from 'lucide-react';
 
 export const MarketingTools: React.FC = () => {
-    const [message, setMessage] = useState("Hello! Check out our latest deals on TriniBuild.");
+    const [message, setMessage] = useState("Hello! Check out our latest deals on Juvay.");
     const [targetAudience, setTargetAudience] = useState<'all' | 'buyers' | 'leads'>('all');
     const [isSending, setIsSending] = useState(false);
     const [sentCount, setSentCount] = useState(0);

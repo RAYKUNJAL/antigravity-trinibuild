@@ -138,13 +138,13 @@ export const AIDocumentAssistant: React.FC = () => {
                 return `**${data.employer_name || 'Company Name'}**\nTrinidad & Tobago\n\nDate: ${date}\n\n**LETTER OF EMPLOYMENT**\n\nTo Whom It May Concern,\n\nThis letter confirms that **${data.employee_name || 'Employee Name'}** has been offered the position of **${data.position || 'Position'}** at ${data.employer_name || 'Company Name'}.\n\n**Employment Details:**\n- Position: ${data.position || 'N/A'}\n- Monthly Salary: TT$${data.salary || 'N/A'}\n- Start Date: ${data.start_date || 'N/A'}\n- Employment Type: Full-time\n\nThis letter is issued for official purposes as required.\n\nSincerely,\n\n_________________________\nAuthorized Representative\n${data.employer_name || 'Company Name'}`;
 
             case 'proof_of_income':
-                return `**PROOF OF INCOME STATEMENT**\n\nDate: ${date}\n\n**Business:** ${data.business_name || 'N/A'}\n**Owner:** ${data.owner_name || 'N/A'}\n\nThis document certifies that ${data.owner_name || 'the undersigned'} earns an average monthly income of **TT$${data.monthly_income || 'N/A'}** from ${data.source || 'business operations'} during the period of ${data.period || 'the current fiscal year'}.\n\nThis income is generated through the Juvay platform (juvay.com) and can be verified through our digital records.\n\n**Verified by TriniBuild Financial Services**\n\n_________________________\nDigital Verification Stamp\nTriniBuild.com`;
+                return `**PROOF OF INCOME STATEMENT**\n\nDate: ${date}\n\n**Business:** ${data.business_name || 'N/A'}\n**Owner:** ${data.owner_name || 'N/A'}\n\nThis document certifies that ${data.owner_name || 'the undersigned'} earns an average monthly income of **TT$${data.monthly_income || 'N/A'}** from ${data.source || 'business operations'} during the period of ${data.period || 'the current fiscal year'}.\n\nThis income is generated through the Juvay platform (juvay.app) and can be verified through our digital records.\n\n**Verified by Juvay / R&R Digital Solutions**\n\n_________________________\nDigital Verification Stamp\njuvay.app`;
 
             case 'visa_letter':
                 return `**VISA SUPPORT LETTER**\n\nDate: ${date}\n\nTo: The Visa Officer\nEmbassy/Consulate of ${data.destination || 'N/A'}\n\nRe: Visa Application for ${data.applicant_name || 'N/A'}\n\nDear Sir/Madam,\n\nI, ${data.sponsor_name || 'N/A'}, hereby confirm that ${data.applicant_name || 'N/A'} will be visiting ${data.destination || 'N/A'} for ${data.purpose || 'business/leisure'} for a duration of ${data.duration || 'N/A'}.\n\nAll expenses including accommodation, transportation, and daily expenses will be covered.\n\nPlease do not hesitate to contact us for any further information.\n\nSincerely,\n\n_________________________\n${data.sponsor_name || 'Sponsor Name'}\nTrinidad & Tobago`;
 
             default:
-                return `Document generated for ${type}. Please contact support@trinibuild.com for assistance.`;
+                return `Document generated for ${type}. Please contact support@juvay.app for assistance.`;
         }
     };
 
@@ -159,7 +159,7 @@ export const AIDocumentAssistant: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>AI Document Assistant - Job Letters, Visa Letters, Proof of Income | TriniBuild</title>
+                <title>AI Document Assistant - Job Letters, Visa Letters, Proof of Income | Juvay</title>
                 <meta name="description" content="Generate professional business documents instantly. Job letters, proof of income, visa support letters. Made for Trinidad & Tobago." />
             </Helmet>
 

@@ -13,6 +13,8 @@ import { storesApi } from '../services/selfHostedApi';
 import { StoreShareModal, StoreQRSection, TriniBuildBadge } from '../components/StoreShareKit';
 import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import type { Store, Product } from '../types';
+import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
+import { storeToStorefrontModel, storeUsesStarter } from '../services/storeToStorefrontModel';
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -329,6 +331,30 @@ export const StorefrontV2: React.FC = () => {
                     Browse All Stores
                 </button>
             </div>
+        );
+    }
+
+    if (storeUsesStarter(store)) {
+        const model = storeToStorefrontModel(store, products, isPreview ? 'merchant_preview' : 'published');
+        const seoTitle = model.seo?.title || `${store.name} · Juvay`;
+        const seoDesc = model.seo?.description || store.description || `${store.name} on Juvay`;
+        const ogImage = model.hero?.image || model.logo || '';
+        return (
+            <>
+                <Helmet>
+                    <title>{seoTitle}</title>
+                    <meta name="description" content={seoDesc} />
+                    {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+                    {ogImage ? <meta name="twitter:image" content={ogImage} /> : null}
+                    {model.logo ? <link rel="icon" href={model.logo} /> : null}
+                </Helmet>
+                {isPreview && (
+                    <div className="bg-yellow-500 text-gray-900 text-center py-3 px-4 text-sm font-bold">
+                        Preview — this is your shop, not a demo catalog.
+                    </div>
+                )}
+                <JuvayStorefront model={model} />
+            </>
         );
     }
 

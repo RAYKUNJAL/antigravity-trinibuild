@@ -1,5 +1,5 @@
 /**
- * TriniBuild Blog Database Service
+ * Juvay Blog Database Service
  * 
  * Handles all CRUD operations for the AI blog system including:
  * - Blog storage and retrieval
@@ -143,7 +143,7 @@ export const saveBlog = async (
             scheduled_for,
             published_at: status === 'published' ? new Date().toISOString() : null,
             author_id,
-            author_name: 'TriniBuild AI'
+            author_name: 'Juvay AI'
         }, {
             onConflict: 'location_slug,vertical_key'
         })
@@ -494,7 +494,7 @@ export const updateSchedulerSettings = async (
 export const generateSitemap = async (): Promise<string> => {
     const blogs = await getPublishedBlogs(1000, 0);
 
-    const baseUrl = 'https://trinibuild.com';
+    const baseUrl = 'https://juvay.app';
 
     const urls = blogs.map(blog => `
     <url>

@@ -1,5 +1,5 @@
 /**
- * TriniBuild Keyword Traffic Engine Service
+ * Juvay Keyword Traffic Engine Service
  * Key: kw_engine
  * 
  * Real-time keyword tracking and analytics engine to monitor
@@ -541,7 +541,7 @@ export const getKeywordDashboardData = async (): Promise<KeywordDashboardData> =
  * Generate AI keyword suggestions based on trends
  */
 export const generateKeywordSuggestions = async (): Promise<KeywordSuggestion[]> => {
-    const prompt = `You are an SEO expert for TriniBuild, a platform in Trinidad & Tobago.
+    const prompt = `You are an SEO expert for Juvay, a platform in Trinidad & Tobago.
 
 Based on these trending search categories in T&T, suggest 5 high-opportunity keywords:
 - Jobs and employment
@@ -613,7 +613,7 @@ export const generateBlogTopicsFromGaps = async (
 
     const keywords = gaps.map(g => g.keyword_normalized).join(', ');
 
-    const prompt = `You are a content strategist for TriniBuild in Trinidad & Tobago.
+    const prompt = `You are a content strategist for Juvay in Trinidad & Tobago.
 
 These keywords have high search volume but no content on the platform:
 ${keywords}

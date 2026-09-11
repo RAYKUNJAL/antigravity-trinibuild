@@ -60,7 +60,7 @@ const StorefrontNav: React.FC<{
       className="text-white text-xs py-2 px-4 text-center font-semibold tracking-widest"
       style={{ background: '#E61E2B' }}
     >
-      🇹🇹 FREE DELIVERY on orders over TT$200 · Pay with Cash, Linx, or Card
+      🇹🇹 Cash at pickup or cash on delivery. No Linx or card rail on this storefront.
     </div>
 
     {/* Main nav */}

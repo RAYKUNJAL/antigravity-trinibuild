@@ -73,7 +73,7 @@ export const Dashboard: React.FC = () => {
   // Store Context for AI Agent
   const storeContext = {
     name: logoPrompt.name,
-    description: "A local business powered by TriniBuild.",
+    description: "A local business powered by Juvay.",
     whatsapp: whatsappNumber,
     products: products
   };

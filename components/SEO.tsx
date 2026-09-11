@@ -14,9 +14,9 @@ interface SEOProps {
     noindex?: boolean;
 }
 
-const SITE_URL = 'https://trinibuild.com';
-const SITE_TITLE = 'TriniBuild - The Digital Ecosystem of Trinidad & Tobago';
-const DEFAULT_IMAGE = 'https://trinibuild.com/og-image.jpg';
+const SITE_URL = 'https://juvay.app';
+const SITE_TITLE = 'Juvay - Trinidad & Tobago';
+const DEFAULT_IMAGE = 'https://juvay.app/juvay-logo.png';
 
 /**
  * Computes a canonical URL.
@@ -40,7 +40,7 @@ export const SEO: React.FC<SEOProps> = ({
     structuredData,
     noindex,
 }) => {
-    const fullTitle = `${title} | TriniBuild`;
+    const fullTitle = `${title} | Juvay`;
     const canonical = computeCanonical(url);
     const ogImage = image || DEFAULT_IMAGE;
 

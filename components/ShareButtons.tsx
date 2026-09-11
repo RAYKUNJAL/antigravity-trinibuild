@@ -14,7 +14,7 @@ interface ShareButtonsProps {
 export const ShareButtons: React.FC<ShareButtonsProps> = ({
     contentType,
     contentId,
-    title = 'Check this out on TriniBuild!',
+    title = 'Check this out on Juvay!',
     description = '',
     className = ''
 }) => {

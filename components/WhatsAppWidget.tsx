@@ -37,7 +37,7 @@ export const WhatsAppWidget: React.FC<WhatsAppWidgetProps> = ({
                                 <MessageCircle className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                                <div className="font-bold">TriniBuild Support</div>
+                                <div className="font-bold">Juvay Support</div>
                                 <div className="text-xs text-green-100">Typically replies instantly</div>
                             </div>
                         </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Store, ShoppingCart, Megaphone, BarChart3, Sparkles, Zap,
     Shield, CreditCard, Smartphone, Globe, MessageSquare, TrendingUp,
-    Package, Users, Calendar, MapPin, Briefcase, Home
+    Package, Users, MapPin, Briefcase, Home
 } from 'lucide-react';
 
 interface FeatureCardProps {
@@ -176,12 +176,6 @@ export const Features: React.FC = () => {
                             title="Real Estate Listings"
                             description="List properties for sale or rent, and help buyers find their dream home."
                             color="bg-red-100 dark:bg-red-900"
-                        />
-                        <FeatureCard
-                            icon={<Calendar className="h-7 w-7 text-yellow-600" />}
-                            title="Events Calendar"
-                            description="Promote events, sell tickets, and manage attendees all in one place."
-                            color="bg-yellow-100 dark:bg-yellow-900"
                         />
                         <FeatureCard
                             icon={<Globe className="h-7 w-7 text-indigo-600" />}

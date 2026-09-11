@@ -181,7 +181,7 @@ export default function AISiteBuilder() {
                 </div>
             </motion.div>,
             <motion.div key="p2" {...fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {([['whatsapp', 'WhatsApp number', '868 555 1234'], ['phone', 'Phone', '868 555 1234'], ['email', 'Email', 'hello@yourbiz.com'], ['instagram', 'Instagram', '@yourbiz'], ['address', 'Address', 'Port of Spain']] as const).map(([k, label, ph]) => (
+                {([['whatsapp', 'WhatsApp number', 'Your WhatsApp'], ['phone', 'Phone', 'Your phone'], ['email', 'Email', 'hello@yourbiz.com'], ['instagram', 'Instagram', '@yourbiz'], ['address', 'Address', 'Port of Spain']] as const).map(([k, label, ph]) => (
                     <div key={k} className={k === 'address' ? 'sm:col-span-2' : ''}>
                         <label className="block text-sm font-semibold text-gray-300 mb-2">{label} <span className="text-gray-500">(optional)</span></label>
                         <input value={(brief as any)[k] || ''} onChange={(e) => setBrief({ ...brief, [k]: e.target.value })} placeholder={ph} className={inputCls} />
@@ -287,15 +287,15 @@ export default function AISiteBuilder() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Left panel */}
                 <div className="w-full max-w-xs border-r border-gray-800 bg-black overflow-y-auto p-4 hidden lg:block">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Commercial Templates</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Eight starters</p>
                     <div className="space-y-2 mb-5">
                         {COMMERCIAL_TEMPLATES.map((tpl) => (
-                            <button key={tpl.name} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
+                            <button key={tpl.id} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
                                 className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition-all ${site.theme.preset === tpl.theme.preset ? 'border-white bg-gray-900' : 'border-gray-800 hover:border-gray-600'}`}>
                                 <div className="w-10 h-10 rounded-lg shrink-0" style={{ background: `linear-gradient(135deg, ${tpl.theme.primary}, ${tpl.theme.secondary})` }} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-bold truncate">{tpl.name} {tpl.tier === 'pro' && <span className="text-[9px] font-black text-[#FFD700] ml-1">PRO</span>}</p>
-                                    <p className="text-[11px] text-gray-500 truncate">{tpl.category}</p>
+                                    <p className="text-sm font-bold truncate">{tpl.name}</p>
+                                    <p className="text-[11px] text-gray-500 truncate">{tpl.id}</p>
                                 </div>
                             </button>
                         ))}

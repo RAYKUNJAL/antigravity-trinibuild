@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Mail, Lock, ArrowRight, Phone, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
-import { supabase } from '../services/supabaseClient';
 
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -23,24 +22,17 @@ export const Auth: React.FC = () => {
 
   // --- Actions ---
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'spotify') => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
-    try {
-      const dest = isLogin ? (searchParams.get('redirect') || '/dashboard') : '/onboarding';
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
-        options: {
-          redirectTo: `${window.location.origin}${dest}`
-        }
-      });
-      if (error) throw error;
-      // Social signup (non-login) flows to /onboarding via redirectTo above.
-      if (!isLogin) navigate('/onboarding');
-    } catch (err: any) {
-      setError(err.message);
+    setSuccessMsg(null);
+    const dest = isLogin ? (searchParams.get('redirect') || '/dashboard') : '/onboarding';
+    const result = await authService.signInWithGoogle(dest);
+    if (result.error) {
+      setError(result.error);
       setLoading(false);
     }
+    // OAuth redirects when configured. Do not claim signed-in here.
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -115,11 +107,11 @@ export const Auth: React.FC = () => {
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="text-green-500 w-6 h-6" />
-              <span>Local Payments (Linx/Credit Card)</span>
+              <span>Cash on delivery and pickup</span>
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="text-green-500 w-6 h-6" />
-              <span>Instant Delivery Network</span>
+              <span>Wam only when that rail is actually on</span>
             </li>
           </ul>
         </div>
@@ -168,21 +160,16 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          {/* Social Login Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Google is the only enabled GoTrue social provider */}
+          <div>
             <button
-              onClick={() => handleSocialLogin('google')}
-              className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors bg-white text-gray-700 font-medium text-sm"
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors bg-white text-gray-700 font-medium text-sm disabled:opacity-70"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5 mr-2" alt="Google" />
-              Google
-            </button>
-            <button
-              onClick={() => handleSocialLogin('facebook')}
-              className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors bg-white text-gray-700 font-medium text-sm"
-            >
-              <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="w-5 h-5 mr-2" alt="Facebook" />
-              Facebook
+              Continue with Google
             </button>
           </div>
 

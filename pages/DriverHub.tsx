@@ -88,7 +88,7 @@ export const DriverHub: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
-                            <h1 className="text-xl font-bold">TriniBuild <span className="text-yellow-400">Go</span></h1>
+                            <h1 className="text-xl font-bold">Juvay <span className="text-yellow-400">Rides</span></h1>
                             <span className="ml-4 px-3 py-1 bg-yellow-400 text-trini-black rounded-full text-xs font-bold">
                                 DRIVER
                             </span>
@@ -329,10 +329,13 @@ export const DriverHub: React.FC = () => {
                     <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl p-6 shadow-lg text-white">
                         <div className="flex items-center justify-between mb-2">
                             <div className="text-sm opacity-90">Rating</div>
-                            <Star className="h-4 w-4 fill-current" />
+                            {typeof earnings?.rating === 'number' ? <Star className="h-4 w-4 fill-current" /> : null}
                         </div>
-                        <div className="text-3xl font-bold">{earnings?.rating.toFixed(1) || '5.0'}</div>
-                        <div className="text-xs opacity-90 mt-1">Excellent service!</div>
+                        {typeof earnings?.rating === 'number' ? (
+                            <div className="text-3xl font-bold">{earnings.rating.toFixed(1)}</div>
+                        ) : (
+                            <div className="text-sm opacity-90 mt-1">No rating yet</div>
+                        )}
                     </div>
                 </div>
 

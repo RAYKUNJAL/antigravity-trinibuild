@@ -4,7 +4,7 @@ import { ServicesShowcase } from '../../components/ServicesShowcase';
 import { JuvayPriceTable } from '../../components/JuvayPriceTable';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
-    Phone, Mail, MessageCircle, MapPin, Star, Clock, Truck, Shield, Award,
+    Mail, Star, Clock, Truck, Shield, Award,
     ArrowRight, Zap, DollarSign, Users, TrendingUp, Package, Calendar
 } from 'lucide-react';
 
@@ -245,11 +245,11 @@ export const FoodServicesLanding: React.FC = () => {
                                 Get Started Free
                             </button>
                             <a
-                                href="https://wa.me/18685552845"
-                                className="bg-green-500 text-white px-12 py-5 rounded-full font-extrabold text-xl hover:bg-green-600 transition-all shadow-2xl hover:scale-105 flex items-center justify-center"
+                                href="mailto:support@juvay.app"
+                                className="bg-white/15 text-white px-12 py-5 rounded-full font-extrabold text-xl hover:bg-white/25 transition-all shadow-2xl hover:scale-105 flex items-center justify-center"
                             >
-                                <MessageCircle className="mr-2 h-6 w-6" />
-                                WhatsApp We
+                                <Mail className="mr-2 h-6 w-6" />
+                                Email support@juvay.app
                             </a>
                         </div>
                         <p className="text-sm text-white/80">

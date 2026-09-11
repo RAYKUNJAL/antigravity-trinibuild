@@ -117,7 +117,7 @@ async function optimizeListing(
   analysis: AnalysisResult,
   input: OptimizationInput,
 ): Promise<OptimizationResult> {
-  const prompt = `You are a professional e-commerce copywriter for TriniBuild, Trinidad & Tobago's premier marketplace.
+  const prompt = `You are a professional e-commerce copywriter for Juvay, Trinidad & Tobago's marketplace.
 
 PRODUCT ANALYSIS:
 ${JSON.stringify(analysis, null, 2)}
@@ -189,7 +189,7 @@ async function refineListing(
   optimization: OptimizationResult,
   input: OptimizationInput,
 ): Promise<RefinementResult> {
-  const prompt = `You are a quality assurance specialist for TriniBuild marketplace.
+  const prompt = `You are a quality assurance specialist for Juvay marketplace.
 
 REVIEW THIS LISTING:
 ${JSON.stringify(optimization, null, 2)}

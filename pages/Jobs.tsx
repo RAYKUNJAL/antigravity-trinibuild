@@ -171,18 +171,9 @@ export const Jobs: React.FC = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                      {/* Sidebar Ad / Filter */}
                      <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-lg">
-                           <ShieldCheck className="h-12 w-12 mb-4 text-blue-200" />
-                           <h3 className="text-xl font-bold mb-2">TriniBuild Guarantee</h3>
-                           <p className="text-blue-100 text-sm mb-4">Hire with confidence. Verified Pros are background checked and insured.</p>
-                           <button className="w-full bg-white text-blue-700 font-bold py-2 rounded-lg hover:bg-blue-50 transition-colors">
-                              Learn More
-                           </button>
-                        </div>
-
                         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                            <h3 className="font-bold text-gray-900 mb-4">Are you a Pro?</h3>
-                           <p className="text-gray-600 text-sm mb-4">Join thousands of pros growing their business on TriniBuild.</p>
+                           <p className="text-gray-600 text-sm mb-4">List as a pro on Juvay when you are ready. Empty list means no one is listed yet.</p>
                            <ul className="space-y-2 text-sm text-gray-500 mb-6">
                               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> Get qualified leads</li>
                               <li className="flex items-center"><CheckCircle className="h-4 w-4 text-green-500 mr-2" /> Build your reputation</li>
@@ -197,11 +188,17 @@ export const Jobs: React.FC = () => {
                      {/* Main List */}
                      <div className="lg:col-span-2 space-y-6">
                         <div className="flex justify-between items-center">
-                           <h2 className="text-xl font-bold text-gray-900">{selectedCategory === 'All' ? 'Top Rated Pros' : `${selectedCategory} Pros`}</h2>
-                           <span className="text-sm text-gray-500">{filteredPros.length} results</span>
+                           <h2 className="text-xl font-bold text-gray-900">{selectedCategory === 'All' ? 'Pros' : `${selectedCategory} Pros`}</h2>
+                           <span className="text-sm text-gray-500">{filteredPros.length} listed</span>
                         </div>
 
-                        {filteredPros.map((pro) => (
+                        {filteredPros.length === 0 ? (
+                           <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-200">
+                              <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                              <h3 className="text-lg font-medium text-gray-900">No pros listed yet</h3>
+                              <p className="text-gray-500">This list stays empty until a real pro is added. No sample cards.</p>
+                           </div>
+                        ) : filteredPros.map((pro) => (
                            <div key={pro.id} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-all group relative overflow-hidden">
                               {pro.isPromoted && (
                                  <div className="absolute top-0 right-0 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
@@ -288,7 +285,7 @@ export const Jobs: React.FC = () => {
                      <div className="flex justify-between items-center mb-6">
                         <div className="text-left">
                            <h2 className="text-2xl font-bold text-gray-900">Looking for Employment?</h2>
-                           <p className="text-gray-600">Browse hundreds of full-time and part-time job listings.</p>
+                           <p className="text-gray-600">Job listings appear here when someone posts one. Empty means none yet.</p>
                         </div>
                         <button
                            onClick={() => setShowPostJobModal(true)}
@@ -378,7 +375,7 @@ export const Jobs: React.FC = () => {
 
                      <div className="bg-yellow-50 p-3 rounded-lg flex items-start gap-2 text-xs text-yellow-800">
                         <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                        <p>By submitting, you agree to share your contact details with this pro. TriniBuild does not charge you for quotes.</p>
+                        <p>By submitting, you agree to share your contact details with this pro. Juvay does not charge you for quotes.</p>
                      </div>
 
                      <button type="submit" className="w-full bg-trini-teal text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition-colors shadow-lg">

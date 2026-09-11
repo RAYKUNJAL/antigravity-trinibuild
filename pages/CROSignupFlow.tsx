@@ -206,15 +206,6 @@ export const CROSignupFlow: React.FC = () => {
             cta: 'Start Selling Free'
         },
         {
-            id: 'driver',
-            title: 'Earn as Driver',
-            subtitle: 'Deliver & make money',
-            icon: '🚗',
-            gradient: 'from-green-500 to-green-600',
-            benefits: ['Flexible schedule', 'Daily payouts', 'Earn TT$500+/week'],
-            cta: 'Start Driving'
-        },
-        {
             id: 'customer',
             title: 'Shop Local',
             subtitle: 'Support Trinidad businesses',
@@ -239,7 +230,7 @@ export const CROSignupFlow: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Join TriniBuild - Start in 60 Seconds | Trinidad & Tobago</title>
+                <title>Join Juvay - Start in 60 Seconds | Trinidad & Tobago</title>
                 <meta name="description" content="Start selling, driving, or shopping in Trinidad & Tobago in under 60 seconds. No credit card required. Built in T&T." />
             </Helmet>
 
@@ -253,7 +244,7 @@ export const CROSignupFlow: React.FC = () => {
                                     <span className="text-white font-bold text-xl">T</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-lg font-bold text-gray-900">TriniBuild</h1>
+                                    <h1 className="text-lg font-bold text-gray-900">Juvay</h1>
                                     <div className="flex items-center space-x-2 text-xs text-gray-600">
                                         <Star className="h-3 w-3 text-yellow-400 fill-current" />
                                         <span>Built in Trinidad & Tobago</span>
@@ -628,25 +619,6 @@ export const CROSignupFlow: React.FC = () => {
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
-
-                            {/* Testimonial */}
-                            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 border-2 border-green-100">
-                                <div className="flex mb-3">
-                                    {[1, 2, 3, 4, 5].map((i) => (
-                                        <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                                    ))}
-                                </div>
-                                <p className="text-gray-700 italic mb-4">
-                                    "I set up my store in less than 5 minutes and got my first order the same day! TriniBuild is amazing!"
-                                </p>
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400"></div>
-                                    <div>
-                                        <div className="font-bold text-gray-900">Sarah Mohammed</div>
-                                        <div className="text-sm text-gray-600">Sweet Treats Bakery, POS</div>
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Security Badge */}

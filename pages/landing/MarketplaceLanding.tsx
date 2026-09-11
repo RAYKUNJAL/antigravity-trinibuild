@@ -10,7 +10,7 @@ export const MarketplaceLanding: React.FC = () => {
       <div className="min-h-screen bg-white font-sans">
          <SEO
             title="Free Online Store Builder for Trinidad Businesses"
-            description="Create your free online store in 60 seconds. No credit card required. Join the TriniBuild ecosystem and start selling today."
+            description="Create your free online store in 60 seconds. No credit card required. Join the Juvay ecosystem and start selling today."
             keywords="online store trinidad, ecommerce trinidad, free website builder, trinidad business, sell online trinidad"
          />
          {/* HERO SECTION: Pattern Interrupt */}
@@ -55,7 +55,7 @@ export const MarketplaceLanding: React.FC = () => {
             <div className="max-w-6xl mx-auto px-4">
                <div className="text-center mb-16">
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">Why is it so hard to get online in Trinidad?</h2>
-                  <p className="text-lg text-gray-600">The traditional system is designed to keep you out. TriniBuild is designed to let you in.</p>
+                  <p className="text-lg text-gray-600">The traditional system is designed to keep you out. Juvay is designed to let you in.</p>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -84,13 +84,13 @@ export const MarketplaceLanding: React.FC = () => {
                      </ul>
                   </div>
 
-                  {/* The TriniBuild Way */}
+                  {/* The Juvay Way */}
                   <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-trini-red relative overflow-hidden">
                      <div className="absolute top-0 right-0 bg-trini-red text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                         THE ECOSYSTEM
                      </div>
                      <h3 className="text-xl font-bold text-trini-red mb-6 flex items-center uppercase tracking-wide">
-                        <Check className="h-6 w-6 mr-2" /> The TriniBuild Way
+                        <Check className="h-6 w-6 mr-2" /> The Juvay Way
                      </h3>
                      <ul className="space-y-4">
                         <li className="flex items-start text-gray-800">
@@ -124,13 +124,13 @@ export const MarketplaceLanding: React.FC = () => {
                         Built for Profit. <br />Built for <span className="text-trini-red underline decoration-4 decoration-yellow-400">Trinidadians.</span>
                      </h2>
                      <p className="text-lg text-gray-600 mb-6">
-                        We don't just give you a website. We give you a traffic engine. By joining TriniBuild, you tap into a network of thousands of local buyers searching for products right now.
+                        We don't just give you a website. We give you a traffic engine. By joining Juvay, you tap into a network of thousands of local buyers searching for products right now.
                      </p>
                      <ul className="space-y-4">
                         {[
                            "AI-Generated Product Listings (Upload a photo, we write the copy)",
                            "WhatsApp Checkout with Automated Invoicing",
-                           "Integrated Delivery Network (TriniBuild Go)",
+                           "Juvay Rides — offer a job, not a live dispatch",
                            "Cash on Delivery Management System"
                         ].map((item, i) => (
                            <li key={i} className="flex items-center text-gray-800 font-medium">

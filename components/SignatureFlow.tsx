@@ -105,7 +105,7 @@ export const SignatureFlow: React.FC<SignatureFlowProps> = ({
                 <FileSignature className="h-12 w-12 text-trini-red mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Legal Agreements Required</h2>
                 <p className="text-gray-600">
-                    Please review and accept the following documents to use {serviceType} services on TriniBuild.
+                    Please review and accept the following documents to use {serviceType} services on Juvay.
                 </p>
             </div>
 

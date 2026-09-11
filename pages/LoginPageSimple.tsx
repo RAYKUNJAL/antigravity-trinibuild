@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { authApi } from '../services/selfHostedApi';
+import { authService } from '../services/authService';
 import { track } from '../services/eventTracker';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
@@ -33,6 +34,16 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       const msg = err?.message || 'Login failed. Please check your email and password.';
       setError(msg === 'Failed to fetch' ? 'Cannot reach the Juvay API on this site. Try again in a minute.' : msg);
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    const result = await authService.signInWithGoogle(redirect);
+    if (result.error) {
+      setError(result.error);
       setLoading(false);
     }
   };
@@ -78,6 +89,21 @@ export const LoginPage: React.FC = () => {
               <p className="font-semibold text-sm">{error}</p>
             </motion.div>
           )}
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full mb-6 flex items-center justify-center gap-3 py-3 border-2 border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors font-semibold text-gray-700 disabled:opacity-50"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="" />
+            Continue with Google
+          </button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+            <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">or continue with email</span></div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">

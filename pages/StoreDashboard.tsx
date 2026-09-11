@@ -14,6 +14,7 @@ import { storeService } from '../services/storeService';
 import { subscriptionService } from '../services/subscriptionService';
 import type { Store as StoreType, Product, Order } from '../types';
 import { getPlaceholderImage } from '../components/templates/placeholderImage';
+import { MerchantItemFields } from '../components/MerchantItemFields';
 
 // ============================================
 // TYPES
@@ -22,8 +23,10 @@ import { getPlaceholderImage } from '../components/templates/placeholderImage';
 interface ProductForm {
   name: string;
   description: string;
-  price: number;
-  stock: number;
+  price: string;
+  qty: string;
+  sku: string;
+  variant: string;
   category: string;
   image_url: string;
   status: 'active' | 'draft' | 'archived';
@@ -146,7 +149,7 @@ export const StoreDashboard: React.FC = () => {
   // Forms
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState<ProductForm>({
-    name: '', description: '', price: 0, stock: 0, category: '', image_url: '', status: 'active'
+    name: '', description: '', price: '', qty: '', sku: '', variant: '', category: '', image_url: '', status: 'active'
   });
   const [showProductModal, setShowProductModal] = useState(false);
   const [maxProducts, setMaxProducts] = useState<number>(5);
@@ -246,7 +249,7 @@ export const StoreDashboard: React.FC = () => {
     }
     setEditingProduct(null);
     setProductForm({
-      name: '', description: '', price: 0, stock: 0,
+      name: '', description: '', price: '', qty: '', sku: '', variant: '',
       category: '', image_url: '', status: 'active'
     });
     setShowProductModal(true);
@@ -257,8 +260,10 @@ export const StoreDashboard: React.FC = () => {
     setProductForm({
       name: product.name,
       description: product.description || '',
-      price: product.price,
-      stock: product.stock ?? 0,
+      price: product.price != null ? String(product.price) : '',
+      qty: product.stock == null ? '' : String(product.stock),
+      sku: (product as any).sku || '',
+      variant: '',
       category: product.category || '',
       image_url: product.image_url || '',
       status: (product as any).status || 'active'
@@ -272,13 +277,26 @@ export const StoreDashboard: React.FC = () => {
     setError(null);
 
     try {
+      if (!productForm.name.trim()) {
+        setError('Item name is required');
+        setSaving(false);
+        return;
+      }
+      if (productForm.price.trim() === '' || !Number.isFinite(Number(productForm.price))) {
+        setError('Price TT$ is required');
+        setSaving(false);
+        return;
+      }
+      const qtyText = productForm.qty.trim();
+      const stock = qtyText === '' ? null : (/^\d+$/.test(qtyText) ? Number(qtyText) : null);
       const payload = {
         store_id: store.id,
-        name: productForm.name,
+        name: productForm.name.trim(),
         description: productForm.description,
         price: Number(productForm.price),
         base_price: Number(productForm.price),
-        stock: Number(productForm.stock),
+        stock,
+        sku: productForm.sku.trim() || undefined,
         category: productForm.category,
         image_url: productForm.image_url,
         status: productForm.status,
@@ -542,7 +560,7 @@ export const StoreDashboard: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{store?.name || 'Dashboard'} - TriniBuild</title>
+        <title>{store?.name || 'Dashboard'} - Juvay</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -589,7 +607,7 @@ export const StoreDashboard: React.FC = () => {
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
             >
-              <Home className="w-4 h-4" /> Back to TriniBuild
+              <Home className="w-4 h-4" /> Back to Juvay
             </button>
           </div>
         </aside>
@@ -1277,74 +1295,35 @@ export const StoreDashboard: React.FC = () => {
               </button>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
-                <input
-                  type="text"
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={productForm.description}
-                  onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900 resize-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price (TT$) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                  <input
-                    type="number"
-                    value={productForm.stock}
-                    onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-              </div>
+              <MerchantItemFields
+                heading={editingProduct ? 'Edit item' : 'Add item'}
+                name={productForm.name}
+                price={productForm.price}
+                qty={productForm.qty}
+                sku={productForm.sku}
+                variant={productForm.variant}
+                description={productForm.description}
+                image={productForm.image_url}
+                storeName={store?.name}
+                onChange={(patch) => setProductForm({
+                  ...productForm,
+                  name: patch.name ?? productForm.name,
+                  price: patch.price ?? productForm.price,
+                  qty: patch.qty ?? productForm.qty,
+                  sku: patch.sku ?? productForm.sku,
+                  variant: patch.variant ?? productForm.variant,
+                  description: patch.description ?? productForm.description,
+                  image_url: patch.image ?? productForm.image_url,
+                })}
+              />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <input
                   type="text"
                   value={productForm.category}
                   onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
+                  className="w-full min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                <input
-                  type="url"
-                  value={productForm.image_url}
-                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                />
-                <div className="mt-2">
-                  <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm cursor-pointer text-gray-700">
-                    <Upload className="w-4 h-4" /> Upload Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-                    />
-                  </label>
-                  {uploading && <span className="ml-2 text-xs text-gray-500">Uploading...</span>}
-                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>

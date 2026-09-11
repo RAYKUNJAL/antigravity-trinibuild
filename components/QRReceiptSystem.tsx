@@ -85,7 +85,7 @@ export const QRReceipt: React.FC<{ data: ReceiptData }> = ({ data }) => {
 
     const shareViaWhatsApp = () => {
         const trackingUrl = `${window.location.origin}/track/${data.id}`;
-        const message = `🧾 *TriniBuild Receipt*\n\n📦 Order #${data.order_number}\n💰 Total: TT$${data.total.toFixed(2)}\n\n📍 Track your order:\n${trackingUrl}`;
+        const message = `🧾 *Juvay Receipt*\n\n📦 Order #${data.order_number}\n💰 Total: TT$${data.total.toFixed(2)}\n\n📍 Track your order:\n${trackingUrl}`;
         window.open(`https://wa.me/${data.customer_whatsapp || data.customer_phone}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
@@ -517,7 +517,7 @@ export const qrReceiptService = {
     async whatsappReceipt(orderId: string, phone: string): Promise<boolean> {
         try {
             const trackingUrl = `${window.location.origin}/track/${orderId}`;
-            const message = `🧾 Your TriniBuild receipt is ready!\n\nTrack your order: ${trackingUrl}`;
+            const message = `🧾 Your Juvay receipt is ready!\n\nTrack your order: ${trackingUrl}`;
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
             return true;
         } catch (error) {

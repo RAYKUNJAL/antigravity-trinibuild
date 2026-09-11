@@ -2,7 +2,7 @@
  * TriniBuild AI Marketplace Concierge Service
  * Key: service_concierge
  * 
- * Multi-agent AI concierge for guiding users to services, jobs, tickets, rentals.
+ * Multi-agent AI concierge for guiding users to services, jobs, rentals.
  * Natural language conversation with T&T context awareness.
  */
 
@@ -85,15 +85,14 @@ export interface ConciergeResponse {
 // ============================================
 
 const PERSONA_PROMPTS: Record<ConciergePersona, string> = {
-    general: `You are TriniBuild's AI Concierge - a friendly, helpful assistant for Trinidad & Tobago's leading digital platform.
+    general: `You are Juvay's AI Concierge - a friendly, helpful assistant for Trinidad & Tobago's leading digital platform.
 
 You help users with:
 - Finding jobs and gig work
 - Discovering rentals and properties
-- Booking events and buying tickets
 - Finding local services and professionals
 - Shopping in the marketplace
-- Understanding TriniBuild features
+- Understanding Juvay features
 
 Speak naturally with a warm Caribbean tone. Use common Trini expressions when appropriate (like "no problem", "doh worry", "real good").
 
@@ -132,16 +131,7 @@ You help find:
 
 Match users with verified, trusted providers.`,
 
-    events: `You are TriniBuild's Events Concierge for T&T entertainment.
-
-You help with:
-- Carnival events and fete tickets
-- Concerts and shows
-- Community events and festivals
-- Sport events and watch parties
-- Cultural celebrations
-
-Know about popular venues, promoters, and T&T event culture.`,
+    events: `You are Juvay's Events Concierge. Event listings stay empty on this origin. Do not invent concerts, fetes, tickets, or a live catalog. Do not advertise booking.`,
 
     rideshare: `You are TriniBuild QuickRides Concierge for transportation.
 
@@ -189,9 +179,6 @@ const INTENT_PATTERNS: { pattern: RegExp; intent: string; vertical?: SearchVerti
     { pattern: /\b(rent|rental|apartment|house|property|room|flat|lease)\b/i, intent: 'property_search', vertical: 'real_estate' },
     { pattern: /\b(buy|purchase|sale|land|acre|lot)\b/i, intent: 'property_buy', vertical: 'real_estate' },
 
-    // Events
-    { pattern: /\b(ticket|event|fete|party|concert|show|carnival)\b/i, intent: 'event_search', vertical: 'events' },
-
     // Services
     { pattern: /\b(plumber|electrician|mechanic|contractor|technician|cleaner)\b/i, intent: 'service_search', vertical: 'services' },
     { pattern: /\b(fix|repair|install|service|maintenance)\b/i, intent: 'service_search', vertical: 'services' },
@@ -225,7 +212,7 @@ const detectIntent = (message: string): { intent: string; vertical?: SearchVerti
 // ============================================
 
 const QUICK_RESPONSES: Record<string, string> = {
-    greeting: "Hey there! 👋 I'm your TriniBuild Concierge. How can I help you today? Looking for a job, rental, event tickets, or services?",
+    greeting: "Hey there! 👋 I'm your Juvay Concierge. How can I help you today? Looking for a job, rental, or services?",
     thanks: "No problem at all! 🙌 Let me know if you need anything else.",
     farewell: "Take care! Come back anytime you need help finding something on TriniBuild. 🇹🇹"
 };
@@ -311,7 +298,6 @@ class ConciergeService {
             return this.createResponse(session, QUICK_RESPONSES.greeting, [
                 "Find a job in Trinidad",
                 "Search for apartments to rent",
-                "What events are happening this weekend?",
                 "I need a plumber"
             ]);
         }
@@ -455,15 +441,14 @@ Respond helpfully and concisely.`;
             return this.createResponse(session, response, [
                 "Find jobs near me",
                 "Search for rentals",
-                "What's happening this weekend?",
                 "I need a service provider"
             ]);
         } catch (error) {
             console.error('AI error:', error);
             return this.createResponse(
                 session,
-                "I'm here to help you find jobs, rentals, events, and services in Trinidad & Tobago. What are you looking for?",
-                ["Browse jobs", "Search rentals", "Find events", "Get services"]
+                "I'm here to help you find jobs, rentals, and services in Trinidad & Tobago. What are you looking for?",
+                ["Browse jobs", "Search rentals", "Get services"]
             );
         }
     }

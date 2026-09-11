@@ -5,7 +5,7 @@ import './index.css';
 import { HelmetProvider } from 'react-helmet-async';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-console.log('🚀 TriniBuild: index.tsx loaded');
+console.log('🚀 Juvay: index.tsx loaded');
 
 const rootElement = document.getElementById('root');
 console.log('🔍 Root element:', rootElement);

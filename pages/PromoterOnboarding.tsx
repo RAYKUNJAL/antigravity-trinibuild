@@ -80,7 +80,7 @@ export const PromoterOnboarding: React.FC = () => {
 
 This Agreement is entered into on ${new Date().toLocaleDateString()} between:
 
-PARTY A: TriniBuild Technologies Ltd. ("Platform")
+PARTY A: R&R Digital Solutions ("Platform")
 PARTY B: ${formData.fullName} representing ${formData.businessName} ("Promoter")
 
 1. TERM & EXCLUSIVITY
@@ -276,7 +276,7 @@ ${new Date().toLocaleDateString()}`;
                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 flex items-start">
                               <Shield className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
                               <p className="text-sm text-yellow-800">
-                                 By signing, you acknowledge that you are an <strong>Independent Contractor</strong> and not an employee of TriniBuild. You are responsible for your own taxes and compliance.
+                                 By signing, you acknowledge that you are an <strong>Independent Contractor</strong> and not an employee of Juvay / R&amp;R Digital Solutions. You are responsible for your own taxes and compliance.
                               </p>
                            </div>
 
@@ -345,15 +345,15 @@ ${new Date().toLocaleDateString()}`;
                      <div className="bg-gray-50 p-4 rounded-lg max-w-md mx-auto mb-8 flex items-center justify-between border border-gray-200">
                         <div className="text-left">
                            <p className="text-xs text-gray-500 uppercase font-bold">Contract</p>
-                           <p className="font-bold text-sm truncate w-48">TriniBuild_Partnership_{formData.fullName.replace(' ', '_')}.pdf</p>
+                           <p className="font-bold text-sm truncate w-48">Juvay_Partnership_{formData.fullName.replace(' ', '_')}.pdf</p>
                         </div>
                         <button className="text-blue-600 text-xs font-bold flex items-center hover:underline">
                            <Download className="h-4 w-4 mr-1" /> Download
                         </button>
                      </div>
 
-                     <button onClick={() => navigate('/tickets')} className="bg-trini-black text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-800 shadow-xl">
-                        Go to Promoter Dashboard
+                     <button onClick={() => navigate('/create-store')} className="bg-trini-black text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-800 shadow-xl">
+                        Create a store
                      </button>
                   </div>
                )}

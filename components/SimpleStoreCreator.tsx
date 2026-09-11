@@ -44,7 +44,6 @@ const BUSINESS_TYPES_TRINIDAD = [
 const DELIVERY_OPTIONS = [
   { id: 'pickup', label: 'Customer Pickup', desc: 'Free' },
   { id: 'local', label: 'Local Delivery', desc: 'You arrange' },
-  { id: 'trinibuild_driver', label: 'TriniBuild Drivers', desc: '$1-2/order' },
   { id: 'courier', label: 'Courier Service', desc: 'Third-party' },
   { id: 'mail', label: 'TTPost/Mail', desc: 'Shipping' }
 ];
