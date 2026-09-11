@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Search Engine Service
+ * Juvay AI Search Engine Service
  * Key: island_search
  * 
  * The core AI-powered search that understands natural language queries

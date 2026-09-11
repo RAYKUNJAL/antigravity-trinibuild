@@ -1,4 +1,4 @@
-// TriniBuild Ads Manager - AI Service
+// Juvay Ads Manager - AI Service
 // Integrates with Google AI Studio for ad creative generation
 
 const GOOGLE_AI_API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY || '';
@@ -217,7 +217,7 @@ Campaign Details:
 - Category: ${input.category}
 - Desired Impressions: ${input.desired_impressions || 'not specified'}
 
-Based on the TriniBuild platform economics (CPM ~TTD 45, average CTR 2.5%), recommend:
+Based on the Juvay platform economics (CPM ~TTD 45, average CTR 2.5%), recommend:
 1. Daily budget in TTD
 2. Total campaign budget in TTD  
 3. Recommended duration in days

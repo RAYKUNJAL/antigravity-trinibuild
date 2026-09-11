@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Recommender System Service
+ * Juvay AI Recommender System Service
  * Key: for_you_engine
  * 
  * Personalized recommendation engine for discovery across all verticals.

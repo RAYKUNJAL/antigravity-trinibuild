@@ -1,5 +1,5 @@
 /**
- * TriniBuild Blog Database Service
+ * Juvay Blog Database Service
  * 
  * Handles all CRUD operations for the AI blog system including:
  * - Blog storage and retrieval

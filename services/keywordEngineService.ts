@@ -1,5 +1,5 @@
 /**
- * TriniBuild Keyword Traffic Engine Service
+ * Juvay Keyword Traffic Engine Service
  * Key: kw_engine
  * 
  * Real-time keyword tracking and analytics engine to monitor
@@ -613,7 +613,7 @@ export const generateBlogTopicsFromGaps = async (
 
     const keywords = gaps.map(g => g.keyword_normalized).join(', ');
 
-    const prompt = `You are a content strategist for TriniBuild in Trinidad & Tobago.
+    const prompt = `You are a content strategist for Juvay in Trinidad & Tobago.
 
 These keywords have high search volume but no content on the platform:
 ${keywords}
