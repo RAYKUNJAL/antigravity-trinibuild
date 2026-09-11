@@ -39,6 +39,7 @@ interface BuilderState {
   specialty: string;
   hours: string;
   payoutPreference: '' | 'cash_vendor_keeps' | 'wam' | 'bank_transfer';
+  wamHandle: string;
   acceptsCashPickup: boolean;
   acceptsCod: boolean;
   whatsappE164: string;
@@ -80,10 +81,11 @@ const emptyState = (): BuilderState => ({
   storeName: '',
   phone: '',
   pickupAddress: '',
-  island: 'Trinidad',
+  island: '',
   specialty: '',
   hours: '',
   payoutPreference: '',
+  wamHandle: '',
   acceptsCashPickup: false,
   acceptsCod: false,
   whatsappE164: '',
@@ -118,6 +120,61 @@ const emptyState = (): BuilderState => ({
   itemDescription: '',
   itemTags: [],
 });
+
+const LIVE_PAYOUTS = ['cash_vendor_keeps', 'wam', 'bank_transfer'] as const;
+
+export type PublishCheck = { key: string; label: string; ok: boolean; detail: string };
+
+/** Client gate matching live POST /api/stores. Never invents catalog, prices, or a Wam handle. */
+export function storePublishChecks(
+  state: Pick<
+    BuilderState,
+    | 'storeName'
+    | 'phone'
+    | 'pickupAddress'
+    | 'island'
+    | 'templateId'
+    | 'hours'
+    | 'foodAttested'
+    | 'payoutPreference'
+    | 'wamHandle'
+    | 'itemName'
+    | 'itemPrice'
+  >,
+  wamConfigured: boolean,
+): PublishCheck[] {
+  const price = Number(state.itemPrice);
+  const typedName = state.itemName.trim();
+  const hasRealItem = !!(
+    typedName
+    && !/sample product/i.test(typedName)
+    && state.itemPrice.trim()
+    && Number.isFinite(price)
+  );
+  const payoutChosen = LIVE_PAYOUTS.includes(state.payoutPreference as (typeof LIVE_PAYOUTS)[number]);
+  const payoutOk = payoutChosen && (state.payoutPreference !== 'wam' || wamConfigured);
+  const wamHandleOk = state.payoutPreference !== 'wam' || !!(wamConfigured && state.wamHandle.trim());
+  return [
+    { key: 'storeName', label: 'Store name', ok: !!state.storeName.trim(), detail: 'Type the shop name.' },
+    { key: 'phone', label: 'Phone', ok: !!state.phone.trim(), detail: 'Add a buyer-visible phone.' },
+    { key: 'pickupAddress', label: 'Pickup address', ok: !!state.pickupAddress.trim(), detail: 'Add a pickup address.' },
+    { key: 'island', label: 'Island / country', ok: !!state.island.trim(), detail: 'Choose Trinidad, Tobago, or Trinidad & Tobago.' },
+    { key: 'templateId', label: 'Starter type', ok: !!state.templateId, detail: 'Pick one of the eight starters.' },
+    { key: 'hours', label: 'Hours', ok: !!state.hours.trim(), detail: 'Type buyer-visible hours.' },
+    { key: 'foodAttested', label: 'Food-safety attestation', ok: state.templateId !== 'food' || state.foodAttested, detail: 'Food shops must attest before publish.' },
+    { key: 'payoutPreference', label: 'Payout preference', ok: payoutOk, detail: wamConfigured ? 'Choose cash, Wam, or bank transfer.' : 'Choose cash or bank transfer. Wam is not on this host.' },
+    { key: 'item', label: 'Priced item', ok: hasRealItem, detail: 'Type an item name and a finite TT$ price. Vision never invents products or prices.' },
+    { key: 'wamHandle', label: 'Wam handle', ok: wamHandleOk, detail: 'Type your Wam handle. Juvay does not invent one.' },
+  ];
+}
+
+function visiblePublishChecks(checks: PublishCheck[], state: Pick<BuilderState, 'templateId' | 'payoutPreference'>): PublishCheck[] {
+  return checks.filter((c) => {
+    if (c.key === 'foodAttested' && state.templateId !== 'food') return false;
+    if (c.key === 'wamHandle' && state.payoutPreference !== 'wam') return false;
+    return true;
+  });
+}
 
 async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
   const token = getToken();
@@ -469,13 +526,16 @@ const StoreBuilderV3: React.FC = () => {
     setPatchChat('');
   };
 
+  const publishChecks = useMemo(
+    () => visiblePublishChecks(storePublishChecks(state, wamConfigured), state),
+    [state, wamConfigured],
+  );
+  const publishReady = publishChecks.every((c) => c.ok);
+
   const handlePublish = async () => {
-    if (!state.storeName.trim() || !state.templateId) {
-      setError('Name and starter are required');
-      return;
-    }
-    if (state.templateId === 'food' && !state.foodAttested) {
-      setError('Food shops must attest to food-safety before publish.');
+    const failed = publishChecks.filter((c) => !c.ok);
+    if (failed.length) {
+      setError(failed.map((f) => f.detail).join(' '));
       return;
     }
     if (!getToken()) {
@@ -486,23 +546,35 @@ const StoreBuilderV3: React.FC = () => {
     setError(null);
     try {
       const wa = normalizeWhatsappE164(state.whatsappE164);
+      const price = Number(state.itemPrice);
+      const firstItem = {
+        name: state.itemName.trim(),
+        price,
+        qty: state.itemQty.trim() === '' ? null : Number(state.itemQty),
+        sku: state.itemSku.trim() || undefined,
+        image: state.itemImage || undefined,
+        variant: state.itemVariant.trim() || undefined,
+        description: state.itemDescription.trim() || undefined,
+      };
       const store = await storesApi.create({
         name: state.storeName.trim(),
         description: state.about.trim() || undefined,
         category: state.templateId,
-        phone: state.phone.trim() || undefined,
+        phone: state.phone.trim(),
         whatsapp: wa || undefined,
         accepts_cod: state.acceptsCod,
         accepts_pickup: state.acceptsCashPickup,
-        pickup_address: state.pickupAddress.trim() || undefined,
-        island: state.island || undefined,
+        pickup_address: state.pickupAddress.trim(),
+        island: state.island.trim(),
+        wam_handle: state.payoutPreference === 'wam' ? state.wamHandle.trim() : undefined,
         template_id: state.templateId,
         theme_config: {
           template_id: state.templateId,
           business_type: state.templateId,
-          hours: state.hours || undefined,
+          hours: state.hours.trim(),
           specialty: state.specialty || undefined,
-          payout_preference: state.payoutPreference || undefined,
+          payout_preference: state.payoutPreference,
+          wam_handle: state.payoutPreference === 'wam' ? state.wamHandle.trim() : undefined,
           hero: { headline: state.heroHeadline, sub: state.heroSub, image: state.heroImage || undefined },
           about: state.about,
           faq: state.faq,
@@ -521,29 +593,18 @@ const StoreBuilderV3: React.FC = () => {
             facebook: state.facebook || undefined,
             tiktok: state.tiktok || undefined,
           },
-          first_item: state.itemName.trim() && state.itemPrice.trim()
-            ? {
-                name: state.itemName.trim(),
-                price: Number(state.itemPrice),
-                qty: state.itemQty.trim() === '' ? null : Number(state.itemQty),
-                sku: state.itemSku.trim() || undefined,
-                image: state.itemImage || undefined,
-                variant: state.itemVariant.trim() || undefined,
-                description: state.itemDescription.trim() || undefined,
-              }
-            : undefined,
+          first_item: firstItem,
           food_attestation: state.templateId === 'food' ? true : undefined,
           kitchen_check: state.templateId === 'food' && state.foodAttested ? 'auto_approved' : undefined,
           agent_wrote: state.agentWrote === true,
         },
       });
-      if (state.itemName.trim() && state.itemPrice.trim() && store?.id) {
-        const price = Number(state.itemPrice);
+      if (store?.id) {
         try {
           await productsApi.create({
             store_id: store.id,
-            name: state.itemName.trim(),
-            price: Number.isFinite(price) ? price : undefined,
+            name: firstItem.name,
+            price,
             qty: state.itemQty.trim() === '' ? undefined : Number(state.itemQty),
             sku: state.itemSku.trim() || undefined,
             images: state.itemImage ? [state.itemImage] : [],
@@ -662,24 +723,25 @@ const StoreBuilderV3: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Business name *" value={state.storeName} onChange={(v) => update({ storeName: v })} placeholder="Your shop name" />
-        <Field label="Phone" value={state.phone} onChange={(v) => update({ phone: v })} placeholder="868…" />
-        <Field label="Pickup address" value={state.pickupAddress} onChange={(v) => update({ pickupAddress: v })} placeholder="Street, area" />
+        <Field label="Phone *" value={state.phone} onChange={(v) => update({ phone: v })} placeholder="868…" />
+        <Field label="Pickup address *" value={state.pickupAddress} onChange={(v) => update({ pickupAddress: v })} placeholder="Street, area" />
         <label className="block">
-          <span className="block text-sm font-medium text-gray-700 mb-2">Island / country</span>
+          <span className="block text-sm font-medium text-gray-700 mb-2">Island / country *</span>
           <select
             value={state.island}
             onChange={(e) => update({ island: e.target.value })}
             className="w-full min-h-[44px] rounded-xl border border-gray-300 px-3"
           >
-            <option>Trinidad</option>
-            <option>Tobago</option>
-            <option>Trinidad & Tobago</option>
+            <option value="">Choose island / country</option>
+            <option value="Trinidad">Trinidad</option>
+            <option value="Tobago">Tobago</option>
+            <option value="Trinidad & Tobago">Trinidad & Tobago</option>
           </select>
         </label>
         <Field label="Specialty (optional)" value={state.specialty} onChange={(v) => update({ specialty: v })} placeholder="roti, linen, fades…" />
-        <Field label="Hours (buyer-visible, free text)" value={state.hours} onChange={(v) => update({ hours: v })} placeholder="Leave blank to hide" />
+        <Field label="Hours (buyer-visible, free text) *" value={state.hours} onChange={(v) => update({ hours: v })} placeholder="Wed–Sat 4–8" />
         <label className="block md:col-span-2">
-          <span className="block text-sm font-medium text-gray-700 mb-2">Payout preference</span>
+          <span className="block text-sm font-medium text-gray-700 mb-2">Payout preference *</span>
           <select
             value={state.payoutPreference}
             onChange={(e) => update({ payoutPreference: e.target.value as BuilderState['payoutPreference'] })}
@@ -691,6 +753,17 @@ const StoreBuilderV3: React.FC = () => {
             {wamConfigured ? <option value="wam">Wam</option> : null}
           </select>
         </label>
+        {wamConfigured && state.payoutPreference === 'wam' ? (
+          <div className="md:col-span-2">
+            <Field
+              label="Wam handle *"
+              value={state.wamHandle}
+              onChange={(v) => update({ wamHandle: v })}
+              placeholder="Your Wam handle — you type this"
+            />
+            <p className="text-xs text-gray-500 mt-1">Wam is wam.com, not WhatsApp. Juvay does not invent a handle.</p>
+          </div>
+        ) : null}
         <label className="flex items-center gap-3 min-h-[44px]">
           <input type="checkbox" checked={state.acceptsCashPickup} onChange={(e) => update({ acceptsCashPickup: e.target.checked })} />
           <span>Cash on pickup</span>
@@ -744,7 +817,7 @@ const StoreBuilderV3: React.FC = () => {
           </div>
           <Field label="Hero headline" value={state.heroHeadline} onChange={(v) => update({ heroHeadline: v }, { history: false })} />
           <Field label="Hero line" value={state.heroSub} onChange={(v) => update({ heroSub: v }, { history: false })} />
-          <Field label="Hours" value={state.hours} onChange={(v) => update({ hours: v }, { history: false })} placeholder="Leave blank to hide" />
+          <Field label="Hours *" value={state.hours} onChange={(v) => update({ hours: v }, { history: false })} placeholder="Wed–Sat 4–8" />
           <label style={{ display: 'block' }}>
             <span style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>About</span>
             <textarea value={state.about} onChange={(e) => update({ about: e.target.value }, { history: false })} rows={4} style={{ width: '100%', minHeight: 88, border: '1px solid #cfc8bc', background: ISLAND.sand, padding: 12 }} />
@@ -867,10 +940,24 @@ const StoreBuilderV3: React.FC = () => {
         <p className="text-gray-600">Preview first. Publish is a separate action. Nothing goes live until you tap Publish.</p>
       </div>
       <div className="rounded-2xl border border-gray-200 p-5 space-y-2">
-        <div className="text-2xl font-semibold">{state.storeName}</div>
-        <div className="text-gray-600">{STORE_STARTERS[state.templateId as StarterId]?.name} · {state.island}</div>
+        <div className="text-2xl font-semibold">{state.storeName || 'Unnamed store'}</div>
+        <div className="text-gray-600">{STORE_STARTERS[state.templateId as StarterId]?.name || 'No starter'} · {state.island || 'Island not chosen'}</div>
         <div className="text-sm text-gray-500">{state.heroHeadline}</div>
-        <div className="text-sm text-gray-500">{state.itemName.trim() && state.itemPrice.trim() ? `First item: ${state.itemName.trim()}` : 'Catalog: empty until you add a real item with a typed name and TT$ price.'}</div>
+        <div className="text-sm text-gray-500">{state.itemName.trim() && state.itemPrice.trim() && Number.isFinite(Number(state.itemPrice)) ? `First item: ${state.itemName.trim()} · TT$${state.itemPrice.trim()}` : 'Catalog: empty until you add a real item with a typed name and TT$ price.'}</div>
+      </div>
+      <div className="rounded-2xl border border-gray-200 p-5 space-y-3">
+        <div className="font-semibold text-gray-900">Publish checklist</div>
+        <p className="text-sm text-gray-600">Publish stays off until every required field is present. Empty catalog does not publish. Nothing is invented.</p>
+        <ul className="space-y-2">
+          {publishChecks.map((c) => (
+            <li key={c.key} className={`text-sm ${c.ok ? 'text-green-800' : 'text-red-800'}`}>
+              <span className="font-semibold">{c.ok ? 'Ready' : 'Missing'}</span>
+              {' — '}
+              {c.label}
+              {c.ok ? null : <span className="block text-xs text-red-700 mt-0.5">{c.detail}</span>}
+            </li>
+          ))}
+        </ul>
       </div>
       {state.templateId === 'food' && (
         <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -887,7 +974,7 @@ const StoreBuilderV3: React.FC = () => {
         <button
           type="button"
           onClick={handlePublish}
-          disabled={busy || (state.templateId === 'food' && !state.foodAttested)}
+          disabled={busy || !publishReady}
           className="inline-flex items-center gap-2 min-h-[44px] px-6 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-40"
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
