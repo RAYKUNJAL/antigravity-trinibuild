@@ -11,6 +11,12 @@ import { fetchWamStatus } from '../services/wamStatus';
 import { STORE_STARTERS, STARTER_IDS, ISLAND, resolveStarterId, defaultFaq, defaultHowSteps, type StarterId } from '../services/storeStarters';
 import { normalizeWhatsappE164, type StorefrontModel } from '../services/storefrontHonesty';
 import { defaultSeo, type FontPair, type MerchantColors } from '../services/merchantTheme';
+import {
+  OnboardClientError,
+  resolveDraftResponse,
+  resolvePatchResponse,
+  type LockedDraftCopy,
+} from '../services/onboardLockedDraft';
 import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
 import { MerchantStudio } from '../components/MerchantStudio';
 import { MerchantItemFields, type ItemPatch } from '../components/MerchantItemFields';
@@ -19,15 +25,7 @@ import { SafeBoundary } from '../components/SafeBoundary';
 
 type Step = 1 | 2 | 3 | 4;
 
-interface DraftCopy {
-  templateId: StarterId;
-  hero: { headline: string; sub?: string };
-  about: string;
-  trustChips: string[];
-  faq: Array<{ q: string; a: string }>;
-  how: Array<{ title: string; body: string }>;
-  agentWrote: boolean;
-}
+type DraftCopy = LockedDraftCopy;
 
 interface BuilderState {
   step: Step;
@@ -178,38 +176,46 @@ function visiblePublishChecks(checks: PublishCheck[], state: Pick<BuilderState, 
 
 async function requestDraft(payload: Record<string, unknown>): Promise<{ draft: DraftCopy; warning?: string }> {
   const token = getToken();
-  const res = await fetch('/api/onboard/draft', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Draft failed (${res.status})`);
-  return data;
+  try {
+    const res = await fetch('/api/onboard/draft', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    return resolveDraftResponse(res.status, data, payload);
+  } catch (err) {
+    if (err instanceof OnboardClientError) throw err;
+    return resolveDraftResponse(null, { error: err instanceof Error ? err.message : 'network' }, payload);
+  }
 }
 
 async function requestPatch(payload: Record<string, unknown>): Promise<{
-  proposed: DraftCopy & { hours?: string };
+  proposed?: DraftCopy & { hours?: string };
   changedFields: string[];
   conflicts: string[];
   agentWrote: boolean;
   warning?: string;
 }> {
   const token = getToken();
-  const res = await fetch('/api/onboard/patch', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Patch failed (${res.status})`);
-  return data;
+  try {
+    const res = await fetch('/api/onboard/patch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    return resolvePatchResponse(res.status, data);
+  } catch (err) {
+    if (err instanceof OnboardClientError) throw err;
+    return resolvePatchResponse(null, { error: err instanceof Error ? err.message : 'network' });
+  }
 }
 
 const StoreBuilderV3: React.FC = () => {
@@ -473,7 +479,12 @@ const StoreBuilderV3: React.FC = () => {
       });
       if (!result.changedFields?.length) {
         setProposed(null);
-        setError(result.warning || 'Grok did not change any copy. Your text is unchanged.');
+        setState((prev) => ({
+          ...prev,
+          agentWrote: false,
+          agentWarning: result.warning || 'Grok did not change any copy. Locked copy is unchanged.',
+        }));
+        setError(result.warning || 'Grok did not change any copy. Locked copy is unchanged.');
         return;
       }
       setProposed({
@@ -721,6 +732,14 @@ const StoreBuilderV3: React.FC = () => {
         <h2 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 400, margin: '0 0 8px' }}>Tell us about the shop</h2>
         <p className="text-gray-600">Grok prefills hero and about from this. It does not invent catalog items.</p>
       </div>
+      {state.agentWrote === false ? (
+        <div style={{ fontSize: 13, color: '#3d3429', border: '1px solid #cfc8bc', background: '#fff', padding: 12 }}>
+          <strong>Draft locked</strong>
+          <div style={{ marginTop: 6 }}>
+            {state.agentWarning || 'Grok is not writing this site. Locked copy is shown. Type over it — nothing was invented.'}
+          </div>
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Business name *" value={state.storeName} onChange={(v) => update({ storeName: v })} placeholder="Your shop name" />
         <Field label="Phone *" value={state.phone} onChange={(v) => update({ phone: v })} placeholder="868…" />
@@ -809,6 +828,14 @@ const StoreBuilderV3: React.FC = () => {
             ? 'Grok wrote the copy below. Click text to edit. Ask for a patch — nothing overwrites your words until you apply it.'
             : state.agentWarning || 'Showing locked copy. The agent did not write this site.'}
         </p>
+        {state.agentWrote === false ? (
+          <div style={{ marginTop: 12, fontSize: 13, color: '#3d3429', border: '1px solid #cfc8bc', background: '#fff', padding: 12, maxWidth: '52ch' }}>
+            <strong>Draft locked</strong>
+            <div style={{ marginTop: 6 }}>
+              {state.agentWarning || 'Grok is not writing this site. Locked copy is shown. Type over it — nothing was invented.'}
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="juvay-preview-split" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.4fr)', gap: 20 }}>
         <div style={{ display: 'grid', gap: 12 }}>
@@ -1002,6 +1029,12 @@ const StoreBuilderV3: React.FC = () => {
               {error}
             </div>
           )}
+          {!error && state.agentWrote === false && state.agentWarning ? (
+            <div style={{ marginBottom: 16, display: 'flex', gap: 8, border: '1px solid #cfc8bc', background: '#fff', padding: 12, fontSize: 14 }}>
+              <AlertCircle className="w-4 h-4 mt-0.5" />
+              {state.agentWarning}
+            </div>
+          ) : null}
           <div style={{ background: ISLAND.sand }}>
             {state.step === 1 && renderStep1()}
             {state.step === 2 && renderStep2()}
