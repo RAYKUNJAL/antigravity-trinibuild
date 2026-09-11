@@ -541,7 +541,7 @@ export const getKeywordDashboardData = async (): Promise<KeywordDashboardData> =
  * Generate AI keyword suggestions based on trends
  */
 export const generateKeywordSuggestions = async (): Promise<KeywordSuggestion[]> => {
-    const prompt = `You are an SEO expert for TriniBuild, a platform in Trinidad & Tobago.
+    const prompt = `You are an SEO expert for Juvay, a platform in Trinidad & Tobago.
 
 Based on these trending search categories in T&T, suggest 5 high-opportunity keywords:
 - Jobs and employment

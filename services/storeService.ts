@@ -224,7 +224,7 @@ export const storeService = {
                 await supabase.from('directory_businesses').upsert({
                     name: data.name,
                     slug: data.slug,
-                    description: data.description || `${data.name} on TriniBuild`,
+                    description: data.description || `${data.name} on Juvay`,
                     category: data.category || 'General',
                     address: data.location || '',
                     phone: data.whatsapp || '',

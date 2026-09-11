@@ -116,9 +116,9 @@ SCRIPT 3:
 
     getFallbackScripts(input: ScriptGenerationInput): string[] {
         return [
-            `Looking for ${input.offer_details}? ${input.business_description} has exactly what you need! Visit us in ${input.target_location} or check us out on TriniBuild. Limited time offer - don't miss out!`,
-            `Aye, ${input.target_location}! ${input.business_description} bringing you ${input.offer_details}. Real quality, real value. Find we on TriniBuild today!`,
-            `Ready for ${input.offer_details}? ${input.business_description} got yuh covered! Serving ${input.target_location} with the best. Check TriniBuild now!`
+            `Looking for ${input.offer_details}? ${input.business_description} has exactly what you need! Visit us in ${input.target_location} or check us out on Juvay. Limited time offer - don't miss out!`,
+            `Aye, ${input.target_location}! ${input.business_description} bringing you ${input.offer_details}. Real quality, real value. Find we on Juvay today!`,
+            `Ready for ${input.offer_details}? ${input.business_description} got yuh covered! Serving ${input.target_location} with the best. Check Juvay now!`
         ];
     }
 };
@@ -129,7 +129,7 @@ SCRIPT 3:
 
 export const captionGenerator = {
     async generate(input: CaptionGenerationInput): Promise<string[]> {
-        const prompt = `Generate 3 engaging social media captions for a TriniBuild video ad.
+        const prompt = `Generate 3 engaging social media captions for a Juvay video ad.
 
 Business: ${input.business_name}
 Offer: ${input.offer}
@@ -189,7 +189,7 @@ Provide 3 distinct variations:
 
     getFallbackCaptions(input: CaptionGenerationInput): string[] {
         return [
-            `${input.business_name} - ${input.offer} 🔥 Check we out on TriniBuild!`,
+            `${input.business_name} - ${input.offer} 🔥 Check we out on Juvay!`,
             `Aye! ${input.offer} at ${input.business_name}. Real deal, real quality 💯`,
             `${input.business_name} bringing heat! 🌴 ${input.offer} - tap to learn more!`
         ];

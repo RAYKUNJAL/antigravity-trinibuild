@@ -393,7 +393,7 @@ const searchMarketplace = async (intent: SearchIntent, limit = 5): Promise<Searc
         id: store.id,
         type: 'stores' as SearchVertical,
         title: store.name,
-        subtitle: store.tagline || 'TriniBuild Store',
+        subtitle: store.tagline || 'Juvay Store',
         description: store.description?.substring(0, 150) + '...',
         image: store.logo_url,
         location: store.user_profiles?.location,
@@ -451,19 +451,19 @@ const searchBlogs = async (intent: SearchIntent, limit = 5): Promise<SearchResul
  * Generate AI answer for "how to" questions
  */
 const generateHowToAnswer = async (query: string): Promise<string> => {
-    const prompt = `You are a helpful assistant for TriniBuild, a platform in Trinidad & Tobago.
+    const prompt = `You are a helpful assistant for Juvay, a platform in Trinidad & Tobago.
   
 User Question: "${query}"
 
 Provide a helpful, concise answer (2-3 sentences max) that:
 1. Directly answers their question
-2. Mentions how TriniBuild can help if relevant
+2. Mentions how Juvay can help if relevant
 3. Uses friendly Caribbean tone
 
 Answer:`;
 
     try {
-        const response = await aiService.generateText(prompt, 'You are a TriniBuild assistant.');
+        const response = await aiService.generateText(prompt, 'You are a Juvay assistant.');
         return response;
     } catch {
         return '';

@@ -143,7 +143,7 @@ export const saveBlog = async (
             scheduled_for,
             published_at: status === 'published' ? new Date().toISOString() : null,
             author_id,
-            author_name: 'TriniBuild AI'
+            author_name: 'Juvay AI'
         }, {
             onConflict: 'location_slug,vertical_key'
         })
