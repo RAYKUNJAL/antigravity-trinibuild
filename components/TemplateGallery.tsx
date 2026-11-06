@@ -47,9 +47,10 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
   })();
 
   const filtered = starters.filter((s) => {
-    const catOk = category === 'all' || s.id === category;
+    const bucket = s.galleryCategory || s.id;
+    const catOk = category === 'all' || bucket === category || s.id === category;
     const needle = q.trim().toLowerCase();
-    const qOk = !needle || s.name.toLowerCase().includes(needle) || s.useWhen.toLowerCase().includes(needle);
+    const qOk = !needle || s.name.toLowerCase().includes(needle) || s.useWhen.toLowerCase().includes(needle) || bucket.includes(needle.replace(' ', '_'));
     return catOk && qOk;
   });
 
@@ -81,7 +82,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
           Store starters for the Caribbean
         </h1>
         <p style={{ margin: '0 0 12px', color: '#5C574E', fontSize: 15, lineHeight: 1.5 }}>
-          Eight original Caribbean starters — denser product cards, category rails, promo banners, and honest empty review slots. Previews are <strong>ILLUSTRATIVE</strong>; catalogues stay empty until you add priced items.
+          Ten original Caribbean starters — including Street food niches for doubles and stalls — denser product cards, category rails, promo banners, and honest empty review slots. Previews are <strong>ILLUSTRATIVE</strong>; catalogues stay empty until you add priced items.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 18 }}>
           {['Cash pickup', 'COD', 'WhatsApp-ready', 'Wam when configured', 'Mobile-first'].map((chip) => (

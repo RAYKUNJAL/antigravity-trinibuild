@@ -30,7 +30,7 @@ function starterToTemplate(id: StarterId, galleryId: string = id): StoreTemplate
   return {
     id: galleryId,
     name: galleryId === 'basic' ? 'Basic' : s.name,
-    category: s.name,
+    category: s.galleryCategory === 'street_food' ? 'Street food' : s.name,
     description: s.useWhen,
     thumbnail: s.heroImage,
     features: s.chips,

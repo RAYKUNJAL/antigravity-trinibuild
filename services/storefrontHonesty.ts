@@ -4,7 +4,9 @@
  */
 
 import type { StarterId, StorefrontBlock } from './storeStarters';
-import { STORE_STARTERS } from './storeStarters';
+import { STORE_STARTERS, isFoodLikeStarter } from './storeStarters';
+import type { ProductModifierGroup, SelectedModifier } from './productModifiers';
+import { parseModifierGroups } from './productModifiers';
 import type { FontPair, MerchantColors } from './merchantTheme';
 
 export interface StorefrontVariant {
@@ -28,6 +30,8 @@ export interface StorefrontItem {
   /** Typed count. null/omit = do not claim stock. 0 = sold out. */
   qty?: number | null;
   sku?: string;
+  /** Generic option groups (condiments, size, spice). Merchant-editable. */
+  modifierGroups?: ProductModifierGroup[];
 }
 
 export type StorefrontMode = 'illustrative' | 'merchant_preview' | 'published';
@@ -66,6 +70,14 @@ export interface StorefrontModel {
   seo?: { title?: string; description?: string };
   social?: { instagram?: string; facebook?: string; tiktok?: string };
   mode?: StorefrontMode;
+  /** Merchant toggle — sold out for the day (food niches). */
+  soldOutToday?: boolean;
+  /** Maps / directions URL for pickup spot. */
+  mapDirectionsUrl?: string;
+  /** Daily specials line (street food banner). */
+  dailySpecials?: string;
+  /** Empty sides slot copy for doubles. */
+  sidesSlotLabel?: string;
 }
 
 export function mapProductVariants(raw: unknown): StorefrontVariant[] {
@@ -134,7 +146,8 @@ export function normalizeWhatsappE164(raw?: string | null): string {
 }
 
 export function showOrderCta(model: StorefrontModel): boolean {
-  if (model.templateId === 'food' && model.isOpen === false) return false;
+  if (model.soldOutToday) return false;
+  if (isFoodLikeStarter(model.templateId) && model.isOpen === false) return false;
   return true;
 }
 
@@ -236,12 +249,15 @@ export function itemIsSellable(item: StorefrontItem): boolean {
 }
 
 export function closedFoodNextOpen(model: StorefrontModel): string {
-  if (model.templateId !== 'food' || model.isOpen !== false) return '';
+  if (model.soldOutToday) return 'Sold out today';
+  if (!isFoodLikeStarter(model.templateId) || model.isOpen !== false) return '';
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
 }
 
 /** Merchant-typed bar, else live-rail chips only. Never free shipping / money-back. */
 export function announcementLine(model: StorefrontModel): string {
+  const specials = String(model.dailySpecials || '').trim();
+  if (specials) return specials;
   const typed = String(model.announcement || '').trim();
   if (typed) return typed;
   const bits: string[] = [];
@@ -249,6 +265,12 @@ export function announcementLine(model: StorefrontModel): string {
   if (model.acceptsCod) bits.push('COD');
   return bits.join(' · ');
 }
+
+export function itemModifierGroups(item: StorefrontItem): ProductModifierGroup[] {
+  return parseModifierGroups(item.modifierGroups);
+}
+
+export type { SelectedModifier, ProductModifierGroup };
 
 export function showAboutSection(model: StorefrontModel): boolean {
   if (model.showAbout === false) return false;
@@ -265,7 +287,7 @@ export function showContactSection(model: StorefrontModel): boolean {
   );
 }
 
-const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)\.(jpg|png|webp)$/;
 
 export function merchantUploadedHero(model: StorefrontModel): boolean {
   const img = String(model.hero?.image || '').trim();

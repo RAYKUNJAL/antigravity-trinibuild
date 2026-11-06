@@ -9,7 +9,13 @@ const BLOCKS = {
   home: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
   electronics: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
   auto: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
+  doubles: ['hero', 'trust', 'menu', 'how', 'sticky', 'faq', 'footer'],
+  street_food: ['hero', 'trust', 'featured_combo', 'menu', 'how', 'sticky', 'faq', 'footer'],
 };
+
+function isFoodLikeStarter(id) {
+  return id === 'food' || id === 'doubles' || id === 'street_food';
+}
 
 function liveItems(model) {
   return (model.items || []).filter((item) => item && String(item.name || '').trim());
@@ -40,7 +46,8 @@ function showWhatsApp(model) {
 }
 
 function showOrderCta(model) {
-  if (model.templateId === 'food' && model.isOpen === false) return false;
+  if (model.soldOutToday) return false;
+  if (isFoodLikeStarter(model.templateId) && model.isOpen === false) return false;
   return true;
 }
 
@@ -105,7 +112,8 @@ function mapProductSpecs(raw) {
 }
 
 function closedFoodNextOpen(model) {
-  if (model.templateId !== 'food' || model.isOpen !== false) return '';
+  if (model.soldOutToday) return 'Sold out today';
+  if (!isFoodLikeStarter(model.templateId) || model.isOpen !== false) return '';
   return model.nextOpen ? `Opens ${model.nextOpen}` : 'Closed';
 }
 
@@ -135,6 +143,8 @@ function itemIsSellable(item) {
 }
 
 function announcementLine(model) {
+  const specials = String((model && model.dailySpecials) || '').trim();
+  if (specials) return specials;
   const typed = String((model && model.announcement) || '').trim();
   if (typed) return typed;
   const bits = [];
@@ -158,7 +168,7 @@ function showContactSection(model) {
   );
 }
 
-const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)\.(jpg|png|webp)$/;
 
 function merchantUploadedHero(model) {
   const img = String((model && model.hero && model.hero.image) || '').trim();

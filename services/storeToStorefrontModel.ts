@@ -1,5 +1,6 @@
 import { defaultFaq, defaultHowSteps, resolveStarterId, STORE_STARTERS, type StarterId } from './storeStarters';
 import { mapProductSpecs, mapProductVariants, normalizeWhatsappE164, parseQty, type StorefrontItem, type StorefrontModel, type StorefrontMode } from './storefrontHonesty';
+import { defaultModifierGroupsForStarter, parseModifierGroups } from './productModifiers';
 
 function themeOf(store: any): Record<string, any> {
   const raw = store?.theme_config || store?.theme || {};
@@ -19,6 +20,11 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
     .filter((p) => p && (p.status == null || p.status === 'active') && String(p.name || '').trim())
     .map((p) => {
       const qty = parseQty(p.qty ?? p.stock);
+      const rawMods = p.modifier_groups ?? p.modifierGroups;
+      const fromProduct = parseModifierGroups(rawMods);
+      const modifiers = fromProduct.length
+        ? fromProduct
+        : (rawMods != null ? [] : defaultModifierGroupsForStarter(templateId));
       return {
         id: String(p.id),
         name: p.name,
@@ -33,6 +39,7 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
         qty,
         sku: String(p.sku || '').trim() || undefined,
         inStock: qty === 0 || p.in_stock === false || p.inStock === false ? false : true,
+        modifierGroups: modifiers.length ? modifiers : undefined,
       };
     });
   if (!items.length && theme.first_item && String(theme.first_item.name || '').trim() && theme.first_item.price != null && String(theme.first_item.price).trim() !== '') {
@@ -60,6 +67,10 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
   const acceptsCod = store?.accepts_cod === true;
   const wamLive = !!(store?.wam_handle && theme.wam_live !== false);
 
+  const soldOutToday = store?.sold_out_today === true || theme.sold_out_today === true;
+  const mapDirectionsUrl = String(store?.map_directions_url || theme.map_directions_url || theme.mapUrl || '').trim();
+  const dailySpecials = String(theme.daily_specials || store?.daily_specials || theme.announcement || '').trim();
+
   return {
     templateId,
     storeName: store?.name || starter.name,
@@ -78,6 +89,12 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
     wamLive,
     reviewCount: Number(store?.review_count || store?.reviewCount || 0),
     items,
+    soldOutToday,
+    mapDirectionsUrl: mapDirectionsUrl || undefined,
+    dailySpecials: dailySpecials || undefined,
+    sidesSlotLabel: starter.showsSidesSlot
+      ? (theme.sides_slot_label || 'Sides (saheena / aloo pie / bake & saltfish) — add your prices')
+      : undefined,
     hero: {
       headline: theme.hero?.headline || starter.heroHeadline,
       sub: theme.hero?.sub || [theme.specialty, store?.island].filter(Boolean).join(' · '),
@@ -114,5 +131,5 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
 export function storeUsesStarter(store: any): boolean {
   const theme = themeOf(store);
   const raw = theme.template_id || theme.business_type || store?.category || store?.template_id;
-  return ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto', 'basic'].includes(String(raw || ''));
+  return ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto', 'doubles', 'street_food', 'basic'].includes(String(raw || ''));
 }

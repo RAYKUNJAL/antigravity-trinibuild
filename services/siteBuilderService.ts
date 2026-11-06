@@ -94,7 +94,7 @@ export const THEME_PRESETS: Record<string, SiteTheme> = {
     },
 };
 
-// ---------- Eight store starters (same ids as /templates and /create-store) ----------
+// ---------- Ten store starters (same ids as /templates and /create-store) ----------
 export interface CommercialTemplate {
     id: string; name: string; tier: 'free' | 'pro'; category: string; theme: SiteTheme; heroStyle: 'gradient' | 'split' | 'minimal';
 }

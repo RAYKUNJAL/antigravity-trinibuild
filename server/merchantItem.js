@@ -33,6 +33,8 @@ function validateMerchantItem(body) {
   const variant = String(body?.variant || '').trim().slice(0, 80);
   const description = String(body?.description || '').trim().slice(0, 600);
   const image = String(body?.image || body?.image_url || '').trim();
+  const { parseModifierGroups } = require('./productModifiers');
+  const modifierGroups = parseModifierGroups(body?.modifier_groups ?? body?.modifierGroups);
   return {
     item: {
       name,
@@ -42,6 +44,7 @@ function validateMerchantItem(body) {
       variant,
       description,
       image,
+      modifier_groups: modifierGroups,
     },
   };
 }

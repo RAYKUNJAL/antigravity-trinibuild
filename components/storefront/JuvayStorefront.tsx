@@ -1,5 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ISLAND, STORE_STARTERS, type StarterId, type StoreStarter } from '../../services/storeStarters';
+import { ISLAND, STORE_STARTERS, isFoodLikeStarter, type StarterId, type StoreStarter } from '../../services/storeStarters';
+import {
+  formatSelectedModifiers,
+  sumModifierDeltas,
+  validateModifierSelection,
+  type ProductModifierGroup,
+  type SelectedModifier,
+} from '../../services/productModifiers';
 import { applyMerchantTheme, socialHref } from '../../services/merchantTheme';
 import {
   announcementLine,
@@ -464,9 +471,11 @@ export const JuvayStorefront: React.FC<{
   const heroRef = useRef<HTMLElement | null>(null);
   const [heroGone, setHeroGone] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<Array<{ item: StorefrontItem; variant?: StorefrontVariant; qty: number; note?: string }>>([]);
+  const [cart, setCart] = useState<Array<{ item: StorefrontItem; variant?: StorefrontVariant; qty: number; note?: string; selectedModifiers?: SelectedModifier[] }>>([]);
   const [picker, setPicker] = useState<StorefrontItem | null>(null);
   const [pickedVariant, setPickedVariant] = useState<string>('');
+  const [pickedMods, setPickedMods] = useState<SelectedModifier[]>([]);
+  const [pickQty, setPickQty] = useState(1);
   const [foodNote, setFoodNote] = useState('');
   const [fulfill, setFulfill] = useState<'pickup' | 'cod' | ''>('');
   const [cashExact, setCashExact] = useState<'exact' | 'change' | ''>('');
@@ -491,27 +500,66 @@ export const JuvayStorefront: React.FC<{
   }, [items, query]);
 
   const cartTotal = cart.reduce((sum, line) => {
-    const unit = line.variant?.price ?? line.item.price;
-    return sum + (Number(unit) || 0) * line.qty;
+    const unit = (Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers);
+    return sum + unit * line.qty;
   }, 0);
   const cartCount = cart.reduce((s, l) => s + l.qty, 0);
   const face = formatPrice(model, cartTotal) || `${currencyPrefix(model)}0`;
 
-  const addLine = (item: StorefrontItem, variant?: StorefrontVariant) => {
-    if (!itemIsSellable(item)) return;
-    if (item.variants && item.variants.length && !variant) {
-      setPicker(item);
-      setPickedVariant('');
+  const openPicker = (item: StorefrontItem) => {
+    setPicker(item);
+    setPickedVariant('');
+    setPickedMods([]);
+    setPickQty(1);
+  };
+
+  const addLine = (item: StorefrontItem, variant?: StorefrontVariant, selectedModifiers?: SelectedModifier[], qtyOverride?: number) => {
+    if (!itemIsSellable(item) || model.soldOutToday) return;
+    const groups = item.modifierGroups || [];
+    const needsVariant = !!(item.variants && item.variants.length);
+    const needsMods = groups.length > 0;
+    if ((needsVariant && !variant) || (needsMods && selectedModifiers == null)) {
+      openPicker(item);
       return;
     }
+    if (needsMods) {
+      const check = validateModifierSelection(groups, selectedModifiers || []);
+      if (!check.ok) return;
+    }
+    const qty = Math.max(1, qtyOverride || (starter.countOrder ? pickQty : 1));
+    const modKey = (selectedModifiers || []).map((m) => m.optionId).sort().join(',');
     setCart((prev) => {
-      const key = `${item.id}:${variant?.id || ''}`;
-      const found = prev.find((l) => `${l.item.id}:${l.variant?.id || ''}` === key);
-      if (found) return prev.map((l) => (l === found ? { ...l, qty: l.qty + 1, note: foodNote || l.note } : l));
-      return [...prev, { item, variant, qty: 1, note: foodNote || undefined }];
+      const key = `${item.id}:${variant?.id || ''}:${modKey}`;
+      const found = prev.find((l) => {
+        const k = `${l.item.id}:${l.variant?.id || ''}:${(l.selectedModifiers || []).map((m) => m.optionId).sort().join(',')}`;
+        return k === key;
+      });
+      if (found) return prev.map((l) => (l === found ? { ...l, qty: l.qty + qty, note: foodNote || l.note } : l));
+      return [...prev, { item, variant, qty, note: foodNote || undefined, selectedModifiers: selectedModifiers || undefined }];
     });
     setPicker(null);
     setCartOpen(true);
+  };
+
+  const toggleMod = (group: ProductModifierGroup, optionId: string) => {
+    const opt = group.options.find((o) => o.id === optionId);
+    if (!opt || opt.soldOut) return;
+    setPickedMods((prev) => {
+      const without = prev.filter((s) => s.groupId !== group.id || (group.mode === 'multi' && s.optionId !== optionId));
+      if (group.mode === 'multi' && prev.some((s) => s.groupId === group.id && s.optionId === optionId)) {
+        return without;
+      }
+      return [
+        ...without.filter((s) => group.mode === 'multi' || s.groupId !== group.id),
+        {
+          groupId: group.id,
+          groupName: group.name,
+          optionId: opt.id,
+          optionLabel: opt.label,
+          priceDelta: Number(opt.priceDelta) || 0,
+        },
+      ];
+    });
   };
 
   const scrollToCatalog = () => {
@@ -559,6 +607,12 @@ export const JuvayStorefront: React.FC<{
           ILLUSTRATIVE — layout only, until you upload a photo. No sample products.
         </div>
       )}
+
+      {model.soldOutToday ? (
+        <div style={{ background: ISLAND.pepper, color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: 700, padding: '10px 12px' }}>
+          Sold out today
+        </div>
+      ) : null}
 
       {announce ? (
         <div style={{ background: p.heroBg, color: p.heroText, textAlign: 'center', fontSize: 11, letterSpacing: 0.4, padding: '6px 12px' }}>
@@ -641,6 +695,18 @@ export const JuvayStorefront: React.FC<{
           {chips.map((chip) => (
             <span key={chip} style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>{chip}</span>
           ))}
+        </div>
+      ) : null}
+
+      {(model.hours || model.pickupAddress || model.mapDirectionsUrl) && isFoodLikeStarter(model.templateId) ? (
+        <div style={{ padding: '16px 6vw', background: p.bg, borderBottom: `1px solid ${p.border}`, fontSize: 14 }}>
+          {model.hours ? <div style={{ marginBottom: 6 }}><strong>Hours</strong> · {model.hours}</div> : null}
+          {model.pickupAddress ? <div style={{ marginBottom: 6 }}><strong>Pickup</strong> · {model.pickupAddress}</div> : null}
+          {model.mapDirectionsUrl ? (
+            <a href={model.mapDirectionsUrl} target="_blank" rel="noreferrer" style={{ color: ISLAND.teal, fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+              Map / directions
+            </a>
+          ) : null}
         </div>
       ) : null}
 
@@ -795,6 +861,14 @@ export const JuvayStorefront: React.FC<{
             ))}
           </div>
         )}
+        {(starter.showsSidesSlot || model.sidesSlotLabel) ? (
+          <div style={{ marginTop: 24, padding: 16, border: `1px dashed ${p.border}`, borderRadius: 8, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
+            <div style={{ fontFamily: p.headingFont, fontSize: 16, marginBottom: 6 }}>Sides</div>
+            <p style={{ margin: 0, fontSize: 13, color: p.muted }}>
+              {model.sidesSlotLabel || 'Saheena / aloo pie / bake & saltfish — left empty for you to fill. No sample prices.'}
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {shouldRenderBlock('how', model) && (
@@ -882,11 +956,11 @@ export const JuvayStorefront: React.FC<{
         >
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, color: p.muted }}>{cartCount ? face : starter.name}</div>
-            {model.templateId === 'food' ? (
+            {isFoodLikeStarter(model.templateId) ? (
               <input
                 value={foodNote}
                 onChange={(e) => setFoodNote(e.target.value)}
-                placeholder="No pepper / extra lime"
+                placeholder="Note for the vendor"
                 style={{ width: '100%', border: 'none', background: 'transparent', fontSize: 12, color: p.text }}
               />
             ) : null}
@@ -903,28 +977,89 @@ export const JuvayStorefront: React.FC<{
 
       {picker && (
         <div role="dialog" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 40, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setPicker(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: p.surface, width: '100%', maxWidth: 420, padding: 20 }}>
-            <div style={{ fontFamily: p.headingFont, fontSize: 20, marginBottom: 12 }}>{picker.name}</div>
-            <p style={{ fontSize: 13, color: p.muted }}>Pick a variant before add.</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '12px 0 16px' }}>
-              {(picker.variants || []).map((v) => (
-                <button
-                  key={v.id}
-                  type="button"
-                  onClick={() => setPickedVariant(v.id)}
-                  style={{ minHeight: 44, padding: '0 14px', border: `1px solid ${pickedVariant === v.id ? p.text : p.border}`, background: pickedVariant === v.id ? p.text : 'transparent', color: pickedVariant === v.id ? p.surface : p.text }}
-                >
-                  {v.title}
-                </button>
-              ))}
-            </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: p.surface, width: '100%', maxWidth: 420, padding: 20, maxHeight: '88vh', overflow: 'auto' }}>
+            <div style={{ fontFamily: p.headingFont, fontSize: 20, marginBottom: 8 }}>{picker.name}</div>
+            {starter.countOrder ? (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, color: p.muted, marginBottom: 8 }}>How many?</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setPickQty(n)}
+                      style={{ minHeight: 48, minWidth: 48, borderRadius: 8, border: `1px solid ${pickQty === n ? p.text : p.border}`, background: pickQty === n ? p.text : 'transparent', color: pickQty === n ? p.surface : p.text, fontWeight: 700 }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {(picker.variants || []).length ? (
+              <>
+                <p style={{ fontSize: 13, color: p.muted, margin: '0 0 8px' }}>Pick a variant</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 14px' }}>
+                  {(picker.variants || []).map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setPickedVariant(v.id)}
+                      style={{ minHeight: 44, padding: '0 14px', border: `1px solid ${pickedVariant === v.id ? p.text : p.border}`, background: pickedVariant === v.id ? p.text : 'transparent', color: pickedVariant === v.id ? p.surface : p.text }}
+                    >
+                      {v.title}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
+            {(picker.modifierGroups || []).map((group) => (
+              <div key={group.id} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                  {group.name}{group.required ? ' *' : ''}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {group.options.map((opt) => {
+                    const on = pickedMods.some((s) => s.groupId === group.id && s.optionId === opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        disabled={!!opt.soldOut}
+                        onClick={() => toggleMod(group, opt.id)}
+                        style={{
+                          minHeight: 44,
+                          padding: '0 12px',
+                          borderRadius: group.ui === 'levels' ? 999 : 8,
+                          border: `1px solid ${on ? p.accent : p.border}`,
+                          background: on ? p.accent : 'transparent',
+                          color: on ? p.accentText : p.text,
+                          opacity: opt.soldOut ? 0.4 : 1,
+                          fontSize: 13,
+                        }}
+                      >
+                        {opt.label}{opt.priceDelta ? ` +${opt.priceDelta}` : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
             <button
               type="button"
-              disabled={!pickedVariant}
-              onClick={() => addLine(picker, picker.variants?.find((v) => v.id === pickedVariant))}
-              style={{ ...SMALL_CTA, width: '100%', height: 44, ...buy }}
+              disabled={
+                !!((picker.variants || []).length && !pickedVariant)
+                || (picker.modifierGroups || []).some((g) => g.required && !pickedMods.some((s) => s.groupId === g.id))
+              }
+              onClick={() => addLine(
+                picker,
+                picker.variants?.find((v) => v.id === pickedVariant),
+                picker.modifierGroups?.length ? pickedMods : undefined,
+                starter.countOrder ? pickQty : 1,
+              )}
+              style={{ ...SMALL_CTA, width: '100%', height: 48, ...buy, fontSize: 15 }}
             >
-              Add
+              Add{starter.countOrder ? ` · ${pickQty}` : ''}
             </button>
           </div>
         </div>
@@ -954,10 +1089,13 @@ export const JuvayStorefront: React.FC<{
               {cart.length === 0 ? <p style={{ color: p.muted }}>Nothing in the cart yet.</p> : cart.map((line, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div>
-                    {line.item.name}{line.variant ? ` · ${line.variant.title}` : ''}
+                    {line.item.name} ×{line.qty}{line.variant ? ` · ${line.variant.title}` : ''}
+                    {line.selectedModifiers?.length ? (
+                      <div style={{ fontSize: 12, color: p.muted }}>{formatSelectedModifiers(line.selectedModifiers)}</div>
+                    ) : null}
                     {line.note ? <div style={{ fontSize: 12, color: p.muted }}>{line.note}</div> : null}
                   </div>
-                  <span style={{ color: ISLAND.pepper }}>{formatPrice(model, (line.variant?.price ?? line.item.price) || 0)}</span>
+                  <span style={{ color: ISLAND.pepper }}>{formatPrice(model, ((Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers)) * line.qty)}</span>
                 </div>
               ))}
               {showUpsell ? (
@@ -986,7 +1124,10 @@ export const JuvayStorefront: React.FC<{
               <div style={{ marginBottom: 10, fontWeight: 700 }}>Face total {face}</div>
               {wa ? (
                 <a
-                  href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => `${l.item.name} x${l.qty}`).join(', ')}. ${face}`)}
+                  href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => {
+                    const mods = formatSelectedModifiers(l.selectedModifiers);
+                    return `${l.item.name} x${l.qty}${mods ? ` (${mods})` : ''}`;
+                  }).join('; ')}. ${face}${fulfill === 'cod' ? ' · Cash on delivery' : fulfill === 'pickup' ? ' · Cash on pickup' : ''}`)}
                   style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: p.accent, color: p.accentText, textDecoration: 'none', fontWeight: 700 }}
                 >
                   WhatsApp this order
@@ -1023,7 +1164,7 @@ const CatalogCard: React.FC<{
 }> = ({ item, model, palette: p, onAdd, large }) => {
   const price = formatPrice(model, item.price);
   const sellable = itemIsSellable(item);
-  const needsVariant = !!(item.variants && item.variants.length);
+  const needsVariant = !!(item.variants && item.variants.length) || !!(item.modifierGroups && item.modifierGroups.length);
   return (
     <article>
       <div
@@ -1056,18 +1197,27 @@ const CatalogCard: React.FC<{
 
 export function illustrativeModel(templateId: StarterId): StorefrontModel {
   const starter = STORE_STARTERS[templateId];
+  const foodLike = isFoodLikeStarter(templateId);
   return {
     templateId,
     storeName: starter.name,
     mode: 'illustrative',
     items: [],
     reviewCount: 0,
+    acceptsCashPickup: true,
+    acceptsCod: foodLike,
     hero: { headline: starter.heroHeadline, sub: starter.useWhen, image: starter.heroImage },
     trustChips: starter.chips,
+    sidesSlotLabel: starter.showsSidesSlot
+      ? 'Sides (saheena / aloo pie / bake & saltfish) — left empty for the merchant to fill'
+      : undefined,
+    dailySpecials: templateId === 'street_food' ? 'Daily specials — merchant types what’s on today' : undefined,
     how: [
       { title: '1. Island layout', body: 'Hero, category rails, grids, and sticky cart — blocks hide when they have no real data.' },
       { title: '2. Cash & WhatsApp first', body: 'Pickup and COD chips stay honest. No invented products, reviews, or card gateways.' },
-      { title: '3. Make it yours', body: 'Add your name, island, hours, and priced items. Publish when you choose.' },
+      { title: '3. Make it yours', body: foodLike
+        ? 'Add wraps or plates, edit condiment option-groups, set hours and sold-out. Publish when you choose.'
+        : 'Add your name, island, hours, and priced items. Publish when you choose.' },
     ],
     faq: [
       { q: 'Is this a real shop?', a: 'No. This preview is labeled ILLUSTRATIVE. It is a layout, not a merchant.' },

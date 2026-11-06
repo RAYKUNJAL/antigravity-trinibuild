@@ -5,6 +5,7 @@
 const crypto = require('crypto');
 const { listCountries } = require('./wamCountries');
 const { feeBpsForPlan, defaultCodHandlingFeeCents, listingRateLimitPerHour, juvayFeeCents } = require('./juvayFees');
+const { normalizeOrderLineItems, lineSubtotalCents } = require('./productModifiers');
 
 function hashOtp(code) {
   return crypto.createHash('sha256').update(String(code)).digest('hex');
@@ -30,6 +31,8 @@ function mountStoreCoreRoutes(app, { pool, auth, isWamConfigured }) {
         { id: 'home', name: 'Home', layout_family: 'dense_grid' },
         { id: 'electronics', name: 'Electronics', layout_family: 'dense_grid' },
         { id: 'auto', name: 'Auto', layout_family: 'dense_grid' },
+        { id: 'doubles', name: 'Doubles vendor', layout_family: 'menu', gallery_category: 'street_food' },
+        { id: 'street_food', name: 'Street food vendor', layout_family: 'menu', gallery_category: 'street_food' },
       ],
     });
   });
@@ -135,7 +138,8 @@ function mountStoreCoreRoutes(app, { pool, auth, isWamConfigured }) {
     const buyerPhone = String(body.customer_phone || '').trim();
     if (!buyerName || !buyerPhone) return res.status(400).json({ error: 'customer_name and customer_phone required' });
 
-    const subtotalCents = items.reduce((s, i) => s + Math.round(Number(i.price) * 100) * Number(i.quantity || 1), 0);
+    const normalizedItems = normalizeOrderLineItems(items);
+    const subtotalCents = lineSubtotalCents(normalizedItems);
     if (subtotalCents <= 0) return res.status(400).json({ error: 'Subtotal must be positive' });
 
     let planSlug = 'free';
@@ -192,7 +196,7 @@ function mountStoreCoreRoutes(app, { pool, auth, isWamConfigured }) {
           paymentMethod === 'wam' ? faceCents : faceCents,
           paymentMethod === 'wam' ? 'awaiting_payment' : 'pending',
           paymentMethod === 'wam' ? 'pending' : 'pending',
-          JSON.stringify(items), JSON.stringify(snapshot),
+          JSON.stringify(normalizedItems), JSON.stringify(snapshot),
         ]
       );
       res.status(201).json({ order: rows[0], quote: snapshot, fulfill: false });

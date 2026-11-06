@@ -480,10 +480,21 @@ app.post('/api/products', auth, async (req, res) => {
   const status = req.body.status === 'draft' ? 'draft' : 'active';
   const stock = item.qty;
   const sku = item.sku || null;
-  const { rows } = await pool.query(
-    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-    [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', JSON.stringify(images || (item.image ? [item.image] : [])), sku, status]
-  );
+  const modifierGroups = Array.isArray(item.modifier_groups) ? item.modifier_groups : [];
+  const imgJson = JSON.stringify(images || (item.image ? [item.image] : []));
+  let rows;
+  try {
+    ({ rows } = await pool.query(
+      `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status, modifier_groups) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', imgJson, sku, status, JSON.stringify(modifierGroups)]
+    ));
+  } catch (e) {
+    if (e.code !== '42703') throw e; // modifier_groups column missing until migration
+    ({ rows } = await pool.query(
+      `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', imgJson, sku, status]
+    ));
+  }
   res.json(rows[0]);
 });
 

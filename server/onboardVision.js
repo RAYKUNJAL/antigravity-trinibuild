@@ -3,7 +3,7 @@
  * Used by POST /api/onboard/vision. Never a price, sku, qty, or products[].
  */
 
-const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto'];
+const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto', 'doubles', 'street_food'];
 
 const NO_KEY_WARNING = 'Vision is not writing this listing. Type the name and TT$ price yourself.';
 const FAIL_WARNING = 'Vision did not write this listing. Type the name and TT$ price yourself.';

@@ -134,3 +134,11 @@ assert.strictEqual(shouldRenderBlock('grid', food({ templateId: 'electronics', i
 assert.strictEqual(shouldRenderBlock('featured', food({ templateId: 'auto', items: [{ id: '1', name: 'Pad' }] })), false);
 
 console.log('storefrontHonesty.test.js ok');
+
+const sold = food({ soldOutToday: true, isOpen: true });
+assert.strictEqual(showOrderCta(sold), false);
+assert.strictEqual(closedFoodNextOpen(sold), 'Sold out today');
+const doublesClosed = food({ templateId: 'doubles', isOpen: false, nextOpen: 'tomorrow 6am' });
+assert.strictEqual(showOrderCta(doublesClosed), false);
+assert.strictEqual(closedFoodNextOpen(doublesClosed), 'Opens tomorrow 6am');
+assert.strictEqual(announcementLine(food({ dailySpecials: 'Corn soup today' })), 'Corn soup today');

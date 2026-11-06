@@ -55,7 +55,9 @@ export class OnboardClientError extends Error {
 /** Same keyword map as server/onboardDraft.recommendFromText. */
 export function recommendStarterFromText(text: string): StarterId {
   const t = String(text || '').toLowerCase();
-  if (/\b(roti|doubles|food|cook|bake|menu|kitchen|lunch|dinner|breakfast)\b/.test(t)) return 'food';
+  if (/\b(doubles|bara|channa)\b/.test(t)) return 'doubles';
+  if (/\b(corn soup|street food|fried chicken|stall)\b/.test(t)) return 'street_food';
+  if (/\b(roti|food|cook|bake|menu|kitchen|lunch|dinner|breakfast)\b/.test(t)) return 'food';
   if (/\b(dress|fashion|cloth|boutique|apparel|wear|garment)\b/.test(t)) return 'fashion';
   if (/\b(barber|salon|fade|chair|book|repair|lesson|service)\b/.test(t)) return 'services';
   if (/\b(lipstick|makeup|cosmetic|shade|serum|kit|skincare)\b/.test(t)) return 'beauty';

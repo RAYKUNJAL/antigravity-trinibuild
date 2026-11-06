@@ -1,5 +1,6 @@
 /**
- * Eight locked store starters. Same chrome. Type changes blocks + copy + palette.
+ * Ten locked store starters. Same chrome. Type changes blocks + copy + palette.
+ * Island niche food (doubles, street_food) share the Street food gallery category.
  * No invented shop names. No dummy SKUs.
  */
 
@@ -11,7 +12,9 @@ export type StarterId =
   | 'beauty'
   | 'home'
   | 'electronics'
-  | 'auto';
+  | 'auto'
+  | 'doubles'
+  | 'street_food';
 
 export type StorefrontBlock =
   | 'hero'
@@ -68,15 +71,25 @@ export interface StoreStarter {
   merchantEmpty: string;
   /** Original abstract hero art. Illustrative until the merchant uploads. */
   heroImage: string;
+  /** Gallery filter bucket. Street niches share street_food. */
+  galleryCategory?: string;
+  /** Reusable product option-group preset (services/productModifiers). */
+  modifierPreset?: 'doubles' | 'street_food' | null;
+  /** Menu-first count chips (1 double, 2, 3…). */
+  countOrder?: boolean;
+  /** Empty sides slot (saheena / aloo pie / bake & saltfish) for merchant fill. */
+  showsSidesSlot?: boolean;
 }
 
 export const STARTER_IDS: StarterId[] = [
   'food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto',
+  'doubles', 'street_food',
 ];
 
 export const GALLERY_FILTERS = [
   { id: 'all', name: 'All' },
   { id: 'food', name: 'Food' },
+  { id: 'street_food', name: 'Street food' },
   { id: 'fashion', name: 'Fashion' },
   { id: 'services', name: 'Services' },
   { id: 'general', name: 'General' },
@@ -85,6 +98,10 @@ export const GALLERY_FILTERS = [
   { id: 'electronics', name: 'Electronics' },
   { id: 'auto', name: 'Auto' },
 ];
+
+export function isFoodLikeStarter(id: StarterId | string | null | undefined): boolean {
+  return id === 'food' || id === 'doubles' || id === 'street_food';
+}
 
 export const FAQ_PAY_LINE =
   'Cash when you collect, or cash on delivery if that option is on. We do not ask for PayPal.';
@@ -356,6 +373,78 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       field: 'linear-gradient(160deg, #1a1a1a 0%, #d97706 46%, #111 100%)',
     },
   },
+  doubles: {
+    id: 'doubles',
+    name: 'Doubles vendor',
+    useWhen: 'Trinidad & Tobago doubles — bara, channa, condiments by the wrap. Menu-first mobile.',
+    chips: ['Count order', 'Condiment options', 'Cash / COD', 'WhatsApp'],
+    cta: 'Order doubles',
+    heroHeadline: 'Fresh doubles. Pepper how you like it.',
+    heroLayout: 'stack',
+    kicker: 'Doubles',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Wraps',
+    catalogKind: 'menu',
+    blocks: ['hero', 'trust', 'category_rail', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing on the doubles menu yet.',
+    merchantEmpty: 'Add your first wrap (bara + channa)',
+    heroImage: '/templates/heroes/doubles.webp',
+    galleryCategory: 'street_food',
+    modifierPreset: 'doubles',
+    countOrder: true,
+    showsSidesSlot: true,
+    palette: {
+      bg: '#1a120c',
+      surface: '#26180f',
+      text: '#f7ecd8',
+      muted: '#c9b089',
+      accent: '#e8a317',
+      accentText: '#1a120c',
+      heroBg: '#1a120c',
+      heroText: '#f7ecd8',
+      border: 'rgba(232,163,23,0.3)',
+      headingFont: "'Fraunces', Georgia, serif",
+      bodyFont: "'Source Sans 3', system-ui, sans-serif",
+      fontHref: SERIF_SANS,
+      field: 'radial-gradient(ellipse at 55% 40%, #e8a317 0%, #7a3f12 48%, #1a120c 100%)',
+    },
+  },
+  street_food: {
+    id: 'street_food',
+    name: 'Street food vendor',
+    useWhen: 'Corn soup, fried chicken, roti, bake — street stall with sizes, spice, and daily specials.',
+    chips: ['Daily specials', 'Size & spice', 'Cash / COD', 'Hours'],
+    cta: 'Order now',
+    heroHeadline: 'Hot off the stall. Ready when you reach.',
+    heroLayout: 'split',
+    kicker: 'Street food',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Today',
+    catalogKind: 'menu',
+    blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing on the stall menu yet.',
+    merchantEmpty: 'Add your first plate',
+    heroImage: '/templates/heroes/street-food.webp',
+    galleryCategory: 'street_food',
+    modifierPreset: 'street_food',
+    countOrder: true,
+    showsSidesSlot: false,
+    palette: {
+      bg: '#14100c',
+      surface: '#221810',
+      text: '#f5ecd9',
+      muted: '#c4b08a',
+      accent: '#f97316',
+      accentText: '#14100c',
+      heroBg: '#14100c',
+      heroText: '#f5ecd9',
+      border: 'rgba(249,115,22,0.32)',
+      headingFont: "'Fraunces', Georgia, serif",
+      bodyFont: "'Source Sans 3', system-ui, sans-serif",
+      fontHref: SERIF_SANS,
+      field: 'radial-gradient(ellipse at 50% 35%, #f97316 0%, #9a3412 50%, #14100c 100%)',
+    },
+  },
 };
 
 export const GALLERY_TO_STARTER: Record<string, StarterId> = {
@@ -367,10 +456,13 @@ export const GALLERY_TO_STARTER: Record<string, StarterId> = {
   home: 'home',
   electronics: 'electronics',
   auto: 'auto',
+  doubles: 'doubles',
+  street_food: 'street_food',
+  'street-food': 'street_food',
   basic: 'general',
   basic_storefront: 'general',
   roti_shop_pro: 'food',
-  doubles_breakfast_pro: 'food',
+  doubles_breakfast_pro: 'doubles',
   restaurant_premium: 'food',
   restaurant: 'food',
   clothing_store_pro: 'fashion',
@@ -420,12 +512,12 @@ export function defaultHowSteps(input: {
   wamLive?: boolean;
 }): Array<{ title: string; body: string }> {
   const browse =
-    input.templateId === 'food' ? 'See the menu' :
+    isFoodLikeStarter(input.templateId) ? 'See the menu' :
     input.templateId === 'services' ? 'Pick a service' :
     input.templateId === 'auto' ? 'Search the parts' :
     'Browse the shop';
   const action =
-    input.templateId === 'food' ? 'Place your order' :
+    isFoodLikeStarter(input.templateId) ? 'Place your order' :
     input.templateId === 'services' ? 'Book a time' :
     'Ask for the piece';
   const payBits: string[] = [];

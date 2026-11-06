@@ -157,7 +157,7 @@ export function storePublishChecks(
     { key: 'phone', label: 'Phone', ok: !!state.phone.trim(), detail: 'Add a buyer-visible phone.' },
     { key: 'pickupAddress', label: 'Pickup address', ok: !!state.pickupAddress.trim(), detail: 'Add a pickup address.' },
     { key: 'island', label: 'Island / country', ok: !!state.island.trim(), detail: 'Choose Trinidad, Tobago, or Trinidad & Tobago.' },
-    { key: 'templateId', label: 'Starter type', ok: !!state.templateId, detail: 'Pick one of the eight starters.' },
+    { key: 'templateId', label: 'Starter type', ok: !!state.templateId, detail: 'Pick one of the ten starters.' },
     { key: 'hours', label: 'Hours', ok: !!state.hours.trim(), detail: 'Type buyer-visible hours.' },
     { key: 'foodAttested', label: 'Food-safety attestation', ok: state.templateId !== 'food' || state.foodAttested, detail: 'Food shops must attest before publish.' },
     { key: 'payoutPreference', label: 'Payout preference', ok: payoutOk, detail: wamConfigured ? 'Choose cash, Wam, or bank transfer.' : 'Choose cash or bank transfer. Wam is not on this host.' },
@@ -641,7 +641,7 @@ const StoreBuilderV3: React.FC = () => {
           Pick a starter
         </h2>
         <p style={{ color: '#6b6256', maxWidth: '42ch', margin: '0 auto' }}>
-          Eight starters. Same island chrome. Each vertical is its own shop type — menu, rack, book a time, tiles, shades, furniture, gadgets, parts.
+          Ten starters. Same island chrome — including Doubles vendor and Street food. Menu, rack, book a time, tiles, shades, furniture, gadgets, parts.
         </p>
       </div>
       <div className="juvay-pick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>

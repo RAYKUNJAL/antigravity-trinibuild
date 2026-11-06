@@ -3,7 +3,7 @@
  * Used by POST /api/onboard/draft. Testable without Express.
  */
 
-const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto'];
+const STARTER_IDS = ['food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto', 'doubles', 'street_food'];
 const {
   parseColorInstruction,
   parseFontInstruction,
@@ -15,6 +15,8 @@ const {
 
 const HERO = {
   food: 'Cooked this morning. Ready when you reach.',
+  doubles: 'Fresh doubles. Pepper how you like it.',
+  street_food: 'Hot off the stall. Ready when you reach.',
   fashion: 'Pieces you can try. Prices you can see.',
   services: 'Book a time. Pay cash when you come.',
   general: 'Shop local. Cash or pickup.',
@@ -33,7 +35,9 @@ function isStarterId(value) {
 
 function recommendFromText(text) {
   const t = String(text || '').toLowerCase();
-  if (/\b(roti|doubles|food|cook|bake|menu|kitchen|lunch|dinner|breakfast)\b/.test(t)) return 'food';
+  if (/\b(doubles|bara|channa)\b/.test(t)) return 'doubles';
+  if (/\b(corn soup|street food|fried chicken|stall)\b/.test(t)) return 'street_food';
+  if (/\b(roti|food|cook|bake|menu|kitchen|lunch|dinner|breakfast)\b/.test(t)) return 'food';
   if (/\b(dress|fashion|cloth|boutique|apparel|wear|garment)\b/.test(t)) return 'fashion';
   if (/\b(barber|salon|fade|chair|book|repair|lesson|service)\b/.test(t)) return 'services';
   if (/\b(lipstick|makeup|cosmetic|shade|serum|kit|skincare)\b/.test(t)) return 'beauty';
@@ -48,7 +52,7 @@ function validateOnboardInput(body) {
   if (!name) return { error: 'Store name is required' };
   let templateId = String(body?.templateId || body?.type || '').trim();
   if (templateId && !isStarterId(templateId)) {
-    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto' };
+    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto, doubles, street_food' };
   }
   if (!templateId) {
     templateId = recommendFromText(body?.chat || body?.specialty || name);
@@ -113,8 +117,9 @@ function fallbackTrust(input) {
 }
 
 function fallbackHow(input) {
-  const browse = input.templateId === 'food' ? 'See the menu' : input.templateId === 'services' ? 'Pick a service' : 'Browse the shop';
-  const action = input.templateId === 'food' ? 'Place your order' : input.templateId === 'services' ? 'Book a time' : 'Ask for the piece';
+  const foodLike = input.templateId === 'food' || input.templateId === 'doubles' || input.templateId === 'street_food';
+  const browse = foodLike ? 'See the menu' : input.templateId === 'services' ? 'Pick a service' : 'Browse the shop';
+  const action = foodLike ? 'Place your order' : input.templateId === 'services' ? 'Book a time' : 'Ask for the piece';
   const pay = [
     input.acceptsCashPickup ? 'cash when you collect' : null,
     input.acceptsCod ? 'cash on delivery if we deliver to you' : null,
@@ -209,7 +214,7 @@ async function callGrok(input) {
   const system = [
     'You write store copy for Juvay, a Trinidad & Tobago commerce tool.',
     'Return JSON only: { templateId, hero: { headline, sub }, about, trustChips, faq, how }.',
-    'templateId must be one of food|fashion|services|general|beauty|home|electronics|auto.',
+    'templateId must be one of food|fashion|services|general|beauty|home|electronics|auto|doubles|street_food.',
     'Use these locked headlines unless the merchant already wrote one:',
     'food: Cooked this morning. Ready when you reach.',
     'fashion: Pieces you can try. Prices you can see.',
@@ -321,7 +326,7 @@ function validatePatchInput(body) {
   if (instruction.length > 500) return { error: 'instruction is too long' };
   let templateId = String(body?.templateId || body?.current?.templateId || '').trim();
   if (templateId && !isStarterId(templateId)) {
-    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto' };
+    return { error: 'templateId must be one of food, fashion, services, general, beauty, home, electronics, auto, doubles, street_food' };
   }
   if (!templateId) templateId = 'general';
   const locked = body?.locked && typeof body.locked === 'object' ? body.locked : {};
@@ -339,7 +344,7 @@ function validatePatchInput(body) {
   };
 }
 
-const STARTER_HERO_RE = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto)\.(jpg|png)$/;
+const STARTER_HERO_RE = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)\.(jpg|png|webp)$/;
 
 function allowedProposedHeroImage(raw) {
   if (raw == null) return null;
@@ -452,7 +457,7 @@ async function callGrokPatch(input) {
     'Do not invent products, prices, SKUs, WhatsApp, payment rails, or shop names.',
     'Do not mention PayPal, Linx, Michelin, free shipping, or TriniBuild.',
     'Do not include products, items, catalog, skus, or logo data URLs.',
-    'hero.image may only be empty (clear merchant photo) or a starter path /templates/heroes/{food|fashion|services|general|beauty|home|electronics|auto}.jpg.',
+    'hero.image may only be empty (clear merchant photo) or a starter path /templates/heroes/{food|fashion|...|doubles|street-food}.jpg|webp.',
     'If the merchant already wrote a field or typed a hex, you may propose a rewrite but the client will show the patch first.',
   ].join(' ');
   const user = JSON.stringify({

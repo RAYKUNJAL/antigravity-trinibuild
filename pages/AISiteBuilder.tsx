@@ -287,7 +287,7 @@ export default function AISiteBuilder() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Left panel */}
                 <div className="w-full max-w-xs border-r border-gray-800 bg-black overflow-y-auto p-4 hidden lg:block">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Eight starters</p>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Ten starters</p>
                     <div className="space-y-2 mb-5">
                         {COMMERCIAL_TEMPLATES.map((tpl) => (
                             <button key={tpl.id} onClick={() => setSite({ ...site, theme: { ...tpl.theme, heroStyle: tpl.heroStyle } })}
