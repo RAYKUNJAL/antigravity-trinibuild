@@ -22,8 +22,8 @@ function validateMerchantItem(body) {
     return { error: 'Price TT$ is required', status: 400 };
   }
   const price = Number(priceRaw);
-  if (!Number.isFinite(price) || price < 0) {
-    return { error: 'Price TT$ is required', status: 400 };
+  if (!Number.isFinite(price) || price <= 0) {
+    return { error: 'Price TT$ must be greater than 0', status: 400 };
   }
   const qtyParsed = parseQty(body?.qty ?? body?.stock);
   if (qtyParsed && typeof qtyParsed === 'object' && qtyParsed.error) {
