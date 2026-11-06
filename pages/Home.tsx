@@ -287,7 +287,7 @@ export const Home: React.FC = () => {
                      "Built in Trinidad & Tobago",
                      "Jobs · Real Estate",
                      "Founding merchants get 6 months Pro free",
-                     "First 5 products free, forever",
+                     "Unlimited free product listings",
                      "Cancel anytime, no questions",
                   ].map((text, i) => (
                      <span key={i} className="text-gray-400 mx-8 font-mono text-sm flex items-center">

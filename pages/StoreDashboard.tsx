@@ -152,7 +152,7 @@ export const StoreDashboard: React.FC = () => {
     name: '', description: '', price: '', qty: '', sku: '', variant: '', category: '', image_url: '', status: 'active'
   });
   const [showProductModal, setShowProductModal] = useState(false);
-  const [maxProducts, setMaxProducts] = useState<number>(5);
+  const [maxProducts, setMaxProducts] = useState<number>(-1);
   const [planSlug, setPlanSlug] = useState<string>('free');
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -210,7 +210,7 @@ export const StoreDashboard: React.FC = () => {
       // Load plan limit
       if (user) {
         const { plan } = await subscriptionService.getUserPlan(user.id);
-        setMaxProducts(plan?.max_products ?? 5);
+        setMaxProducts(plan?.max_products ?? -1);
         setPlanSlug(plan?.slug ?? 'free');
       }
 
@@ -235,7 +235,7 @@ export const StoreDashboard: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { plan } = await subscriptionService.getUserPlan(user.id);
-        const limit = plan?.max_products ?? 5;
+        const limit = plan?.max_products ?? -1;
         setMaxProducts(limit);
         setPlanSlug(plan?.slug ?? 'free');
         // -1 means unlimited
@@ -1193,7 +1193,7 @@ export const StoreDashboard: React.FC = () => {
                     {[
                       { name: 'Cash on Delivery (COD)', desc: 'Collect payment on delivery.', enabled: true },
                       { name: 'WhatsApp Order', desc: 'Customers order via WhatsApp chat.', enabled: true },
-                      { name: 'Online Card Payment', desc: 'Accept credit/debit cards (coming soon).', enabled: false },
+                      { name: 'Wam online pay', desc: 'Wam checkout when configured on this host. Cash pickup and COD stay available.', enabled: false },
                     ].map((method, i) => (
                       <div key={i} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div>
@@ -1366,7 +1366,7 @@ export const StoreDashboard: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Product Limit Reached</h3>
             <p className="text-gray-600 mb-6">
-              You've reached your {maxProducts} product limit on the {planSlug === 'free' ? 'Free' : planSlug} plan. Upgrade to Pro to add unlimited products. TT$300/mo.
+              You've hit a plan product limit ({maxProducts}). Free is unlimited listings — if you see this, the server plan_tiers.max_products may still be capped. Paid plans lower the Wam online fee.
             </p>
             <div className="flex gap-3">
               <button

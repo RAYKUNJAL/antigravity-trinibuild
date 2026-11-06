@@ -540,7 +540,7 @@ export const LandingPageCRO: React.FC = () => {
         <meta property="og:title" content="Free Online Store for Trinidad & Tobago - Start Selling with COD" />
         <meta
           property="og:description"
-          content="Launching in T&T: a free online store builder with COD checkout. No credit card, 5 products free."
+          content="Launching in T&T: a free online store builder with COD checkout. No credit card, unlimited products free."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://juvay.app/" />
@@ -565,7 +565,7 @@ export const LandingPageCRO: React.FC = () => {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'TTD',
-              description: 'Free online store with 5 products'
+              description: 'Free online store with unlimited products'
             }
           })}
         </script>

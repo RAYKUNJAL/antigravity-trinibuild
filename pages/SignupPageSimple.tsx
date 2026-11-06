@@ -4,6 +4,7 @@ import { setToken } from '../services/selfHostedApi';
 import { authService } from '../services/authService';
 import { track } from '../services/eventTracker';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { wamCountrySelectOptions } from '../services/wamCountries';
 
 const PASSWORD_MIN = 8;
 
@@ -14,19 +15,12 @@ export const SignupPageSimple: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedIsland, setSelectedIsland] = useState('T&T');
+  const [selectedIsland, setSelectedIsland] = useState('tt');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('next') || searchParams.get('redirect') || '/get-started';
 
-  const islandOptions = [
-    'T&T 🇹🇹',
-    'Jamaica 🇯🇲',
-    'Barbados 🇧🇧',
-    'Guyana 🇬🇾',
-    'Eastern Caribbean 🌴',
-    'Other',
-  ];
+  const islandOptions = wamCountrySelectOptions();
 
   React.useEffect(() => {
     fetch('/api/', { headers: { Accept: 'application/json' } })
@@ -214,7 +208,7 @@ export const SignupPageSimple: React.FC = () => {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent bg-white text-gray-900"
               >
                 {islandOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>

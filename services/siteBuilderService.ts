@@ -7,6 +7,7 @@
 // =============================================================
 import { supabase } from './supabaseClient';
 import { STARTER_IDS, STORE_STARTERS } from './storeStarters';
+import { wamCountryNames } from './wamCountries';
 
 // ---------- Types ----------
 export type SectionType =
@@ -442,7 +443,4 @@ export async function getMyStores() {
 }
 
 export const CATEGORIES = Object.keys(CATEGORY_COPY);
-export const ISLANDS = [
-    'Trinidad & Tobago', 'Jamaica', 'Barbados', 'Guyana', 'St. Lucia', 'Grenada',
-    'St. Vincent & the Grenadines', 'Antigua & Barbuda', 'Dominica', 'St. Kitts & Nevis', 'The Bahamas', 'Belize',
-];
+export const ISLANDS = wamCountryNames();

@@ -585,7 +585,7 @@ export const CROSignupFlow: React.FC = () => {
                                 <div className="space-y-3 text-sm text-gray-700">
                                     <div className="flex items-start gap-2">
                                         <span className="text-trini-red font-bold">✓</span>
-                                        <span>Free forever — your first 5 products, no time limit</span>
+                                        <span>Free forever — unlimited products, no time limit</span>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <span className="text-trini-red font-bold">✓</span>
