@@ -25,6 +25,9 @@ export type StorefrontBlock =
   | 'how'
   | 'sticky'
   | 'faq'
+  | 'category_rail'
+  | 'banner'
+  | 'testimonials'
   | 'footer';
 
 export type HeroLayout = 'split' | 'split_reverse' | 'bleed' | 'overlay' | 'stack' | 'rail' | 'desk' | 'card';
@@ -109,7 +112,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Menu',
     featuredTitle: 'Today',
     catalogKind: 'menu',
-    blocks: ['hero', 'trust', 'featured_combo', 'menu', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the menu yet.',
     merchantEmpty: 'Add your first plate',
     heroImage: '/templates/heroes/food.jpg',
@@ -141,7 +144,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'The rack',
     featuredTitle: 'Lookbook',
     catalogKind: 'lookbook',
-    blocks: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No pieces listed yet.',
     merchantEmpty: 'Add your first piece',
     heroImage: '/templates/heroes/fashion.jpg',
@@ -173,7 +176,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Services',
     featuredTitle: 'Services',
     catalogKind: 'services',
-    blocks: ['hero', 'trust', 'service_list', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'service_list', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No services listed yet.',
     merchantEmpty: 'Add your first service',
     heroImage: '/templates/heroes/services.jpg',
@@ -205,7 +208,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Shop',
     featuredTitle: 'On the table',
     catalogKind: 'tiles',
-    blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing in the shop yet.',
     merchantEmpty: 'Add your first item',
     heroImage: '/templates/heroes/general.jpg',
@@ -237,7 +240,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Kits',
     featuredTitle: 'Shades',
     catalogKind: 'shades',
-    blocks: ['hero', 'trust', 'lookbook', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No shades or kits listed yet.',
     merchantEmpty: 'Add your first shade or kit',
     heroImage: '/templates/heroes/beauty.jpg',
@@ -269,7 +272,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Furniture',
     featuredTitle: 'The piece',
     catalogKind: 'furniture',
-    blocks: ['hero', 'trust', 'featured', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No furniture listed yet.',
     merchantEmpty: 'Add your first piece',
     heroImage: '/templates/heroes/home.jpg',
@@ -301,7 +304,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Gadgets',
     featuredTitle: 'Featured',
     catalogKind: 'gadgets',
-    blocks: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No gadgets listed yet.',
     merchantEmpty: 'Add your first gadget',
     heroImage: '/templates/heroes/electronics.jpg',
@@ -333,7 +336,7 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     catalogTitle: 'Parts',
     featuredTitle: 'Parts',
     catalogKind: 'parts',
-    blocks: ['hero', 'trust', 'grid', 'how', 'sticky', 'faq', 'footer'],
+    blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No parts listed yet.',
     merchantEmpty: 'Add your first part',
     heroImage: '/templates/heroes/auto.jpg',

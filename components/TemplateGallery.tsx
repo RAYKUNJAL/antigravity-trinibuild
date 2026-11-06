@@ -27,6 +27,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
   const [searchParams, setSearchParams] = useSearchParams();
   const starters = useMemo(() => starterList(), []);
   const [q, setQ] = useState('');
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const routeId = params.starterId || '';
   const queryPreview = searchParams.get('preview');
@@ -77,8 +78,16 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
       <link rel="stylesheet" href={STORE_STARTERS.food.palette.fontHref} />
       <div style={{ padding: '56px 24px 28px', textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
         <h1 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 400, margin: '0 0 20px' }}>
-          Pick a starter you can actually run
+          Store starters for the Caribbean
         </h1>
+        <p style={{ margin: '0 0 12px', color: '#5C574E', fontSize: 15, lineHeight: 1.5 }}>
+          Eight original Caribbean starters — denser product cards, category rails, promo banners, and honest empty review slots. Previews are <strong>ILLUSTRATIVE</strong>; catalogues stay empty until you add priced items.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 18 }}>
+          {['Cash pickup', 'COD', 'WhatsApp-ready', 'Wam when configured', 'Mobile-first'].map((chip) => (
+            <span key={chip} style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, padding: '6px 12px', borderRadius: 999, background: '#fff', border: '1px solid #E8DCC8', color: '#141414' }}>{chip}</span>
+          ))}
+        </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #1a1a1a', paddingBottom: 8, maxWidth: 360, margin: '0 auto' }}>
           <Search size={16} />
           <input
@@ -125,7 +134,12 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                 onClick={() => openPreview(starter.galleryId)}
                 style={{ display: 'block', width: '100%', border: 'none', padding: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
               >
-                <BrowserChrome>
+                            <div style={{ display: 'flex', gap: 8, padding: '0 16px 12px', justifyContent: 'center' }}>
+              <button type="button" onClick={() => setPreviewMode('desktop')} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'desktop' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}>Desktop</button>
+              <button type="button" onClick={() => setPreviewMode('mobile')} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'mobile' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}>Mobile</button>
+            </div>
+            <div style={{ maxWidth: previewMode === 'mobile' ? 390 : '100%', margin: '0 auto', padding: previewMode === 'mobile' ? '0 16px 24px' : '0 16px 24px' }}>
+<BrowserChrome>
                   <div style={{ position: 'relative' }}>
                     <StarterThumb id={starter.id} />
                     <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(255,248,240,0.94)', color: '#111', minHeight: 32, padding: '0 12px', display: 'grid', placeItems: 'center', fontWeight: 600, fontSize: 11 }}>
@@ -133,9 +147,14 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
                     </div>
                   </div>
                 </BrowserChrome>
+            </div>
               </button>
               <div style={{ marginTop: 12 }}>
                 <StarterCardMeta id={starter.id} />
+                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: ISLAND.mango, color: ISLAND.mangoInk }}>Cash · COD</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: ISLAND.teal, color: '#fff' }}>WhatsApp</span>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button

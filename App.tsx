@@ -15,7 +15,7 @@ import PricingCheckout from './pages/PricingCheckout';
 import { DemoSamplePage } from './pages/DemoSamplePage';
 
 console.log('🔄 App.tsx file is loading...');
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -30,7 +30,6 @@ import { StoreDashboard } from './pages/StoreDashboard';
 import MerchantTaxDashboard from './components/MerchantTaxDashboard';
 import AdminFinancialDashboard from './components/AdminFinancialDashboard';
 import { Dashboard } from './pages/Dashboard';
-import { Storefront } from './pages/Storefront';
 import { ShortSlugRedirect } from './components/ShortSlugRedirect';
 // AdminDashboard removed; external redirect will be used
 import { Settings } from './pages/Settings';
@@ -97,7 +96,6 @@ import { LivingLanding } from './pages/landing/LivingLanding';
 import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
 // StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
-import { StorefrontV2 } from './pages/StorefrontV2';
 import { AdminRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
@@ -105,7 +103,6 @@ import { ContractorSignup } from './pages/ContractorSignup';
 import { AdsPortal } from './pages/AdsPortal';
 import { CaribAdsLanding } from './pages/CaribAdsLanding';
 import { DriverSignupAI } from './pages/DriverSignupAI';
-import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
 import { LoginPage } from './pages/LoginPageSimple';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
@@ -157,6 +154,9 @@ const PageLayout = () => {
 };
 
 import ScrollToTop from './components/ScrollToTop';
+const StorefrontV2 = lazy(() => import('./pages/StorefrontV2').then((m) => ({ default: m.StorefrontV2 })));
+const Storefront = lazy(() => import('./pages/Storefront').then((m) => ({ default: m.Storefront })));
+const TemplateGalleryLazy = lazy(() => import('./components/TemplateGallery').then((m) => ({ default: m.TemplateGallery })));
 
 const LocationLogger = () => {
   const location = useLocation();
@@ -303,8 +303,8 @@ const App: React.FC = () => {
               <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
 
               {/* NEW ROUTES - Template Gallery & AI Features */}
-              <Route path="/templates" element={<TemplateGallery />} />
-              <Route path="/templates/:starterId" element={<TemplateGallery />} />
+              <Route path="/templates" element={<Suspense fallback={<div style={{padding:24}}>Loading templates…</div>}><TemplateGalleryLazy /></Suspense>} />
+              <Route path="/templates/:starterId" element={<Suspense fallback={<div style={{padding:24}}>Loading templates…</div>}><TemplateGalleryLazy /></Suspense>} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/documents" element={<DocumentCenter />} />
@@ -450,9 +450,9 @@ const App: React.FC = () => {
             <Route path="/s/:shortSlug" element={<ShortSlugRedirect />} />
 
             {/* Storefront Routes - Using V2 as primary */}
-            <Route path="/store/:slug" element={<StorefrontV2 />} />
-            <Route path="/store/:id/v1" element={<Storefront />} />
-            <Route path="/store/preview" element={<StorefrontV2 />} />
+            <Route path="/store/:slug" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
+            <Route path="/store/:id/v1" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><Storefront /></Suspense>} />
+            <Route path="/store/preview" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
 
             {/* Unknown /admin/* — login wall, never public admin chrome */}
             <Route path="/admin/*" element={<Navigate to="/login" replace />} />

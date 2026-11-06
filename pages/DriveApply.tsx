@@ -52,7 +52,8 @@ export const DriveApply: React.FC = () => {
   const onPhoto = async (fieldName: string, file?: File) => {
     if (!file) return;
     try {
-      setPhotos((prev) => ({ ...prev, [fieldName]: await readImageAsDataUrl(file) }));
+      const dataUrl = await readImageAsDataUrl(file);
+      setPhotos((prev) => ({ ...prev, [fieldName]: dataUrl }));
     } catch (e: any) {
       setError(e.message);
     }

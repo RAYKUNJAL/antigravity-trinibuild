@@ -86,7 +86,7 @@ const HeroPhoto: React.FC<{
 }> = ({ src, field, editable, onUpload, priority, fill }) => (
   <div style={{ position: fill ? 'absolute' : 'relative', inset: fill ? 0 : undefined, minHeight: fill ? undefined : '100%', height: fill ? undefined : '100%', background: field, overflow: 'hidden' }}>
     {src ? (
-      <img
+      <img loading="lazy"
         src={src}
         alt=""
         width={1600}
@@ -581,7 +581,7 @@ export const JuvayStorefront: React.FC<{
       >
         <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
           {model.logo ? (
-            <img src={model.logo} alt="" width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+            <img loading="lazy" src={model.logo} alt="" width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} />
           ) : null}
           {model.storeName || starter.name}
         </div>
@@ -683,7 +683,70 @@ export const JuvayStorefront: React.FC<{
         </div>
       ) : null}
 
-      {(shouldRenderBlock('featured', model) || shouldRenderBlock('featured_combo', model) || shouldRenderBlock('lookbook', model)) && featured.length > 0 ? (
+      
+      {shouldRenderBlock('category_rail', model) ? (
+        <section style={{ padding: '20px 6vw 8px' }} aria-label="Categories">
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
+            {(model.mode === 'illustrative'
+              ? ['All', 'Featured', starter.catalogTitle]
+              : ['All', ...Array.from(new Set(liveItems(model).map((i) => (i.category || '').trim()).filter(Boolean)))]
+            ).map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => {
+                  if (label === 'All') setQuery('');
+                  else setQuery(label);
+                  scrollToCatalog();
+                }}
+                style={{
+                  flex: '0 0 auto',
+                  minHeight: 40,
+                  padding: '0 14px',
+                  borderRadius: 999,
+                  border: `1px solid ${p.border}`,
+                  background: p.surface,
+                  color: p.text,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {shouldRenderBlock('banner', model) ? (
+        <section style={{ padding: '12px 6vw 28px' }}>
+          <div
+            style={{
+              borderRadius: 16,
+              padding: '28px 24px',
+              background: p.accent,
+              color: p.accentText || '#fff',
+              display: 'grid',
+              gap: 8,
+              boxShadow: '0 1px 2px rgba(20,20,20,.06), 0 8px 24px rgba(20,20,20,.06)',
+            }}
+          >
+            <div style={{ fontSize: 12, letterSpacing: 0.4, opacity: 0.9 }}>
+              {model.mode === 'illustrative' ? 'ILLUSTRATIVE banner' : 'From the shop'}
+            </div>
+            <div style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, maxWidth: '36ch' }}>
+              {model.announcement?.trim()
+                || (model.mode === 'illustrative'
+                  ? 'Your promo lands here — typed by you, never invented.'
+                  : model.announcement)}
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.92 }}>Cash pickup · COD{model.wamLive ? ' · Wam online' : ''}</div>
+          </div>
+        </section>
+      ) : null}
+
+{(shouldRenderBlock('featured', model) || shouldRenderBlock('featured_combo', model) || shouldRenderBlock('lookbook', model)) && featured.length > 0 ? (
         <section style={{ padding: '8px 6vw 36px' }}>
           <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
             {starter.featuredTitle}
@@ -748,7 +811,21 @@ export const JuvayStorefront: React.FC<{
         </section>
       )}
 
-      {shouldRenderBlock('faq', model) && (
+      
+      {shouldRenderBlock('testimonials', model) ? (
+        <section style={{ padding: '28px 6vw 40px', background: p.surface }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 8px', textAlign: 'center' }}>Reviews</h2>
+          {Number(model.reviewCount || 0) > 0 ? (
+            <p style={{ textAlign: 'center', color: p.muted, fontSize: 14 }}>{reviewBadge(model.reviewCount).label} on this shop.</p>
+          ) : (
+            <div style={{ maxWidth: 520, margin: '12px auto 0', textAlign: 'center', padding: '28px 16px', border: `1px dashed ${p.border}`, borderRadius: 16, color: p.muted, fontSize: 14, lineHeight: 1.55 }}>
+              No customer reviews yet. This slot stays empty until real buyers leave feedback — we do not invent quotes or star ratings.
+            </div>
+          )}
+        </section>
+      ) : null}
+
+{shouldRenderBlock('faq', model) && (
         <section style={{ padding: '8px 6vw 40px', maxWidth: 720 }}>
           <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 16px' }}>FAQ</h2>
           <dl style={{ margin: 0 }}>
@@ -777,6 +854,11 @@ export const JuvayStorefront: React.FC<{
             <a href="/terms.html" style={{ color: ISLAND.teal }}>Terms</a>
             <a href="/privacy.html" style={{ color: ISLAND.teal }}>Privacy</a>
             <a href="/refund.html" style={{ color: ISLAND.teal }}>Refunds</a>
+          </div>
+          <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {model.acceptsCashPickup !== false ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>Cash pickup</span> : null}
+            {model.acceptsCod ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>COD</span> : null}
+            {model.wamLive ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>Wam</span> : null}
           </div>
           <div style={{ marginTop: 16 }}>Juvay · {model.storeName || starter.name}</div>
           <div style={{ marginTop: 4, fontSize: 12 }}>Prices in {currencyPrefix(model)}. No USD convert on this page.</div>
@@ -924,6 +1006,9 @@ export const JuvayStorefront: React.FC<{
           .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 20px !important; }
           .juvay-cart { top: auto !important; height: 70vh; border-radius: 16px 16px 0 0; }
         }
+        @media (max-width: 480px) {
+          .juvay-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+        }
       `}</style>
     </div>
   );
@@ -980,14 +1065,14 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
     hero: { headline: starter.heroHeadline, sub: starter.useWhen, image: starter.heroImage },
     trustChips: starter.chips,
     how: [
-      { title: '1. This is a layout', body: 'Blocks skip when they have no real data.' },
-      { title: '2. No sample products', body: 'A published shop never fills empty shelves with dummy SKUs.' },
-      { title: '3. Use this starter', body: 'Customize with your name, island, and hours. Publish when you choose.' },
+      { title: '1. Island layout', body: 'Hero, category rails, grids, and sticky cart — blocks hide when they have no real data.' },
+      { title: '2. Cash & WhatsApp first', body: 'Pickup and COD chips stay honest. No invented products, reviews, or card gateways.' },
+      { title: '3. Make it yours', body: 'Add your name, island, hours, and priced items. Publish when you choose.' },
     ],
     faq: [
       { q: 'Is this a real shop?', a: 'No. This preview is labeled ILLUSTRATIVE. It is a layout, not a merchant.' },
-      { q: 'How do I pay?', a: 'Cash when you collect, or cash on delivery if that option is on. We do not ask for PayPal.' },
-      { q: 'Where are the products?', a: starter.emptyCatalog + ' Empty catalog stays empty until you add a real item.' },
+      { q: 'How do Caribbean buyers pay?', a: 'Cash when you collect, or cash on delivery if that option is on. Wam online only when configured — never PayPal.' },
+      { q: 'Where are the products?', a: starter.emptyCatalog + ' Empty catalog stays empty until you add a real priced item.' },
     ],
   };
 }

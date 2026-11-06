@@ -181,6 +181,15 @@ export function shouldRenderBlock(block: StorefrontBlock, model: StorefrontModel
       return Array.isArray(model.how) && model.how.length > 0;
     case 'faq':
       return Array.isArray(model.faq) && model.faq.length > 0;
+    case 'category_rail':
+      // Show chips from live item categories, or starter labels in illustrative preview only
+      return model.mode === 'illustrative' || liveItems(model).some((i) => !!(i.category && String(i.category).trim()));
+    case 'banner':
+      // One promo band — illustrative layout only, or merchant announcement
+      return model.mode === 'illustrative' || !!(model.announcement && String(model.announcement).trim());
+    case 'testimonials':
+      // Honest: only with real review count; illustrative shows an empty honest slot
+      return model.mode === 'illustrative' || (Number(model.reviewCount || 0) > 0);
     default:
       return false;
   }
