@@ -31,7 +31,7 @@ export default function PricingPage() {
           <div className="p-6">
             <ul className="space-y-2">
               {[
-                `List up to ${FREE_LISTING_LIMIT} products`,
+                'Unlimited product listings',
                 'juvay.app store slug',
                 'Cash at pickup',
                 'Cash on delivery',
@@ -51,7 +51,7 @@ export default function PricingPage() {
           <dl className="space-y-4 text-sm text-gray-600">
             <div>
               <dt className="font-semibold text-gray-900">Is Free really free?</dt>
-              <dd>Yes. {FREE_LISTING_LIMIT} listings, cash pickup, and COD. No credit card.</dd>
+              <dd>Yes. unlimited listings, cash pickup, and COD. No credit card.</dd>
             </div>
             <div>
               <dt className="font-semibold text-gray-900">How do I pay for Starter or Business?</dt>

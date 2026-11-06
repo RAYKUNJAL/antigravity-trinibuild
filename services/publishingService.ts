@@ -70,7 +70,7 @@ export async function publishToTriniBuild(
       seller_account_id: sellerAccountId,
       platform: 'trinibuild',
       external_listing_id: product.id,
-      external_url: `https://trinibuild.com/store/${account.stores.slug}/product/${product.id}`,
+      external_url: `https://juvay.app/store/${account.stores.slug}/product/${product.id}`,
       status: 'published',
       published_at: new Date().toISOString(),
       api_response: { product },

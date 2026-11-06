@@ -231,7 +231,7 @@ export const AdminDashboard: React.FC = () => {
             title: article.title,
             excerpt: article.excerpt,
             content: article.content,
-            author: 'TriniBuild AI',
+            author: 'Juvay AI',
             date: new Date().toLocaleDateString(),
             category: 'News',
             image: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=800', // Placeholder
@@ -666,7 +666,7 @@ export const AdminDashboard: React.FC = () => {
                      <div className="space-y-4">
                         <div>
                            <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Global Meta Title</label>
-                           <input type="text" aria-label="Global Meta Title" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="TriniBuild - Trinidad Business Directory" />
+                           <input type="text" aria-label="Global Meta Title" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="Juvay - Trinidad Business Directory" />
                         </div>
                         <div>
                            <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Target Keywords (Comma Sep)</label>

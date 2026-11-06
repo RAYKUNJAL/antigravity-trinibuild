@@ -26,7 +26,7 @@ export const ProStoreFeaturesPage: React.FC = () => {
       price: { monthly: 'TT$0', yearly: 'TT$0' },
       description: 'Start selling',
       features: [
-        'Up to 5 products',
+        'Unlimited products',
         'juvay.app store slug',
         'Cash at pickup',
         'Cash on delivery'

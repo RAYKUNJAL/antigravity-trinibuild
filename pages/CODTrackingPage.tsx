@@ -20,9 +20,9 @@ export const CODTrackingPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Track Your COD Order | TriniBuild"
+        title="Track Your COD Order | Juvay"
         description="Track your Cash on Delivery order in real-time. See your driver's location and estimated delivery time."
-        keywords="cod tracking, order tracking trinidad, cash on delivery tracking, trinibuild tracking"
+        keywords="cod tracking, order tracking trinidad, cash on delivery tracking, juvay tracking"
       />
       <CODOrderTracking orderId={orderId} />
     </>

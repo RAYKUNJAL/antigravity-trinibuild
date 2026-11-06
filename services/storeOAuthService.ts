@@ -62,7 +62,7 @@ export async function linkTriniBuildStore(
         store_id: storeId,
         platform: 'trinibuild',
         store_name: store.name,
-        store_url: `https://trinibuild.com/store/${store.slug}`,
+        store_url: `https://juvay.app/store/${store.slug}`,
         is_active: true,
         is_verified: true,
         account_metadata: {

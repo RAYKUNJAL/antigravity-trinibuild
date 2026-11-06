@@ -31,7 +31,7 @@ export const ShortSlugRedirect: React.FC = () => {
                     <h1 className="text-6xl font-black text-gray-200 mb-4">404</h1>
                     <p className="text-lg text-gray-600 mb-6">Store not found</p>
                     <a href="/" className="text-[#E61E2B] font-bold hover:underline">
-                        Go to TriniBuild Home
+                        Go to Juvay Home
                     </a>
                 </div>
             </div>

@@ -174,7 +174,7 @@ export const BlogGenerator: React.FC = () => {
                             <Sparkles className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold">TriniBuild Blog Engine</h1>
+                            <h1 className="text-3xl font-bold">Juvay Blog Engine</h1>
                             <p className="text-white/80">AI-Powered SEO Blog Generator for Trinidad & Tobago</p>
                         </div>
                     </div>
@@ -592,7 +592,7 @@ export const BlogGenerator: React.FC = () => {
                                 </div>
                                 <h3 className="text-xl font-semibold mb-2">No Blog Generated Yet</h3>
                                 <p className="text-gray-400 max-w-md mx-auto">
-                                    Select a location and vertical, then click "Generate Blog" to create an SEO-optimized article for TriniBuild.
+                                    Select a location and vertical, then click "Generate Blog" to create an SEO-optimized article for Juvay.
                                 </p>
 
                                 <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg mx-auto">

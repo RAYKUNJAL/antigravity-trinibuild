@@ -265,7 +265,7 @@ export const generateSocialPostText = async (
     platform: 'facebook' | 'twitter' | 'linkedin'
 ): Promise<string> => {
     const maxLength = platform === 'twitter' ? 280 : 500;
-    const blogUrl = `https://trinibuild.com/blog/${blog.url_slug}`;
+    const blogUrl = `https://juvay.app/blog/${blog.url_slug}`;
 
     const prompt = `Write a ${platform} post promoting this blog article:
 Title: "${blog.h1}"

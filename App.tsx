@@ -5,6 +5,7 @@ import SitemapXml from './pages/SitemapXml';
 import PublishedSite from './pages/PublishedSite';
 import DriverPassPage from './pages/DriverPassPage';
 import AdminPaymentsVerify from './pages/AdminPaymentsVerify';
+import { AdminDriveDesk } from './pages/AdminDriveDesk';
 import MerchantPickupQueue from './pages/MerchantPickupQueue';
 import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
@@ -14,8 +15,8 @@ import PricingCheckout from './pages/PricingCheckout';
 import { DemoSamplePage } from './pages/DemoSamplePage';
 
 console.log('🔄 App.tsx file is loading...');
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -29,7 +30,6 @@ import { StoreDashboard } from './pages/StoreDashboard';
 import MerchantTaxDashboard from './components/MerchantTaxDashboard';
 import AdminFinancialDashboard from './components/AdminFinancialDashboard';
 import { Dashboard } from './pages/Dashboard';
-import { Storefront } from './pages/Storefront';
 import { ShortSlugRedirect } from './components/ShortSlugRedirect';
 // AdminDashboard removed; external redirect will be used
 import { Settings } from './pages/Settings';
@@ -43,6 +43,10 @@ import { Earn } from './pages/Earn';
 import { DriverOnboarding } from './pages/DriverOnboarding';
 import { DriverHub } from './pages/DriverHub';
 import { DriveWithUs } from './pages/DriveWithUs';
+import { DriveApply } from './pages/DriveApply';
+import { DrivePay } from './pages/DrivePay';
+import { RideTrip } from './pages/RideTrip';
+import { SchoolRun } from './pages/SchoolRun';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
 import { Contact } from './pages/Contact';
@@ -79,7 +83,6 @@ import { AffiliateProgram } from './pages/AffiliateProgram';
 import { CROSignupFlow } from './pages/CROSignupFlow';
 import { SignupPageSimple } from './pages/SignupPageSimple';
 import { SmartOnboarding } from './pages/SmartOnboarding';
-import { JuvayOnboarding } from './pages/JuvayOnboarding';
 import { JuvayDashboard } from './pages/JuvayDashboard';
 import { ExplorePage } from './pages/ExplorePage';
 
@@ -93,7 +96,6 @@ import { LivingLanding } from './pages/landing/LivingLanding';
 import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
 // StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
-import { StorefrontV2 } from './pages/StorefrontV2';
 import { AdminRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
 import { AllLegalDocuments } from './pages/legal/AllLegalDocuments';
@@ -101,7 +103,6 @@ import { ContractorSignup } from './pages/ContractorSignup';
 import { AdsPortal } from './pages/AdsPortal';
 import { CaribAdsLanding } from './pages/CaribAdsLanding';
 import { DriverSignupAI } from './pages/DriverSignupAI';
-import { TemplateGallery } from './components/TemplateGallery';
 import { AIProductListingPage } from './pages/AIProductListingPage';
 import { LoginPage } from './pages/LoginPageSimple';
 import { AIDocumentAssistant } from './pages/AIDocumentAssistant';
@@ -113,7 +114,6 @@ import { LoyaltyPage } from './components/LoyaltyPage';
 import { useGamificationInit } from './services/gamificationIntegration';
 import { BecomeSellerPage } from './pages/BecomeSellerPage';
 import { EmailCampaignsPage } from './pages/EmailCampaignsPage';
-import { GamePassProPage } from './pages/GamePassProPage';
 import { MerchantDashboard } from './pages/MerchantDashboard';
 import { VendorDirectoryPage } from './pages/VendorDirectoryPage';
 import { SuccessStoriesPage } from './pages/SuccessStoriesPage';
@@ -141,15 +141,22 @@ import { ToastProvider } from './components/ui/Toast';
 
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
+  const { pathname } = useLocation();
+  const islandSurface = pathname.startsWith('/templates') || pathname.startsWith('/create-store');
   return (
-    <div className="pt-16 min-h-screen bg-gray-50">
+    <div
+      className={`pt-16 min-h-screen ${islandSurface ? '' : 'bg-gray-50'}`}
+      style={islandSurface ? { background: '#FFF8F0' } : undefined}
+    >
       <Outlet />
     </div>
   );
 };
 
 import ScrollToTop from './components/ScrollToTop';
-import { useLocation } from 'react-router-dom';
+const StorefrontV2 = lazy(() => import('./pages/StorefrontV2').then((m) => ({ default: m.StorefrontV2 })));
+const Storefront = lazy(() => import('./pages/Storefront').then((m) => ({ default: m.Storefront })));
+const TemplateGalleryLazy = lazy(() => import('./components/TemplateGallery').then((m) => ({ default: m.TemplateGallery })));
 
 const LocationLogger = () => {
   const location = useLocation();
@@ -164,7 +171,9 @@ const PlatformChatGate: React.FC = () => {
     pathname.startsWith('/store/') ||
     pathname === '/demo' ||
     pathname.startsWith('/demo/') ||
-    pathname.startsWith('/s/')
+    pathname.startsWith('/s/') ||
+    pathname.startsWith('/templates') ||
+    pathname.startsWith('/create-store')
   ) {
     return null;
   }
@@ -199,6 +208,7 @@ const App: React.FC = () => {
             <Route path="/sitemap.xml" element={<SitemapXml />} />
             <Route path="/driver-pass" element={<DriverPassPage />} />
             <Route path="/admin/payments" element={<AdminRoute><AdminPaymentsVerify /></AdminRoute>} />
+            <Route path="/admin/drive" element={<AdminRoute><AdminDriveDesk /></AdminRoute>} />
             <Route path="/merchant/pickups" element={<MerchantPickupQueue />} />
             <Route path="/pickups" element={<MerchantPickupQueue />} />
             <Route path="/driver/pass" element={<DriverPassPage />} />
@@ -256,7 +266,7 @@ const App: React.FC = () => {
 
               {/* Core Flows */}
               <Route path="/signup" element={<SignupPageSimple />} />
-              <Route path="/get-started" element={<ProtectedRoute><JuvayOnboarding /></ProtectedRoute>} />
+              <Route path="/get-started" element={<Navigate to="/create-store" replace />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<Navigate to="/login" replace />} />
@@ -277,10 +287,15 @@ const App: React.FC = () => {
 
               {/* Vertical Specific Pages */}
               <Route path="/rides" element={<Rides />} />
+              <Route path="/rides/school-run" element={<SchoolRun />} />
+              <Route path="/rides/trip" element={<RideTrip />} />
+              <Route path="/rides/trip/:id" element={<RideTrip />} />
+              <Route path="/drive" element={<DriveApply />} />
+              <Route path="/drive/pay" element={<DrivePay />} />
               <Route path="/drive-with-us" element={<DriveWithUs />} />
               <Route path="/driver/onboarding" element={<DriverOnboarding />} />
               <Route path="/driver/signup" element={<DriverSignupAI />} />
-              <Route path="/drive/signup" element={<DriverSignupAI />} />
+              <Route path="/drive/signup" element={<Navigate to="/drive" replace />} />
               <Route path="/driver/hub" element={<DriverHub />} />
               <Route path="/driver/dashboard" element={<DriverHub />} />
 
@@ -288,7 +303,8 @@ const App: React.FC = () => {
               <Route path="/cod-tracking/:orderId" element={<CODTrackingPage />} />
 
               {/* NEW ROUTES - Template Gallery & AI Features */}
-              <Route path="/templates" element={<TemplateGallery onSelectTemplate={(template) => console.log('Selected:', template)} />} />
+              <Route path="/templates" element={<Suspense fallback={<div style={{padding:24}}>Loading templates…</div>}><TemplateGalleryLazy /></Suspense>} />
+              <Route path="/templates/:starterId" element={<Suspense fallback={<div style={{padding:24}}>Loading templates…</div>}><TemplateGalleryLazy /></Suspense>} />
               <Route path="/products/ai-add" element={<AIProductListingPage />} />
               <Route path="/premium-features" element={<Navigate to="/pricing" replace />} />
               <Route path="/documents" element={<DocumentCenter />} />
@@ -319,9 +335,8 @@ const App: React.FC = () => {
               <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
               <Route path="/marketing/email" element={<ProtectedRoute><EmailCampaignsPage /></ProtectedRoute>} />
               
-              {/* 🎮 GAME PASS */}
-              <Route path="/game-pass-pro" element={<GamePassProPage />} />
-              <Route path="/gaming/gamepass" element={<GamePassProPage />} />
+              <Route path="/game-pass-pro" element={<DigitalServicesHub />} />
+              <Route path="/gaming/gamepass" element={<DigitalServicesHub />} />
 
               {/* 📚 SUCCESS & HELP */}
               <Route path="/success-stories" element={<SuccessStoriesPage />} />
@@ -435,9 +450,9 @@ const App: React.FC = () => {
             <Route path="/s/:shortSlug" element={<ShortSlugRedirect />} />
 
             {/* Storefront Routes - Using V2 as primary */}
-            <Route path="/store/:slug" element={<StorefrontV2 />} />
-            <Route path="/store/:id/v1" element={<Storefront />} />
-            <Route path="/store/preview" element={<StorefrontV2 />} />
+            <Route path="/store/:slug" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
+            <Route path="/store/:id/v1" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><Storefront /></Suspense>} />
+            <Route path="/store/preview" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
 
             {/* Unknown /admin/* — login wall, never public admin chrome */}
             <Route path="/admin/*" element={<Navigate to="/login" replace />} />

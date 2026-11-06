@@ -451,9 +451,9 @@ export async function deployGeneratedWebsite(
   // 3. Generate unique claim URL
   // 4. Send notification to business owner
 
-  const url = `https://trinibuild.com/store/${website.slug}`;
-  const editUrl = `https://trinibuild.com/edit/${website.slug}`;
-  const claimUrl = `https://trinibuild.com/claim/${website.slug}?token=${generateToken()}`;
+  const url = `https://juvay.app/store/${website.slug}`;
+  const editUrl = `https://juvay.app/edit/${website.slug}`;
+  const claimUrl = `https://juvay.app/claim/${website.slug}?token=${generateToken()}`;
 
   console.log(`✅ Website deployed: ${url}`);
   console.log(`📝 Claim URL: ${claimUrl}`);

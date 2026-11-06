@@ -204,7 +204,7 @@ export const onboardingService = {
 
         return {
             subdomain,
-            url: `https://${subdomain}.trinibuild.com`
+            url: `https://juvay.app/store/${subdomain}`
         };
     },
 

@@ -177,7 +177,6 @@ export const AVAILABLE_PAGES = [
     { value: 'drive', label: 'Drive With Us' },
     { value: 'jobs', label: 'Jobs Board' },
     { value: 'real-estate', label: 'Real Estate' },
-    { value: 'tickets', label: 'Events & Tickets' },
     { value: 'legal', label: 'Legal Services' },
     { value: 'about', label: 'About Us' },
 ];

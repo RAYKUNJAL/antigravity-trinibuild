@@ -392,8 +392,6 @@ You now have:
 ## 📞 Support
 
 For questions:
-- WhatsApp: +1 (868) 555-BUILD
-- Email: support@trinibuild.com
-- Phone: +1 (868) 555-2845
+- Email: support@juvay.app
 
 **Let's make TriniBuild the #1 platform in the Caribbean!** 🎉

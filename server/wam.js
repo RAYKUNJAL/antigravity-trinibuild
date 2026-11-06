@@ -1,7 +1,7 @@
 /**
  * Wam helpers — fail closed. Env NAME only: WAM_API_KEY
  * Never invent a key. Never add processing into amountCents.
- * Webhook does not fulfil an order.
+ * Webhook fulfills once when store-core migration is applied; still fail-closed without WAM_API_KEY.
  */
 const crypto = require('crypto');
 

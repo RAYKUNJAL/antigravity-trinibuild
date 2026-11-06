@@ -98,17 +98,9 @@ export const paymentService = {
         };
     },
 
-    // Linx (Trinidad's Debit Card Network)
-    processLinxPayment: async (config: PaymentConfig): Promise<PaymentResponse> => {
-        try {
-            // Linx integration would go through WiPay or direct POS terminal
-            return await paymentService.processWiPayPayment(config);
-        } catch (error) {
-            return {
-                success: false,
-                error: 'Linx payment failed.'
-            };
-        }
+    // Linx is not a live rail. Fail closed — do not proxy a card charge.
+    processLinxPayment: async (_config: PaymentConfig): Promise<PaymentResponse> => {
+        return { success: false, error: 'Linx is not a live rail on Juvay' };
     },
 
     // Verify payment status

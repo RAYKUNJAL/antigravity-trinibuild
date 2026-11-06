@@ -1,14 +1,14 @@
 /**
- * ServicesShowcase — single source of truth for cross-linking the 7 service landing pages.
+ * ServicesShowcase — single source of truth for cross-linking the 6 service landing pages.
  *
  * Why this exists:
  * - Audit (Apr 25, 2026) revealed each landing page was a dead end: no cross-links to
  *   sibling services, homepage had only 1 CTA, ZERO internal link graph between landings.
  * - This component is the entire link graph in one file. Drop it into any page and
- *   that page now links to all 7 services.
+ *   that page now links to all 6 services.
  *
  * Usage:
- *   <ServicesShowcase />                         // Show all 7
+ *   <ServicesShowcase />                         // Show all 6
  *   <ServicesShowcase currentSlug="jobs" />      // Hide the current page from the grid
  *   <ServicesShowcase variant="compact" />       // Small variant for landing page footers
  *   <ServicesShowcase title="Try another service" /> // Override headline
@@ -27,7 +27,6 @@ import {
   ShoppingBag,
   Car,
   Briefcase,
-  Ticket,
   Building2,
   ArrowRight,
 } from 'lucide-react';
@@ -38,7 +37,6 @@ export type ServiceSlug =
   | 'marketplace'
   | 'rides'
   | 'jobs'
-  | 'tickets'
   | 'living';
 
 interface ServiceItem {
@@ -48,7 +46,7 @@ interface ServiceItem {
   tagline: string;
   cta: string;
   path: string;
-  // Tailwind-ready accent classes — chosen so all 7 are visually distinct
+  // Tailwind-ready accent classes — chosen so all 6 are visually distinct
   accentBg: string;
   accentText: string;
   accentBorder: string;
@@ -92,9 +90,9 @@ export const SERVICES: ServiceItem[] = [
     slug: 'rides',
     icon: Car,
     title: 'Rides & Delivery',
-    tagline: 'Drive with TriniRides — keep more of your earnings',
-    cta: 'Drive with us',
-    path: '/services/rides',
+    tagline: 'Rides stay empty until drivers are live',
+    cta: 'Rides status',
+    path: '/rides',
     accentBg: 'bg-blue-50',
     accentText: 'text-blue-600',
     accentBorder: 'hover:border-blue-500',
@@ -109,17 +107,6 @@ export const SERVICES: ServiceItem[] = [
     accentBg: 'bg-purple-50',
     accentText: 'text-purple-600',
     accentBorder: 'hover:border-purple-500',
-  },
-  {
-    slug: 'tickets',
-    icon: Ticket,
-    title: 'Events & Tickets',
-    tagline: 'Fetes, concerts, shows — sell tickets in minutes',
-    cta: 'Sell tickets',
-    path: '/services/tickets',
-    accentBg: 'bg-pink-50',
-    accentText: 'text-pink-600',
-    accentBorder: 'hover:border-pink-500',
   },
   {
     slug: 'living',
@@ -166,19 +153,19 @@ export const ServicesShowcase: React.FC<Props> = ({
 
   const headline =
     title ??
-    (currentSlug ? 'Explore other TriniBuild services' : 'Everything you need to grow in T&T');
+    (currentSlug ? 'Explore other Juvay services' : 'Everything you need to grow in T&T');
   const sub =
     subtitle ??
     (currentSlug
       ? 'One account, every island business tool — built for entrepreneurs.'
-      : 'One platform. Seven powerful services. Built for Trinidad & Tobago entrepreneurs.');
+      : 'One platform. Six powerful services. Built for Trinidad & Tobago entrepreneurs.');
 
   const isCompact = variant === 'compact';
 
   return (
     <section
       className={`w-full ${isCompact ? 'py-12 bg-gray-50' : 'py-16 md:py-24 bg-white'}`}
-      aria-label="TriniBuild services"
+      aria-label="Juvay services"
     >
       <div className="max-w-6xl mx-auto px-4">
         {!isCompact && (

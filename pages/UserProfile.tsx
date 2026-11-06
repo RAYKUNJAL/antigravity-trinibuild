@@ -180,8 +180,8 @@ export const UserProfile: React.FC = () => {
                      <div className="space-y-6 animate-in fade-in">
                         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-8 text-white shadow-lg relative overflow-hidden">
                            <div className="absolute top-0 right-0 p-8 opacity-10"><CreditCard className="h-32 w-32" /></div>
-                           <p className="text-gray-400 text-sm uppercase font-bold mb-1">TriniBuild Credits</p>
-                           <h2 className="text-4xl font-extrabold mb-6">TT$ 45.00</h2>
+                           <p className="text-gray-400 text-sm uppercase font-bold mb-1">Juvay Credits</p>
+                           <h2 className="text-2xl font-extrabold mb-6">No credits on this account</h2>
                            <div className="flex gap-4 relative z-10">
                               <button className="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors text-sm">Top Up</button>
                               <button className="bg-white/10 text-white px-6 py-2 rounded-lg font-bold hover:bg-white/20 transition-colors text-sm border border-white/20">Send Gift</button>

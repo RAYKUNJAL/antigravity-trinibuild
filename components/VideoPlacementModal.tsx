@@ -144,7 +144,7 @@ export const VideoPlacementModal: React.FC<VideoModalProps> = ({
                             type="text"
                             value={editingVideo.title}
                             onChange={(e) => onVideoChange({ ...editingVideo, title: e.target.value })}
-                            placeholder="e.g., Welcome to TriniBuild"
+                            placeholder="e.g., Welcome to Juvay"
                             className="w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
                         />
                     </div>

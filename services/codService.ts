@@ -228,7 +228,7 @@ class CODService {
   /** WhatsApp link for order notification. */
   getWhatsAppLink(phone: string, orderId: string, status: string): string {
     const message = encodeURIComponent(
-      `Hi! Your TriniBuild order ${displayOrderNumber(orderId)} is now ${status}. ` +
+      `Hi! Your Juvay order ${displayOrderNumber(orderId)} is now ${status}. ` +
         `Track it: ${window.location.origin}/cod-tracking/${orderId}`,
     );
     const cleanPhone = phone.replace(/[+ ]/g, '');

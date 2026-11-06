@@ -1365,7 +1365,7 @@ export const StoreCreatorV2: React.FC = () => {
                         </div>
                         <div className="text-3xl font-bold mb-4">$0 <span className="text-sm font-normal text-gray-500">/mo</span></div>
                         <ul className="space-y-3 text-sm text-gray-600 mb-6">
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 1 TriniBuild Storefront</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 1 Juvay Storefront</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 15 Products Limit</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Basic Analytics</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Cash pickup and COD</li>
@@ -1469,7 +1469,7 @@ export const StoreCreatorV2: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Create Your Store - TriniBuild Store Builder</title>
+                <title>Create Your Store - Juvay Store Builder</title>
                 <meta name="description" content="Build your online store in 5 minutes with AI-powered tools. Free for Trinidad & Tobago businesses." />
             </Helmet>
 

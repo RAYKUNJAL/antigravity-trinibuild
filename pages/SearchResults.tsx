@@ -123,7 +123,7 @@ export const SearchResults: React.FC = () => {
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="h-12 w-12 animate-spin text-trini-red mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400">Searching across all of TriniBuild...</p>
+                        <p className="text-gray-500 dark:text-gray-400">Searching across all of Juvay...</p>
                     </div>
                 )}
 

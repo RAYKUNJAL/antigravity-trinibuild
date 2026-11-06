@@ -690,9 +690,7 @@ VITE_TWILIO_WHATSAPP_NUMBER=+1868XXXXXXX
 ## 📞 **SUPPORT**
 
 For questions or issues:
-- **WhatsApp:** +1 (868) 555-BUILD
-- **Email:** support@trinibuild.com
-- **Phone:** +1 (868) 555-2845
+- **Email:** support@juvay.app
 
 ---
 

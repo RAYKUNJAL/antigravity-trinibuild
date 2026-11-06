@@ -68,13 +68,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendo
     const greeting = ttHour < 12 ? 'Good morning' : ttHour < 17 ? 'Good afternoon' : ttHour < 22 ? 'Good evening' : 'Good night';
     
     const initialMessage = mode === 'platform'
-      ? `🇹🇹 ${greeting}! I'm yuh Juvay AI Concierge. I know everything about Trinidad & Tobago — business, banking, visa, legal, you name it. I could help yuh:\n\n• **Open a free online store** with COD\n• **Generate documents** — job letters, visa letters, proof of income\n• **Answer T&T business questions** — banking, BIR, NIS, VAT\n• **Find services & professionals** across T&T\n• **Get a ride** anywhere in Trinidad\n\nWhat yuh need help with today?`
+      ? `🇹🇹 ${greeting}! I'm yuh Juvay AI Concierge. I know everything about Trinidad & Tobago — business, banking, visa, legal, you name it. I could help yuh:\n\n• **Open a free online store** with COD\n• **Generate documents** — job letters, visa letters, proof of income\n• **Answer T&T business questions** — banking, BIR, NIS, VAT\n• **Find services & professionals** across T&T\n\nWhat yuh need help with today?`
       : mode === 'real_estate'
         ? `🏠 ${greeting}! I'm yuh Juvay Real Estate Concierge. I know every area in T&T — from Westmoorings to Tobago, pricing, mortgage rates, the works. Looking to buy, rent, or sell?`
         : mode === 'service_expert'
           ? `🔧 ${greeting}! Need a professional? I know the rates for every trade in T&T — plumbers, electricians, AC techs, painters, mechanics. Who yuh looking for?`
           : mode === 'rides'
-            ? `🚗 ${greeting}! Where yuh heading? I know every road, maxi route, and shortcut in Trinidad & Tobago. Leh meh help yuh get there.`
+            ? `🚗 ${greeting}! Rides are unavailable on this origin. Juvay does not invent drivers or fares.`
             : mode === 'paperwork_assistant'
               ? `📄 ${greeting}! I'm yuh Juvay Document Assistant. I could generate job letters, visa support letters, proof of income, contractor agreements — all formatted for T&T banks, embassies, and government offices. What document yuh need?`
               : `${greeting}! Welcome to ${vendorContext?.name || 'our store'}! I'm ${botSettings?.bot_name || 'the Store Assistant'}. Ask me anything about we products or services!`;
@@ -122,8 +122,8 @@ PERSONALITY:
 
 PLATFORM KNOWLEDGE:
 - Juvay helps locals sell online with FREE stores (10 items free)
-- Services: Marketplace, Jobs, Real Estate, Rides, Events/Tickets, Classifieds
-- Routes: /classifieds (shop), /jobs (find work), /real-estate (housing), /rides (transport), /tickets (events)
+- Services: Marketplace, Jobs, Real Estate, Rides, Classifieds
+- Routes: /classifieds (shop), /jobs (find work), /real-estate (housing), /rides (transport)
 - /create-store - start selling, /earn - affiliate program, /blog - tips & guides
 
 ALWAYS:
@@ -139,7 +139,7 @@ Current user is browsing Juvay.`;
       } else if (mode === 'service_expert') {
         systemPrompt = `You are Juvay Service Expert. Recommend vetted professionals - plumbers, electricians, mechanics, painters, cleaners. Know T&T service landscape. Suggest /jobs for hiring.`;
       } else if (mode === 'rides') {
-        systemPrompt = `You are Juvay Rides Concierge. Help with transportation - PH taxis, maxi routes, airport drops. Know T&T geography. Suggest /rides for booking.`;
+        systemPrompt = `You are Juvay Rides Concierge. Help with T&T geography, PH taxis, and maxi routes as information only. Do not advertise a live booking button or invent drivers or fares.`;
       } else if (mode === 'paperwork_assistant') {
         systemPrompt = `You are Juvay Paperwork Assistant. Generate professional visa support letters, job offer letters, proof of income, contractor agreements. Be formal but helpful. These documents help Trinis with bank applications and visa requirements.`;
       } else if (vendorContext) {
@@ -303,7 +303,6 @@ Current user is browsing Juvay.`;
           ) : (
             <MessageCircle className="h-8 w-8 group-hover:rotate-12 transition-transform" />
           )}
-          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm">1</span>
         </button>
       )}
     </div>

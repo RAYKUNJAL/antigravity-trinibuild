@@ -14,6 +14,23 @@ const path = require('path');
 const fs = require('fs');
 
 const { isWamConfigured, verifyWamSignature } = require('./wam');
+const { mountStoreCoreRoutes, fulfillWamPayment } = require('./storeCoreRoutes');
+const { listingRateLimitPerHour } = require('./juvayFees');
+const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
+const { buildOnboardVision } = require('./onboardVision');
+const { validateMerchantItem } = require('./merchantItem');
+const { createRides } = require('./rides');
+
+const rides = createRides({
+  storePath: process.env.RIDES_STORE_PATH || undefined,
+});
+
+function methodNotAllowed(allow, usePath) {
+  return (_req, res) => {
+    res.set('Allow', allow);
+    res.status(405).json({ error: `Use ${allow} ${usePath}`, allow });
+  };
+}
 
 const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -101,7 +118,7 @@ async function handleWamCheckout(req, res) {
   if (!isWamConfigured()) {
     return res.status(503).json({ error: 'Paid checkout is not available. Use cash pickup or cash on delivery.' });
   }
-  const { amountCents, faceCents, purpose, storeId, idempotencyKey } = req.body || {};
+  const { amountCents, faceCents, purpose, storeId, orderId, idempotencyKey } = req.body || {};
   const face = Number(faceCents ?? amountCents);
   const charged = Number(amountCents);
   if (!Number.isFinite(face) || face <= 0) return res.status(400).json({ error: 'Face amount required' });
@@ -112,20 +129,46 @@ async function handleWamCheckout(req, res) {
       return res.status(400).json({ error: 'Seller Wam handle required before paid checkout' });
     }
   }
+  let juvayFee = null;
+  let merchantNet = null;
+  if (orderId) {
+    try {
+      const { rows: orows } = await pool.query(`SELECT * FROM store_orders WHERE id = $1`, [orderId]);
+      if (orows[0]) {
+        juvayFee = orows[0].juvay_fee_cents;
+        merchantNet = Math.max(0, face - (juvayFee || 0));
+      }
+    } catch (_) { /* migration optional until applied */ }
+  }
   try {
     const { rows } = await pool.query(
-      `INSERT INTO wam_payments (user_id, store_id, purpose, amount_cents, face_cents, idempotency_key, status)
-       VALUES ($1,$2,$3,$4,$4,$5,'pending')
+      `INSERT INTO wam_payments (user_id, store_id, purpose, amount_cents, face_cents, idempotency_key, status, order_id, juvay_fee_cents, merchant_net_cents)
+       VALUES ($1,$2,$3,$4,$4,$5,'pending',$6,$7,$8)
        ON CONFLICT (idempotency_key) DO NOTHING
        RETURNING *`,
-      [req.user.id, storeId || null, purpose || 'store', charged, idempotencyKey || null]
+      [req.user.id, storeId || null, purpose || 'store', charged, idempotencyKey || null, orderId || null, juvayFee, merchantNet]
     );
     if (!rows[0] && idempotencyKey) {
       const existing = await pool.query(`SELECT * FROM wam_payments WHERE idempotency_key = $1`, [idempotencyKey]);
-      return res.json({ payment: existing.rows[0], replay: true });
+      return res.json({ payment: existing.rows[0], replay: true, fulfill: false });
     }
     res.json({ payment: rows[0], status: 'pending', fulfill: false });
   } catch (e) {
+    if (e.code === '42703') {
+      // Pre-migration columns — fall back to legacy insert
+      try {
+        const { rows } = await pool.query(
+          `INSERT INTO wam_payments (user_id, store_id, purpose, amount_cents, face_cents, idempotency_key, status)
+           VALUES ($1,$2,$3,$4,$4,$5,'pending')
+           ON CONFLICT (idempotency_key) DO NOTHING
+           RETURNING *`,
+          [req.user.id, storeId || null, purpose || 'store', charged, idempotencyKey || null]
+        );
+        return res.json({ payment: rows[0], status: 'pending', fulfill: false, migration: 'pending' });
+      } catch (e2) {
+        return res.status(500).json({ error: e2.message });
+      }
+    }
     res.status(500).json({ error: e.message });
   }
 }
@@ -149,20 +192,33 @@ app.post('/api/wam/webhook', async (req, res) => {
     return res.status(400).json({ error: 'amountCents must equal face only' });
   }
   try {
-    const existing = await pool.query(`SELECT id, status FROM wam_payments WHERE wam_event_id = $1`, [eventId]);
-    if (existing.rows[0]) {
-      return res.json({ ok: true, duplicate: true, fulfill: false });
-    }
-    await pool.query(
-      `INSERT INTO wam_payments (purpose, amount_cents, face_cents, wam_event_id, status, metadata)
-       VALUES ($1,$2,$3,$4,'recorded',$5)`,
-      [event.purpose || 'webhook', amountCents || 0, faceCents || 0, eventId, JSON.stringify(event)]
-    );
-    // Record only. Do not fulfil an order or upgrade a plan from this webhook.
-    res.json({ ok: true, fulfill: false });
+    const result = await fulfillWamPayment(pool, {
+      eventId,
+      amountCents,
+      faceCents,
+      purpose: event.purpose || 'webhook',
+      metadata: event,
+      paymentId: event.payment_id || event.paymentId || null,
+      orderId: event.order_id || event.orderId || null,
+    });
+    res.json({ ok: true, duplicate: !!result.duplicate, fulfill: !!result.fulfill, paymentId: result.paymentId || null });
   } catch (e) {
-    if (e.code === '23505') return res.json({ ok: true, duplicate: true, fulfill: false });
-    res.status(500).json({ error: e.message });
+    if (e.code === '23505') {
+      try {
+        const again = await fulfillWamPayment(pool, {
+          eventId, amountCents, faceCents, purpose: event.purpose || 'webhook', metadata: event,
+          paymentId: event.payment_id || event.paymentId || null,
+          orderId: event.order_id || event.orderId || null,
+        });
+        return res.json({ ok: true, duplicate: true, fulfill: !!again.fulfill });
+      } catch (e2) {
+        return res.status(500).json({ error: e2.message });
+      }
+    }
+    if (e.code === '42P01' || e.code === '42703') {
+      return res.status(503).json({ error: 'Store-core migration required for fulfill', detail: e.message, fulfill: false });
+    }
+    res.status(500).json({ error: e.message, fulfill: false });
   }
 });
 
@@ -221,6 +277,10 @@ async function handleLogin(req, res) {
   }
   res.json({ user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role }, token: sign(user) });
 }
+app.get('/api/login', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/login', allow: 'POST' });
+});
 app.post('/api/login', handleLogin);
 app.post('/api/auth/login', handleLogin);
 
@@ -232,11 +292,103 @@ app.get('/api/auth/me', auth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // STORES
 // ═══════════════════════════════════════════════════════════
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return next();
+  if (!JWT_SECRET) return res.status(503).json({ error: 'Auth is not configured' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    return next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+app.post('/api/onboard/draft', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardDraft(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    const payload = { draft: result.draft };
+    if (result.warning) payload.warning = result.warning;
+    res.json(payload);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/onboard/patch', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/onboard/patch', allow: 'POST' });
+});
+app.post('/api/onboard/patch', optionalAuth, async (req, res) => {
+  try {
+    const result = await buildOnboardPatch(req.body || {});
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json({
+      patch: result.patch,
+      proposed: result.proposed,
+      changedFields: result.changedFields,
+      conflicts: result.conflicts,
+      agentWrote: result.agentWrote === true,
+      warning: result.warning || undefined,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+const visionUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 },
+});
+
+function visionImageFromReq(req) {
+  if (req.file && req.file.buffer) {
+    const mime = String(req.file.mimetype || 'image/jpeg').replace(/[^a-zA-Z0-9/+.-]/g, '') || 'image/jpeg';
+    return `data:${mime};base64,${req.file.buffer.toString('base64')}`;
+  }
+  return req.body?.image || req.body?.dataUrl || req.body?.photo || '';
+}
+
+app.get('/api/onboard/vision', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/onboard/vision', allow: 'POST' });
+});
+app.post('/api/onboard/vision', optionalAuth, (req, res, next) => {
+  const ct = String(req.headers['content-type'] || '');
+  if (ct.includes('multipart/form-data')) {
+    return visionUpload.single('image')(req, res, next);
+  }
+  next();
+}, async (req, res) => {
+  try {
+    const result = await buildOnboardVision({
+      image: visionImageFromReq(req),
+      templateId: req.body?.templateId,
+      storeName: req.body?.storeName,
+    });
+    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    res.json({
+      agentWrote: result.agentWrote === true,
+      locked: result.locked === true,
+      warning: result.warning || undefined,
+      draft: result.draft,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/stores/mine', auth, async (req, res) => {
   const { rows } = await pool.query(`SELECT * FROM stores WHERE owner_id = $1`, [req.user.id]);
   res.json(rows);
 });
 
+app.get('/api/stores', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/stores', allow: 'POST' });
+});
 app.post('/api/stores', auth, async (req, res) => {
   const {
     name, description, category, phone, whatsapp, address,
@@ -256,7 +408,7 @@ app.post('/api/stores', auth, async (req, res) => {
       [
         req.user.id, name.trim(), slug, description || null, category || null,
         phone || null, whatsapp || null, address || pickup_address || null,
-        accepts_cod !== false, !!accepts_pickup, pickup_address || null,
+        !!accepts_cod, !!accepts_pickup, pickup_address || null,
         wam_handle || null, exact_cash_note !== false, island || null, JSON.stringify(theme),
       ]
     );
@@ -276,8 +428,15 @@ app.get('/api/stores/:slug', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 // PRODUCTS
 // ═══════════════════════════════════════════════════════════
+app.get('/api/products', (_req, res) => {
+  res.set('Allow', 'POST');
+  res.status(405).json({ error: 'Use POST /api/products', allow: 'POST' });
+});
 app.post('/api/products', auth, async (req, res) => {
-  const { store_id, name, description, category, price, stock, condition, images } = req.body;
+  const checked = validateMerchantItem(req.body || {});
+  if (checked.error) return res.status(checked.status || 400).json({ error: checked.error });
+  const item = checked.item;
+  const { store_id, category, condition, images } = req.body;
   // Verify ownership + plan limits
   const { rows: store } = await pool.query(`SELECT * FROM stores WHERE id = $1 AND owner_id = $2`, [store_id, req.user.id]);
   if (!store[0]) return res.status(403).json({ error: 'Not your store' });
@@ -286,16 +445,56 @@ app.post('/api/products', auth, async (req, res) => {
     `SELECT pt.max_products FROM user_plan_subscriptions ups JOIN plan_tiers pt ON pt.slug = ups.plan_slug WHERE ups.user_id = $1`,
     [req.user.id]
   );
-  const { rows: count } = await pool.query(`SELECT COUNT(*) FROM products WHERE store_id = $1`, [store_id]);
-  if (parseInt(count[0].count) >= (plan[0]?.max_products ?? 5)) {
-    return res.status(402).json({ error: 'Product limit reached. Free plan is 5 listings.' });
+  const maxProducts = plan[0]?.max_products;
+  // -1 or null => unlimited (Phase 1 free model). Missing plan row => unlimited free.
+  const unlimited = maxProducts == null || Number(maxProducts) === -1;
+  if (!unlimited) {
+    const { rows: count } = await pool.query(`SELECT COUNT(*) FROM products WHERE store_id = $1`, [store_id]);
+    if (parseInt(count[0].count, 10) >= Number(maxProducts)) {
+      return res.status(402).json({ error: `Product limit reached for this plan (${maxProducts}).` });
+    }
+  }
+  // Anti-spam rate limit (best-effort; skip if table missing)
+  try {
+    const windowStart = new Date();
+    windowStart.setMinutes(0, 0, 0);
+    const lim = listingRateLimitPerHour();
+    await pool.query(
+      `INSERT INTO listing_rate_limits (store_id, window_start, create_count) VALUES ($1,$2,1)
+       ON CONFLICT (store_id, window_start) DO UPDATE SET create_count = listing_rate_limits.create_count + 1`,
+      [store_id, windowStart.toISOString()]
+    );
+    const { rows: rl } = await pool.query(
+      `SELECT create_count FROM listing_rate_limits WHERE store_id = $1 AND window_start = $2`,
+      [store_id, windowStart.toISOString()]
+    );
+    if (rl[0] && rl[0].create_count > lim) {
+      return res.status(429).json({ error: `Listing rate limit: max ${lim} new products per hour.` });
+    }
+  } catch (rlErr) {
+    if (rlErr.code !== '42P01') {
+      // ignore other errors for rate limit soft-fail
+    }
   }
 
   const status = req.body.status === 'draft' ? 'draft' : 'active';
-  const { rows } = await pool.query(
-    `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-    [store_id, name, description, category, price, stock || 0, condition || 'new', JSON.stringify(images || []), status]
-  );
+  const stock = item.qty;
+  const sku = item.sku || null;
+  const modifierGroups = Array.isArray(item.modifier_groups) ? item.modifier_groups : [];
+  const imgJson = JSON.stringify(images || (item.image ? [item.image] : []));
+  let rows;
+  try {
+    ({ rows } = await pool.query(
+      `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status, modifier_groups) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', imgJson, sku, status, JSON.stringify(modifierGroups)]
+    ));
+  } catch (e) {
+    if (e.code !== '42703') throw e; // modifier_groups column missing until migration
+    ({ rows } = await pool.query(
+      `INSERT INTO products (store_id, name, description, category, price, stock, condition, images, sku, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [store_id, item.name, item.description || null, category || null, item.price, stock, condition || 'new', imgJson, sku, status]
+    ));
+  }
   res.json(rows[0]);
 });
 
@@ -308,6 +507,7 @@ const genOrderRef = () => {
 };
 
 app.post('/api/cod/orders', async (req, res) => {
+  // Follow-up: decrement product.stock on a real COD/order write. Not in this path today.
   const { store_id, customer_name, customer_phone, customer_email, customer_address, delivery_area, items, delivery_fee, payment_method, notes } = req.body;
   const subtotal = (items || []).reduce((s, i) => s + i.price * i.quantity, 0);
   const vat = Math.round(subtotal * 0.125 * 100) / 100;
@@ -331,6 +531,20 @@ app.get('/api/cod/orders', auth, async (req, res) => {
 
 app.patch('/api/cod/orders/:id/status', auth, async (req, res) => {
   const { status, payment_status, driver_name, driver_phone, note } = req.body;
+  if (status === 'out_for_delivery') {
+    try {
+      const { rows: cur } = await pool.query(
+        `SELECT dispatch_confirmed_at FROM cod_orders WHERE id = $1 AND store_id IN (SELECT id FROM stores WHERE owner_id = $2)`,
+        [req.params.id, req.user.id]
+      );
+      if (cur[0] && !cur[0].dispatch_confirmed_at) {
+        return res.status(400).json({ error: 'Confirm dispatch before marking out for delivery' });
+      }
+    } catch (e) {
+      if (e.code !== '42703') return res.status(500).json({ error: e.message });
+      // column missing — allow until migration
+    }
+  }
   const sets = ['order_status = $2'];
   const vals = [req.params.id, status];
   let i = 3;
@@ -340,8 +554,9 @@ app.patch('/api/cod/orders/:id/status', auth, async (req, res) => {
   if (status === 'delivered') sets.push(`delivered_at = now()`);
   if (status === 'cancelled') { sets.push(`cancelled_at = now()`); if (note) { sets.push(`cancellation_reason = $${i++}`); vals.push(note); } }
 
+  vals.push(req.user.id);
   const { rows } = await pool.query(
-    `UPDATE cod_orders SET ${sets.join(', ')} WHERE id = $1 AND store_id IN (SELECT id FROM stores WHERE owner_id = '${req.user.id}') RETURNING *`,
+    `UPDATE cod_orders SET ${sets.join(', ')} WHERE id = $1 AND store_id IN (SELECT id FROM stores WHERE owner_id = $${i}) RETURNING *`,
     vals
   );
   res.json(rows[0]);
@@ -499,7 +714,136 @@ app.post('/api/admin/bank-pay/:id/verify', auth, adminOnly, async (req, res) => 
   res.json(p);
 });
 
+// ─── Rides v1 (cash-first). File store. Not pay→fulfill. ─────
+app.get('/api/rides/listed', (req, res) => {
+  res.json(rides.ridesDirectory({
+    island: req.query.island,
+    schoolRun: req.query.schoolRun,
+    serviceType: req.query.serviceType,
+  }));
+});
+app.get('/api/rides/children', (req, res) => {
+  res.json(rides.listChildren({ parentPhone: req.query.parentPhone }));
+});
+app.get('/api/rides/children/add', methodNotAllowed('POST', '/api/rides/children'));
+app.post('/api/rides/children', (req, res) => {
+  const result = rides.addChild(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/admin/drive/:id/school-run', auth, adminOnly, (req, res) => {
+  const result = rides.approveSchoolRun(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/drive/pin', (req, res) => {
+  const result = rides.setDirectoryPin(
+    { phone: req.body?.phone, id: req.body?.id || req.body?.driverId },
+    { pinLat: req.body?.pinLat, pinLng: req.body?.pinLng },
+  );
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/start', (req, res) => {
+  const result = rides.startTrip(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/track', (req, res) => {
+  const result = rides.reportTrack(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/apply', methodNotAllowed('POST', '/api/drive/apply'));
+app.post('/api/drive/apply', optionalAuth, (req, res) => {
+  const result = rides.apply({ ...req.body, userId: req.user?.id || req.body?.userId });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/me', optionalAuth, (req, res) => {
+  const result = rides.me({ phone: req.query.phone, id: req.query.id, userId: req.user?.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/subscription', (_req, res) => {
+  res.json(rides.subscriptionStatus());
+});
+app.get('/api/drive/subscription/wam', methodNotAllowed('POST', '/api/drive/subscription/wam'));
+app.post('/api/drive/subscription/wam', optionalAuth, (req, res) => {
+  const result = rides.startSubscriptionWam({
+    phone: req.body?.phone || req.query.phone,
+    id: req.body?.id || req.body?.driverId,
+    userId: req.user?.id,
+  });
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/admin/drive/applications', auth, adminOnly, (_req, res) => {
+  res.json(rides.adminApplications());
+});
+app.get('/api/admin/drive/:id/approve', methodNotAllowed('POST', '/api/admin/drive/:id/approve'));
+app.post('/api/admin/drive/:id/approve', auth, adminOnly, (req, res) => {
+  const result = rides.approve(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/admin/drive/:id/subscribe', methodNotAllowed('POST', '/api/admin/drive/:id/subscribe'));
+app.post('/api/admin/drive/:id/subscribe', auth, adminOnly, (req, res) => {
+  const result = rides.markSubscribed(req.params.id);
+  if (result.error) return res.status(result.status || 400).json({ error: result.error, fulfill: false });
+  res.json(result);
+});
+app.get('/api/admin/drive/:id/school-run', methodNotAllowed('POST', '/api/admin/drive/:id/school-run'));
+app.get('/api/rides/offers', methodNotAllowed('POST', '/api/rides/offers'));
+app.post('/api/rides/offers', (req, res) => {
+  const result = rides.createOffer(req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/drive/offers', (req, res) => {
+  const result = rides.driverOffers({ phone: req.query.phone, id: req.query.id });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/accept', (req, res) => {
+  const result = rides.acceptOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/counter', (req, res) => {
+  const result = rides.counterOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/agree', (req, res) => {
+  const result = rides.agreeOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/offers/:id/cancel', (req, res) => {
+  const result = rides.cancelOffer(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.get('/api/rides/trips/:id', (req, res) => {
+  const result = rides.getTrip(req.params.id, { shareToken: req.query.t || req.query.shareToken });
+  if (result.error) return res.status(result.status || 404).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-paid', (req, res) => {
+  const result = rides.cashPaid(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+app.post('/api/rides/trips/:id/cash-received', (req, res) => {
+  const result = rides.cashReceived(req.params.id, req.body || {});
+  if (result.error) return res.status(result.status || 400).json({ error: result.error });
+  res.json(result);
+});
+
 // ─── Health check ────────────────────────────────────────────
+
+mountStoreCoreRoutes(app, { pool, auth, isWamConfigured });
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
@@ -507,6 +851,11 @@ app.get('/api/health', async (req, res) => {
   } catch {
     res.status(500).json({ status: 'error', db: 'disconnected' });
   }
+});
+
+// /api/* never falls through to the SPA shell. Unmatched API paths stay JSON.
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
 
 app.listen(PORT, () => console.log(`🇹🇹 TriniBuild API running on :${PORT}`));

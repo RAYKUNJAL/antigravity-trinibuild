@@ -264,8 +264,8 @@ export const BrandingToggle: React.FC<{
 export const StoreShareModal: React.FC<
   StoreShareKitProps & { isOpen: boolean; onClose: () => void }
 > = ({ isOpen, onClose, storeName, slug, shortSlug, logoUrl, description }) => {
-  const storeUrl = `https://trinibuild.com/store/${slug}`;
-  const shortUrl = shortSlug ? `https://trinibuild.com/s/${shortSlug}` : storeUrl;
+  const storeUrl = `https://juvay.app/store/${slug}`;
+  const shortUrl = shortSlug ? `https://juvay.app/s/${shortSlug}` : storeUrl;
 
   return (
     <AnimatePresence>
@@ -310,7 +310,7 @@ export const StoreShareModal: React.FC<
                 <div className="text-center">
                   <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-1">Your short link</p>
                   <p className="text-lg font-black text-[#E61E2B] font-mono">
-                    trinibuild.com/s/{shortSlug}
+                    juvay.app/s/{shortSlug}
                   </p>
                 </div>
               )}
@@ -352,8 +352,8 @@ export const StoreQRSection: React.FC<{
   logoUrl?: string;
 }> = ({ storeName, slug, shortSlug, logoUrl }) => {
   const storeUrl = shortSlug
-    ? `https://trinibuild.com/s/${shortSlug}`
-    : `https://trinibuild.com/store/${slug}`;
+    ? `https://juvay.app/s/${shortSlug}`
+    : `https://juvay.app/store/${slug}`;
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100 p-6">
@@ -371,7 +371,7 @@ export const StoreQRSection: React.FC<{
           {shortSlug && (
             <div className="inline-flex items-center gap-2 bg-red-50 px-3 py-1.5 rounded-lg mb-3">
               <span className="text-sm font-bold text-[#E61E2B] font-mono">
-                trinibuild.com/s/{shortSlug}
+                juvay.app/s/{shortSlug}
               </span>
             </div>
           )}

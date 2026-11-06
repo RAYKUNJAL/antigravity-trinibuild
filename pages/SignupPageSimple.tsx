@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { authApi, setToken } from '../services/selfHostedApi';
+import { setToken } from '../services/selfHostedApi';
+import { authService } from '../services/authService';
 import { track } from '../services/eventTracker';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { wamCountrySelectOptions } from '../services/wamCountries';
 
 const PASSWORD_MIN = 8;
 
@@ -13,19 +15,12 @@ export const SignupPageSimple: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedIsland, setSelectedIsland] = useState('T&T');
+  const [selectedIsland, setSelectedIsland] = useState('tt');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('next') || searchParams.get('redirect') || '/get-started';
 
-  const islandOptions = [
-    'T&T 🇹🇹',
-    'Jamaica 🇯🇲',
-    'Barbados 🇧🇧',
-    'Guyana 🇬🇾',
-    'Eastern Caribbean 🌴',
-    'Other',
-  ];
+  const islandOptions = wamCountrySelectOptions();
 
   React.useEffect(() => {
     fetch('/api/', { headers: { Accept: 'application/json' } })
@@ -95,6 +90,16 @@ export const SignupPageSimple: React.FC = () => {
     }
   };
 
+  const handleGoogleSignup = async () => {
+    setError('');
+    setLoading(true);
+    const result = await authService.signInWithGoogle(redirect);
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
@@ -109,6 +114,21 @@ export const SignupPageSimple: React.FC = () => {
               <p className="font-semibold text-red-900">{error}</p>
             </div>
           )}
+
+          <button
+            type="button"
+            onClick={handleGoogleSignup}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-gray-700 disabled:opacity-50"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="" />
+            Continue with Google
+          </button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+            <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-gray-500">or continue with email</span></div>
+          </div>
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
@@ -188,7 +208,7 @@ export const SignupPageSimple: React.FC = () => {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-red focus:border-transparent bg-white text-gray-900"
               >
                 {islandOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
             </div>

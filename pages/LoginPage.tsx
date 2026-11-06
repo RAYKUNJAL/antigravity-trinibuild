@@ -97,7 +97,7 @@ export const LoginPage: React.FC = () => {
               Welcome Back
             </h1>
             <p className="text-lg text-gray-600">
-              Sign in to continue to TriniBuild
+              Sign in to continue to Juvay
             </p>
           </div>
 

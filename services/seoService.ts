@@ -86,7 +86,7 @@ export class SEOService {
       ogDescription: description,
       ogImage: input.ogImage,
       twitterCard: 'summary_large_image',
-      twitterSite: '@trinibuild',
+      twitterSite: undefined,
       canonicalUrl: input.canonicalUrl || input.url,
       robots: 'index,follow',
       viewport: 'width=device-width, initial-scale=1.0',
@@ -136,7 +136,7 @@ export class SEOService {
     tags.push(`<link rel="canonical" href="${metadata.canonicalUrl || metadata.url}">`);
 
     // Additional tags
-    tags.push(`<meta name="author" content="TriniBuild">`);
+    tags.push(`<meta name="author" content="Juvay">`);
     tags.push(`<meta name="theme-color" content="#E61E2B">`);
 
     return tags.join('\n');
@@ -223,7 +223,7 @@ export class SEOService {
       ],
       crawlDelay: 1,
       requestRate: 30,
-      sitemapUrl: 'https://trinibuild.com/sitemap.xml'
+      sitemapUrl: 'https://juvay.app/sitemap.xml'
     });
   }
 
@@ -245,16 +245,11 @@ export class SEOService {
    */
   static generateOrganizationSchema(): string {
     return this.generateSchema('Organization', {
-      name: 'TriniBuild',
-      url: 'https://trinibuild.com',
-      logo: 'https://trinibuild.com/logo.png',
-      description: 'Trinidad & Tobago\'s leading e-commerce and business platform',
-      sameAs: [
-        'https://facebook.com/trinibuild',
-        'https://twitter.com/trinibuild',
-        'https://instagram.com/trinibuild',
-        'https://linkedin.com/company/trinibuild'
-      ],
+      name: 'Juvay',
+      url: 'https://juvay.app',
+      logo: 'https://juvay.app/juvay-logo.png',
+      description: 'Trinidad & Tobago store and rides listings',
+      sameAs: [],
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'TT',
@@ -283,8 +278,8 @@ export class SEOService {
     return this.generateSchema('LocalBusiness', {
       name: store.name,
       description: store.description,
-      image: store.image || 'https://trinibuild.com/default-store.png',
-      url: `https://trinibuild.com/store/${store.name.toLowerCase().replace(/\s+/g, '-')}`,
+      image: store.image || 'https://juvay.app/default-store.png',
+      url: `https://juvay.app/store/${store.name.toLowerCase().replace(/\s+/g, '-')}`,
       address: {
         '@type': 'PostalAddress',
         addressCountry: 'TT',
@@ -435,7 +430,7 @@ export class SEOService {
 
       const entries: SitemapEntry[] = [
         {
-          url: `https://trinibuild.com/store/${storeId}`,
+          url: `https://juvay.app/store/${storeId}`,
           lastmod: new Date().toISOString().split('T')[0],
           changefreq: 'weekly',
           priority: 1.0
@@ -445,7 +440,7 @@ export class SEOService {
       if (products) {
         for (const product of products) {
           entries.push({
-            url: `https://trinibuild.com/store/${storeId}/product/${product.slug || product.id}`,
+            url: `https://juvay.app/store/${storeId}/product/${product.slug || product.id}`,
             lastmod: product.updated_at?.split('T')[0],
             changefreq: 'weekly',
             priority: 0.8

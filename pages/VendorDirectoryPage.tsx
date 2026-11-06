@@ -52,83 +52,7 @@ export const VendorDirectoryPage: React.FC = () => {
 
       if (error) throw error;
 
-      // Mock vendor data if no real data
-      const mockVendors: Vendor[] = [
-        {
-          id: '1',
-          name: 'TechHub Trinidad',
-          category: 'Electronics',
-          rating: 4.9,
-          reviews: 247,
-          location: 'Port of Spain',
-          logo: '📱',
-          description: 'Latest gadgets and electronics at competitive prices',
-          followers: 1205,
-          verified: true
-        },
-        {
-          id: '2',
-          name: 'Caribbean Fashion Co',
-          category: 'Fashion',
-          rating: 4.8,
-          reviews: 189,
-          location: 'San Fernando',
-          logo: '👗',
-          description: 'Designer fashion and local Caribbean styles',
-          followers: 987,
-          verified: true
-        },
-        {
-          id: '3',
-          name: 'Island Eats Kitchen',
-          category: 'Food & Beverage',
-          rating: 4.7,
-          reviews: 312,
-          location: 'Chaguanas',
-          logo: '🍽️',
-          description: 'Authentic Caribbean cuisine and local delicacies',
-          followers: 1543,
-          verified: true
-        },
-        {
-          id: '4',
-          name: 'Green Thumb Gardens',
-          category: 'Home & Garden',
-          rating: 4.6,
-          reviews: 156,
-          location: 'Tobago',
-          logo: '🌿',
-          description: 'Plants, seeds, and gardening supplies',
-          followers: 654,
-          verified: false
-        },
-        {
-          id: '5',
-          name: 'Beauty Paradise',
-          category: 'Health & Beauty',
-          rating: 4.8,
-          reviews: 298,
-          location: 'Port of Spain',
-          logo: '💄',
-          description: 'Premium skincare and beauty products',
-          followers: 1342,
-          verified: true
-        },
-        {
-          id: '6',
-          name: 'Handcraft Studio',
-          category: 'Arts & Crafts',
-          rating: 4.5,
-          reviews: 124,
-          location: 'Arima',
-          logo: '🎨',
-          description: 'Unique handmade crafts and artwork',
-          followers: 523,
-          verified: false
-        }
-      ];
-
-      setVendors(data?.length ? data : mockVendors);
+      setVendors(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading vendors:', error);
       setVendors([]);
@@ -289,21 +213,27 @@ export const VendorDirectoryPage: React.FC = () => {
                 <div className="p-6 space-y-4">
                   <p className="text-gray-600 text-sm line-clamp-2">{vendor.description}</p>
 
-                  {/* Rating & Reviews */}
+                  {/* Rating & Reviews — only a real rating. Empty stays empty. */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="w-4 h-4"
-                            fill={i < Math.floor(vendor.rating) ? 'currentColor' : 'none'}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm font-bold text-gray-900">{vendor.rating}</span>
-                    </div>
-                    <span className="text-sm text-gray-600">({vendor.reviews} reviews)</span>
+                    {typeof vendor.rating === 'number' && vendor.reviews > 0 ? (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <div className="flex text-yellow-400">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className="w-4 h-4"
+                                fill={i < Math.floor(vendor.rating) ? 'currentColor' : 'none'}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-bold text-gray-900">{vendor.rating}</span>
+                        </div>
+                        <span className="text-sm text-gray-600">({vendor.reviews} reviews)</span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-gray-600">New</span>
+                    )}
                   </div>
 
                   {/* Location */}

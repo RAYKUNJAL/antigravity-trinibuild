@@ -114,7 +114,7 @@ export const JobLetterGenerator: React.FC<JobLetterGeneratorProps> = ({ isOpen, 
                                 value={formData.company_name}
                                 onChange={e => setFormData({ ...formData, company_name: e.target.value })}
                                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-trini-teal outline-none"
-                                placeholder="TriniBuild Ltd."
+                                placeholder="Your business name"
                             />
                         </div>
 

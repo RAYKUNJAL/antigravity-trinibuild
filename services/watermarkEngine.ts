@@ -1,4 +1,4 @@
-// TriniBuild Watermark Engine - Client-Side Canvas Implementation
+// Client-side watermark engine — canvas implementation
 // MVP version for quick integration
 
 export interface WatermarkOptions {

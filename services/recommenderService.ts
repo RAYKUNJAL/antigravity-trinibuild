@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Recommender System Service
+ * Juvay AI Recommender System Service
  * Key: for_you_engine
  * 
  * Personalized recommendation engine for discovery across all verticals.
@@ -437,7 +437,7 @@ const getStoreRecommendations = async (
         id: store.id,
         type: 'stores' as RecommendationType,
         title: store.name,
-        subtitle: store.tagline || 'TriniBuild Store',
+        subtitle: store.tagline || 'Juvay Store',
         image: store.logo_url,
         rating: store.average_rating,
         url: `/store/${store.slug}`,

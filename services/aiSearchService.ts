@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Search Engine Service
+ * Juvay AI Search Engine Service
  * Key: island_search
  * 
  * The core AI-powered search that understands natural language queries
@@ -393,7 +393,7 @@ const searchMarketplace = async (intent: SearchIntent, limit = 5): Promise<Searc
         id: store.id,
         type: 'stores' as SearchVertical,
         title: store.name,
-        subtitle: store.tagline || 'TriniBuild Store',
+        subtitle: store.tagline || 'Juvay Store',
         description: store.description?.substring(0, 150) + '...',
         image: store.logo_url,
         location: store.user_profiles?.location,
@@ -451,19 +451,19 @@ const searchBlogs = async (intent: SearchIntent, limit = 5): Promise<SearchResul
  * Generate AI answer for "how to" questions
  */
 const generateHowToAnswer = async (query: string): Promise<string> => {
-    const prompt = `You are a helpful assistant for TriniBuild, a platform in Trinidad & Tobago.
+    const prompt = `You are a helpful assistant for Juvay, a platform in Trinidad & Tobago.
   
 User Question: "${query}"
 
 Provide a helpful, concise answer (2-3 sentences max) that:
 1. Directly answers their question
-2. Mentions how TriniBuild can help if relevant
+2. Mentions how Juvay can help if relevant
 3. Uses friendly Caribbean tone
 
 Answer:`;
 
     try {
-        const response = await aiService.generateText(prompt, 'You are a TriniBuild assistant.');
+        const response = await aiService.generateText(prompt, 'You are a Juvay assistant.');
         return response;
     } catch {
         return '';
@@ -556,10 +556,9 @@ export const performSearch = async (
     const searchResults = await Promise.all(searchPromises);
 
     // Format into blocks
-    const verticalLabels: Record<SearchVertical, { label: string; icon: string; see_more: string }> = {
+    const verticalLabels: Partial<Record<SearchVertical, { label: string; icon: string; see_more: string }>> = {
         jobs: { label: 'Jobs & Gigs', icon: 'briefcase', see_more: '/jobs' },
         real_estate: { label: 'Real Estate', icon: 'home', see_more: '/real-estate' },
-        events: { label: 'Events & Tickets', icon: 'ticket', see_more: '/tickets' },
         rideshare: { label: 'Rides', icon: 'car', see_more: '/rides' },
         marketplace: { label: 'Marketplace', icon: 'shopping-bag', see_more: '/marketplace' },
         stores: { label: 'Stores', icon: 'store', see_more: '/marketplace' },
@@ -569,15 +568,18 @@ export const performSearch = async (
     };
 
     const blocks: SearchResultBlock[] = searchResults
-        .filter(r => r.results.length > 0)
-        .map(r => ({
-            vertical: r.vertical,
-            label: verticalLabels[r.vertical].label,
-            icon: verticalLabels[r.vertical].icon,
-            results: r.results.sort((a, b) => b.relevance_score - a.relevance_score),
-            total_count: r.results.length,
-            see_more_url: verticalLabels[r.vertical].see_more + (intent.location ? `?location=${intent.location.slug}` : '')
-        }));
+        .filter(r => r.results.length > 0 && verticalLabels[r.vertical])
+        .map(r => {
+            const meta = verticalLabels[r.vertical]!;
+            return {
+                vertical: r.vertical,
+                label: meta.label,
+                icon: meta.icon,
+                results: r.results.sort((a, b) => b.relevance_score - a.relevance_score),
+                total_count: r.results.length,
+                see_more_url: meta.see_more + (intent.location ? `?location=${intent.location.slug}` : '')
+            };
+        });
 
     // Generate search suggestions
     const suggestions = generateSuggestions(intent);
