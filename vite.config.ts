@@ -53,6 +53,13 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: { alias: { '@': path.resolve(__dirname, '.') } },
     build: {
+      modulePreload: {
+        resolveDependencies(_filename, deps) {
+          // Keep the Three.js landing chunk off the home LCP path.
+          const block = ['vendor-three', 'JuvayHeroScene'];
+          return deps.filter((d) => !block.some((b) => d.includes(b)));
+        },
+      },
       chunkSizeWarningLimit: 600,
       rollupOptions: {
         output: {
@@ -63,6 +70,7 @@ export default defineConfig(({ mode }) => {
             'vendor-maps': ['leaflet', 'react-leaflet'],
             'vendor-motion': ['framer-motion'],
             'vendor-icons': ['lucide-react'],
+            'vendor-three': ['three'],
           }
         }
       }

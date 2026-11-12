@@ -3,42 +3,37 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Juvay — the Caribbean's premier commerce platform for stores, services, rides, jobs, real estate, and events" />
-  <meta name="keywords" content="Caribbean business, Trinidad marketplace, TT stores, Caribbean ecommerce, Juvay, Trinidad services, Tobago" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Juvay is the Amazon for the Caribbean. Every seller gets a free website and store — unlimited listings, no credit card. Cash pickup and cash on delivery are 0% commission. Sell online with Wam when you are ready." />
+  <meta name="keywords" content="Caribbean store, free online store, Trinidad Tobago, cash on delivery, doubles vendor, Juvay, Wam, Caribbean ecommerce" />
   <meta name="author" content="Juvay" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://juvay.app/" />
 
-  <!-- Geo targeting: Caribbean-wide, T&T primary market -->
   <meta name="geo.region" content="TT" />
   <meta name="geo.placename" content="Trinidad and Tobago, Caribbean" />
 
-  <!-- Open Graph (Facebook, WhatsApp link previews) -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Juvay" />
-  <meta property="og:title" content="Juvay — Caribbean Commerce Platform" />
-  <meta property="og:description" content="Build your free online store, get cash-on-delivery orders, book rides, and find jobs — all built for the Caribbean." />
-  <meta property="og:image" content="https://juvay.app/juvay-logo.png" />
+  <meta property="og:title" content="Your free Caribbean store — no credit card" />
+  <meta property="og:description" content="The Amazon for the Caribbean. Free website and store for every seller, unlimited listings, no credit card. Cash pickup and COD are 0% commission." />
+  <meta property="og:image" content="https://juvay.app/og-juvay-home.png" />
   <meta property="og:url" content="https://juvay.app/" />
   <meta property="og:locale" content="en_TT" />
 
-  <!-- Twitter/X Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Juvay — Caribbean Commerce Platform" />
-  <meta name="twitter:description" content="Build your free online store, get cash-on-delivery orders, book rides, and find jobs — all built for the Caribbean." />
-  <meta name="twitter:image" content="https://juvay.app/juvay-logo.png" />
+  <meta name="twitter:title" content="Your free Caribbean store — no credit card" />
+  <meta name="twitter:description" content="The Amazon for the Caribbean. Free website and store for every seller. Cash pickup and COD are 0% commission." />
+  <meta name="twitter:image" content="https://juvay.app/og-juvay-home.png" />
 
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/juvay-logo.png" />
   <link rel="apple-touch-icon" href="/juvay-logo.png" />
 
-  <title>Juvay — Caribbean Commerce Platform</title>
+  <title>Your free Caribbean store — no credit card | Juvay</title>
   <link rel="stylesheet" href="/index.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" media="print" onload="this.media='all'" />
 
-  <!-- Organization structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -46,7 +41,7 @@
     "name": "Juvay",
     "url": "https://juvay.app",
     "logo": "https://juvay.app/juvay-logo.png",
-    "description": "Caribbean commerce platform for stores, rides, jobs, real estate, and events.",
+    "description": "The Amazon for the Caribbean — a free website and store for every Caribbean seller.",
     "areaServed": ["Trinidad and Tobago","Jamaica","Barbados","Guyana","St. Lucia","Grenada","St. Vincent and the Grenadines","Antigua and Barbuda","Dominica","St. Kitts and Nevis","The Bahamas","Belize"]
   }
   </script>
@@ -54,6 +49,39 @@
 
 <body>
   <div id="root"></div>
+  <script>
+    (function () {
+      var path = (location.pathname || '/').replace(/\/$/, '') || '/';
+      if (path !== '/' && path !== '/landing') return;
+      var shell = document.createElement('div');
+      shell.id = 'juvay-lcp-shell';
+      shell.setAttribute('aria-hidden', 'true');
+      shell.innerHTML = '<style>'
+        + '#juvay-lcp-shell{position:fixed;inset:0;z-index:0;background:#0b1f24;color:#fff8f0;font-family:system-ui,sans-serif;overflow:hidden;pointer-events:none}'
+        + '#juvay-lcp-shell .sky{position:absolute;inset:0;background:linear-gradient(180deg,#0c2c38 0%,#1b5a6b 38%,#e08a4a 58%,#f3c78a 74%,#f6e6c8 100%)}'
+        + '#juvay-lcp-shell .scrim{position:absolute;inset:0;background:linear-gradient(to top,#0b1f24 0%,rgba(11,31,36,.55) 42%,transparent 70%)}'
+        + '@media (min-width:1024px){#juvay-lcp-shell .scrim{background:linear-gradient(to right,#0b1f24 0%,rgba(11,31,36,.9) 42%,transparent 64%)}}'
+        + '#juvay-lcp-shell .copy{position:absolute;left:0;right:0;bottom:0;z-index:1;max-width:36rem;padding:1.25rem 1.25rem 1.75rem;pointer-events:auto}'
+        + '@media (min-width:1024px){#juvay-lcp-shell .copy{top:0;bottom:auto;padding:7.5rem 3rem 2rem;max-width:34rem}}'
+        + '#juvay-lcp-shell .eye{display:inline-block;padding:.35rem .85rem;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fde68a;margin:0 0 1rem}'
+        + '#juvay-lcp-shell h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.08;font-weight:900;margin:0;letter-spacing:-.02em}'
+        + '#juvay-lcp-shell h1 span{color:#f5c14a}'
+        + '#juvay-lcp-shell .sub{margin:1rem 0 0;font-size:1rem;line-height:1.5;color:#efe4d0;max-width:32rem}'
+        + '#juvay-lcp-shell .cta{display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin:1.25rem .75rem 0 0;padding:.75rem 1.4rem;border-radius:.75rem;font-weight:700;text-decoration:none}'
+        + '#juvay-lcp-shell .cta-p{background:#ce1126;color:#fff}'
+        + '#juvay-lcp-shell .cta-s{border:2px solid rgba(255,255,255,.8);color:#fff}'
+        + '</style>'
+        + '<div class="sky"></div><div class="scrim"></div>'
+        + '<div class="copy">'
+        + '<p class="eye">The Amazon for the Caribbean</p>'
+        + '<h1>Your free store.<br/><span>No credit card.</span></h1>'
+        + '<p class="sub">Every Caribbean seller gets a free website and store. Unlimited listings. Cash pickup and cash on delivery are 0% commission.</p>'
+        + '<a class="cta cta-p" href="/create-store">Create your free store</a>'
+        + '<a class="cta cta-s" href="/templates">See templates</a>'
+        + '</div>';
+      document.body.insertBefore(shell, document.body.firstChild);
+    })();
+  </script>
   <script type="module" src="/index.tsx"></script>
 </body>
 
