@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ISLAND, STORE_STARTERS, isFoodLikeStarter, type StarterId, type StoreStarter } from '../../services/storeStarters';
 import {
   formatSelectedModifiers,
@@ -32,6 +33,11 @@ import {
   type StorefrontModel,
   type StorefrontVariant,
 } from '../../services/storefrontHonesty';
+import { CTA, HEADER_H, LINEN, RADIUS } from '../../services/storeDesignTokens';
+import { illustrativeSampleItems, isSampleItem } from '../../services/illustrativeSamples';
+import { HeroMedia, resolveHeroSrc } from './HeroMedia';
+import { CatalogCard } from './CatalogCard';
+import { ProductPage } from './ProductPage';
 
 export type StorefrontEditField = 'headline' | 'sub' | 'about';
 
@@ -46,105 +52,19 @@ function waHref(e164: string, text?: string): string {
 }
 
 const SMALL_CTA: React.CSSProperties = {
-  width: 140,
-  height: 32,
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 600,
-  letterSpacing: 0.3,
+  minWidth: 140,
+  minHeight: CTA.height,
+  height: CTA.height,
+  borderRadius: CTA.radius,
+  fontSize: CTA.fontSize,
+  fontWeight: CTA.weight,
+  letterSpacing: 0.2,
   cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: 0,
+  padding: '0 20px',
 };
-
-function resolveHeroSrc(model: StorefrontModel): string {
-  if (model.hero?.image) return model.hero.image;
-  if (model.mode === 'published') return '';
-  return STORE_STARTERS[model.templateId].heroImage;
-}
-
-function readHeroFile(file: File, onDone: (dataUrl: string) => void) {
-  if (!file.type.startsWith('image/')) return;
-  if (file.size > 2_500_000) return;
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-  img.onload = () => {
-    const max = 1600;
-    const scale = Math.min(1, max / Math.max(img.width, img.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(img.width * scale));
-    canvas.height = Math.max(1, Math.round(img.height * scale));
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-    onDone(canvas.toDataURL('image/jpeg', 0.82));
-  };
-  img.src = url;
-}
-
-const HeroPhoto: React.FC<{
-  src: string;
-  field: string;
-  editable?: boolean;
-  onUpload?: (dataUrl: string) => void;
-  priority?: boolean;
-  fill?: boolean;
-}> = ({ src, field, editable, onUpload, priority, fill }) => (
-  <div style={{ position: fill ? 'absolute' : 'relative', inset: fill ? 0 : undefined, minHeight: fill ? undefined : '100%', height: fill ? undefined : '100%', background: field, overflow: 'hidden' }}>
-    {src ? (
-      <img loading={priority ? 'eager' : 'lazy'}
-        src={src}
-        alt=""
-        width={1600}
-        height={900}
-        sizes="100vw"
-        fetchPriority={priority ? 'high' : 'auto'}
-        decoding="async"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-      />
-    ) : null}
-    {editable && onUpload ? (
-      <label
-        style={{
-          position: 'absolute',
-          inset: 0,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          padding: 16,
-          background: src ? 'transparent' : 'rgba(0,0,0,0.04)',
-        }}
-      >
-        <input
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) readHeroFile(file, onUpload);
-          }}
-        />
-        <span
-          style={{
-            minHeight: 44,
-            padding: '0 14px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'rgba(20,20,20,0.72)',
-            color: '#FFF8F0',
-            fontSize: 12,
-          }}
-        >
-          {src ? 'Replace photo' : 'Tap to add your photo'}
-        </span>
-      </label>
-    ) : null}
-  </div>
-);
 
 function heroKicker(model: StorefrontModel, starter: StoreStarter): string {
   return [model.area, model.island, model.specialty].filter(Boolean).join(' · ') || starter.kicker;
@@ -212,8 +132,8 @@ const HeroBlock: React.FC<{
       <div style={{ marginTop: 14, fontSize: 13, opacity: 0.8 }}>Hours: {model.hours}</div>
     )
   ) : null;
-  const photo = <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority />;
-  const photoFill = <HeroPhoto src={heroSrc} field={p.field} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />;
+  const photo = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority />;
+  const photoFill = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />;
 
   if (starter.heroLayout === 'split' || starter.heroLayout === 'split_reverse' || starter.heroLayout === 'desk') {
     const copy = (
@@ -457,7 +377,9 @@ export const JuvayStorefront: React.FC<{
   model: StorefrontModel;
   onPrimaryCta?: () => void;
   editor?: StorefrontEditor;
-}> = ({ model, onPrimaryCta, editor }) => {
+  productId?: string;
+}> = ({ model, onPrimaryCta, editor, productId }) => {
+  const navigate = useNavigate();
   const starter = STORE_STARTERS[model.templateId];
   const p = applyMerchantTheme(starter.palette, { colors: model.colors, fontPair: model.fontPair });
   const buy = { background: p.accent, color: p.accentText, border: 'none' };
@@ -476,6 +398,7 @@ export const JuvayStorefront: React.FC<{
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<Array<{ item: StorefrontItem; variant?: StorefrontVariant; qty: number; note?: string; selectedModifiers?: SelectedModifier[] }>>([]);
   const [picker, setPicker] = useState<StorefrontItem | null>(null);
+  const [localPdp, setLocalPdp] = useState<StorefrontItem | null>(null);
   const [pickedVariant, setPickedVariant] = useState<string>('');
   const [pickedMods, setPickedMods] = useState<SelectedModifier[]>([]);
   const [pickQty, setPickQty] = useState(1);
@@ -518,8 +441,29 @@ export const JuvayStorefront: React.FC<{
     setPickQty(1);
   };
 
+  const openItem = (item: StorefrontItem) => {
+    if (model.slug && model.mode !== 'illustrative') {
+      navigate(`/store/${encodeURIComponent(model.slug)}/p/${encodeURIComponent(item.id)}`);
+      return;
+    }
+    setLocalPdp(item);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closePdp = () => {
+    if (model.slug && model.mode !== 'illustrative' && productId) {
+      navigate(`/store/${encodeURIComponent(model.slug)}`);
+      return;
+    }
+    setLocalPdp(null);
+  };
+
+  const routeItem = productId ? items.find((i) => i.id === productId) || null : null;
+  const pdpItem = routeItem || localPdp;
+  const showingPdp = !!productId || !!localPdp;
+
   const addLine = (item: StorefrontItem, variant?: StorefrontVariant, selectedModifiers?: SelectedModifier[], qtyOverride?: number) => {
-    if (!itemIsSellable(item) || model.soldOutToday) return;
+    if (!itemIsSellable(item) || model.soldOutToday || isSampleItem(item) || model.mode === 'illustrative') return;
     const groups = item.modifierGroups || [];
     const needsVariant = !!(item.variants && item.variants.length);
     const needsMods = groups.length > 0;
@@ -616,8 +560,17 @@ export const JuvayStorefront: React.FC<{
   ].filter((row) => row.href);
 
   return (
-    <div style={{ minHeight: '100%', background: p.bg, color: p.text, fontFamily: p.bodyFont }}>
-      <link rel="stylesheet" href={p.fontHref} />
+    <div
+      className="juvay-sf"
+      style={{
+        minHeight: '100%',
+        background: p.bg,
+        color: p.text,
+        fontFamily: p.bodyFont,
+        backgroundImage: /^#(?:0|1[0-9a-f]{5})/i.test(p.bg) ? undefined : LINEN,
+      }}
+    >
+      {p.fontHref ? <link rel="stylesheet" href={p.fontHref} /> : null}
 
       {isIllustrative && (
         <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, padding: '6px 12px' }}>
@@ -642,25 +595,31 @@ export const JuvayStorefront: React.FC<{
           position: 'sticky',
           top: 0,
           zIndex: 30,
-          height: 56,
+          height: HEADER_H,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 20px',
+          padding: '0 6vw',
           background: p.surface,
+          borderBottom: `1px solid ${p.border}`,
         }}
       >
-        <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button
+          type="button"
+          onClick={() => { setLocalPdp(null); if (productId && model.slug) navigate(`/store/${encodeURIComponent(model.slug)}`); }}
+          style={{ fontFamily: p.headingFont, fontSize: 20, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', color: p.text, cursor: 'pointer', padding: 0, letterSpacing: '-0.02em' }}
+        >
           {model.logo ? (
             <img loading="lazy" src={model.logo} alt="" width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} />
           ) : null}
           {model.storeName || starter.name}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12 }}>
-          {model.island ? <span style={{ color: ISLAND.teal }}>{model.island}</span> : null}
-          {model.isOpen === true && model.hours ? <span>Open</span> : null}
-          {model.isOpen === false ? <span>{closedNote || 'Closed'}</span> : null}
-          <span style={{ color: p.muted }}>{badge.label}</span>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 13 }}>
+          {model.isOpen === true && model.hours ? (
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.08, textTransform: 'uppercase', color: ISLAND.teal }}>Open</span>
+          ) : null}
+          {model.isOpen === false ? <span style={{ fontSize: 12, color: p.muted }}>{closedNote || 'Closed'}</span> : null}
+          {Number(model.reviewCount || 0) > 0 ? <span style={{ color: p.muted }}>{badge.label}</span> : null}
           {model.mode === 'published' ? (
             <button
               type="button"
@@ -686,13 +645,24 @@ export const JuvayStorefront: React.FC<{
           <button
             type="button"
             onClick={() => setCartOpen(true)}
-            style={{ background: 'none', border: 'none', color: p.text, fontSize: 12, cursor: 'pointer', minHeight: 32 }}
+            aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
+            style={{ background: 'none', border: 'none', color: p.text, fontSize: 13, fontWeight: 600, cursor: 'pointer', minHeight: 44, position: 'relative', padding: '0 4px' }}
           >
-            Cart{cartCount ? ` (${cartCount})` : ''}
+            Cart{cartCount ? ` · ${cartCount}` : ''}
           </button>
         </div>
       </header>
 
+      {showingPdp ? (
+        <ProductPage
+          model={model}
+          item={pdpItem}
+          palette={p}
+          onBack={closePdp}
+          onAdd={(item, variant, mods, qty) => addLine(item, variant, mods, qty)}
+        />
+      ) : (
+      <>
       {shouldRenderBlock('hero', model) && (
         <section ref={heroRef as any} style={{ minHeight: starter.heroLayout === 'rail' ? '52vh' : starter.heroLayout === 'stack' ? undefined : '70vh', background: p.heroBg }}>
           <HeroBlock
@@ -715,7 +685,7 @@ export const JuvayStorefront: React.FC<{
       {shouldRenderBlock('trust', model) && chips.length > 0 ? (
         <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface, alignItems: 'center' }}>
           {chips.map((chip) => (
-            <span key={chip} style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>{chip}</span>
+            <span key={chip} style={{ fontSize: 12, color: p.muted, padding: '0 12px 0 0' }}>{chip}</span>
           ))}
           {model.wamLive ? (
             <span style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>Wam checkout</span>
@@ -821,13 +791,13 @@ export const JuvayStorefront: React.FC<{
         <section style={{ padding: '12px 6vw 28px' }}>
           <div
             style={{
-              borderRadius: 16,
-              padding: '28px 24px',
-              background: p.accent,
-              color: p.accentText || '#fff',
+              borderRadius: RADIUS.sm,
+              padding: '36px 32px',
+              background: p.surface,
+              color: p.text,
               display: 'grid',
               gap: 8,
-              boxShadow: '0 1px 2px rgba(20,20,20,.06), 0 8px 24px rgba(20,20,20,.06)',
+              border: `1px solid ${p.border}`,
             }}
           >
             <div style={{ fontSize: 12, letterSpacing: 0.4, opacity: 0.9 }}>
@@ -851,7 +821,7 @@ export const JuvayStorefront: React.FC<{
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: featured.length === 1 ? '1fr' : 'repeat(4, 1fr)', gap: 28 }} className="juvay-grid">
             {featured.map((item) => (
-              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} large={model.templateId === 'home'} />
+              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} onOpen={() => openItem(item)} large={model.templateId === 'home'} />
             ))}
           </div>
         </section>
@@ -868,16 +838,26 @@ export const JuvayStorefront: React.FC<{
             {visibleItems.map((item) => {
               const price = formatPrice(model, item.price);
               return (
-                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', padding: '14px 0', borderBottom: `1px solid ${p.border}` }}>
-                  <div>
-                    <div style={{ fontFamily: p.headingFont, fontSize: 18 }}>{item.name}</div>
-                    {item.description ? <div style={{ fontSize: 13, color: p.muted, maxWidth: '40ch' }}>{item.description}</div> : null}
-                  </div>
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', padding: '16px 0', borderBottom: `1px solid ${p.border}` }}>
+                  <button type="button" onClick={() => openItem(item)} style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, background: 'none', border: 'none', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 0 }}>
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt="" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: RADIUS.sm, flex: '0 0 auto' }} />
+                    ) : null}
+                    <div>
+                      <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 500 }}>
+                        {item.name}
+                        {isSampleItem(item) ? <span style={{ marginLeft: 8, fontSize: 10, fontFamily: p.bodyFont, letterSpacing: 0.1, textTransform: 'uppercase', color: p.muted }}>Sample</span> : null}
+                      </div>
+                      {item.description ? <div style={{ fontSize: 13, color: p.muted, maxWidth: '40ch', marginTop: 4, lineHeight: 1.45 }}>{item.description}</div> : null}
+                    </div>
+                  </button>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {price ? <strong style={{ color: ISLAND.pepper }}>{price}</strong> : null}
+                    {price ? <strong style={{ color: p.text, fontWeight: 600 }}>{price}</strong> : null}
                     {itemStockLabel(item) ? <span style={{ fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</span> : null}
-                    {itemIsSellable(item) ? (
+                    {itemIsSellable(item) && !isSampleItem(item) && model.mode !== 'illustrative' ? (
                       <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, ...buy }}>Add</button>
+                    ) : isSampleItem(item) ? (
+                      <span style={{ fontSize: 12, color: p.muted }}>Sample</span>
                     ) : (
                       <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
                     )}
@@ -889,7 +869,7 @@ export const JuvayStorefront: React.FC<{
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 28 }} className="juvay-grid">
             {visibleItems.map((item) => (
-              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} large={model.templateId === 'home'} />
+              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} onOpen={() => openItem(item)} large={model.templateId === 'home'} />
             ))}
           </div>
         )}
@@ -962,7 +942,7 @@ export const JuvayStorefront: React.FC<{
       )}
 
       {shouldRenderBlock('footer', model) && (
-        <footer style={{ padding: '36px 6vw 48px', borderTop: `1px solid ${p.border}`, color: p.muted, fontSize: 13 }}>
+        <footer style={{ padding: '56px 6vw 64px', borderTop: `1px solid ${p.border}`, color: p.muted, fontSize: 13, display: 'grid', gap: 4 }}>
           <div style={{ fontFamily: p.headingFont, color: p.text, fontSize: 20, marginBottom: 6 }}>{model.storeName || starter.name}</div>
           {model.island ? <div>{model.island}</div> : null}
           {socials.length ? (
@@ -987,7 +967,10 @@ export const JuvayStorefront: React.FC<{
         </footer>
       )}
 
-      {((shouldRenderBlock('sticky', model) && heroGone && showCta) || cartCount > 0) && model.mode !== 'illustrative' && (
+      </>
+      )}
+
+      {((shouldRenderBlock('sticky', model) && heroGone && showCta) || cartCount > 0) && model.mode !== 'illustrative' && !showingPdp && (
         <div
           style={{
             position: 'sticky',
@@ -1156,7 +1139,7 @@ export const JuvayStorefront: React.FC<{
                     ) : null}
                     {line.note ? <div style={{ fontSize: 12, color: p.muted }}>{line.note}</div> : null}
                   </div>
-                  <span style={{ color: ISLAND.pepper }}>{formatPrice(model, ((Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers)) * line.qty)}</span>
+                  <span style={{ color: p.text, fontWeight: 600 }}>{formatPrice(model, ((Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers)) * line.qty)}</span>
                 </div>
               ))}
               {showUpsell ? (
@@ -1238,67 +1221,11 @@ export const JuvayStorefront: React.FC<{
         @media (max-width: 800px) {
           .juvay-hero-split { grid-template-columns: 1fr !important; }
           .juvay-hero-card { position: relative !important; right: auto !important; top: auto !important; width: auto !important; margin: 24px 6vw 32px; }
-          .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 20px !important; }
+          .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
           .juvay-cart { top: auto !important; height: 70vh; border-radius: 16px 16px 0 0; }
-        }
-        @media (max-width: 480px) {
-          .juvay-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
         }
       `}</style>
     </div>
-  );
-};
-
-const CatalogCard: React.FC<{
-  item: StorefrontItem;
-  model: StorefrontModel;
-  palette: typeof STORE_STARTERS[StarterId]['palette'];
-  onAdd: () => void;
-  large?: boolean;
-}> = ({ item, model, palette: p, onAdd, large }) => {
-  const price = formatPrice(model, item.price);
-  const sellable = itemIsSellable(item);
-  const needsVariant = !!(item.variants && item.variants.length) || !!(item.modifierGroups && item.modifierGroups.length);
-  return (
-    <article>
-      <div
-        style={{
-          height: large ? 240 : 180,
-          background: p.field,
-          borderRadius: 6,
-          overflow: 'hidden',
-        }}
-      >
-        {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            loading="lazy"
-            decoding="async"
-            width={800}
-            height={large ? 240 : 180}
-            sizes="(max-width: 480px) 100vw, (max-width: 800px) 50vw, 400px"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        ) : null}
-      </div>
-      <div style={{ paddingTop: 10 }}>
-        <h3 style={{ margin: 0, fontFamily: p.headingFont, fontSize: 16, fontWeight: 500 }}>{item.name}</h3>
-        {item.compatibilityNote ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.compatibilityNote}</p> : null}
-        {item.specs ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.specs}</p> : null}
-        {itemStockLabel(item) ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</p> : null}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-          {price ? <span style={{ color: ISLAND.pepper, fontWeight: 600 }}>{price}</span> : <span />}
-          {sellable ? (
-            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 88, background: p.accent, color: p.accentText, border: 'none' }}>
-              {needsVariant ? 'Pick options' : (price ? `Add · ${price}` : 'Add to cart')}
-            </button>
-          ) : (
-            <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
-          )}
-        </div>
-      </div>
-    </article>
   );
 };
 
@@ -1309,7 +1236,7 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
     templateId,
     storeName: starter.name,
     mode: 'illustrative',
-    items: [],
+    items: illustrativeSampleItems(templateId),
     reviewCount: 0,
     acceptsCashPickup: true,
     acceptsCod: foodLike,
@@ -1329,7 +1256,7 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
     faq: [
       { q: 'Is this a real shop?', a: 'No. This preview is labeled ILLUSTRATIVE. It is a layout, not a merchant.' },
       { q: 'How do Caribbean buyers pay?', a: 'Cash when you collect, or cash on delivery if that option is on. Wam online only when configured — never PayPal.' },
-      { q: 'Where are the products?', a: starter.emptyCatalog + ' Empty catalog stays empty until you add a real priced item.' },
+      { q: 'Where are the products?', a: 'The items on this preview are labeled Sample and are not for sale. A published shop only shows what you add.' },
     ],
   };
 }

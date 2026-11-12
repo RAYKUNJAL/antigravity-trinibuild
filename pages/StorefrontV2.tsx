@@ -18,7 +18,7 @@ import { storeToStorefrontModel, storeUsesStarter } from '../services/storeToSto
 import { storeJsonLd } from '../services/storeJsonLd';
 
 export const StorefrontV2: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
+    const { slug, productId } = useParams<{ slug: string; productId?: string }>();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isPreview = searchParams.get('preview') === 'true';
@@ -388,7 +388,7 @@ export const StorefrontV2: React.FC = () => {
                         Preview — this is your shop, not a demo catalog.
                     </div>
                 )}
-                <JuvayStorefront model={model} />
+                <JuvayStorefront model={model} productId={productId} />
             </>
         );
     }

@@ -2,22 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { GALLERY_FILTERS, ISLAND, starterList, resolveStarterId, isStarterId, STORE_STARTERS, type StarterId } from '../services/storeStarters';
+import { FONT_DISPLAY, FONT_SANS, RADIUS } from '../services/storeDesignTokens';
 import { JuvayStorefront, illustrativeModel } from './storefront/JuvayStorefront';
-import { StarterThumb, StarterCardMeta } from './StarterPreview';
-
-function BrowserChrome({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ background: '#fff', borderRadius: 8, boxShadow: '0 8px 28px rgba(20,20,20,0.08)', overflow: 'hidden' }}>
-      <div style={{ height: 22, background: '#f3efe8', display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px' }}>
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
-      </div>
-      {children}
-    </div>
-  );
-}
-
+import { StarterGalleryCard, StarterCardMeta } from './StarterPreview';
 
 export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: string }) => void }> = ({
   onSelectTemplate,
@@ -75,30 +62,27 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
   }, [routeId, navigate]);
 
   return (
-    <div style={{ minHeight: '100vh', background: ISLAND.sand, color: '#1a1a1a', fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
-      <link rel="stylesheet" href={STORE_STARTERS.food.palette.fontHref} />
-      <div style={{ padding: '56px 24px 28px', textAlign: 'center', maxWidth: 640, margin: '0 auto' }}>
-        <h1 style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 400, margin: '0 0 20px' }}>
-          Store starters for the Caribbean
-        </h1>
-        <p style={{ margin: '0 0 12px', color: '#5C574E', fontSize: 15, lineHeight: 1.5 }}>
-          Ten original Caribbean starters — including Street food niches for doubles and stalls — denser product cards, category rails, promo banners, and honest empty review slots. Previews are <strong>ILLUSTRATIVE</strong>; catalogues stay empty until you add priced items.
+    <div style={{ minHeight: '100vh', background: '#F6F1E8', color: '#1a1a1a', fontFamily: FONT_SANS }}>
+      <div style={{ padding: '72px 24px 32px', textAlign: 'center', maxWidth: 680, margin: '0 auto' }}>
+        <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700, color: '#6b6256' }}>
+          Juvay store templates
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 18 }}>
-          {['Cash pickup', 'COD', 'WhatsApp-ready', 'Wam when configured', 'Mobile-first'].map((chip) => (
-            <span key={chip} style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.2, padding: '6px 12px', borderRadius: 999, background: '#fff', border: '1px solid #E8DCC8', color: '#141414' }}>{chip}</span>
-          ))}
-        </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #1a1a1a', paddingBottom: 8, maxWidth: 360, margin: '0 auto' }}>
-          <Search size={16} />
+        <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 500, margin: '0 0 16px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+          A professional shop, ready for your photos.
+        </h1>
+        <p style={{ margin: '0 0 28px', color: '#5C574E', fontSize: 16, lineHeight: 1.6 }}>
+          Ten original Caribbean starters. Previews use clearly labeled sample items. A published store only shows what you add — and a small “Sample image” mark stays on starter art until you replace it.
+        </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #d9d1c5', background: '#fff', borderRadius: RADIUS.sm, padding: '0 14px', maxWidth: 400, margin: '0 auto', minHeight: 48 }}>
+          <Search size={16} color="#6b6256" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search starters"
+            placeholder="Search templates"
             style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 15 }}
           />
         </label>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 22 }}>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
           {GALLERY_FILTERS.map((cat) => (
             <button
               key={cat.id}
@@ -111,12 +95,13 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
               }}
               style={{
                 minHeight: 44,
-                padding: '0 14px',
-                borderRadius: 4,
-                border: `1px solid ${category === cat.id ? '#1a1a1a' : '#cfc8bc'}`,
-                background: category === cat.id ? '#1a1a1a' : 'transparent',
-                color: category === cat.id ? ISLAND.sand : '#1a1a1a',
+                padding: '0 16px',
+                borderRadius: 999,
+                border: `1px solid ${category === cat.id ? '#1a1a1a' : '#d9d1c5'}`,
+                background: category === cat.id ? '#1a1a1a' : '#fff',
+                color: category === cat.id ? '#F6F1E8' : '#1a1a1a',
                 fontSize: 13,
+                fontWeight: 600,
                 cursor: 'pointer',
               }}
             >
@@ -126,99 +111,128 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
         </div>
       </div>
 
-      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '12px 24px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }} className="juvay-picker-grid">
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '8px 24px 96px' }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 40 }}
+          className="juvay-picker-grid"
+        >
           {filtered.map((starter) => (
-            <article key={starter.galleryId}>
+            <article key={starter.galleryId} style={{ display: 'flex', flexDirection: 'column' }}>
               <button
                 type="button"
                 onClick={() => openPreview(starter.galleryId)}
                 style={{ display: 'block', width: '100%', border: 'none', padding: 0, background: 'none', cursor: 'pointer', textAlign: 'left' }}
+                aria-label={`Preview ${starter.name}`}
               >
-                            <div style={{ display: 'flex', gap: 8, padding: '0 16px 12px', justifyContent: 'center' }}>
-              <button type="button" onClick={() => setPreviewMode('desktop')} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'desktop' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}>Desktop</button>
-              <button type="button" onClick={() => setPreviewMode('mobile')} style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'mobile' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}>Mobile</button>
-            </div>
-            <div style={{ maxWidth: previewMode === 'mobile' ? 390 : '100%', margin: '0 auto', padding: previewMode === 'mobile' ? '0 16px 24px' : '0 16px 24px' }}>
-<BrowserChrome>
-                  <div style={{ position: 'relative' }}>
-                    <StarterThumb id={starter.id} />
-                    <div style={{ position: 'absolute', left: 12, bottom: 12, background: 'rgba(255,248,240,0.94)', color: '#111', minHeight: 32, padding: '0 12px', display: 'grid', placeItems: 'center', fontWeight: 600, fontSize: 11 }}>
-                      Preview Full Size
-                    </div>
-                  </div>
-                </BrowserChrome>
-            </div>
+                <StarterGalleryCard id={starter.id} />
               </button>
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 16, flex: 1 }}>
                 <StarterCardMeta id={starter.id} />
-                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: ISLAND.mango, color: ISLAND.mangoInk }}>Cash · COD</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: ISLAND.teal, color: '#fff' }}>WhatsApp</span>
-                </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <button
-                  type="button"
-                  onClick={() => openPreview(starter.galleryId)}
-                  style={{ minHeight: 44, padding: '0 14px', border: '1px solid #1a1a1a', background: 'transparent', cursor: 'pointer' }}
-                >
-                  Preview
-                </button>
+              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button
                   type="button"
                   onClick={() => useTemplate(starter.galleryId)}
-                  style={{ minHeight: 44, padding: '0 14px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, cursor: 'pointer' }}
+                  style={{
+                    minHeight: 48,
+                    flex: 1,
+                    padding: '0 16px',
+                    border: 'none',
+                    borderRadius: 8,
+                    background: ISLAND.mango,
+                    color: ISLAND.mangoInk,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    cursor: 'pointer',
+                  }}
                 >
-                  Use / Customize
+                  Use this template
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openPreview(starter.galleryId)}
+                  style={{
+                    minHeight: 48,
+                    padding: '0 16px',
+                    border: '1px solid #1a1a1a',
+                    borderRadius: 8,
+                    background: 'transparent',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Preview
                 </button>
               </div>
             </article>
           ))}
         </div>
+        {filtered.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#6b6256', padding: 48 }}>No templates match that search.</p>
+        ) : null}
       </div>
 
       {previewId && (
         <div
           role="dialog"
           aria-modal="true"
+          aria-label={`${STORE_STARTERS[previewId].name} preview`}
           onClick={closePreview}
           style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.55)', zIndex: 80, display: 'flex', justifyContent: 'center', padding: 16, overflow: 'auto' }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: 1040, background: ISLAND.sand, alignSelf: 'flex-start', margin: '12px 0 32px' }}
+            style={{ width: '100%', maxWidth: 1080, background: '#F6F1E8', alignSelf: 'flex-start', margin: '12px 0 32px', borderRadius: 12, overflow: 'hidden' }}
           >
-            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6dfd4' }}>
+            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6dfd4', gap: 12, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif" }}>{STORE_STARTERS[previewId].name}</div>
-                <div style={{ color: '#6b6256', fontSize: 12, marginTop: 2 }}>ILLUSTRATIVE · Share: /templates/{previewId}?preview=1</div>
+                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 20 }}>{STORE_STARTERS[previewId].name}</div>
+                <div style={{ color: '#6b6256', fontSize: 12, marginTop: 2 }}>ILLUSTRATIVE · Sample items are labeled · Share: /templates/{previewId}?preview=1</div>
               </div>
-              <button type="button" onClick={closePreview} aria-label="Close preview" style={{ width: 44, height: 44, border: 'none', background: 'transparent', cursor: 'pointer' }}>
-                <X size={16} />
-              </button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('desktop')}
+                  style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'desktop' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}
+                >
+                  Desktop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('mobile')}
+                  style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'mobile' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}
+                >
+                  Mobile
+                </button>
+                <button type="button" onClick={closePreview} aria-label="Close preview" style={{ width: 44, height: 44, border: 'none', background: 'transparent', cursor: 'pointer' }}>
+                  <X size={16} />
+                </button>
+              </div>
             </div>
-            <div style={{ maxHeight: '78vh', overflow: 'auto' }}>
-              <JuvayStorefront model={illustrativeModel(previewId)} />
+            <div style={{ maxHeight: '78vh', overflow: 'auto', background: '#e8e0d4' }}>
+              <div style={{ maxWidth: previewMode === 'mobile' ? 390 : '100%', margin: '0 auto', boxShadow: previewMode === 'mobile' ? '0 8px 32px rgba(20,20,20,0.12)' : undefined }}>
+                <JuvayStorefront model={illustrativeModel(previewId)} />
+              </div>
             </div>
-            <div style={{ padding: 16, display: 'flex', gap: 8, background: ISLAND.sand }}>
-              <button type="button" onClick={closePreview} style={{ minHeight: 44, padding: '0 16px', border: '1px solid #1a1a1a', background: 'transparent' }}>
+            <div style={{ padding: 16, display: 'flex', gap: 8, background: '#F6F1E8' }}>
+              <button type="button" onClick={closePreview} style={{ minHeight: 48, padding: '0 16px', border: '1px solid #1a1a1a', background: 'transparent', borderRadius: 8, fontWeight: 600 }}>
                 Back
               </button>
               <button
                 type="button"
                 onClick={() => useTemplate(previewId)}
-                style={{ minHeight: 44, padding: '0 16px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700 }}
+                style={{ minHeight: 48, padding: '0 20px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, borderRadius: 8, fontSize: 14 }}
               >
-                Use / Customize
+                Use this template
               </button>
             </div>
           </div>
         </div>
       )}
       <style>{`
-        @media (max-width: 900px) {
-          .juvay-picker-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 800px) {
+          .juvay-picker-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
         }
       `}</style>
     </div>

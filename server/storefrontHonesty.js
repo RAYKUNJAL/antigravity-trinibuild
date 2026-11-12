@@ -18,7 +18,9 @@ function isFoodLikeStarter(id) {
 }
 
 function liveItems(model) {
-  return (model.items || []).filter((item) => item && String(item.name || '').trim());
+  const rows = (model.items || []).filter((item) => item && String(item.name || '').trim());
+  if (model.mode === 'illustrative') return rows;
+  return rows.filter((item) => !item.isSample && !String(item.id || '').startsWith('sample-'));
 }
 
 function featuredItems(model) {
@@ -168,7 +170,7 @@ function showContactSection(model) {
   );
 }
 
-const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)\.(jpg|png|webp)$/;
+const STARTER_HERO = /\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)(-960|-1440)?\.(jpg|png|webp)$/;
 
 function merchantUploadedHero(model) {
   const img = String((model && model.hero && model.hero.image) || '').trim();
@@ -183,6 +185,18 @@ function showIllustrativeBanner(model) {
   if (model.mode === 'illustrative') return true;
   if (model.mode === 'merchant_preview') return !merchantUploadedHero(model);
   return false;
+}
+
+function isStarterHeroPath(src) {
+  const img = String(src || '').trim();
+  if (!img) return false;
+  return STARTER_HERO.test(img);
+}
+
+function showSampleImageLabel(model, heroSrc) {
+  const img = String(heroSrc || (model && model.hero && model.hero.image) || '').trim();
+  if (!img) return false;
+  return isStarterHeroPath(img);
 }
 
 module.exports = {
@@ -203,6 +217,8 @@ module.exports = {
   itemIsSellable,
   merchantUploadedHero,
   showIllustrativeBanner,
+  isStarterHeroPath,
+  showSampleImageLabel,
   announcementLine,
   showAboutSection,
   showContactSection,

@@ -15,6 +15,8 @@ const {
   itemStockLabel,
   parseQty,
   showIllustrativeBanner,
+  showSampleImageLabel,
+  isStarterHeroPath,
   announcementLine,
   showAboutSection,
   showContactSection,
@@ -142,3 +144,26 @@ const doublesClosed = food({ templateId: 'doubles', isOpen: false, nextOpen: 'to
 assert.strictEqual(showOrderCta(doublesClosed), false);
 assert.strictEqual(closedFoodNextOpen(doublesClosed), 'Opens tomorrow 6am');
 assert.strictEqual(announcementLine(food({ dailySpecials: 'Corn soup today' })), 'Corn soup today');
+
+assert.strictEqual(isStarterHeroPath('/templates/heroes/food-960.webp'), true);
+assert.strictEqual(isStarterHeroPath('/templates/heroes/food.jpg'), true);
+assert.strictEqual(isStarterHeroPath('/templates/heroes/street-food-1440.webp'), true);
+assert.strictEqual(isStarterHeroPath('https://cdn.example/photo.jpg'), false);
+assert.strictEqual(showSampleImageLabel(food({ hero: { headline: 'x', image: '/templates/heroes/food-960.webp' } })), true);
+assert.strictEqual(showSampleImageLabel(food({ hero: { headline: 'x', image: 'data:image/jpeg;base64,abc' } })), false);
+assert.strictEqual(showSampleImageLabel(food({ mode: 'published', hero: { headline: 'x', image: '' } })), false);
+
+const leaked = food({
+  mode: 'published',
+  items: [{ id: 'sample-food-1', name: 'Sample roti plate', price: 45, isSample: true }],
+});
+assert.strictEqual(liveItems(leaked).length, 0, 'published catalogs strip sample rows');
+
+const previewSamples = food({
+  mode: 'illustrative',
+  items: [{ id: 'sample-food-1', name: 'Sample roti plate', price: 45, isSample: true }],
+});
+assert.strictEqual(liveItems(previewSamples).length, 1);
+assert.ok(liveItems(previewSamples)[0].isSample);
+
+console.log('storefrontHonesty sample-image tests ok');

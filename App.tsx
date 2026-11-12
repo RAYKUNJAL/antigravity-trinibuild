@@ -455,6 +455,7 @@ const App: React.FC = () => {
 
             {/* Storefront Routes - Using V2 as primary */}
             <Route path="/store/:slug/sign" element={<Suspense fallback={<div style={{padding:24}}>Loading sign…</div>}><StallSignPage /></Suspense>} />
+            <Route path="/store/:slug/p/:productId" element={<Suspense fallback={<div style={{padding:24}}>Loading item…</div>}><StorefrontV2 /></Suspense>} />
             <Route path="/store/:slug" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
             <Route path="/store/:id/v1" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><Storefront /></Suspense>} />
             <Route path="/store/preview" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />

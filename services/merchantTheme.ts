@@ -72,8 +72,8 @@ export const SURFACE_SWATCHES = [
 
 export const FONT_PAIRS: Array<{ id: FontPair; label: string; heading: string; body: string }> = [
   { id: 'starter', label: 'Starter default', heading: '', body: '' },
-  { id: 'serif_sans', label: 'Serif + sans', heading: "'Fraunces', Georgia, serif", body: "'Source Sans 3', system-ui, sans-serif" },
-  { id: 'all_sans', label: 'All sans', heading: "'Outfit', system-ui, sans-serif", body: "'Source Sans 3', system-ui, sans-serif" },
+  { id: 'serif_sans', label: 'Serif + sans', heading: 'Georgia, "Iowan Old Style", Palatino, "Times New Roman", serif', body: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif' },
+  { id: 'all_sans', label: 'All sans', heading: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', body: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif' },
 ];
 
 export function applyMerchantTheme(

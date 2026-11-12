@@ -1,3 +1,5 @@
+import { FONT_DISPLAY, FONT_SANS, heroSources } from './storeDesignTokens';
+
 /**
  * Ten locked store starters. Same chrome. Type changes blocks + copy + palette.
  * Island niche food (doubles, street_food) share the Street food gallery category.
@@ -79,6 +81,11 @@ export interface StoreStarter {
   countOrder?: boolean;
   /** Empty sides slot (saheena / aloo pie / bake & saltfish) for merchant fill. */
   showsSidesSlot?: boolean;
+  /** Product-card image ratio. */
+  cardAspect?: '1 / 1' | '4 / 5' | '3 / 4';
+  /** srcset for the starter hero (960 / 1440 WebP). */
+  heroSrcSet?: string;
+  heroSizes?: string;
 }
 
 export const STARTER_IDS: StarterId[] = [
@@ -114,7 +121,8 @@ export const ISLAND = {
   pepper: '#E31C23',
 };
 
-const SERIF_SANS = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Cormorant+Garamond:wght@500;600;700&family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=Outfit:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Nunito+Sans:wght@400;600;700&display=swap";
+/** Empty — starters use a system stack. Kept so older theme overlays do not request a stylesheet. */
+const SERIF_SANS = '';
 
 export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
   food: {
@@ -132,7 +140,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the menu yet.',
     merchantEmpty: 'Add your first plate',
-    heroImage: '/templates/heroes/food.jpg',
+    heroImage: heroSources('food').src,
+    heroSrcSet: heroSources('food').srcSet,
+    heroSizes: heroSources('food').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#1c140c',
       surface: '#2a1d12',
@@ -143,9 +154,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#1c140c',
       heroText: '#f6edd8',
       border: 'rgba(212,160,23,0.28)',
-      headingFont: "'Fraunces', Georgia, serif",
-      bodyFont: "'Source Sans 3', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'radial-gradient(ellipse at 58% 42%, #d4a017 0%, #7a3f12 48%, #1c140c 100%)',
     },
   },
@@ -164,7 +175,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No pieces listed yet.',
     merchantEmpty: 'Add your first piece',
-    heroImage: '/templates/heroes/fashion.jpg',
+    heroImage: heroSources('fashion').src,
+    heroSrcSet: heroSources('fashion').srcSet,
+    heroSizes: heroSources('fashion').sizes,
+    cardAspect: '4 / 5',
     palette: {
       bg: '#F3EEE6',
       surface: '#FFF8F0',
@@ -175,9 +189,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#141414',
       heroText: '#F3EEE6',
       border: 'rgba(20,20,20,0.12)',
-      headingFont: "'Newsreader', Georgia, serif",
-      bodyFont: "'Outfit', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(165deg, #2c2c2c 0%, #141414 42%, #c4b8a4 100%)',
     },
   },
@@ -196,7 +210,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'service_list', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No services listed yet.',
     merchantEmpty: 'Add your first service',
-    heroImage: '/templates/heroes/services.jpg',
+    heroImage: heroSources('services').src,
+    heroSrcSet: heroSources('services').srcSet,
+    heroSizes: heroSources('services').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#F3F5F2',
       surface: '#FFF8F0',
@@ -207,9 +224,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#1e293b',
       heroText: '#f8fafc',
       border: 'rgba(30,41,59,0.12)',
-      headingFont: "'Source Serif 4', Georgia, serif",
-      bodyFont: "'IBM Plex Sans', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(180deg, #1e293b 0%, #334155 52%, #84cc16 100%)',
     },
   },
@@ -228,7 +245,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing in the shop yet.',
     merchantEmpty: 'Add your first item',
-    heroImage: '/templates/heroes/general.jpg',
+    heroImage: heroSources('general').src,
+    heroSrcSet: heroSources('general').srcSet,
+    heroSizes: heroSources('general').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#FFF8F0',
       surface: '#FFF8F0',
@@ -239,9 +259,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#2a2a2a',
       heroText: '#FFF8F0',
       border: 'rgba(42,42,42,0.12)',
-      headingFont: "'Libre Baskerville', Georgia, serif",
-      bodyFont: "'Source Sans 3', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(160deg, #3d3429 0%, #c4a574 56%, #FFF8F0 100%)',
     },
   },
@@ -260,7 +280,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No shades or kits listed yet.',
     merchantEmpty: 'Add your first shade or kit',
-    heroImage: '/templates/heroes/beauty.jpg',
+    heroImage: heroSources('beauty').src,
+    heroSrcSet: heroSources('beauty').srcSet,
+    heroSizes: heroSources('beauty').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#FAF6F3',
       surface: '#FFF8F0',
@@ -271,9 +294,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#f3e4e4',
       heroText: '#3d2c2e',
       border: 'rgba(212,165,165,0.4)',
-      headingFont: "'Cormorant Garamond', Georgia, serif",
-      bodyFont: "'Outfit', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'radial-gradient(circle at 40% 30%, #f7e8e8 0%, #d4a5a5 58%, #3d2c2e 100%)',
     },
   },
@@ -292,7 +315,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No furniture listed yet.',
     merchantEmpty: 'Add your first piece',
-    heroImage: '/templates/heroes/home.jpg',
+    heroImage: heroSources('home').src,
+    heroSrcSet: heroSources('home').srcSet,
+    heroSizes: heroSources('home').sizes,
+    cardAspect: '4 / 5',
     palette: {
       bg: '#F3EFE8',
       surface: '#FFF8F0',
@@ -303,9 +329,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#e8dfd2',
       heroText: '#3d3429',
       border: 'rgba(139,115,85,0.28)',
-      headingFont: "'Fraunces', Georgia, serif",
-      bodyFont: "'Nunito Sans', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(180deg, #e8dfd2 0%, #8b7355 68%, #3d3429 100%)',
     },
   },
@@ -324,7 +350,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No gadgets listed yet.',
     merchantEmpty: 'Add your first gadget',
-    heroImage: '/templates/heroes/electronics.jpg',
+    heroImage: heroSources('electronics').src,
+    heroSrcSet: heroSources('electronics').srcSet,
+    heroSizes: heroSources('electronics').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#F4F6F6',
       surface: '#FFF8F0',
@@ -335,9 +364,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#0a0f14',
       heroText: '#e8f4f2',
       border: 'rgba(13,148,136,0.22)',
-      headingFont: "'IBM Plex Sans', system-ui, sans-serif",
-      bodyFont: "'IBM Plex Sans', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_SANS,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(160deg, #0a0f14 0%, #0D9488 52%, #0a0f14 100%)',
     },
   },
@@ -356,7 +385,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'No parts listed yet.',
     merchantEmpty: 'Add your first part',
-    heroImage: '/templates/heroes/auto.jpg',
+    heroImage: heroSources('auto').src,
+    heroSrcSet: heroSources('auto').srcSet,
+    heroSizes: heroSources('auto').sizes,
+    cardAspect: '1 / 1',
     palette: {
       bg: '#F6F3EE',
       surface: '#FFF8F0',
@@ -367,9 +399,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#1a1a1a',
       heroText: '#f4efe6',
       border: 'rgba(217,119,6,0.28)',
-      headingFont: "'Source Serif 4', Georgia, serif",
-      bodyFont: "'IBM Plex Sans', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'linear-gradient(160deg, #1a1a1a 0%, #d97706 46%, #111 100%)',
     },
   },
@@ -388,7 +420,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the doubles menu yet.',
     merchantEmpty: 'Add your first wrap (bara + channa)',
-    heroImage: '/templates/heroes/doubles.webp',
+    heroImage: heroSources('doubles').src,
+    heroSrcSet: heroSources('doubles').srcSet,
+    heroSizes: heroSources('doubles').sizes,
+    cardAspect: '1 / 1',
     galleryCategory: 'street_food',
     modifierPreset: 'doubles',
     countOrder: true,
@@ -403,9 +438,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#1a120c',
       heroText: '#f7ecd8',
       border: 'rgba(232,163,23,0.3)',
-      headingFont: "'Fraunces', Georgia, serif",
-      bodyFont: "'Source Sans 3', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'radial-gradient(ellipse at 55% 40%, #e8a317 0%, #7a3f12 48%, #1a120c 100%)',
     },
   },
@@ -424,7 +459,10 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
     blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
     emptyCatalog: 'Nothing on the stall menu yet.',
     merchantEmpty: 'Add your first plate',
-    heroImage: '/templates/heroes/street-food.webp',
+    heroImage: heroSources('street_food').src,
+    heroSrcSet: heroSources('street_food').srcSet,
+    heroSizes: heroSources('street_food').sizes,
+    cardAspect: '1 / 1',
     galleryCategory: 'street_food',
     modifierPreset: 'street_food',
     countOrder: true,
@@ -439,9 +477,9 @@ export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
       heroBg: '#14100c',
       heroText: '#f5ecd9',
       border: 'rgba(249,115,22,0.32)',
-      headingFont: "'Fraunces', Georgia, serif",
-      bodyFont: "'Source Sans 3', system-ui, sans-serif",
-      fontHref: SERIF_SANS,
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
       field: 'radial-gradient(ellipse at 50% 35%, #f97316 0%, #9a3412 50%, #14100c 100%)',
     },
   },

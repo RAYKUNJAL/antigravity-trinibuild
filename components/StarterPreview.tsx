@@ -1,11 +1,14 @@
 import React from 'react';
 import { ISLAND, STORE_STARTERS, type StarterId } from '../services/storeStarters';
+import { heroStem } from '../services/storeDesignTokens';
 
 function HeroPhoto({ id }: { id: StarterId }) {
   const s = STORE_STARTERS[id];
   return (
     <img
       src={s.heroImage}
+      srcSet={s.heroSrcSet}
+      sizes="(max-width: 800px) 100vw, 560px"
       alt=""
       width={800}
       height={450}
@@ -38,7 +41,7 @@ function IllustrativeMark() {
 }
 
 /** Gallery + create-store thumbs. Always the real starter hero photo, never an emoji mock. */
-export function StarterThumb({ id, height = 220 }: { id: StarterId; height?: number }) {
+export function StarterThumb({ id, height = 220, hideBadge = false }: { id: StarterId; height?: number; hideBadge?: boolean }) {
   const s = STORE_STARTERS[id];
   const photo = <HeroPhoto id={id} />;
   const headline: React.CSSProperties = {
@@ -162,7 +165,7 @@ export function StarterThumb({ id, height = 220 }: { id: StarterId; height?: num
   return (
     <div style={{ height, background: s.palette.heroBg, color: s.palette.heroText, position: 'relative', overflow: 'hidden' }}>
       {body}
-      <IllustrativeMark />
+      {hideBadge ? null : <IllustrativeMark />}
     </div>
   );
 }
@@ -171,7 +174,7 @@ export function StarterCardMeta({ id }: { id: StarterId }) {
   const s = STORE_STARTERS[id];
   return (
     <div>
-      <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 16 }}>{s.name}</div>
+      <div style={{ fontFamily: 'Georgia, "Iowan Old Style", Palatino, "Times New Roman", serif', fontSize: 16 }}>{s.name}</div>
       <p style={{ margin: '4px 0 0', color: '#6b6256', fontSize: 13, maxWidth: '42ch' }}>{s.useWhen}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
         {s.chips.map((chip) => (
@@ -180,9 +183,88 @@ export function StarterCardMeta({ id }: { id: StarterId }) {
           </span>
         ))}
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, color: '#6b6256' }}>{s.emptyCatalog}</div>
+      <div style={{ marginTop: 8, fontSize: 12, color: '#6b6256' }}>Preview uses labeled sample items. A published shop starts empty until you add yours.</div>
     </div>
   );
 }
 
 export default StarterThumb;
+
+
+
+/** Desktop + mobile preview used on the /templates gallery. Sample crops only. */
+export function StarterGalleryCard({ id }: { id: StarterId }) {
+  const s = STORE_STARTERS[id];
+  const stem = heroStem(id);
+  const samples = [1, 2, 3].map((n) => `/templates/samples/${stem}-${n}.webp`);
+  return (
+    <div
+      style={{
+        position: 'relative',
+        background: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        border: '1px solid #e6dfd4',
+        boxShadow: '0 1px 2px rgba(20,20,20,0.04), 0 12px 32px rgba(20,20,20,0.05)',
+      }}
+    >
+      <div style={{ height: 22, background: '#f3efe8', display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px' }}>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#d9d3c8' }} />
+        <span style={{ marginLeft: 8, fontSize: 10, color: '#9a9286' }}>{s.name}</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 132px', gap: 0, background: s.palette.bg, minHeight: 260 }}>
+        <div style={{ minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+          <StarterThumb id={id} height={200} hideBadge />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '8px 10px 12px', background: s.palette.bg }}>
+            {samples.map((src) => (
+              <div key={src} style={{ aspectRatio: s.cardAspect || '1 / 1', overflow: 'hidden', borderRadius: 6, background: s.palette.surface }}>
+                <img src={src} alt="" width={200} height={200} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Mobile frame */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px 16px 0' }}>
+          <div
+            style={{
+              width: 108,
+              height: 220,
+              borderRadius: 16,
+              overflow: 'hidden',
+              border: '3px solid #1a1a1a',
+              background: s.palette.bg,
+              boxShadow: '0 8px 20px rgba(20,20,20,0.12)',
+            }}
+          >
+            <StarterThumb id={id} height={110} hideBadge />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, padding: 6 }}>
+              {samples.slice(0, 2).map((src) => (
+                <div key={src} style={{ aspectRatio: '1 / 1', overflow: 'hidden', borderRadius: 3 }}>
+                  <img src={src} alt="" width={80} height={80} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <span
+        style={{
+          position: 'absolute',
+          top: 30,
+          right: 10,
+          zIndex: 3,
+          background: ISLAND.mango,
+          color: ISLAND.mangoInk,
+          fontSize: 9,
+          fontWeight: 800,
+          letterSpacing: 1.1,
+          padding: '4px 8px',
+        }}
+      >
+        ILLUSTRATIVE
+      </span>
+    </div>
+  );
+}

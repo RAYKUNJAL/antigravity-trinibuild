@@ -32,6 +32,8 @@ export interface StorefrontItem {
   sku?: string;
   /** Generic option groups (condiments, size, spice). Merchant-editable. */
   modifierGroups?: ProductModifierGroup[];
+  /** Preview-only sample row. Stripped from published / merchant catalogs. */
+  isSample?: boolean;
 }
 
 export type StorefrontMode = 'illustrative' | 'merchant_preview' | 'published';
@@ -117,7 +119,10 @@ export function mapProductSpecs(raw: unknown): string {
 }
 
 export function liveItems(model: StorefrontModel): StorefrontItem[] {
-  return (model.items || []).filter((item) => item && String(item.name || '').trim());
+  const rows = (model.items || []).filter((item) => item && String(item.name || '').trim());
+  // Safety net: sample rows never appear outside illustrative preview.
+  if (model.mode === 'illustrative') return rows;
+  return rows.filter((item) => !item.isSample && !String(item.id || '').startsWith('sample-'));
 }
 
 export function featuredItems(model: StorefrontModel): StorefrontItem[] {
@@ -295,7 +300,7 @@ export function showContactSection(model: StorefrontModel): boolean {
   );
 }
 
-const STARTER_HERO = /^\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)\.(jpg|png|webp)$/;
+const STARTER_HERO = /\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)(-960|-1440)?\.(jpg|png|webp)$/;
 
 export function merchantUploadedHero(model: StorefrontModel): boolean {
   const img = String(model.hero?.image || '').trim();
@@ -310,4 +315,17 @@ export function showIllustrativeBanner(model: StorefrontModel): boolean {
   if (model.mode === 'illustrative') return true;
   if (model.mode === 'merchant_preview') return !merchantUploadedHero(model);
   return false;
+}
+
+/** Small “Sample image” chip on a published (or preview) hero still using starter art. */
+export function isStarterHeroPath(src?: string | null): boolean {
+  const img = String(src || '').trim();
+  if (!img) return false;
+  return STARTER_HERO.test(img);
+}
+
+export function showSampleImageLabel(model: StorefrontModel, heroSrc?: string | null): boolean {
+  const img = String(heroSrc || model.hero?.image || '').trim();
+  if (!img) return false;
+  return isStarterHeroPath(img);
 }
