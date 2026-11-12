@@ -1,123 +1,68 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { JUVAY_PLANS, formatPlanPrice } from '../services/juvayPlans';
-import { fetchWamStatus } from '../services/wamStatus';
-import { startWamCheckout } from '../services/wamCheckout';
-import { getToken } from '../services/selfHostedApi';
+import { Link, useSearchParams } from 'react-router-dom';
+import { JUVAY_PLANS, formatPlanPrice, premiumPriceCopy } from '../services/juvayPlans';
 
 /**
- * Real /pricing/checkout. Never 404.
- * Wam is a real option when GET /api/wam/status.configured.
- * Face only. No fulfill. Fail-closed without the key.
+ * /pricing/checkout. Paid checkout stays closed while PREMIUM_CHECKOUT_ENABLED is false.
+ * Server is the source of truth. A charge does not upgrade a plan. No 5-listing leftover.
  */
 export default function PricingCheckout() {
-  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const requested = (params.get('plan') || '').toLowerCase();
+  const requested = (params.get('plan') || 'premium').toLowerCase();
   const plan = useMemo(
-    () => JUVAY_PLANS.find((p) => p.id === requested && p.paid) || null,
+    () => JUVAY_PLANS.find((p) => p.id === requested && p.paid) || JUVAY_PLANS.find((p) => p.paid) || null,
     [requested]
   );
-  const [wamOn, setWamOn] = useState(false);
+  const [enabled, setEnabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [recorded, setRecorded] = useState(false);
 
   useEffect(() => {
-    fetchWamStatus().then((s) => {
-      setWamOn(s.configured);
-      setLoaded(true);
-    });
-  }, []);
-
-  const faceCents = plan ? plan.priceTtd * 100 : 0;
-
-  const payWithWam = async () => {
-    setError('');
-    if (!plan) {
-      setError('Pick Starter or Business from the price table.');
-      return;
-    }
-    if (!getToken()) {
-      navigate(`/login?next=/pricing/checkout?plan=${plan.id}`);
-      return;
-    }
-    setBusy(true);
-    try {
-      await startWamCheckout({
-        amountCents: faceCents,
-        faceCents,
-        purpose: `plan:${plan.id}`,
+    fetch('/api/premium')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body) => {
+        setEnabled(body?.checkout_enabled === true);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setEnabled(false);
+        setLoaded(true);
       });
-      setRecorded(true);
-    } catch (e: any) {
-      setError(e?.message || 'Wam checkout failed');
-    } finally {
-      setBusy(false);
-    }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-16">
       <div className="max-w-lg mx-auto bg-white rounded-2xl border border-gray-200 p-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-2">Paid plan checkout</h1>
+        <h1 className="text-2xl font-black text-gray-900 mb-2">Premium checkout</h1>
         {!loaded ? (
-          <p className="text-gray-500">Checking whether Wam is on…</p>
-        ) : !wamOn ? (
+          <p className="text-gray-500">Checking whether Premium checkout is open…</p>
+        ) : !enabled ? (
           <>
             <p className="text-gray-700 mb-4">
-              Paid Starter and Business checkout is closed. Wam is unset on this origin, so there is no pay button.
+              Premium checkout is not open yet. PREMIUM_CHECKOUT_ENABLED is off, so there is no pay button.
             </p>
             <p className="text-sm text-gray-600 mb-6">
-              Live rails are cash at pickup and cash on delivery. The free plan is 5 product listings. A charge would not upgrade a plan.
+              {premiumPriceCopy()}. 2.5% Juvay fee on successful online Wam sales, capped at TT$25.
+              Free already includes unlimited listings and 0% on cash. A charge would not upgrade a plan.
             </p>
             <div className="flex flex-col gap-3">
               <Link to="/signup" className="block text-center py-3 rounded-xl bg-gray-900 text-white font-semibold">
-                Start free (5 listings)
+                Start free (unlimited listings)
               </Link>
               <Link to="/pricing" className="block text-center py-3 rounded-xl bg-gray-100 text-gray-800 font-semibold">
                 Back to pricing
               </Link>
             </div>
           </>
-        ) : recorded ? (
-          <>
-            <p className="text-gray-700 mb-4">Wam intent recorded at face {plan ? formatPlanPrice(plan.priceTtd) : ''}.</p>
-            <p className="text-sm text-gray-600 mb-6">
-              This does not upgrade the plan and does not fulfil anything. Processing estimates are display-only and were not added to the charge.
-            </p>
-            <Link to="/pricing" className="block text-center py-3 rounded-xl bg-gray-900 text-white font-semibold">
-              Back to pricing
-            </Link>
-          </>
         ) : (
           <>
-            <p className="text-gray-700 mb-2">
-              {plan ? `${plan.name} is ${formatPlanPrice(plan.priceTtd)}${plan.period}.` : 'Pick Starter or Business from the price table.'}
+            <p className="text-gray-700 mb-4">
+              The Premium flag is on, but a live pay path is not proven. No charge was taken.
+              {plan ? ` ${plan.name} is ${premiumPriceCopy()}.` : ''} Face would be {plan ? formatPlanPrice(plan.priceTtd) : ''} for the intro month.
             </p>
-            <p className="text-sm text-gray-600 mb-2">
-              Pay with Wam. Face amount only. Processing estimate is display-only and is not added.
+            <p className="text-sm text-gray-600 mb-6">
+              This does not upgrade the plan and does not fulfil anything.
             </p>
-            {plan && (
-              <p className="text-xs text-gray-400 mb-4">Display-only processing estimate: not added. Charge = {formatPlanPrice(plan.priceTtd)}.</p>
-            )}
-            {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
-            {plan ? (
-              <button
-                type="button"
-                onClick={payWithWam}
-                disabled={busy}
-                className="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold disabled:opacity-50"
-              >
-                {busy ? 'Recording Wam intent…' : `Pay ${formatPlanPrice(plan.priceTtd)} with Wam`}
-              </button>
-            ) : (
-              <Link to="/pricing" className="block text-center py-3 rounded-xl bg-gray-900 text-white font-semibold">
-                Choose a plan
-              </Link>
-            )}
-            <Link to="/pricing" className="block text-center mt-3 py-3 text-sm text-gray-500">
+            <Link to="/pricing" className="block text-center py-3 rounded-xl bg-gray-900 text-white font-semibold">
               Back to pricing
             </Link>
           </>

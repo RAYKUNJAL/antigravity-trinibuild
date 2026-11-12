@@ -163,7 +163,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
-                                        5 listings on Free
+                                        Unlimited listings on Free
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
@@ -303,9 +303,9 @@ export const StoreServicesLanding: React.FC = () => {
                                     className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-black text-base transition-transform hover:scale-105"
                                     style={{ background: 'linear-gradient(135deg, #FFD700, #fbbf24)' }}
                                 >
-                                    See /pricing — Free / Starter / Business <ChevronRight className="h-5 w-5" />
+                                    See /pricing — Free / Premium <ChevronRight className="h-5 w-5" />
                                 </button>
-                                <p className="text-xs text-gray-600 mt-3">One TTD table: Free / Starter / Business. No second menu.</p>
+                                <p className="text-xs text-gray-600 mt-3">One TTD table: Free and Premium (TT$49/month intro for 3 months, then TT$79). Checkout is not open yet.</p>
                             </div>
 
                             {/* Right — visual mockup of QR receipt + calendar */}
@@ -451,7 +451,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 Simple, Transparent Pricing
                             </h2>
                             <p className="text-xl text-gray-600">
-                                One TTD table matching /pricing. Free TT$0 / Starter TT$99 / Business TT$329.
+                                One TTD table matching /pricing. Free TT$0. Premium TT$49/month for 3 months, then TT$79. Checkout is not open yet.
                             </p>
                         </div>
 
@@ -466,7 +466,7 @@ export const StoreServicesLanding: React.FC = () => {
                             Ready to Start Selling Online?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Free is 5 listings, cash pickup, and COD. No invented merchant count.
+                            Free is unlimited listings, cash pickup, and COD. No invented merchant count.
                         </p>
                         <button
                             onClick={() => document.getElementById('quiz')?.scrollIntoView({ behavior: 'smooth' })}

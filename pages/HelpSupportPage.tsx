@@ -21,7 +21,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Is there a setup fee or credit card required?',
-          a: 'No! Juvay is free to start. No setup fees, no credit card required. Unlimited free product listings. Starter (TT$99/mo) and Business (TT$329/mo) open when Wam can take that money. One TTD table on /pricing. No USD menu.'
+          a: 'No! Juvay is free to start. No setup fees, no credit card required. Unlimited free product listings. Premium is TT$49/month for the first 3 months, then TT$79/month, with a 2.5% online Wam fee capped at TT$25. Premium checkout is not open yet. See /pricing.'
         },
         {
           q: 'Can I use Juvay if I don\'t have a bank account?',
@@ -42,7 +42,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How many products can I list?',
-          a: 'Free plan: unlimited products. Starter and Business: unlimited listings. Paid CTAs stay hidden until Wam is on.'
+          a: 'Unlimited listings on Free and on Premium. Premium checkout is not open yet.'
         }
       ]
     },
@@ -110,11 +110,11 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I have multiple stores?',
-          a: 'Not with one account. Create a separate Juvay account for each business. Or upgrade to Business plan for multi-user account management.'
+          a: 'Not with one account today. Create a separate Juvay account for each business. There is no multi-user plan on offer.'
         },
         {
-          q: 'How do I upgrade to Pro or Business?',
-          a: 'Click "Upgrade" in your dashboard. Choose monthly or yearly billing. Upgrade is instant and you get access to all Pro/Business features immediately.'
+          q: 'How do I upgrade to Premium?',
+          a: 'Premium is TT$49/month for the first 3 months, then TT$79/month. Checkout is not open yet, so there is no pay button and an upgrade is not instant. See /pricing.'
         }
       ]
     }

@@ -30,7 +30,7 @@ export const ReferralProgramPage: React.FC = () => {
       referrals: 'Any count',
       commission: '10%',
       bonus: 'Of subscription',
-      benefits: ['10% of Starter TT$99 or Business TT$329', 'Paid when that plan is actually billed', 'No invented driver bounty']
+      benefits: ['10% of Premium when billed (TT$4.90/mo intro, then TT$7.90/mo)', 'Paid when that plan is actually billed — checkout is not open yet', 'No invented driver bounty']
     }
   ];
 
@@ -265,7 +265,7 @@ export const ReferralProgramPage: React.FC = () => {
             {[
               {
                 q: 'How much can I earn?',
-                 a: 'You earn 10% of the paid subscription (Starter TT$99 → TT$9.90, Business TT$329 → TT$32.90) when that plan is actually billed. Free referrals pay TT$0. We do not publish average earnings.'
+                 a: 'You earn 10% of Premium when that plan is actually billed (TT$4.90/month during the TT$49 intro, then TT$7.90/month at TT$79). Free referrals pay TT$0. Premium checkout is not open yet. We do not publish average earnings.'
               },
               {
                 q: 'When do I get paid?',
@@ -303,7 +303,7 @@ export const ReferralProgramPage: React.FC = () => {
       >
         <h2 className="text-4xl font-black mb-4">Start Earning Today</h2>
         <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-           10% of the paid subscription. Starter TT$9.90 / Business TT$32.90. No invented flat fee.
+           10% of Premium when billed (TT$4.90 intro, then TT$7.90). Checkout is not open yet. No invented flat fee.
         </p>
         <button className="bg-white text-[#E61E2B] px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
           Become a Referrer

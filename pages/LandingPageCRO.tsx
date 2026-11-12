@@ -373,8 +373,8 @@ const FEATURES = [
     icon: <ShoppingCart className="w-6 h-6" />
   },
   {
-    title: '5 Free Products',
-    description: 'List 5 items free forever. Test your business before upgrading. Upgrade anytime.'
+    title: 'Unlimited listings',
+    description: 'List as many priced items as you have. Free, with no credit card. Premium checkout is not open yet.'
   },
   {
     title: 'COD Checkout',
@@ -399,49 +399,6 @@ const FEATURES = [
   {
     title: 'WhatsApp Ready',
     description: 'Get order notifications on WhatsApp. Confirm deliveries on WhatsApp. No app needed.'
-  }
-];
-
-const PRICING_TIERS = [
-  {
-    name: 'Free',
-    price: 'TT$0',
-    period: 'forever',
-    description: 'Start selling',
-    features: [
-      '5 product listings',
-      'juvay.app store slug',
-      'Cash at pickup',
-      'Cash on delivery'
-    ],
-    cta: 'Start Free',
-    highlighted: false
-  },
-  {
-    name: 'Starter',
-    price: 'TT$99',
-    period: '/month',
-    description: 'Bank payment setup in progress',
-    features: [
-      'Unlimited listings',
-      'Everything in Free',
-      'AI product drafts'
-    ],
-    cta: 'Starter',
-    highlighted: true
-  },
-  {
-    name: 'Business',
-    price: 'TT$329',
-    period: '/month',
-    description: 'Bank payment setup in progress',
-    features: [
-      'Everything in Starter',
-      'Custom branding',
-      'Priority support'
-    ],
-    cta: 'Business',
-    highlighted: false
   }
 ];
 

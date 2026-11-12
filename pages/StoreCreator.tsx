@@ -733,7 +733,7 @@ export const StoreCreator: React.FC = () => {
                                  <CheckCircle className="h-6 w-6 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
                                  <div>
                                     <h3 className="font-bold text-gray-900">Verified Business Badge</h3>
-                                    <p className="text-sm text-gray-600">Instantly build trust. Verified stores get 3x more clicks.</p>
+                                    <p className="text-sm text-gray-600">The Verified badge is free and earned when Wam verifies the shop. We do not publish a click rate.</p>
                                  </div>
                               </div>
 

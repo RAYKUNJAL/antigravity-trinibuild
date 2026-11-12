@@ -229,7 +229,7 @@ export default function AffiliateDashboard() {
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                 <p className="text-xs text-yellow-800 font-medium">
                   🏆 Your tier upgrades automatically based on paid referrals:
-                  10% of the paid subscription. Starter TT$99 → TT$9.90. Business TT$329 → TT$32.90.
+                  10% of a billed Premium subscription: TT$4.90 on the TT$49 intro, then TT$7.90 on TT$79. Paid only when Premium is actually billed. Checkout is not open yet.
                 </p>
               </div>
             </div>

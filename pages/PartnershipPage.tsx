@@ -220,7 +220,7 @@ export const PartnershipPage: React.FC = () => {
               {
                 icon: BarChart3,
                 title: 'High Engagement',
-                description: 'Merchants on Juvay are 3x more likely to upgrade vs industry average'
+                description: 'Reach merchants who are setting up shops and looking for tools. We do not publish an upgrade rate.'
               },
               {
                 icon: Shield,

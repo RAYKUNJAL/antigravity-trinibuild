@@ -429,12 +429,8 @@ export const StoreCreatorV2: React.FC = () => {
             }
 
             // Map frontend plan selection to DB plan IDs
-            const planMapping: Record<string, string> = {
-                'free': 'hustle',
-                'pro': 'storefront',
-                'enterprise': 'growth'
-            };
-            const selectedPlanId = planMapping[formData.paymentPlan!] || 'hustle';
+            // Premium checkout is not open. Every launch from this form is Free.
+            const selectedPlanId = 'hustle';
 
             // Create store
             const storeData = {
@@ -1347,70 +1343,42 @@ export const StoreCreatorV2: React.FC = () => {
                 </div>
             </div>
 
-            {/* Plan Selection */}
+            {/* Plan Selection — Free and Premium only. Paid launch is off. */}
             <div className="mb-12">
-                <h3 className="text-xl font-bold mb-6">Select a Plan</h3>
-                <div className="grid md:grid-cols-3 gap-6">
-                    {/* Free Plan */}
+                <h3 className="text-xl font-bold mb-6">Your plan</h3>
+                <div className="grid md:grid-cols-2 gap-6">
                     <div
                         onClick={() => setFormData(prev => ({ ...prev, paymentPlan: 'free' }))}
                         className={`border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${formData.paymentPlan === 'free' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200'}`}
                     >
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h4 className="font-bold text-lg">The Hustle</h4>
-                                <p className="text-gray-500 text-sm">Start Tonight. Risk Free.</p>
+                                <h4 className="font-bold text-lg">Free</h4>
+                                <p className="text-gray-500 text-sm">Open a store with no credit card.</p>
                             </div>
                             <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">Free</span>
                         </div>
-                        <div className="text-3xl font-bold mb-4">$0 <span className="text-sm font-normal text-gray-500">/mo</span></div>
+                        <div className="text-3xl font-bold mb-4">TT$0 <span className="text-sm font-normal text-gray-500">/mo</span></div>
                         <ul className="space-y-3 text-sm text-gray-600 mb-6">
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 1 Juvay Storefront</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 15 Products Limit</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Basic Analytics</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Cash pickup and COD</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited listings</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Cash pickup and COD (0% Juvay fee)</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 4.5% Juvay fee on online Wam sales, capped at TT$25</li>
                         </ul>
                     </div>
 
-                    {/* Pro Plan */}
-                    <div
-                        onClick={() => setFormData(prev => ({ ...prev, paymentPlan: 'pro' }))}
-                        className={`border-2 rounded-xl p-6 cursor-pointer transition-all relative hover:shadow-lg ${formData.paymentPlan === 'pro' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                    >
-                        <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-bold">POPULAR</div>
+                    <div className="border-2 rounded-xl p-6 border-gray-200 relative">
+                        <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-bold">PREMIUM</div>
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h4 className="font-bold text-lg">Storefront</h4>
-                                <p className="text-gray-500 text-sm">Your Brand. Your Rules.</p>
+                                <h4 className="font-bold text-lg">Premium</h4>
+                                <p className="text-gray-500 text-sm">Lower online fee. Checkout is not open yet.</p>
                             </div>
                         </div>
-                        <div className="text-3xl font-bold mb-4">$100 <span className="text-sm font-normal text-gray-500">/mo</span></div>
-                        <ul className="space-y-3 text-sm text-gray-600 mb-6">
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Everything in Hustle</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Custom Domain (.com)</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 50 Products</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 0% Transaction Fees</li>
-                        </ul>
-                    </div>
-
-                    {/* Enterprise Plan */}
-                    <div
-                        onClick={() => setFormData(prev => ({ ...prev, paymentPlan: 'enterprise' }))}
-                        className={`border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg ${formData.paymentPlan === 'enterprise' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                    >
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 className="font-bold text-lg">Growth</h4>
-                                <p className="text-gray-500 text-sm">Business on Autopilot.</p>
-                            </div>
-                        </div>
-                        <div className="text-3xl font-bold mb-4">$200 <span className="text-sm font-normal text-gray-500">/mo</span></div>
-                        <ul className="space-y-3 text-sm text-gray-600 mb-6">
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited Products</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> WhatsApp Automation</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Advanced Analytics</li>
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> AI Marketing Tools</li>
-                        </ul>
+                        <div className="text-3xl font-bold mb-1">TT$49 <span className="text-sm font-normal text-gray-500">/mo for 3 months</span></div>
+                        <p className="text-sm text-gray-500 mb-4">Then TT$79/month. 2.5% Juvay fee on online Wam sales, capped at TT$25.</p>
+                        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            Premium checkout is not open. Launching here opens a Free store. See <a href="/pricing" className="underline font-semibold">/pricing</a>.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1427,7 +1395,7 @@ export const StoreCreatorV2: React.FC = () => {
                     <span className="text-sm text-gray-700">
                         I agree to the <a href="/legal/terms" className="text-blue-600 hover:underline">Terms of Service</a> and{' '}
                         <a href="/legal/merchant-agreement" className="text-blue-600 hover:underline">Merchant Agreement</a>.
-                        I understand that for paid plans, billing will start immediately after launch.
+                        Premium checkout is not open. Launching here opens a Free store. No charge is taken.
                     </span>
                 </label>
                 {errors.terms && (
@@ -1459,7 +1427,7 @@ export const StoreCreatorV2: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            Launch My {formData.paymentPlan === 'free' ? 'Free' : 'Pro'} Store 🚀
+                            Launch My Free Store
                         </>
                     )}
                 </button>

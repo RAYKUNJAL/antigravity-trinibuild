@@ -1,6 +1,6 @@
 /**
- * Public Juvay rate card. Plain copy. Does not state a Premium monthly price
- * (that is "coming soon" until a Premium price is locked). Wam figures are
+ * Public Juvay rate card. Plain copy. Premium is TT$49/month for 3 months, then TT$79.
+ * Checkout is not open. Wam figures are
  * the published rate — confirm with Wam. Does not claim pay→fulfill works.
  */
 import React, { useEffect, useState } from 'react';
@@ -113,9 +113,9 @@ export default function FeesPage() {
           </section>
 
           <p className="text-sm text-gray-500">
-            Paid plan monthly prices live on the{' '}
-            <Link to="/pricing" className="text-red-600 font-semibold hover:underline">plans page</Link>
-            {' '}when they are offered. This page is only the transaction-fee rate card.
+            {card.premium_pricing}. The monthly offer is also on the{' '}
+            <Link to="/pricing" className="text-red-600 font-semibold hover:underline">plans page</Link>.
+            This page is the transaction-fee rate card. A charge does not auto-upgrade a plan.
             Defaults used if the server is unreachable: Free {formatFeePercent(FEE_DEFAULTS.juvayFeeBpsFree)}, Premium {formatFeePercent(FEE_DEFAULTS.juvayFeeBpsPremium)}, cap {formatTtdCents(FEE_DEFAULTS.juvayFeeCapCents)}.
           </p>
         </div>

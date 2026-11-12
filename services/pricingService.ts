@@ -59,7 +59,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     tagline: 'Perfect for getting started',
     features: [
       { name: '1 Free Web Page', included: true },
-      { name: '5 Product Listings', included: true, limit: '5 products' },
+      { name: 'Unlimited Product Listings', included: true, limit: 'unlimited' },
       { name: 'Basic Template', included: true, limit: '1 design choice' },
       { name: 'Juvay Branding', included: true, tooltip: 'Powered by Juvay badge' },
       { name: 'Community Support', included: true },
@@ -76,7 +76,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: 'AI Product Listings', included: false }
     ],
     limits: {
-      products: 5,
+      products: 'unlimited',
       pages: 1,
       templates: 1,
       staffAccounts: 1,
@@ -99,20 +99,20 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   pro: {
     id: 'pro',
-    name: 'Starter',
+    name: 'Premium',
     price: {
-      monthly: 99,
-      yearly: 1188,
-      yearlyMonthly: 99,
+      monthly: 49,
+      yearly: 0,
+      yearlyMonthly: 49,
       savings: 0
     },
     currency: 'TTD',
-    tagline: 'For growing Trinidad businesses',
+    tagline: 'TT$49/month for 3 months, then TT$79. Checkout is not open yet.',
     popular: true,
     features: [
       { name: 'Everything in Free, PLUS:', included: true },
       { name: 'Multi-Page Website', included: true, limit: 'Unlimited pages' },
-      { name: '50 Product Listings', included: true },
+      { name: 'Unlimited Product Listings', included: true },
       { name: '15+ Premium Templates', included: true, tooltip: 'CRO-optimized designs' },
       { name: 'Remove Juvay Branding', included: true },
       { name: 'Custom Domain', included: true, tooltip: 'yourstore.com' },
@@ -126,12 +126,12 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       { name: 'Viral Contest Builder', included: true, limit: '1 active contest' },
       { name: 'Discounted Delivery', included: true, limit: '$1.50/delivery' },
       { name: 'AI Product Listings', included: true, limit: '25/month' },
-      { name: 'Unlimited Products', included: false },
+      { name: 'Unlimited Products', included: true },
       { name: 'Multiple Locations', included: false },
       { name: 'API Access', included: false }
     ],
     limits: {
-      products: 50,
+      products: 'unlimited',
       pages: 'unlimited',
       templates: 15,
       staffAccounts: 2,
@@ -154,17 +154,17 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
 
   premium: {
     id: 'premium',
-    name: 'Business',
+    name: 'Premium',
     price: {
-      monthly: 329,
-      yearly: 3948,
-      yearlyMonthly: 329,
+      monthly: 49,
+      yearly: 0,
+      yearlyMonthly: 49,
       savings: 0
     },
     currency: 'TTD',
-    tagline: 'For enterprise & multi-location',
+    tagline: 'TT$49/month for 3 months, then TT$79. Checkout is not open yet.',
     features: [
-      { name: 'Everything in Starter, PLUS:', included: true },
+      { name: 'Everything in Free, PLUS a lower 2.5% online Wam fee, capped at TT$25:', included: true },
       { name: 'Unlimited Products', included: true },
       { name: 'Multiple Store Locations', included: true },
       { name: '5 Staff Accounts', included: true, tooltip: '+$10/month for more' },
@@ -240,15 +240,15 @@ export const getUpgradeCTA = (
   if (currentTier === 'free') {
     return {
       title: `See /pricing for ${feature}`,
-      message: `Unlock ${feature} when a paid plan is actually open (Starter TT$99 / Business TT$329)`,
-      targetTier: 'pro'
+      message: `Unlock ${feature} with Premium (TT$49/month for 3 months, then TT$79). Checkout is not open yet.`,
+      targetTier: 'premium'
     };
   }
   
   if (currentTier === 'pro') {
     return {
       title: `See /pricing for ${feature}`,
-      message: `Get ${feature} when Business (TT$329/mo) is actually open. No USD menu.`,
+      message: `Get ${feature} with Premium (TT$49/month for 3 months, then TT$79). Checkout is not open yet.`,
       targetTier: 'premium'
     };
   }

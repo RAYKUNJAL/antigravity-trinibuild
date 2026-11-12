@@ -337,7 +337,7 @@ export const ProStoreFeaturesPage: React.FC = () => {
           >
             Create Your Free Store Today
           </button>
-          <p className="text-red-100 mt-4">First 5 listings free • No credit card required</p>
+          <p className="text-red-100 mt-4">Unlimited free listings • No credit card required</p>
         </div>
       </motion.section>
     </div>

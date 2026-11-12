@@ -223,7 +223,7 @@ export const FoodServicesLanding: React.FC = () => {
                                 Simple Pricing for Food Businesses
                             </h2>
                             <p className="text-xl text-gray-600">
-                                One TTD table matching /pricing. Free TT$0 / Starter TT$99 / Business TT$329.
+                                One TTD table matching /pricing. Free TT$0. Premium TT$49/month for 3 months, then TT$79. Checkout is not open yet.
                             </p>
                         </div>
 
@@ -238,7 +238,7 @@ export const FoodServicesLanding: React.FC = () => {
                             Ready to Start Taking Online Orders?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Free is 5 listings, cash pickup, and COD. No invented merchant count.
+                            Free is unlimited listings, cash pickup, and COD. No invented merchant count.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <button className="bg-white text-orange-600 px-12 py-5 rounded-full font-extrabold text-xl hover:bg-gray-100 transition-all shadow-2xl hover:scale-105">

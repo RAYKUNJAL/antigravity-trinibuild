@@ -16,7 +16,7 @@ export const AffiliateProgram: React.FC = () => {
    };
 
    const assets: MarketingAsset[] = [
-      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with Juvay! 🇹🇹 5 Free Listings. No Credit Card. Link in bio! #JuvayBusiness" },
+      { id: '1', title: 'Instagram Story (Store Launch)', type: 'Social', url: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800', copy: "Launch your free online store today with Juvay! 🇹🇹 Unlimited free listings. No Credit Card. Link in bio! #JuvayBusiness" },
       { id: '2', title: 'WhatsApp Status (Driver)', type: 'Social', url: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800', copy: "Drive on your own schedule with Juvay. No published fare split. DM me for the signup link." },
       { id: '3', title: 'Web Banner (300x250)', type: 'Banner', url: 'https://via.placeholder.com/300x250/CE1126/FFFFFF?text=Start+Selling+Free', copy: "" },
    ];
@@ -40,7 +40,7 @@ export const AffiliateProgram: React.FC = () => {
                      Turn Your Network <br /> Into <span className="text-juvay-red">Passive Income.</span>
                   </h1>
                   <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-                     Earn <strong>10% of the paid subscription</strong> on every store you refer (Starter or Business). That is the written cut. No SweetHand take. No invented driver bounty.
+                     Earn <strong>10% of Premium</strong> on every store you refer, when that plan is actually billed (TT$4.90/month during the intro, then TT$7.90/month). Checkout is not open yet. No SweetHand take. No invented driver bounty.
                   </p>
                   <button onClick={handleRegister} className="bg-white text-juvay-black px-10 py-4 rounded-full font-extrabold text-lg hover:bg-gray-100 shadow-2xl transform hover:scale-105 transition-all">
                      Start Earning Now
@@ -60,7 +60,7 @@ export const AffiliateProgram: React.FC = () => {
                         <h3 className="text-xl font-bold text-center mb-2">Refer Merchants</h3>
                         <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">10%</p>
                         <p className="text-center text-gray-500 text-sm mb-6">Of the paid subscription</p>
-                        <p className="text-gray-600 text-sm text-center">Starter TT$99/mo → <strong>TT$9.90/mo</strong>. Business TT$329/mo → <strong>TT$32.90/mo</strong>. Paid plans open when Wam can take that money.</p>
+                        <p className="text-gray-600 text-sm text-center">Premium TT$49/mo intro → <strong>TT$4.90/mo</strong>, then TT$79/mo → <strong>TT$7.90/mo</strong>. Paid when Premium is actually billed. Checkout is not open yet.</p>
                      </div>
                      <div className="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-yellow-500 hover:-translate-y-2 transition-transform scale-105 z-10">
                         <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 text-yellow-600 mx-auto">
@@ -92,7 +92,7 @@ export const AffiliateProgram: React.FC = () => {
                      <div className="text-center p-6 rounded-xl">
                         <DollarSign className="h-12 w-12 text-juvay-red mx-auto mb-4" />
                         <h3 className="text-xl font-bold mb-2">10% of subscription</h3>
-                        <p className="text-gray-600">The written cut is 10% of Free/Starter/Business. Free pays TT$0, so the cut is TT$0 until a paid plan is actually billed.</p>
+                        <p className="text-gray-600">The written cut is 10% of Premium. Free pays TT$0, so the cut is TT$0 until Premium is actually billed. Checkout is not open yet.</p>
                      </div>
                      <div className="text-center p-6 rounded-xl">
                         <BarChart2 className="h-12 w-12 text-juvay-red mx-auto mb-4" />

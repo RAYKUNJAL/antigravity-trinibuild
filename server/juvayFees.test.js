@@ -236,7 +236,8 @@ try {
   assert.strictEqual(card.juvay_fee_cap_cents, 2500);
   assert.strictEqual(card.cash_commission_bps, 0);
   assert.strictEqual(card.ads_enabled, false);
-  assert.strictEqual(card.premium_pricing, 'Premium pricing coming soon');
+  assert.ok(/TT\$49\/month for the first 3 months, then TT\$79/.test(card.premium_pricing));
+  assert.ok(/PREMIUM_CHECKOUT_ENABLED=false/.test(card.premium_pricing));
   assert.strictEqual(card.wam.label, WAM_RATE_LABEL);
   assert.strictEqual(card.notice_days_before_change, 30);
   assert.strictEqual(card.discounts_opt_in_only, true);

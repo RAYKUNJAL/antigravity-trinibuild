@@ -173,7 +173,7 @@ export const BecomeSellerPage: React.FC = () => {
       >
         <h2 className="text-4xl font-black mb-4">Ready to Start?</h2>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          First 5 listings free. No credit card required. Start selling today!
+          Unlimited free listings. No credit card required. Start selling today!
         </p>
         <button
           onClick={() => navigate('/create-store')}

@@ -1,8 +1,9 @@
 /**
- * One TTD price table for Juvay. Free / Starter / Business.
- * Live /pricing lock: Starter TT$99 / Business TT$329. Do not invent a USD menu.
- * Free listings: unlimited. Monetise via disclosed Juvay fee on successful Wam online sales.
- * Paid CTAs stay hidden until Wam is configured.
+ * One TTD price table for Juvay. Free / Premium.
+ * Approved lock: Premium TT$49/month for the first 3 months, then TT$79/month.
+ * 2.5% Juvay fee on successful online Wam sales, capped at TT$25.
+ * Free listings: unlimited. 0% on cash. Paid checkout stays behind
+ * PREMIUM_CHECKOUT_ENABLED=false. Do not invent a USD menu (no 6.78 pattern in code).
  */
 /** -1 means unlimited */
 export const FREE_LISTING_LIMIT = -1;
@@ -14,11 +15,18 @@ export const AFFILIATE_SUBSCRIPTION_CUT = 0.10;
 export const JUVAY_FEE_BPS_FREE = 450;
 export const JUVAY_FEE_BPS_PREMIUM = 250;
 
+export const PREMIUM_INTRO_PRICE_TTD = 49;
+export const PREMIUM_INTRO_MONTHS = 3;
+export const PREMIUM_THEN_PRICE_TTD = 79;
+
 export const JUVAY_PLANS = [
   {
     id: 'free',
     name: 'Free',
     priceTtd: 0,
+    introPriceTtd: 0,
+    introMonths: 0,
+    thenPriceTtd: 0,
     period: 'forever',
     listings: 'unlimited' as const,
     juvayFeeBps: JUVAY_FEE_BPS_FREE,
@@ -32,35 +40,26 @@ export const JUVAY_PLANS = [
     paid: false,
   },
   {
-    id: 'starter',
-    name: 'Starter',
-    priceTtd: 99,
+    id: 'premium',
+    name: 'Premium',
+    priceTtd: PREMIUM_INTRO_PRICE_TTD,
+    introPriceTtd: PREMIUM_INTRO_PRICE_TTD,
+    introMonths: PREMIUM_INTRO_MONTHS,
+    thenPriceTtd: PREMIUM_THEN_PRICE_TTD,
     period: '/month',
     listings: 'unlimited' as const,
     juvayFeeBps: JUVAY_FEE_BPS_PREMIUM,
     features: [
-      'Unlimited listings',
-      'Lower 2.5% Juvay fee on Wam online sales, capped at TT$25',
+      'Unlimited listings (same as Free)',
+      'Lower 2.5% Juvay fee on successful online Wam sales, capped at TT$25',
+      '0% Juvay commission on cash pickup and cash on delivery',
       'Everything in Free',
-      'AI product drafts (review before publish)',
-    ],
-    paid: true,
-  },
-  {
-    id: 'business',
-    name: 'Business',
-    priceTtd: 329,
-    period: '/month',
-    listings: 'unlimited' as const,
-    juvayFeeBps: JUVAY_FEE_BPS_PREMIUM,
-    features: [
-      'Everything in Starter',
-      'Custom branding',
-      'Priority support',
     ],
     paid: true,
   },
 ] as const;
+
+export type JuvayPlan = (typeof JUVAY_PLANS)[number];
 
 export function formatPlanPrice(priceTtd: number): string {
   return priceTtd === 0 ? 'TT$0' : `TT$${priceTtd}`;
@@ -68,4 +67,14 @@ export function formatPlanPrice(priceTtd: number): string {
 
 export function formatFeePercent(bps: number): string {
   return `${(bps / 100).toFixed(2).replace(/\.?0+$/, '')}%`;
+}
+
+export function premiumPriceCopy(): string {
+  return `TT$${PREMIUM_INTRO_PRICE_TTD}/month for the first ${PREMIUM_INTRO_MONTHS} months, then TT$${PREMIUM_THEN_PRICE_TTD}/month`;
+}
+
+export function affiliateCutCopy(): string {
+  const intro = (PREMIUM_INTRO_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2);
+  const then = (PREMIUM_THEN_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2);
+  return `10% of Premium when that plan is actually billed (TT$${intro}/month during the intro, then TT$${then}/month). Free referrals pay TT$0. Premium checkout is not open yet.`;
 }

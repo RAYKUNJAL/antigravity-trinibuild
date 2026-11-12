@@ -546,11 +546,11 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**Juvay Pricing:**\n\n🆓 **Free:** 5 product listings, cash pickup, COD\n💎 **Starter (TT$99/mo):** Unlimited listings — opens when Wam can take the money\n🏆 **Business (TT$329/mo):** Everything in Starter plus branding\n\nOne TTD table. No USD menu. Check [/pricing](/pricing).";
+        return "**Juvay Pricing:**\n\n🆓 **Free:** Unlimited listings, cash pickup, COD, 0% Juvay commission on cash. 4.5% on successful online Wam sales, capped at TT$25.\n💎 **Premium:** TT$49/month for the first 3 months, then TT$79/month, with a 2.5% online Wam fee capped at TT$25. Checkout is not open yet.\n\nSee [/pricing](/pricing).";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {
-        return "Creating a store is real easy — 5 minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product or skip\n4. Share yuh https://juvay.app/store/slug link\n\nFirst 5 products free. No credit card needed. 🇹🇹";
+        return "Creating a store is real easy — a few minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product (name and a price) or skip\n4. Share yuh https://juvay.app/store/slug link\n\nUnlimited free listings. No credit card needed. 🇹🇹";
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {

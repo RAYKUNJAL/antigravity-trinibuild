@@ -372,7 +372,7 @@ export const JuvayDashboard: React.FC = () => {
               to="/pricing"
               className="ml-2 text-xs font-bold text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full hover:bg-yellow-200 flex items-center"
             >
-              <Crown className="h-3 w-3 mr-1" /> Upgrade to Pro
+              <Crown className="h-3 w-3 mr-1" /> See Premium
             </Link>
           )}
         </div>

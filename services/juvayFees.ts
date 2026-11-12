@@ -299,7 +299,7 @@ export function publicRateCard(cfg?: FeeConfig) {
     ads_optional: true,
     ads_enabled: c.adsEnabled,
     discounts_opt_in_only: true,
-    premium_pricing: 'Premium pricing coming soon' as const,
+    premium_pricing: 'Premium is TT$49/month for the first 3 months, then TT$79/month. 2.5% Juvay fee on online Wam sales, capped at TT$25. Checkout is not open (PREMIUM_CHECKOUT_ENABLED=false)' as const,
     cod_handling_fee_cents_default: c.codHandlingFeeCentsDefault,
     cod_handling_fee_note: 'proposal — buyer-paid handling fee, not a Juvay commission',
     wam: {

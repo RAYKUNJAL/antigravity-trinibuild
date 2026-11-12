@@ -202,7 +202,7 @@ export default function DocumentCenter() {
                 <Star className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-yellow-800">2 documents free with your account</p>
-                  <p className="text-xs text-yellow-700 mt-0.5">Paid document tools open with Starter (TT$99/mo) on /pricing when Wam can take that money.</p>
+                  <p className="text-xs text-yellow-700 mt-0.5">Paid document tools would open with Premium (TT$49/month intro, then TT$79) on /pricing. Premium checkout is not open yet.</p>
                 </div>
               </div>
             )}
@@ -245,10 +245,10 @@ export default function DocumentCenter() {
             <p className="text-gray-500 mb-6">{selectedDoc.description}</p>
             <div className="bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl p-6 mb-4">
               <p className="font-bold text-lg mb-1">See /pricing</p>
-              <p className="text-red-100 text-sm mb-4">Starter TT$99 / Business TT$329. One TTD table. No USD menu.</p>
-              <p className="text-3xl font-black mb-1">TT$99<span className="text-sm font-normal">/month</span></p>
+              <p className="text-red-100 text-sm mb-4">Premium is TT$49/month for 3 months, then TT$79. Checkout is not open yet. No USD menu.</p>
+              <p className="text-3xl font-black mb-1">TT$49<span className="text-sm font-normal">/month for 3 months, then TT$79</span></p>
               <a href="/pricing" className="block mt-4 bg-white text-red-600 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors">
-                Upgrade Now →
+                See pricing →
               </a>
             </div>
             <button onClick={() => setSelectedDoc(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back to documents</button>
