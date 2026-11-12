@@ -61,6 +61,124 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
     }
   }, [routeId, navigate]);
 
+  useEffect(() => {
+    if (!previewId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePreview();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [previewId]);
+
+  useEffect(() => {
+    if (!previewId || typeof window === 'undefined') return;
+    if (window.innerWidth < 800) setPreviewMode('mobile');
+  }, [previewId]);
+
+  if (previewId) {
+    const starter = STORE_STARTERS[previewId];
+    const isPhone = previewMode === 'mobile';
+    return (
+      <div
+        className="juvay-preview-page"
+        role="main"
+        aria-label={`${starter.name} preview`}
+        style={{ minHeight: '100vh', background: '#1a1714', color: '#f6f1e8', fontFamily: FONT_SANS }}
+      >
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 40,
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '0 16px',
+            background: '#1a1714',
+            borderBottom: '1px solid rgba(246,241,232,0.12)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={closePreview}
+            style={{ background: 'none', border: 'none', color: '#f6f1e8', fontWeight: 600, fontSize: 13, cursor: 'pointer', minHeight: 44, padding: '0 4px' }}
+          >
+            ← Templates
+          </button>
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+            <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{starter.name}</div>
+            <div style={{ color: '#b8aea0', fontSize: 11, marginTop: 1 }}>ILLUSTRATIVE · Sample items are labeled</div>
+          </div>
+          <div className="juvay-preview-chrome" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setPreviewMode('desktop')}
+              className="juvay-preview-toggle"
+              style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'desktop' ? ISLAND.mango : '#2e2924', color: previewMode === 'desktop' ? ISLAND.mangoInk : '#f6f1e8' }}
+            >
+              Desktop
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewMode('mobile')}
+              className="juvay-preview-toggle"
+              style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'mobile' ? ISLAND.mango : '#2e2924', color: previewMode === 'mobile' ? ISLAND.mangoInk : '#f6f1e8' }}
+            >
+              Mobile
+            </button>
+            <button
+              type="button"
+              onClick={() => useTemplate(previewId)}
+              style={{ minHeight: 44, padding: '0 16px', border: 'none', borderRadius: 8, background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              Use this template
+            </button>
+            <button type="button" onClick={closePreview} aria-label="Close preview" style={{ width: 44, height: 44, border: 'none', background: 'transparent', color: '#f6f1e8', cursor: 'pointer' }}>
+              <X size={18} />
+            </button>
+          </div>
+        </header>
+        <div
+          className="juvay-preview-stage"
+          style={{
+            background: isPhone ? '#2a2520' : '#1a1714',
+            minHeight: 'calc(100vh - 64px)',
+            padding: isPhone ? '32px 16px 64px' : 0,
+          }}
+        >
+          <div
+            className={isPhone ? 'juvay-preview-phone' : 'juvay-preview-desktop'}
+            style={{
+              maxWidth: isPhone ? 390 : '100%',
+              margin: isPhone ? '0 auto' : 0,
+              boxShadow: isPhone ? '0 16px 56px rgba(0,0,0,0.45)' : undefined,
+              background: '#fff',
+              overflow: 'hidden',
+            }}
+          >
+            <JuvayStorefront model={illustrativeModel(previewId)} />
+          </div>
+        </div>
+        <style>{`
+          @media (max-width: 800px) {
+            .juvay-preview-stage { padding: 0 !important; background: #fff !important; min-height: calc(100vh - 64px) !important; }
+            .juvay-preview-phone, .juvay-preview-desktop {
+              max-width: 100% !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+              min-height: calc(100vh - 64px) !important;
+              overflow: visible !important;
+            }
+            .juvay-preview-toggle { display: none !important; }
+            .juvay-preview-page header { padding: 0 8px 0 4px !important; }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#F6F1E8', color: '#1a1a1a', fontFamily: FONT_SANS }}>
       <div style={{ padding: '72px 24px 32px', textAlign: 'center', maxWidth: 680, margin: '0 auto' }}>
@@ -173,63 +291,6 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
         ) : null}
       </div>
 
-      {previewId && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${STORE_STARTERS[previewId].name} preview`}
-          onClick={closePreview}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.55)', zIndex: 80, display: 'flex', justifyContent: 'center', padding: 16, overflow: 'auto' }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: 1080, background: '#F6F1E8', alignSelf: 'flex-start', margin: '12px 0 32px', borderRadius: 12, overflow: 'hidden' }}
-          >
-            <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e6dfd4', gap: 12, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontFamily: FONT_DISPLAY, fontSize: 20 }}>{STORE_STARTERS[previewId].name}</div>
-                <div style={{ color: '#6b6256', fontSize: 12, marginTop: 2 }}>ILLUSTRATIVE · Sample items are labeled · Share: /templates/{previewId}?preview=1</div>
-              </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('desktop')}
-                  style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'desktop' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}
-                >
-                  Desktop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('mobile')}
-                  style={{ minHeight: 40, padding: '0 14px', borderRadius: 999, border: 'none', fontWeight: 700, cursor: 'pointer', background: previewMode === 'mobile' ? ISLAND.mango : '#fff', color: ISLAND.mangoInk }}
-                >
-                  Mobile
-                </button>
-                <button type="button" onClick={closePreview} aria-label="Close preview" style={{ width: 44, height: 44, border: 'none', background: 'transparent', cursor: 'pointer' }}>
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-            <div style={{ maxHeight: '78vh', overflow: 'auto', background: '#e8e0d4' }}>
-              <div style={{ maxWidth: previewMode === 'mobile' ? 390 : '100%', margin: '0 auto', boxShadow: previewMode === 'mobile' ? '0 8px 32px rgba(20,20,20,0.12)' : undefined }}>
-                <JuvayStorefront model={illustrativeModel(previewId)} />
-              </div>
-            </div>
-            <div style={{ padding: 16, display: 'flex', gap: 8, background: '#F6F1E8' }}>
-              <button type="button" onClick={closePreview} style={{ minHeight: 48, padding: '0 16px', border: '1px solid #1a1a1a', background: 'transparent', borderRadius: 8, fontWeight: 600 }}>
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={() => useTemplate(previewId)}
-                style={{ minHeight: 48, padding: '0 20px', border: 'none', background: ISLAND.mango, color: ISLAND.mangoInk, fontWeight: 700, borderRadius: 8, fontSize: 14 }}
-              >
-                Use this template
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <style>{`
         @media (max-width: 800px) {
           .juvay-picker-grid { grid-template-columns: 1fr !important; gap: 36px !important; }

@@ -33,11 +33,13 @@ import {
   type StorefrontModel,
   type StorefrontVariant,
 } from '../../services/storefrontHonesty';
+import { ShoppingBag } from 'lucide-react';
 import { CTA, HEADER_H, LINEN, RADIUS } from '../../services/storeDesignTokens';
 import { illustrativeSampleItems, isSampleItem } from '../../services/illustrativeSamples';
 import { HeroMedia, resolveHeroSrc } from './HeroMedia';
 import { CatalogCard } from './CatalogCard';
 import { ProductPage } from './ProductPage';
+import { CollectionPage, decodeCategorySlug } from './CollectionPage';
 
 export type StorefrontEditField = 'headline' | 'sub' | 'about';
 
@@ -135,9 +137,28 @@ const HeroBlock: React.FC<{
   const photo = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority />;
   const photoFill = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />;
 
+  const onPanelCta: React.CSSProperties = {
+    ...SMALL_CTA,
+    background: p.heroText,
+    color: p.heroBg,
+    border: 'none',
+  };
+  const panelAction = showCta ? (
+    <button type="button" onClick={scrollToCatalog} style={onPanelCta}>{cta}</button>
+  ) : (
+    <div style={{ fontWeight: 600 }}>{closedNote}</div>
+  );
+  const panelStyle: React.CSSProperties = {
+    background: p.heroBg,
+    color: p.heroText,
+    padding: '32px 36px',
+    borderRadius: 8,
+    maxWidth: 480,
+  };
+
   if (starter.heroLayout === 'split' || starter.heroLayout === 'split_reverse' || starter.heroLayout === 'desk') {
     const copy = (
-      <div style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
+      <div className="juvay-hero-copy-panel" data-hero-panel="split" style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
         <HeroCopy model={model} starter={starter} p={p} editor={editor} headlineStyle={{ fontSize: 'clamp(36px, 6vw, 68px)' }} />
         {action}
         {starter.heroLayout === 'desk' ? (
@@ -159,9 +180,30 @@ const HeroBlock: React.FC<{
 
   if (starter.heroLayout === 'bleed') {
     return (
-      <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
+      <div style={{ position: 'relative', minHeight: '70vh', background: p.heroBg, color: p.heroText }}>
         {photoFill}
-        <div style={{ position: 'absolute', left: '6vw', bottom: '12vh', maxWidth: 420, zIndex: 2, pointerEvents: editor ? 'auto' : undefined }}>
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            background: 'linear-gradient(90deg, rgba(20,20,20,0.45) 0%, rgba(20,20,20,0.12) 48%, transparent 72%)',
+          }}
+        />
+        <div
+          className="juvay-hero-copy-panel juvay-hero-bleed-panel"
+          data-hero-panel="bleed"
+          style={{
+            ...panelStyle,
+            position: 'absolute',
+            left: '6vw',
+            bottom: '10vh',
+            zIndex: 2,
+            pointerEvents: editor ? 'auto' : undefined,
+          }}
+        >
           <HeroCopy
             model={model}
             starter={starter}
@@ -169,12 +211,12 @@ const HeroBlock: React.FC<{
             editor={editor}
             headlineStyle={{ fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', fontWeight: 500 }}
           />
-          {action}
+          {panelAction}
         </div>
         {featured[0] && featured[0].price != null ? (
-          <div style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
+          <div className="juvay-hero-featured" style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
             <div style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 14 }}>{featured[0].name}</div>
-            <div style={{ color: ISLAND.pepper, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
+            <div style={{ color: p.text, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
           </div>
         ) : null}
       </div>
@@ -187,7 +229,7 @@ const HeroBlock: React.FC<{
         <div style={{ position: 'relative', minHeight: '46vh', background: p.field }}>
           {photoFill}
         </div>
-        <div style={{ padding: '36px 6vw 40px', maxWidth: 720 }}>
+        <div className="juvay-hero-copy-panel" data-hero-panel="stack" style={{ padding: '36px 6vw 40px', maxWidth: 720, background: p.surface, color: p.text }}>
           <HeroCopy
             model={model}
             starter={starter}
@@ -205,9 +247,13 @@ const HeroBlock: React.FC<{
 
   if (starter.heroLayout === 'rail') {
     return (
-      <div style={{ position: 'relative', minHeight: '52vh', background: p.field, color: p.heroText }}>
+      <div style={{ position: 'relative', minHeight: '52vh', background: p.heroBg, color: p.heroText }}>
         {photoFill}
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(10,15,20,0.84)', padding: '28px 6vw', zIndex: 2 }}>
+        <div
+          className="juvay-hero-copy-panel"
+          data-hero-panel="rail"
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: p.heroBg, color: p.heroText, padding: '28px 6vw', zIndex: 2 }}
+        >
           <HeroCopy
             model={model}
             starter={starter}
@@ -216,7 +262,7 @@ const HeroBlock: React.FC<{
             headlineStyle={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 500 }}
             subStyle={{ marginBottom: 16 }}
           />
-          {action}
+          {panelAction}
         </div>
       </div>
     );
@@ -232,12 +278,14 @@ const HeroBlock: React.FC<{
             right: '6vw',
             top: '14vh',
             width: 'min(420px, 42vw)',
-            background: 'rgba(255,248,240,0.96)',
+            background: p.surface,
+            color: p.text,
             padding: '32px 28px',
             zIndex: 2,
             pointerEvents: editor ? 'auto' : undefined,
           }}
-          className="juvay-hero-card"
+          className="juvay-hero-card juvay-hero-copy-panel"
+          data-hero-panel="card"
         >
           <HeroCopy
             model={model}
@@ -255,25 +303,36 @@ const HeroBlock: React.FC<{
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.heroText }}>
+    <div style={{ position: 'relative', minHeight: '70vh', background: p.heroBg, color: p.heroText }}>
       {photoFill}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(20,20,20,0.2) 0%, rgba(20,20,20,0.45) 100%)',
+        }}
+      />
       <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32, zIndex: 2 }}>
-        <div>
-          <div style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, marginBottom: 10 }}>
+        <div className="juvay-hero-copy-panel" data-hero-panel="overlay" style={{ ...panelStyle, marginInline: 'auto' }}>
+          <h1 style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, margin: '0 0 10px', fontWeight: 600, color: p.heroText }}>
             {model.storeName || starter.name}
-          </div>
+          </h1>
           <EditableText
             field="headline"
             editor={editor}
             value={model.hero?.headline || starter.heroHeadline}
             style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}
           />
-          {action}
+          {panelAction}
         </div>
       </div>
     </div>
   );
 };
+
 
 function EmptyCatalogFrame({ model, p }: { model: StorefrontModel; p: StoreStarter['palette'] }) {
   const starter = STORE_STARTERS[model.templateId];
@@ -378,7 +437,8 @@ export const JuvayStorefront: React.FC<{
   onPrimaryCta?: () => void;
   editor?: StorefrontEditor;
   productId?: string;
-}> = ({ model, onPrimaryCta, editor, productId }) => {
+  categorySlug?: string;
+}> = ({ model, onPrimaryCta, editor, productId, categorySlug }) => {
   const navigate = useNavigate();
   const starter = STORE_STARTERS[model.templateId];
   const p = applyMerchantTheme(starter.palette, { colors: model.colors, fontPair: model.fontPair });
@@ -461,6 +521,38 @@ export const JuvayStorefront: React.FC<{
   const routeItem = productId ? items.find((i) => i.id === productId) || null : null;
   const pdpItem = routeItem || localPdp;
   const showingPdp = !!productId || !!localPdp;
+
+  const [localCategory, setLocalCategory] = useState<string | null>(null);
+  const activeCategory = (categorySlug && decodeCategorySlug(categorySlug)) || localCategory;
+  const showingCollection = !!activeCategory && !showingPdp;
+
+  const categoryLabels: string[] = model.mode === 'illustrative'
+    ? ['All', 'Featured', ...Array.from(new Set(items.map((i) => (i.category || '').trim()).filter(Boolean)))]
+    : ['All', ...Array.from(new Set(items.map((i) => (i.category || '').trim()).filter(Boolean)))];
+
+  const openCategory = (label: string) => {
+    if (label === 'All') {
+      setLocalCategory(null);
+      setQuery('');
+      if (model.slug && model.mode !== 'illustrative') {
+        navigate(`/store/${encodeURIComponent(model.slug)}`);
+      }
+      return;
+    }
+    if (model.slug && model.mode !== 'illustrative') {
+      navigate(`/store/${encodeURIComponent(model.slug)}/c/${encodeURIComponent(label)}`);
+      return;
+    }
+    setLocalCategory(label);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeCollection = () => {
+    setLocalCategory(null);
+    if (model.slug && model.mode !== 'illustrative' && categorySlug) {
+      navigate(`/store/${encodeURIComponent(model.slug)}`);
+    }
+  };
 
   const addLine = (item: StorefrontItem, variant?: StorefrontVariant, selectedModifiers?: SelectedModifier[], qtyOverride?: number) => {
     if (!itemIsSellable(item) || model.soldOutToday || isSampleItem(item) || model.mode === 'illustrative') return;
@@ -574,7 +666,7 @@ export const JuvayStorefront: React.FC<{
 
       {isIllustrative && (
         <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, padding: '6px 12px' }}>
-          ILLUSTRATIVE — layout only, until you upload a photo. No sample products.
+          ILLUSTRATIVE — preview uses labeled sample items. A published shop starts empty.
         </div>
       )}
 
@@ -606,7 +698,13 @@ export const JuvayStorefront: React.FC<{
       >
         <button
           type="button"
-          onClick={() => { setLocalPdp(null); if (productId && model.slug) navigate(`/store/${encodeURIComponent(model.slug)}`); }}
+          onClick={() => {
+            setLocalPdp(null);
+            setLocalCategory(null);
+            if ((productId || categorySlug) && model.slug && model.mode !== 'illustrative') {
+              navigate(`/store/${encodeURIComponent(model.slug)}`);
+            }
+          }}
           style={{ fontFamily: p.headingFont, fontSize: 20, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', color: p.text, cursor: 'pointer', padding: 0, letterSpacing: '-0.02em' }}
         >
           {model.logo ? (
@@ -646,9 +744,42 @@ export const JuvayStorefront: React.FC<{
             type="button"
             onClick={() => setCartOpen(true)}
             aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
-            style={{ background: 'none', border: 'none', color: p.text, fontSize: 13, fontWeight: 600, cursor: 'pointer', minHeight: 44, position: 'relative', padding: '0 4px' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: p.text,
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
+              position: 'relative',
+              padding: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            Cart{cartCount ? ` · ${cartCount}` : ''}
+            <ShoppingBag size={22} strokeWidth={1.75} aria-hidden />
+            {cartCount > 0 ? (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 4,
+                  right: 0,
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 5px',
+                  borderRadius: 999,
+                  background: p.text,
+                  color: p.surface,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                }}
+              >
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            ) : null}
           </button>
         </div>
       </header>
@@ -660,6 +791,17 @@ export const JuvayStorefront: React.FC<{
           palette={p}
           onBack={closePdp}
           onAdd={(item, variant, mods, qty) => addLine(item, variant, mods, qty)}
+        />
+      ) : showingCollection && activeCategory ? (
+        <CollectionPage
+          model={model}
+          palette={p}
+          categorySlug={activeCategory}
+          onBack={closeCollection}
+          onAdd={(item) => addLine(item)}
+          onOpen={openItem}
+          categories={categoryLabels}
+          onSelectCategory={openCategory}
         />
       ) : (
       <>
@@ -755,18 +897,11 @@ export const JuvayStorefront: React.FC<{
       {shouldRenderBlock('category_rail', model) ? (
         <section style={{ padding: '20px 6vw 8px' }} aria-label="Categories">
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
-            {(model.mode === 'illustrative'
-              ? ['All', 'Featured', starter.catalogTitle]
-              : ['All', ...Array.from(new Set(liveItems(model).map((i) => (i.category || '').trim()).filter(Boolean)))]
-            ).map((label) => (
+            {categoryLabels.map((label) => (
               <button
                 key={label}
                 type="button"
-                onClick={() => {
-                  if (label === 'All') setQuery('');
-                  else setQuery(label);
-                  scrollToCatalog();
-                }}
+                onClick={() => openCategory(label)}
                 style={{
                   flex: '0 0 auto',
                   minHeight: 40,
@@ -1221,6 +1356,8 @@ export const JuvayStorefront: React.FC<{
         @media (max-width: 800px) {
           .juvay-hero-split { grid-template-columns: 1fr !important; }
           .juvay-hero-card { position: relative !important; right: auto !important; top: auto !important; width: auto !important; margin: 24px 6vw 32px; }
+          .juvay-hero-bleed-panel { left: 4vw !important; right: 4vw !important; max-width: none !important; bottom: 6vh !important; padding: 24px 22px !important; }
+          .juvay-hero-featured { display: none !important; }
           .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
           .juvay-cart { top: auto !important; height: 70vh; border-radius: 16px 16px 0 0; }
         }

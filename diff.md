@@ -5,58 +5,96 @@
 **Method:** replica-recon (public pages only) + replica-design + replica-build + replica-test + replica-diff. Clean-room: principles, not pixels, code, CSS, images, or copy.
 **Dukaan refs:** `/workspace/juvay-templates-polish/ref/dukaan/` (not shipped)
 **Our before:** `/workspace/juvay-templates-polish/ref/ours-before/`
-**Our after:** `/workspace/juvay-templates-polish/ref/ours-after/`
-**Four pairs for review:** `/workspace/juvay-templates-polish/ref/pairs/`
+**Our after (Round 2):** `/workspace/juvay-templates-polish/ref/ours-after/`
+**Pairs for review:** `/workspace/juvay-templates-polish/ref/pairs/`
+**Hero AA measurements:** `/workspace/juvay-templates-polish/ref/hero-contrast-r2.json`
 
 ## Verdict
 
-| | Before | After |
-| --- | ---: | ---: |
-| Visual / craft score (rubric below) | **38 / 100** | **77 / 100** |
-| Dedicated product page | No | Yes — `/store/:slug/p/:id` |
-| Hero art | Heavy JPEGs; illustrated doubles & street food | WebP 960/1440, all ≤80 KB, srcset; Wikimedia CC BY-SA stall photos for doubles & street food |
-| Fonts | 9-family Google Fonts stylesheet | 2 system stacks, no network font load |
-| Preview catalog | Empty (“Nothing listed yet”) | Labeled **Sample item** rows, preview only |
-| Published honesty | Starter art could pass as merchant photography | Small **Sample image** chip until the merchant uploads |
-| Gallery | 3-col, nested Desktop/Mobile toggles, “Use / Customize” | 2-col polished cards, desktop+mobile frames, **Use this template** → `/create-store` |
+| | Before | Round 1 | Round 2 |
+| --- | ---: | ---: | ---: |
+| Visual / craft score (rubric below) | **38 / 100** | **77 / 100** | **86 / 100** |
+| Dedicated product page | No | `/store/:slug/p/:id` | unchanged |
+| Collection pages | No | No | **Yes** — `/store/:slug/c/:category`, clean grid, honest empty |
+| Hero art contrast | — | Fashion (and other light-photo bleed/overlay) was white-on-light | Solid `heroBg` copy panels (plus a light gradient scrim). **All 10 starters, 390 and 1440, pass WCAG AA** (computed and sampled pixels, 9.25:1–17.09:1; body threshold 4.5:1) |
+| Preview | Nested frames | Dialog over a visible gallery (cramped bleed-through) | **Full page** at `/templates/:id?preview=1`: full-screen on mobile, solid stage on desktop (phone frame when Mobile is toggled). Gallery is not mounted behind it. |
+| Header cart | — | Text “Cart · N” | **Bag icon** with a count badge (high-contrast text-on-surface) |
+| Fonts | 9-family Google Fonts | 2 system stacks | unchanged |
+| Preview catalog | Empty | Labeled sample items | unchanged; ILLUSTRATIVE banner now says samples are labeled |
 
-Shippable as a visual upgrade on the existing Juvay starters: **yes**, with the remaining gaps listed below. Not a Dukaan clone, and not trying to be.
+Shippable as a visual upgrade: **yes**. Remaining gaps are below. Not a Dukaan clone.
 
-## Rubric (each 0–10) — before → after, against the public Dukaan bar
+## Rubric (each 0–10) — before → Round 1 → Round 2, against the public Dukaan bar
 
-| Criterion | Before | After | Notes |
-| --- | ---: | ---: | --- |
-| Typography | 4 | 8 | Two system families, tight heading leading, prices in the text colour. Dukaan’s paid webfonts are not copied. |
-| Spacing | 4 | 7 | 48–64px sections, 8px rhythm. A few food-menu rows still sit tighter than Hawaii’s jewellery grid. |
-| Imagery | 4 | 8 | Photographic WebP + Wikimedia stalls + 1:1 sample crops. Beauty/electronics stills are starter photos, clearly labeled. |
-| Card design | 3 | 8 | Consistent 1:1 or 4:5, object-fit, outline add, sample badge. 2 columns on a 390px phone. |
-| PDP | 0 | 8 | Gallery, price, 44px option pills, qty, sticky mobile ATC, details, “No reviews yet”. No fake stars. |
-| Nav | 5 | 7 | 64px bar, name left, Open / WhatsApp / Cart right, 1px border. Still text “Cart”, not an icon-only bag. |
-| Mobile | 5 | 8 | 2-col grid, 44–48px taps, thumb-zone sticky ATC, menu rows with thumbs. |
+| Criterion | Before | R1 | R2 | Notes |
+| --- | ---: | ---: | ---: | --- |
+| Typography | 4 | 8 | **9** | Every starter hero headline measured AA at 390 and 1440 on a solid panel. Fashion is cream on `#141414` at **15.95:1**. |
+| Spacing | 4 | 7 | **8** | Collection pages use the 1120 content max and a 4-col / 2-col grid. Preview is a full page, not a 78vh dialog. |
+| Imagery | 4 | 8 | 8 | Same photographic WebP + Wikimedia stalls. Labeled. |
+| Card design | 3 | 8 | 8 | Unchanged; collection index reuses the same cards. |
+| PDP | 0 | 8 | 8 | Unchanged. Doubles 390 PDP is honest: Sample item, “not for sale”, “No reviews yet”. |
+| Nav | 5 | 7 | **9** | 64px bar, bag icon, count badge, collection rail routes to `/c/:category`. |
+| Mobile | 5 | 8 | **9** | Full-screen preview at 390 (no gallery behind, no Desktop/Mobile chrome). Bleed panel goes edge-to-edge with 4vw inset so fashion is readable on a phone. |
+
+Holistic 86 (was 77) — the Round 1 deduction for unreadable fashion type, a leaking preview modal, a text cart, and missing collection pages is closed. Not 90+: we still do not match Dukaan’s 17-theme breadth, drag-to-reorder, or paid webfonts, and a few non-food heroes remain labeled starter stills.
+
+## Round 2 hero contrast (WCAG 2, sRGB, body 4.5:1)
+
+Measured on the live preview at `127.0.0.1:4178`: computed `h1` colour vs solid panel background, and pixels sampled in the panel padding (same ratios — the panels are opaque). Unit tests in `services/heroContrast.test.ts` also assert palette pairs and 0.85/0.7 sub/kicker composites for layouts that use those opacities.
+
+| Starter | Layout | 390 | 1440 | Pair |
+| --- | --- | ---: | ---: | --- |
+| food | split | 15.61 | 15.61 | `#f6edd8` on `#1c140c` |
+| fashion | bleed + panel | 15.95 | 15.95 | `#f3eee6` on `#141414` |
+| services | split_reverse | 13.98 | 13.98 | `#f8fafc` on `#1e293b` |
+| general | overlay + panel | 13.63 | 13.63 | `#fff8f0` on `#2a2a2a` |
+| beauty | card (solid surface) | 12.48 | 12.48 | `#3d2c2e` on `#fff8f0` |
+| home | stack (solid surface) | 11.58 | 11.58 | `#3d3429` on `#fff8f0` |
+| electronics | rail (solid heroBg) | 17.09 | 17.09 | `#e8f4f2` on `#0a0f14` |
+| auto | desk | 15.20 | 15.20 | `#f4efe6` on `#1a1a1a` |
+| doubles | stack | 14.71 | 14.71 | `#f7ecd8` on `#26180f` |
+| street_food | split | 16.12 | 16.12 | `#f5ecd9` on `#14100c` |
+
+**20 / 20 measurements pass AA body (4.5:1).** Fashion’s previous white-on-light photo fail is gone: copy sits on a solid dark panel with a soft left scrim, and the CTA is an inverted cream button.
 
 ## replica-test (local, 127.0.0.1:4178)
 
-Click-through of all 10 starters at 390 and 1440, plus `/templates`.
+- Full-page preview: `.juvay-preview-page` is the only root; `.juvay-picker-grid` is not in the document.
+- Bag icon present on every starter header (`aria-label` Cart).
+- Category chips open a collection view (preview: local state; published: `/store/:slug/c/:category`). Unknown slugs render “Nothing in this collection yet.”
+- Sample add-to-cart still refused. Published `liveItems()` still strips `isSample`.
+- `npm test` includes `heroContrast.test.ts` and `CollectionPage.test.ts`.
+- Facebook Pixel `fbevents.js` pageerror is pre-existing, not our code.
 
-- Storefronts render; the only `pageerror` is a pre-existing Facebook Pixel (`fbevents.js`) TypeError, not our code.
-- Preview catalogs show labeled sample items only. Add-to-cart is refused for samples and in illustrative mode. Published `liveItems()` strips any `isSample` row (unit tests in `server/storefrontHonesty.test.js`).
-- Reviews empty state is “No reviews yet”, no stars.
-- Product page opens from a card (and from a menu row). Services/doubles use the menu-row button, not a card.
-- Gallery “Use this template” points at `/create-store?template=…`.
-- `npm test` green. `vite build` green. No new `tsc` errors in files we touched (pre-existing parse errors remain in `services/socialContentService.ts`).
+## Screenshot paths (Round 2)
+
+Four pairs (original before vs Round 2 after):
+
+- `/workspace/juvay-templates-polish/ref/pairs/gallery-1440-pair.jpg`
+- `/workspace/juvay-templates-polish/ref/pairs/fashion-home-1440-pair.jpg`
+- `/workspace/juvay-templates-polish/ref/pairs/doubles-home-1440-pair.jpg`
+- `/workspace/juvay-templates-polish/ref/pairs/gallery-390-pair.jpg`
+
+Additional mobile 390 shots requested:
+
+- `/workspace/juvay-templates-polish/ref/pairs/doubles-home-390.jpg`
+- `/workspace/juvay-templates-polish/ref/pairs/doubles-pdp-390.jpg`
+
+(Also under `ref/ours-after/` with the same filenames, plus the rest of the 10 starters at both widths.)
 
 ## Remaining gaps
 
 1. Merchants still cannot drag sections to rearrange a store.
-2. Ten starters vs Dukaan’s 17 theme names — one layout each, by design (a small named set, not a theme farm).
-3. No collection / category index pages.
-4. Header cart is a text label, not a bag icon.
-5. Some non-food heroes are existing starter stills (tasteful, labeled), not documentary island photos.
-6. Section-level editor and custom domain chrome are out of this pass.
-7. Compatibility JPEGs of the 960 WebP sit at the historic `/templates/heroes/*.jpg` paths so other pages that still point there do not 404.
+2. Ten starters vs Dukaan’s 17 theme names — one layout each, by design.
+3. Some non-food heroes are existing starter stills (tasteful, labeled), not documentary island photos.
+4. Section-level editor and custom domain chrome are out of this pass.
+5. Compatibility JPEGs of the 960 WebP sit at the historic `/templates/heroes/*.jpg` paths so other pages that still point there do not 404.
+
+Closed this round: hero legibility, preview bleed-through, text cart, missing collection pages.
 
 ## Honesty
 
 - Sample items exist only when `mode === 'illustrative'`. A published store with an empty catalog stays empty.
+- Collection pages show only real (or, in preview, labeled sample) items in that category. An unknown category is an honest empty, never invented goods.
 - Wikimedia doubles / street-food photos are attributed in `public/templates/heroes/_attribution/ATTRIBUTION.md` (CC BY-SA 4.0) and carry Sample / ILLUSTRATIVE marks. A real stall name appears in the documentary Debe photo; it is not presented as a Juvay merchant.
 - No invented reviews, ratings, shops, or stats.

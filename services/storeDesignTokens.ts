@@ -59,3 +59,40 @@ export function heroSources(id: string): { src: string; srcSet: string; sizes: s
 
 export const STARTER_HERO_RE =
   /\/templates\/heroes\/(food|fashion|services|general|beauty|home|electronics|auto|doubles|street-food)(-960|-1440)?\.(jpg|png|webp)(\?.*)?$/;
+
+/** Relative luminance (sRGB, WCAG 2.x). */
+export function relativeLuminance(hex: string): number {
+  const raw = String(hex || '').trim().replace('#', '');
+  if (raw.length !== 3 && raw.length !== 6) return 0;
+  const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+  const ch = (i: number) => {
+    const n = parseInt(full.slice(i, i + 2), 16) / 255;
+    return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4);
+}
+
+export function contrastRatio(a: string, b: string): number {
+  const L1 = relativeLuminance(a);
+  const L2 = relativeLuminance(b);
+  const hi = Math.max(L1, L2);
+  const lo = Math.min(L1, L2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+export const AA_BODY = 4.5;
+export const AA_LARGE = 3;
+
+/** Composite a foreground (0–1 opacity) over a solid background; return #rrggbb. */
+export function compositeOver(fg: string, bg: string, opacity: number): string {
+  const parse = (h: string) => {
+    const raw = h.replace('#', '');
+    const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+  };
+  const [fr, fgG, fb] = parse(fg);
+  const [br, bgG, bb] = parse(bg);
+  const mix = (f: number, b: number) => Math.round(f * opacity + b * (1 - opacity));
+  const hex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${hex(mix(fr, br))}${hex(mix(fgG, bgG))}${hex(mix(fb, bb))}`;
+}
