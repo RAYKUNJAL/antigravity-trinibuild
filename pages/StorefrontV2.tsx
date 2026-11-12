@@ -15,6 +15,7 @@ import { SpinWheelPopup } from '../components/SpinWheelPopup';
 import type { Store, Product } from '../types';
 import { JuvayStorefront } from '../components/storefront/JuvayStorefront';
 import { storeToStorefrontModel, storeUsesStarter } from '../services/storeToStorefrontModel';
+import { storeJsonLd } from '../services/storeJsonLd';
 
 export const StorefrontV2: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -48,6 +49,7 @@ export const StorefrontV2: React.FC = () => {
     const [wamPending, setWamPending] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
+    const [reviewSummary, setReviewSummary] = useState<{ count: number; average: number | null; reviews: any[] }>({ count: 0, average: null, reviews: [] });
 
     // Discount State
     const [promoCode, setPromoCode] = useState('');
@@ -71,6 +73,20 @@ export const StorefrontV2: React.FC = () => {
                     setStore(storeData);
                     setProducts(storeData.products || []);
                     trackStoreView(storeData.id, storeData.name, (storeData as any).island || 'tt');
+                    const slugForReviews = storeData.slug || slug;
+                    if (slugForReviews) {
+                        fetch(`/api/stores/${encodeURIComponent(slugForReviews)}/reviews`)
+                            .then((r) => (r.ok ? r.json() : null))
+                            .then((body) => {
+                                if (!body) return;
+                                setReviewSummary({
+                                    count: Number(body.count) || 0,
+                                    average: body.average != null ? Number(body.average) : null,
+                                    reviews: Array.isArray(body.reviews) ? body.reviews : [],
+                                });
+                            })
+                            .catch(() => { /* stay at 0 / No reviews yet */ });
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load store:', error);
@@ -335,18 +351,37 @@ export const StorefrontV2: React.FC = () => {
     }
 
     if (storeUsesStarter(store)) {
-        const model = storeToStorefrontModel(store, products, isPreview ? 'merchant_preview' : 'published');
+        const model = storeToStorefrontModel({
+            ...store,
+            review_count: reviewSummary.count,
+            review_average: reviewSummary.average,
+            reviews: reviewSummary.reviews,
+        }, products, isPreview ? 'merchant_preview' : 'published');
         const seoTitle = model.seo?.title || `${store.name} · Juvay`;
         const seoDesc = model.seo?.description || store.description || `${store.name} on Juvay`;
-        const ogImage = model.hero?.image || model.logo || '';
+        const ogImage = model.hero?.image || model.logo || store.logo_url || '';
+        const pageUrl = typeof window !== 'undefined' ? window.location.href : `https://juvay.app/store/${store.slug}`;
+        const ld = storeJsonLd(model, pageUrl, { count: reviewSummary.count, average: reviewSummary.average });
         return (
             <>
                 <Helmet>
                     <title>{seoTitle}</title>
                     <meta name="description" content={seoDesc} />
+                    <link rel="canonical" href={`https://juvay.app/store/${store.slug}`} />
+                    <meta property="og:title" content={seoTitle} />
+                    <meta property="og:description" content={seoDesc} />
+                    <meta property="og:type" content="website" />
+                    <meta property="og:url" content={`https://juvay.app/store/${store.slug}`} />
                     {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:title" content={seoTitle} />
+                    <meta name="twitter:description" content={seoDesc} />
                     {ogImage ? <meta name="twitter:image" content={ogImage} /> : null}
                     {model.logo ? <link rel="icon" href={model.logo} /> : null}
+                    <script type="application/ld+json">{JSON.stringify(ld.store)}</script>
+                    {ld.products.map((node: object, i: number) => (
+                        <script key={i} type="application/ld+json">{JSON.stringify(node)}</script>
+                    ))}
                 </Helmet>
                 {isPreview && (
                     <div className="bg-yellow-500 text-gray-900 text-center py-3 px-4 text-sm font-bold">

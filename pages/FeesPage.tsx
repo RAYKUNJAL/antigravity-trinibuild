@@ -8,6 +8,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { publicRateCard, formatFeePercent, formatTtdCents, FEE_DEFAULTS } from '../services/juvayFees';
+import { YouKeepCalculator } from '../components/YouKeepCalculator';
 
 type Card = ReturnType<typeof publicRateCard>;
 
@@ -99,6 +100,8 @@ export default function FeesPage() {
               we do not claim that path is proven live.
             </p>
           </section>
+
+          <YouKeepCalculator defaultDollars={12} />
 
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Cash on delivery</h2>

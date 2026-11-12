@@ -157,6 +157,8 @@ const PageLayout = () => {
 import ScrollToTop from './components/ScrollToTop';
 const StorefrontV2 = lazy(() => import('./pages/StorefrontV2').then((m) => ({ default: m.StorefrontV2 })));
 const Storefront = lazy(() => import('./pages/Storefront').then((m) => ({ default: m.Storefront })));
+const OrderStatusPage = lazy(() => import('./pages/OrderStatusPage'));
+const StallSignPage = lazy(() => import('./pages/StallSignPage'));
 const TemplateGalleryLazy = lazy(() => import('./components/TemplateGallery').then((m) => ({ default: m.TemplateGallery })));
 
 const LocationLogger = () => {
@@ -452,9 +454,11 @@ const App: React.FC = () => {
             <Route path="/s/:shortSlug" element={<ShortSlugRedirect />} />
 
             {/* Storefront Routes - Using V2 as primary */}
+            <Route path="/store/:slug/sign" element={<Suspense fallback={<div style={{padding:24}}>Loading sign…</div>}><StallSignPage /></Suspense>} />
             <Route path="/store/:slug" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
             <Route path="/store/:id/v1" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><Storefront /></Suspense>} />
             <Route path="/store/preview" element={<Suspense fallback={<div style={{padding:24}}>Loading store…</div>}><StorefrontV2 /></Suspense>} />
+            <Route path="/order/:orderRef" element={<Suspense fallback={<div style={{padding:24}}>Loading order…</div>}><OrderStatusPage /></Suspense>} />
 
             {/* Unknown /admin/* — login wall, never public admin chrome */}
             <Route path="/admin/*" element={<Navigate to="/login" replace />} />

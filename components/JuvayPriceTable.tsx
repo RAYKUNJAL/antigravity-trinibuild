@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { JUVAY_PLANS, formatPlanPrice } from '../services/juvayPlans';
-import { fetchWamStatus } from '../services/wamStatus';
 
 /** One TTD table: Free / Starter / Business. Paid CTAs stay hidden until Wam is on. */
 export const JuvayPriceTable: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const [wamOn, setWamOn] = useState(false);
-
-  useEffect(() => {
-    fetchWamStatus().then((s) => setWamOn(s.configured));
-  }, []);
-
   return (
     <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${className}`}>
       {JUVAY_PLANS.map((plan) => (
@@ -45,16 +38,9 @@ export const JuvayPriceTable: React.FC<{ className?: string }> = ({ className = 
               >
                 Start free
               </Link>
-            ) : wamOn ? (
-              <Link
-                to={`/pricing/checkout?plan=${plan.id}`}
-                className="block w-full py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold text-center"
-              >
-                Continue to checkout
-              </Link>
             ) : (
               <p className="w-full py-3 rounded-xl bg-gray-50 text-gray-500 text-sm font-semibold text-center">
-                Bank payment setup in progress. Free listing stays 5 products.
+                Paid-plan checkout is not open yet. Free includes unlimited listings.
               </p>
             )}
           </div>

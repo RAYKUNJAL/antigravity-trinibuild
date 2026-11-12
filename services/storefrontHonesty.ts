@@ -72,6 +72,14 @@ export interface StorefrontModel {
   mode?: StorefrontMode;
   /** Merchant toggle — sold out for the day (food niches). */
   soldOutToday?: boolean;
+  /** Hosted store id — required to place an in-app order. */
+  storeId?: string;
+  slug?: string;
+  /** Merchant-typed ready-time estimate, minutes. Omit to hide. */
+  prepMinutes?: number | null;
+  /** Real reviews only. average is null when count is 0. */
+  reviews?: Array<{ rating: number; body?: string | null; created_at?: string }>;
+  reviewAverage?: number | null;
   /** Maps / directions URL for pickup spot. */
   mapDirectionsUrl?: string;
   /** Daily specials line (street food banner). */

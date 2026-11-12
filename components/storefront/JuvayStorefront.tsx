@@ -8,6 +8,8 @@ import {
   type SelectedModifier,
 } from '../../services/productModifiers';
 import { applyMerchantTheme, socialHref } from '../../services/merchantTheme';
+import { StoreCheckout, type CheckoutLine } from './StoreCheckout';
+import { loadSavedCart, saveCart, clearSavedCart } from '../../services/savedCart';
 import {
   announcementLine,
   closedFoodNextOpen,
@@ -93,11 +95,12 @@ const HeroPhoto: React.FC<{
 }> = ({ src, field, editable, onUpload, priority, fill }) => (
   <div style={{ position: fill ? 'absolute' : 'relative', inset: fill ? 0 : undefined, minHeight: fill ? undefined : '100%', height: fill ? undefined : '100%', background: field, overflow: 'hidden' }}>
     {src ? (
-      <img loading="lazy"
+      <img loading={priority ? 'eager' : 'lazy'}
         src={src}
         alt=""
         width={1600}
         height={900}
+        sizes="100vw"
         fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
@@ -480,6 +483,8 @@ export const JuvayStorefront: React.FC<{
   const [fulfill, setFulfill] = useState<'pickup' | 'cod' | ''>('');
   const [cashExact, setCashExact] = useState<'exact' | 'change' | ''>('');
   const [query, setQuery] = useState('');
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cartHydrated, setCartHydrated] = useState(false);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -592,6 +597,18 @@ export const JuvayStorefront: React.FC<{
     link.href = model.logo;
   }, [model.logo, model.mode]);
 
+  useEffect(() => {
+    if (!model.slug || cartHydrated) return;
+    const restored = loadSavedCart(model.slug, items);
+    if (restored.length) setCart(restored);
+    setCartHydrated(true);
+  }, [model.slug, items, cartHydrated]);
+
+  useEffect(() => {
+    if (!model.slug || !cartHydrated) return;
+    saveCart(model.slug, cart);
+  }, [cart, model.slug, cartHydrated]);
+
   const socials = [
     { key: 'instagram' as const, href: socialHref('instagram', model.social?.instagram) },
     { key: 'facebook' as const, href: socialHref('facebook', model.social?.facebook) },
@@ -649,7 +666,12 @@ export const JuvayStorefront: React.FC<{
               type="button"
               onClick={() => {
                 const url = typeof window !== 'undefined' ? window.location.href : '';
-                if (url && navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+                const text = `${model.storeName || ''} on Juvay`;
+                if (navigator.share) {
+                  navigator.share({ title: text, text, url }).catch(() => {});
+                  return;
+                }
+                window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank');
               }}
               style={{ background: 'none', border: 'none', color: p.text, fontSize: 12, cursor: 'pointer', minHeight: 32 }}
             >
@@ -691,10 +713,17 @@ export const JuvayStorefront: React.FC<{
       )}
 
       {shouldRenderBlock('trust', model) && chips.length > 0 ? (
-        <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface }}>
+        <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface, alignItems: 'center' }}>
           {chips.map((chip) => (
             <span key={chip} style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>{chip}</span>
           ))}
+          {model.wamLive ? (
+            <span style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>Wam checkout</span>
+          ) : null}
+          {model.acceptsCashPickup !== false ? (
+            <span style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>Cash on pickup</span>
+          ) : null}
+          <a href="/refund.html" style={{ fontSize: 12, color: p.accent, padding: '4px 10px' }}>Refund policy</a>
         </div>
       ) : null}
 
@@ -702,6 +731,9 @@ export const JuvayStorefront: React.FC<{
         <div style={{ padding: '16px 6vw', background: p.bg, borderBottom: `1px solid ${p.border}`, fontSize: 14 }}>
           {model.hours ? <div style={{ marginBottom: 6 }}><strong>Hours</strong> · {model.hours}</div> : null}
           {model.pickupAddress ? <div style={{ marginBottom: 6 }}><strong>Pickup</strong> · {model.pickupAddress}</div> : null}
+          {model.prepMinutes != null && model.prepMinutes > 0 ? (
+            <div style={{ marginBottom: 6 }}><strong>Usually ready</strong> · about {model.prepMinutes} minutes (estimate)</div>
+          ) : null}
           {model.mapDirectionsUrl ? (
             <a href={model.mapDirectionsUrl} target="_blank" rel="noreferrer" style={{ color: ISLAND.teal, fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
               Map / directions
@@ -890,10 +922,26 @@ export const JuvayStorefront: React.FC<{
         <section style={{ padding: '28px 6vw 40px', background: p.surface }}>
           <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 8px', textAlign: 'center' }}>Reviews</h2>
           {Number(model.reviewCount || 0) > 0 ? (
-            <p style={{ textAlign: 'center', color: p.muted, fontSize: 14 }}>{reviewBadge(model.reviewCount).label} on this shop.</p>
+            <div>
+              <p style={{ textAlign: 'center', color: p.muted, fontSize: 14 }}>
+                {reviewBadge(model.reviewCount).label} on this shop
+                {model.reviewAverage != null ? ` · rated ${Number(model.reviewAverage).toFixed(1)} from completed orders` : ''}.
+              </p>
+              {(model.reviews || []).length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, maxWidth: 560, margin: '16px auto 0' }}>
+                  {model.reviews!.slice(0, 8).map((rev, i) => (
+                    <li key={i} style={{ borderTop: `1px solid ${p.border}`, padding: '12px 0', fontSize: 14 }}>
+                      <div style={{ fontWeight: 700 }}>{rev.rating}/5</div>
+                      {rev.body ? <p style={{ margin: '6px 0 0', color: p.text }}>{rev.body}</p> : null}
+                      {rev.created_at ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{String(rev.created_at).slice(0, 10)}</p> : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           ) : (
             <div style={{ maxWidth: 520, margin: '12px auto 0', textAlign: 'center', padding: '28px 16px', border: `1px dashed ${p.border}`, borderRadius: 16, color: p.muted, fontSize: 14, lineHeight: 1.55 }}>
-              No customer reviews yet. This slot stays empty until real buyers leave feedback — we do not invent quotes or star ratings.
+              No reviews yet
             </div>
           )}
         </section>
@@ -939,7 +987,7 @@ export const JuvayStorefront: React.FC<{
         </footer>
       )}
 
-      {shouldRenderBlock('sticky', model) && heroGone && showCta && (
+      {((shouldRenderBlock('sticky', model) && heroGone && showCta) || cartCount > 0) && model.mode !== 'illustrative' && (
         <div
           style={{
             position: 'sticky',
@@ -967,10 +1015,10 @@ export const JuvayStorefront: React.FC<{
           </div>
           <button
             type="button"
-            onClick={() => (cartCount ? setCartOpen(true) : scrollToCatalog())}
+            onClick={() => (cartCount ? (setCartOpen(true), setCheckoutOpen(false)) : scrollToCatalog())}
             style={{ minHeight: 44, minWidth: 140, ...buy, fontWeight: 700 }}
           >
-            {cta}
+            {cartCount ? `View cart · ${face}` : cta}
           </button>
         </div>
       )}
@@ -1038,7 +1086,7 @@ export const JuvayStorefront: React.FC<{
                           fontSize: 13,
                         }}
                       >
-                        {opt.label}{opt.priceDelta ? ` +${opt.priceDelta}` : ''}
+                        {opt.label}{opt.priceDelta ? ` +${opt.priceDelta}` : ''}{opt.soldOut ? ' · Sold out' : ''}
                       </button>
                     );
                   })}
@@ -1057,10 +1105,23 @@ export const JuvayStorefront: React.FC<{
                 picker.modifierGroups?.length ? pickedMods : undefined,
                 starter.countOrder ? pickQty : 1,
               )}
-              style={{ ...SMALL_CTA, width: '100%', height: 48, ...buy, fontSize: 15 }}
+              style={{ ...SMALL_CTA, width: '100%', height: 48, ...buy, fontSize: 15, position: 'sticky', bottom: 0 }}
             >
-              Add{starter.countOrder ? ` · ${pickQty}` : ''}
+              {(() => {
+                const unit = (Number((picker.variants?.find((v) => v.id === pickedVariant)?.price) ?? picker.price) || 0) + sumModifierDeltas(pickedMods);
+                const qty = starter.countOrder ? pickQty : 1;
+                const priced = formatPrice(model, unit * qty);
+                return priced ? `Add to cart · ${priced}` : (starter.countOrder ? `Add · ${pickQty}` : 'Add to cart');
+              })()}
             </button>
+            {wa ? (
+              <a
+                href={waHref(wa, `Hi, I'd like to order ${starter.countOrder ? pickQty : 1}× ${picker.name} from ${model.storeName}`)}
+                style={{ display: 'grid', placeItems: 'center', minHeight: 44, marginTop: 8, color: ISLAND.teal, fontWeight: 700, textDecoration: 'none' }}
+              >
+                Order on WhatsApp
+              </a>
+            ) : null}
           </div>
         </div>
       )}
@@ -1121,19 +1182,52 @@ export const JuvayStorefront: React.FC<{
               ) : null}
             </div>
             <div style={{ padding: 16, borderTop: `1px solid ${p.border}` }}>
-              <div style={{ marginBottom: 10, fontWeight: 700 }}>Face total {face}</div>
-              {wa ? (
-                <a
-                  href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => {
-                    const mods = formatSelectedModifiers(l.selectedModifiers);
-                    return `${l.item.name} x${l.qty}${mods ? ` (${mods})` : ''}`;
-                  }).join('; ')}. ${face}${fulfill === 'cod' ? ' · Cash on delivery' : fulfill === 'pickup' ? ' · Cash on pickup' : ''}`)}
-                  style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: p.accent, color: p.accentText, textDecoration: 'none', fontWeight: 700 }}
-                >
-                  WhatsApp this order
-                </a>
+              {checkoutOpen ? (
+                <StoreCheckout
+                  model={model}
+                  lines={cart as CheckoutLine[]}
+                  onBack={() => setCheckoutOpen(false)}
+                  colors={{ accent: p.accent, accentText: p.accentText, text: p.text, muted: p.muted, border: p.border, surface: p.surface }}
+                  onPlaced={(result) => {
+                    clearSavedCart(model.slug || '');
+                    setCart([]);
+                    setCartOpen(false);
+                    setCheckoutOpen(false);
+                    const path = `/order/${encodeURIComponent(result.order_ref)}`;
+                    if (result.vendor_whatsapp) {
+                      // Buyer can tell the shop from the confirmation page.
+                    }
+                    window.location.href = path;
+                  }}
+                />
               ) : (
-                <div style={{ fontSize: 13, color: p.muted }}>No WhatsApp on this shop. Pay on the rails that are on.</div>
+                <>
+                  <div style={{ marginBottom: 10, fontWeight: 700 }}>Face total {face}</div>
+                  {model.storeId && cart.length > 0 && model.mode !== 'illustrative' ? (
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutOpen(true)}
+                      style={{ display: 'grid', placeItems: 'center', width: '100%', minHeight: 48, background: p.accent, color: p.accentText, border: 'none', fontWeight: 700, marginBottom: 8 }}
+                    >
+                      Proceed to checkout
+                    </button>
+                  ) : null}
+                  {wa ? (
+                    <a
+                      href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => {
+                        const mods = formatSelectedModifiers(l.selectedModifiers);
+                        return `${l.item.name} x${l.qty}${mods ? ` (${mods})` : ''}`;
+                      }).join('; ')}. ${face}${fulfill === 'cod' ? ' · Cash on delivery' : fulfill === 'pickup' ? ' · Cash on pickup' : ''}`)}
+                      style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: 'transparent', color: p.text, border: `1px solid ${p.border}`, textDecoration: 'none', fontWeight: 700 }}
+                    >
+                      WhatsApp this order
+                    </a>
+                  ) : (
+                    !model.storeId ? (
+                      <div style={{ fontSize: 13, color: p.muted }}>No WhatsApp on this shop. Pay on the rails that are on.</div>
+                    ) : null
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1168,13 +1262,26 @@ const CatalogCard: React.FC<{
   return (
     <article>
       <div
-        aria-hidden
         style={{
           height: large ? 240 : 180,
-          background: item.imageUrl ? `center/cover no-repeat url(${item.imageUrl})` : p.field,
+          background: p.field,
           borderRadius: 6,
+          overflow: 'hidden',
         }}
-      />
+      >
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            loading="lazy"
+            decoding="async"
+            width={800}
+            height={large ? 240 : 180}
+            sizes="(max-width: 480px) 100vw, (max-width: 800px) 50vw, 400px"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : null}
+      </div>
       <div style={{ paddingTop: 10 }}>
         <h3 style={{ margin: 0, fontFamily: p.headingFont, fontSize: 16, fontWeight: 500 }}>{item.name}</h3>
         {item.compatibilityNote ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{item.compatibilityNote}</p> : null}
@@ -1183,8 +1290,8 @@ const CatalogCard: React.FC<{
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           {price ? <span style={{ color: ISLAND.pepper, fontWeight: 600 }}>{price}</span> : <span />}
           {sellable ? (
-            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 72, background: p.accent, color: p.accentText, border: 'none' }}>
-              {needsVariant ? 'Pick' : 'Add'}
+            <button type="button" onClick={onAdd} style={{ ...SMALL_CTA, minWidth: 88, background: p.accent, color: p.accentText, border: 'none' }}>
+              {needsVariant ? 'Pick options' : (price ? `Add · ${price}` : 'Add to cart')}
             </button>
           ) : (
             <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>

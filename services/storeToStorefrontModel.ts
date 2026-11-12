@@ -38,7 +38,7 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
         specs: mapProductSpecs(p.specs || p.specifications),
         qty,
         sku: String(p.sku || '').trim() || undefined,
-        inStock: qty === 0 || p.in_stock === false || p.inStock === false ? false : true,
+        inStock: qty === 0 || p.sold_out === true || p.soldOut === true || p.in_stock === false || p.inStock === false ? false : true,
         modifierGroups: modifiers.length ? modifiers : undefined,
       };
     });
@@ -79,7 +79,14 @@ export function storeToStorefrontModel(store: any, products: any[] = [], mode: S
     specialty: theme.specialty || '',
     hours,
     nextOpen: theme.next_open || '',
-    isOpen: typeof theme.is_open === 'boolean' ? theme.is_open : null,
+    isOpen: typeof store?.open_now === 'boolean' ? store.open_now : (typeof theme.is_open === 'boolean' ? theme.is_open : null),
+    prepMinutes: store?.prep_minutes != null && Number.isFinite(Number(store.prep_minutes)) ? Number(store.prep_minutes) : (theme.prep_minutes != null && Number.isFinite(Number(theme.prep_minutes)) ? Number(theme.prep_minutes) : null),
+    storeId: store?.id ? String(store.id) : undefined,
+    slug: store?.slug ? String(store.slug) : undefined,
+    reviews: Array.isArray(store?.reviews) ? store.reviews : undefined,
+    reviewAverage: store?.review_average != null && Number(store.review_count || store.reviewCount) > 0
+      ? Number(store.review_average)
+      : null,
     pickupAddress,
     deliveryAreas: theme.delivery_areas || store?.delivery_areas || '',
     whatsappE164,

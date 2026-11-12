@@ -5,6 +5,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
+import { PremiumOffer } from '../components/PremiumOffer';
+import { YouKeepCalculator } from '../components/YouKeepCalculator';
 import { FREE_LISTING_LIMIT } from '../services/juvayPlans';
 
 export default function PricingPage() {
@@ -16,14 +18,20 @@ export default function PricingPage() {
             Start Free. Bank payment setup in progress.
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            One TTD table: Free, Starter, Business. Cash pickup and COD on Free.
-            No USD menu. No 0% commission claim.
+            Free is free, with unlimited listings and 0% on cash. Premium is the year-end paid offer
+            at TT$49/month for three months, then TT$79, with a 2.5% online fee. Checkout for paid plans stays off until it is opened.
           </p>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-8">
-        <JuvayPriceTable />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <JuvayPriceTable />
+          </div>
+          <PremiumOffer />
+          <YouKeepCalculator defaultDollars={100} planSlug="premium" />
+        </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
