@@ -388,9 +388,10 @@ function mountStoreCoreRoutes(app, { pool, auth, isWamConfigured }) {
     const subtotalCents = lineSubtotalCents(normalizedItems);
     if (subtotalCents <= 0) return res.status(400).json({ error: 'Subtotal must be positive' });
 
-    const deliveryFee = Math.round(Number(body.delivery_fee_cents != null
+    // Never invent a delivery fee. 0 unless the merchant (or client) sent a real amount.
+    const deliveryFee = Math.max(0, Math.round(Number(body.delivery_fee_cents != null
       ? body.delivery_fee_cents
-      : (Number(body.delivery_fee) || 0) * 100)) || (fulfillment === 'delivery' && paymentMethod !== 'cash_pickup' ? 2500 : 0);
+      : (Number(body.delivery_fee) || 0) * 100)) || 0);
 
     try {
       const info = await resolveStorePlan(pool, storeId);
