@@ -481,6 +481,17 @@ export const JuvayDashboard: React.FC = () => {
           <YouKeepCalculator defaultDollars={12} compact />
         </div>
 
+        <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-5">
+          <h2 className="text-lg font-bold text-gray-900">Bring my store over</h2>
+          <p className="text-sm text-gray-500 mt-1">Import a public website, a CSV, or photos as drafts you review. Every seller gets 5 free photo listings. Website and CSV import come with Premium.</p>
+          <Link
+            to="/import-store"
+            className="inline-flex mt-4 min-h-[44px] items-center rounded-xl bg-gray-900 px-4 text-sm font-bold text-white"
+          >
+            Open import
+          </Link>
+        </div>
+
         <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
           <h2 className="text-lg font-bold text-gray-900">Free stall QR sign</h2>
           <p className="text-xs text-gray-500">Print this and hang it at the stall. Buyers scan to open your shop.</p>

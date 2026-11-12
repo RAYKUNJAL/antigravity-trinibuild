@@ -66,7 +66,7 @@ export const CatalogCard: React.FC<{
           ) : (
             <div style={{ width: '100%', height: '100%', background: p.field }} />
           )}
-          {sample ? (
+          {sample && model.mode !== 'illustrative' ? (
             <span
               style={{
                 position: 'absolute',
@@ -82,7 +82,7 @@ export const CatalogCard: React.FC<{
                 borderRadius: 4,
               }}
             >
-              Sample item
+              Preview
             </span>
           ) : null}
         </div>
@@ -105,8 +105,11 @@ export const CatalogCard: React.FC<{
           {item.specs ? <p style={{ margin: '4px 0 0', fontSize: 13, color: p.muted }}>{item.specs}</p> : null}
           {itemStockLabel(item) ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</p> : null}
           <div style={{ marginTop: 8, fontSize: 15, fontWeight: 600, color: p.text }}>
-            {sample && price ? <span style={{ fontWeight: 500, color: p.muted, marginRight: 6 }}>Sample</span> : null}
-            {price ? <span>{price}</span> : <span style={{ fontWeight: 500, color: p.muted }}>Ask the shop</span>}
+            {price ? <span>{price}</span> : (
+              <span style={{ fontWeight: 500, color: p.muted }}>
+                {model.mode === 'illustrative' || sample ? 'Add your price' : 'Ask the shop'}
+              </span>
+            )}
           </div>
         </div>
       </button>
@@ -134,7 +137,7 @@ export const CatalogCard: React.FC<{
             {needsVariant ? 'Choose options' : price ? `Add to cart · ${price}` : 'Add to cart'}
           </button>
         ) : sample ? (
-          <div style={{ fontSize: 12, color: p.muted }}>Layout only — not for sale.</div>
+          <div style={{ fontSize: 12, color: p.muted }}>Layout only</div>
         ) : (
           <span style={{ fontSize: 13, color: p.muted }}>Sold out</span>
         )}

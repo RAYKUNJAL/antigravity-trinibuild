@@ -665,8 +665,8 @@ export const JuvayStorefront: React.FC<{
       {p.fontHref ? <link rel="stylesheet" href={p.fontHref} /> : null}
 
       {isIllustrative && (
-        <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, padding: '6px 12px' }}>
-          ILLUSTRATIVE — preview uses labeled sample items. A published shop starts empty.
+        <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 11, fontWeight: 700, letterSpacing: 1.4, padding: '8px 12px', textTransform: 'uppercase' }}>
+          Preview
         </div>
       )}
 
@@ -936,12 +936,12 @@ export const JuvayStorefront: React.FC<{
             }}
           >
             <div style={{ fontSize: 12, letterSpacing: 0.4, opacity: 0.9 }}>
-              {model.mode === 'illustrative' ? 'ILLUSTRATIVE banner' : 'From the shop'}
+              {model.mode === 'illustrative' ? 'Your banner' : 'From the shop'}
             </div>
             <div style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, maxWidth: '36ch' }}>
               {model.announcement?.trim()
                 || (model.mode === 'illustrative'
-                  ? 'Your promo lands here — typed by you, never invented.'
+                  ? 'Your promo goes here.'
                   : model.announcement)}
             </div>
             <div style={{ fontSize: 13, opacity: 0.92 }}>Cash pickup · COD{model.wamLive ? ' · Wam online' : ''}</div>
@@ -981,7 +981,6 @@ export const JuvayStorefront: React.FC<{
                     <div>
                       <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 500 }}>
                         {item.name}
-                        {isSampleItem(item) ? <span style={{ marginLeft: 8, fontSize: 10, fontFamily: p.bodyFont, letterSpacing: 0.1, textTransform: 'uppercase', color: p.muted }}>Sample</span> : null}
                       </div>
                       {item.description ? <div style={{ fontSize: 13, color: p.muted, maxWidth: '40ch', marginTop: 4, lineHeight: 1.45 }}>{item.description}</div> : null}
                     </div>
@@ -991,8 +990,8 @@ export const JuvayStorefront: React.FC<{
                     {itemStockLabel(item) ? <span style={{ fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</span> : null}
                     {itemIsSellable(item) && !isSampleItem(item) && model.mode !== 'illustrative' ? (
                       <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, ...buy }}>Add</button>
-                    ) : isSampleItem(item) ? (
-                      <span style={{ fontSize: 12, color: p.muted }}>Sample</span>
+                    ) : isSampleItem(item) || model.mode === 'illustrative' ? (
+                      <span style={{ fontSize: 12, color: p.muted }}>Layout only</span>
                     ) : (
                       <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
                     )}
@@ -1391,9 +1390,9 @@ export function illustrativeModel(templateId: StarterId): StorefrontModel {
         : 'Add your name, island, hours, and priced items. Publish when you choose.' },
     ],
     faq: [
-      { q: 'Is this a real shop?', a: 'No. This preview is labeled ILLUSTRATIVE. It is a layout, not a merchant.' },
+      { q: 'Is this a real shop?', a: 'No. This is a preview of the layout, not a live shop.' },
       { q: 'How do Caribbean buyers pay?', a: 'Cash when you collect, or cash on delivery if that option is on. Wam online only when configured — never PayPal.' },
-      { q: 'Where are the products?', a: 'The items on this preview are labeled Sample and are not for sale. A published shop only shows what you add.' },
+      { q: 'Where are the products?', a: 'The items here are placeholders so you can see the layout. A published shop only shows what you add.' },
     ],
   };
 }

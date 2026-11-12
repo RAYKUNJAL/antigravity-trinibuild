@@ -14,6 +14,21 @@ import { StickyMobileCta } from '../components/landing/StickyMobileCta';
 import { VisionDemo } from '../components/landing/VisionDemo';
 import { FEE_DEFAULTS, formatFeePercent, formatTtdCents } from '../services/juvayFees';
 
+function useDesktopHero() {
+  const [desktop, setDesktop] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+  useLayoutEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => setDesktop(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  return desktop;
+}
+
+
 const HOW = [
   {
     n: '1',
@@ -84,6 +99,8 @@ export const LandingPageCRO: React.FC = () => {
     setProgress(0.5 + t * 0.5);
   }, []);
 
+  const desktopHero = useDesktopHero();
+
   useLayoutEffect(() => {
     removeLcpShell();
   }, []);
@@ -135,33 +152,89 @@ export const LandingPageCRO: React.FC = () => {
       </a>
 
       <div className="bg-[#0b1f24] font-sans text-[#141414] pb-20 md:pb-0">
-        {/* Sticky 3D / poster stage, with hero copy and scroll story overlaid */}
+        {/* Mobile: compact CTA near the top, then a real-height stall (poster fallback stays). */}
+        {!desktopHero ? (
+        <div>
+          <section className="bg-[#0b1f24] px-5 pb-4 pt-20 text-[#fff8f0] sm:px-8">
+            <div id="juvay-hero-copy" className="mx-auto w-full max-w-xl">
+              <p className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#fde68a]">
+                The Amazon for the Caribbean
+              </p>
+              <h1 className="mt-4 text-[2.05rem] font-black leading-[1.08] tracking-tight">
+                Your free store.
+                <br />
+                <span className="text-[#f5c14a]">No credit card.</span>
+              </h1>
+              <div id="juvay-hero-cta" className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/create-store"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-[#b50f21] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                >
+                  Create your free store
+                </Link>
+                <Link
+                  to="/templates"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-6 py-3 text-base font-bold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                >
+                  See templates
+                </Link>
+              </div>
+            </div>
+          </section>
+          <div className="relative h-[58svh] min-h-[380px] w-full">
+            <HeroStage progress={progress} />
+          </div>
+          <div className="bg-[#0b1f24] px-5 pb-10 pt-6 text-[#fff8f0] sm:px-8">
+            <div className="mx-auto w-full max-w-xl">
+              <p className="text-base leading-relaxed text-[#efe4d0]">
+                Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
+                and market stalls, boutiques. Unlimited listings. Cash pickup and cash on delivery are 0% commission. Sell
+                online with Wam when you are ready.
+              </p>
+              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#efe4d0]">
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> Unlimited listings
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> No credit card
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> 0% on cash
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> Be one of the first sellers
+                </li>
+              </ul>
+              <p className="mt-4 text-sm text-[#c9b89a]">
+                Free to start. Juvay takes {freePct} only on online Wam sales, capped at{' '}
+                {formatTtdCents(FEE_DEFAULTS.juvayFeeCapCents)}.
+              </p>
+            </div>
+          </div>
+          <StorySections onProgress={onProgress} />
+        </div>
+        ) : (
         <div className="relative pb-[100svh] -mb-[100svh]">
           <div className="sticky top-0 z-0 h-[100svh] w-full">
-            {/* Solid left column on desktop so copy never sits on the stall. */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[46%] bg-[#0b1f24] lg:block" />
-            <div className="h-full w-full lg:absolute lg:inset-y-0 lg:left-[46%] lg:w-[54%]">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[46%] bg-[#0b1f24]" />
+            <div className="absolute inset-y-0 left-[46%] w-[54%]">
               <HeroStage progress={progress} />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#0b1f24] to-transparent lg:hidden" />
           </div>
 
           <div className="relative z-10 -mt-[100svh]">
-            <section className="flex min-h-[100svh] flex-col lg:grid lg:grid-cols-[minmax(0,46%)_minmax(0,54%)]">
-              <div
-                id="juvay-hero-copy"
-                className="mt-auto bg-[#0b1f24] px-5 pb-8 pt-20 text-[#fff8f0] sm:px-8 lg:mt-0 lg:flex lg:bg-[#0b1f24] lg:items-center lg:px-12 lg:pt-24 lg:pb-16"
-              >
+            <section className="grid min-h-[100svh] grid-cols-[minmax(0,46%)_minmax(0,54%)]">
+              <div id="juvay-hero-copy" className="flex bg-[#0b1f24] items-center px-12 pt-24 pb-16 text-[#fff8f0]">
                 <div className="mx-auto w-full max-w-xl">
                   <p className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#fde68a]">
                     The Amazon for the Caribbean
                   </p>
-                  <h1 className="mt-5 text-[2.05rem] font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                  <h1 className="mt-5 text-6xl font-black leading-[1.08] tracking-tight">
                     Your free store.
                     <br />
                     <span className="text-[#f5c14a]">No credit card.</span>
                   </h1>
-                  <p className="mt-5 text-base leading-relaxed text-[#efe4d0] sm:text-lg">
+                  <p className="mt-5 text-lg leading-relaxed text-[#efe4d0]">
                     Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
                     and market stalls, boutiques. Unlimited listings. Cash pickup and cash on delivery are 0% commission. Sell
                     online with Wam when you are ready.
@@ -200,12 +273,13 @@ export const LandingPageCRO: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="pointer-events-none hidden lg:block" aria-hidden />
+              <div className="pointer-events-none" aria-hidden />
             </section>
 
             <StorySections onProgress={onProgress} />
           </div>
         </div>
+        )}
 
         {/* How it works — 3 clear steps, solid surface after the 3D story */}
         <section id="how-it-works" className="scroll-mt-20 bg-[#FFF8F0] px-4 py-20 sm:px-6 lg:px-8">
@@ -227,6 +301,41 @@ export const LandingPageCRO: React.FC = () => {
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+
+        {/* Lead magnets — honest, not a live Premium checkout */}
+        <section id="bring-store" className="bg-[#FFF8F0] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-[#e8dcc8] bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0d9488]">Free for every seller</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-[#141414]">5 free photo listings</h2>
+              <p className="mt-3 text-[#4a453d] leading-relaxed">
+                Snap a photo to draft a name and description. You type the TT$ price. Vision never sets the price. After five,
+                unlimited photo listings come with Premium.
+              </p>
+              <Link
+                to="/create-store"
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-[#ce1126] px-5 text-sm font-bold text-white hover:bg-[#b50f21]"
+              >
+                Try a photo listing
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-[#e8dcc8] bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0d9488]">Coming with Premium</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-[#141414]">Bring my store over</h2>
+              <p className="mt-3 text-[#4a453d] leading-relaxed">
+                Point us at a public store URL, upload a CSV, or add bulk photos. Everything lands as a draft you review and
+                confirm. Prices are kept only when they are on the source or typed by you.
+              </p>
+              <Link
+                to="/import-store"
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-[#141414] px-5 text-sm font-bold text-[#141414] hover:bg-[#141414] hover:text-white"
+              >
+                See how import works
+              </Link>
+            </div>
           </div>
         </section>
 

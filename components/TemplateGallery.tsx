@@ -109,7 +109,6 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
           </button>
           <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
             <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{starter.name}</div>
-            <div style={{ color: '#b8aea0', fontSize: 11, marginTop: 1 }}>ILLUSTRATIVE · Sample items are labeled</div>
           </div>
           <div className="juvay-preview-chrome" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
@@ -189,7 +188,7 @@ export const TemplateGallery: React.FC<{ onSelectTemplate?: (template: { id: str
           A professional shop, ready for your photos.
         </h1>
         <p style={{ margin: '0 0 28px', color: '#5C574E', fontSize: 16, lineHeight: 1.6 }}>
-          Ten original Caribbean starters. Previews use clearly labeled sample items. A published store only shows what you add — and a small “Sample image” mark stays on starter art until you replace it.
+          Ten original Caribbean starters. Open a preview to see the layout. A published store only shows what you add.
         </p>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #d9d1c5', background: '#fff', borderRadius: RADIUS.sm, padding: '0 14px', maxWidth: 400, margin: '0 auto', minHeight: 48 }}>
           <Search size={16} color="#6b6256" />

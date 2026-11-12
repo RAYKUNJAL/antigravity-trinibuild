@@ -44,10 +44,10 @@ function sourcesFor(model: StorefrontModel, src: string): { src: string; srcSet?
 }
 
 export const SampleImageLabel: React.FC<{ model: StorefrontModel; src: string }> = ({ model, src }) => {
-  if (!showSampleImageLabel(model, src) && model.mode !== 'illustrative') return null;
+  if (model.mode === 'illustrative') return null;
+  if (!showSampleImageLabel(model, src)) return null;
   if (!src) return null;
-  // Published / preview: the honesty chip. Illustrative already has a page banner; still mark the photo.
-  const text = model.mode === 'illustrative' ? 'ILLUSTRATIVE' : 'Sample image';
+  const text = 'Starter image';
   return (
     <span
       style={{

@@ -130,6 +130,7 @@ export function featuredItems(model: StorefrontModel): StorefrontItem[] {
   const marked = live.filter((item) => item.featured);
   const pool = marked.length ? marked : live;
   if (model.templateId === 'home') {
+    if (model.mode === 'illustrative') return pool.slice(0, 1);
     return pool.filter((item) => item.price != null && Number.isFinite(Number(item.price))).slice(0, 1);
   }
   return pool.slice(0, 3);

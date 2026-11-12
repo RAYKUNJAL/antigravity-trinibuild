@@ -1,30 +1,31 @@
 /**
- * Sample catalog used ONLY in illustrative (gallery / template preview) mode.
- * Every row is named and badged as a sample. Never attached to published stores.
+ * Placeholder catalog used ONLY in gallery / template preview mode.
+ * One page-level Preview banner covers honesty — item names stay neutral,
+ * and no prices are shown. Never attached to published stores.
  */
 import type { StarterId } from './storeStarters';
 import type { StorefrontItem } from './storefrontHonesty';
 import { heroStem } from './storeDesignTokens';
 
-export const SAMPLE_ITEM_NOTE = 'Sample item for layout only — not for sale.';
+export const SAMPLE_ITEM_NOTE = 'Placeholder for layout — add your own items when you publish.';
 
 function sample(
   id: string,
   name: string,
-  price: number,
   imageUrl: string,
   extra: Partial<StorefrontItem> = {},
 ): StorefrontItem {
+  const { price: _ignoredPrice, ...rest } = extra;
   return {
     id,
     name,
-    price,
     imageUrl,
-    description: SAMPLE_ITEM_NOTE,
+    description: rest.description ?? SAMPLE_ITEM_NOTE,
     isSample: true,
-    featured: extra.featured ?? false,
-    category: extra.category,
-    ...extra,
+    featured: rest.featured ?? false,
+    category: rest.category,
+    ...rest,
+    price: null,
   };
 }
 
@@ -42,63 +43,63 @@ export function illustrativeSampleItems(id: StarterId): StorefrontItem[] {
   switch (id) {
     case 'food':
       return [
-        sample('sample-food-1', 'Sample roti plate', 45, a, { featured: true, category: 'Mains' }),
-        sample('sample-food-2', 'Sample wrap', 18, b, { category: 'Mains' }),
-        sample('sample-food-3', 'Sample juice', 12, c, { category: 'Drinks' }),
+        sample('sample-food-1', 'Plate', a, { featured: true, category: 'Mains' }),
+        sample('sample-food-2', 'Wrap', b, { category: 'Mains' }),
+        sample('sample-food-3', 'Drink', c, { category: 'Drinks' }),
       ];
     case 'doubles':
       return [
-        sample('sample-doubles-1', 'Sample wrap', 12, a, { featured: true, category: 'Wraps' }),
-        sample('sample-doubles-2', 'Sample wrap, plain', 10, b, { category: 'Wraps' }),
-        sample('sample-doubles-3', 'Sample wrap, slight pepper', 12, c, { category: 'Wraps' }),
+        sample('sample-doubles-1', 'Wrap', a, { featured: true, category: 'Wraps' }),
+        sample('sample-doubles-2', 'Wrap, plain', b, { category: 'Wraps' }),
+        sample('sample-doubles-3', 'Wrap, slight pepper', c, { category: 'Wraps' }),
       ];
     case 'street_food':
       return [
-        sample('sample-street-1', 'Sample corn soup', 25, a, { featured: true, category: 'Today' }),
-        sample('sample-street-2', 'Sample fried chicken', 30, b, { category: 'Plates' }),
-        sample('sample-street-3', 'Sample bake', 22, c, { category: 'Plates' }),
+        sample('sample-street-1', 'Soup', a, { featured: true, category: 'Today' }),
+        sample('sample-street-2', 'Plate', b, { category: 'Plates' }),
+        sample('sample-street-3', 'Bake', c, { category: 'Plates' }),
       ];
     case 'fashion':
       return [
-        sample('sample-fashion-1', 'Sample linen shirt', 180, a, { featured: true, category: 'The rack' }),
-        sample('sample-fashion-2', 'Sample leather bag', 320, b, { featured: true, category: 'The rack' }),
-        sample('sample-fashion-3', 'Sample scarf', 90, c, { category: 'The rack' }),
+        sample('sample-fashion-1', 'Shirt', a, { featured: true, category: 'The rack' }),
+        sample('sample-fashion-2', 'Bag', b, { featured: true, category: 'The rack' }),
+        sample('sample-fashion-3', 'Scarf', c, { category: 'The rack' }),
       ];
     case 'services':
       return [
-        sample('sample-svc-1', 'Sample haircut', 80, a, { featured: true, category: 'Chair' }),
-        sample('sample-svc-2', 'Sample trim', 40, b, { category: 'Chair' }),
-        sample('sample-svc-3', 'Sample consultation', 60, c, { category: 'Chair' }),
+        sample('sample-svc-1', 'Appointment', a, { featured: true, category: 'Chair' }),
+        sample('sample-svc-2', 'Follow-up', b, { category: 'Chair' }),
+        sample('sample-svc-3', 'Consultation', c, { category: 'Chair' }),
       ];
     case 'general':
       return [
-        sample('sample-gen-1', 'Sample grocery bag', 15, a, { featured: true, category: 'Shop' }),
-        sample('sample-gen-2', 'Sample mug', 45, b, { category: 'Shop' }),
-        sample('sample-gen-3', 'Sample tote', 60, c, { category: 'Shop' }),
+        sample('sample-gen-1', 'Bag', a, { featured: true, category: 'Shop' }),
+        sample('sample-gen-2', 'Mug', b, { category: 'Shop' }),
+        sample('sample-gen-3', 'Tote', c, { category: 'Shop' }),
       ];
     case 'beauty':
       return [
-        sample('sample-beauty-1', 'Sample tonic', 85, a, { featured: true, category: 'Kits' }),
-        sample('sample-beauty-2', 'Sample serum', 110, b, { featured: true, category: 'Kits' }),
-        sample('sample-beauty-3', 'Sample compact', 70, c, { category: 'Kits' }),
+        sample('sample-beauty-1', 'Bottle', a, { featured: true, category: 'Kits' }),
+        sample('sample-beauty-2', 'Jar', b, { featured: true, category: 'Kits' }),
+        sample('sample-beauty-3', 'Compact', c, { category: 'Kits' }),
       ];
     case 'home':
       return [
-        sample('sample-home-1', 'Sample armchair', 1200, a, { featured: true, category: 'Furniture' }),
-        sample('sample-home-2', 'Sample throw', 180, b, { category: 'Furniture' }),
-        sample('sample-home-3', 'Sample side table', 450, c, { category: 'Furniture' }),
+        sample('sample-home-1', 'Chair', a, { featured: true, category: 'Furniture' }),
+        sample('sample-home-2', 'Throw', b, { category: 'Furniture' }),
+        sample('sample-home-3', 'Table', c, { category: 'Furniture' }),
       ];
     case 'electronics':
       return [
-        sample('sample-el-1', 'Sample phone', 2200, a, { featured: true, category: 'Gadgets', specs: 'Sample specs — merchant types the real ones.' }),
-        sample('sample-el-2', 'Sample earbuds', 450, b, { category: 'Gadgets' }),
-        sample('sample-el-3', 'Sample case', 80, c, { category: 'Gadgets' }),
+        sample('sample-el-1', 'Device', a, { featured: true, category: 'Gadgets', specs: 'Add your specs when you list the real item.' }),
+        sample('sample-el-2', 'Accessory', b, { category: 'Gadgets' }),
+        sample('sample-el-3', 'Case', c, { category: 'Gadgets' }),
       ];
     case 'auto':
       return [
-        sample('sample-auto-1', 'Sample disc', 280, a, { featured: true, category: 'Parts', compatibilityNote: 'Fit is a merchant note. This is a sample.' }),
-        sample('sample-auto-2', 'Sample wrench', 65, b, { category: 'Parts' }),
-        sample('sample-auto-3', 'Sample accessory', 90, c, { category: 'Parts' }),
+        sample('sample-auto-1', 'Part', a, { featured: true, category: 'Parts', compatibilityNote: 'Fit is a note you type on the real listing.' }),
+        sample('sample-auto-2', 'Tool', b, { category: 'Parts' }),
+        sample('sample-auto-3', 'Accessory', c, { category: 'Parts' }),
       ];
     default:
       return [];

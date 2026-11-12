@@ -35,7 +35,7 @@ function IllustrativeMark() {
         padding: '4px 8px',
       }}
     >
-      ILLUSTRATIVE
+      Preview
     </span>
   );
 }
@@ -263,7 +263,7 @@ export function StarterGalleryCard({ id }: { id: StarterId }) {
           padding: '4px 8px',
         }}
       >
-        ILLUSTRATIVE
+        Preview
       </span>
     </div>
   );

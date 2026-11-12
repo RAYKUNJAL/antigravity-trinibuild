@@ -48,7 +48,7 @@ export const ProductPage: React.FC<{
           This item is not on the shop
         </h1>
         <p style={{ color: p.muted, maxWidth: '42ch', lineHeight: 1.6 }}>
-          It may have been removed, or the link is for a sample from a template preview.
+          It may have been removed, or the link is from a template preview.
         </p>
       </div>
     );
@@ -58,8 +58,11 @@ export const ProductPage: React.FC<{
   const sellable = itemIsSellable(item) && !sample;
   const variant = (item.variants || []).find((v) => v.id === variantId);
   const groups = item.modifierGroups || [];
-  const unit = (Number(variant?.price ?? item.price) || 0) + sumModifierDeltas(mods);
-  const priceLabel = formatPrice(model, unit) || formatPrice(model, item.price);
+  const basePrice = variant?.price ?? item.price;
+  const unit = basePrice == null || !Number.isFinite(Number(basePrice))
+    ? null
+    : Number(basePrice) + sumModifierDeltas(mods);
+  const priceLabel = unit == null ? null : formatPrice(model, unit);
   const badge = reviewBadge(model.reviewCount);
   const modCheck = groups.length ? validateModifierSelection(groups, mods) : { ok: true };
   const needsVariant = !!(item.variants && item.variants.length && !variant);
@@ -126,7 +129,7 @@ export const ProductPage: React.FC<{
             ) : (
               <div style={{ width: '100%', height: '100%', background: p.field }} />
             )}
-            {sample || (img && img.includes('/templates/')) ? (
+            {model.mode !== 'illustrative' && (sample || (img && img.includes('/templates/'))) ? (
               <span
                 style={{
                   position: 'absolute',
@@ -142,7 +145,7 @@ export const ProductPage: React.FC<{
                   borderRadius: 4,
                 }}
               >
-                {sample ? 'Sample item' : 'Sample image'}
+                Preview
               </span>
             ) : null}
           </div>
@@ -191,8 +194,7 @@ export const ProductPage: React.FC<{
             <p style={{ margin: '0 0 12px', fontSize: 13, color: p.muted }}>{badge.label}</p>
           ) : null}
           <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>
-            {sample && priceLabel ? <span style={{ fontSize: 14, fontWeight: 500, color: p.muted, marginRight: 8 }}>Sample price</span> : null}
-            {priceLabel || <span style={{ fontSize: 16, fontWeight: 500, color: p.muted }}>Ask the shop</span>}
+            {priceLabel || <span style={{ fontSize: 16, fontWeight: 500, color: p.muted }}>{model.mode === 'illustrative' || sample ? 'Add your price' : 'Ask the shop'}</span>}
           </div>
           {item.description ? (
             <p style={{ margin: '0 0 24px', fontSize: 15, lineHeight: 1.65, color: p.text, maxWidth: '42ch' }}>{item.description}</p>

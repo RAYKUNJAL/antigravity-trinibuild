@@ -943,12 +943,12 @@ export function createJuvayHeroScene(
     const px = pointer.x + gyro.x;
     const py = pointer.y + gyro.y;
     const mobile = frame === 'mobile';
-    camera.position.x = camHome.x + px * 0.5 + (mobile ? 0.15 : 0);
-    camera.position.y = camHome.y + py * 0.32 + (mobile ? 0.35 : 0);
-    camera.position.z = camHome.z + (mobile ? 0.4 : 0);
+    camera.position.x = camHome.x + px * 0.5 + (mobile ? 0.05 : 0);
+    camera.position.y = camHome.y + py * 0.32 + (mobile ? 0.15 : 0);
+    camera.position.z = camHome.z + (mobile ? 1.1 : 0);
     camera.lookAt(
       camLook.x + px * 0.15,
-      camLook.y + py * 0.1 - (mobile ? 1.45 : 0),
+      camLook.y + py * 0.1 - (mobile ? 0.25 : 0),
       camLook.z,
     );
 

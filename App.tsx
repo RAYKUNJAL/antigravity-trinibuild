@@ -26,6 +26,7 @@ import { WelcomeScreen } from './components/WelcomeScreen';
 
 // NEW: Single store builder (replaces 5+ legacy creators)
 import StoreBuilderV3 from './pages/StoreBuilderV3';
+import StoreImportPage from './pages/StoreImportPage';
 import { StoreDashboard } from './pages/StoreDashboard';
 
 import MerchantTaxDashboard from './components/MerchantTaxDashboard';
@@ -143,7 +144,7 @@ import { ToastProvider } from './components/ui/Toast';
 // Layout wrapper for pages that require top padding (everything except Home)
 const PageLayout = () => {
   const { pathname } = useLocation();
-  const islandSurface = pathname.startsWith('/templates') || pathname.startsWith('/create-store');
+  const islandSurface = pathname.startsWith('/templates') || pathname.startsWith('/create-store') || pathname.startsWith('/import-store');
   return (
     <div
       className={`pt-16 min-h-screen ${islandSurface ? '' : 'bg-gray-50'}`}
@@ -176,7 +177,8 @@ const PlatformChatGate: React.FC = () => {
     pathname.startsWith('/demo/') ||
     pathname.startsWith('/s/') ||
     pathname.startsWith('/templates') ||
-    pathname.startsWith('/create-store')
+    pathname.startsWith('/create-store') ||
+    pathname.startsWith('/import-store')
   ) {
     return null;
   }
@@ -231,6 +233,7 @@ const App: React.FC = () => {
               <Route path="/explore/:island" element={<ExplorePage />} />
               {/* All store creation routes use StoreBuilderV3 (single source of truth) */}
               <Route path="/create-store" element={<StoreBuilderV3 />} />
+              <Route path="/import-store" element={<StoreImportPage />} />
               <Route path="/create-store-simple" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v2" element={<Navigate to="/create-store" replace />} />
               <Route path="/create-store-v1" element={<Navigate to="/create-store" replace />} />

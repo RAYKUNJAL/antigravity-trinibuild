@@ -675,6 +675,15 @@ const StoreBuilderV3: React.FC = () => {
           );
         })}
       </div>
+      <div style={{ border: '1px solid #e6dfd4', padding: 20, background: '#fff', marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 22, marginBottom: 6 }}>Bring my store over</div>
+        <p style={{ margin: '0 0 16px', color: '#6b6256', fontSize: 14, maxWidth: '52ch' }}>
+          Already selling somewhere else? Import a public store URL, a CSV, or bulk photos as drafts you review. Every seller gets 5 free photo listings. Website and CSV import come with Premium.
+        </p>
+        <a href="/import-store" style={{ display: 'inline-flex', minHeight: 44, alignItems: 'center', padding: '0 16px', background: '#141414', color: '#F6F1E8', fontWeight: 600, textDecoration: 'none' }}>
+          Open import
+        </a>
+      </div>
       <div style={{ border: '1px solid #141414', padding: 20, background: '#fff' }}>
         <div style={{ fontFamily: "'Libre Baskerville', Georgia, serif", fontSize: 22, marginBottom: 6 }}>List from a photo</div>
         <p style={{ margin: '0 0 16px', color: '#6b6256', fontSize: 14, maxWidth: '52ch' }}>
