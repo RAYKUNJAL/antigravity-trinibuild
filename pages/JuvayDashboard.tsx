@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { track, trackPageView } from '../services/eventTracker';
+import { SellerLedger } from '../components/SellerLedger';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -451,6 +452,10 @@ export const JuvayDashboard: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="mt-6">
+          <SellerLedger />
         </div>
 
         {/* QUICK ACTIONS */}

@@ -60,7 +60,7 @@ const StorefrontNav: React.FC<{
       className="text-white text-xs py-2 px-4 text-center font-semibold tracking-widest"
       style={{ background: '#E61E2B' }}
     >
-      🇹🇹 Cash at pickup or cash on delivery. No Linx or card rail on this storefront.
+      🇹🇹 Cash pickup and cash on delivery are always available. Online Wam wallet and card show fees at checkout when Wam is configured — a charge does not fulfill the order.
     </div>
 
     {/* Main nav */}

@@ -14,7 +14,8 @@ const path = require('path');
 const fs = require('fs');
 
 const { isWamConfigured, verifyWamSignature } = require('./wam');
-const { mountStoreCoreRoutes, fulfillWamPayment } = require('./storeCoreRoutes');
+const { mountStoreCoreRoutes, fulfillWamPayment, refundWamPayment } = require('./storeCoreRoutes');
+const { isRefundEvent } = require('./juvayFees');
 const { listingRateLimitPerHour } = require('./juvayFees');
 const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
 const { buildOnboardVision } = require('./onboardVision');
@@ -136,7 +137,10 @@ async function handleWamCheckout(req, res) {
       const { rows: orows } = await pool.query(`SELECT * FROM store_orders WHERE id = $1`, [orderId]);
       if (orows[0]) {
         juvayFee = orows[0].juvay_fee_cents;
-        merchantNet = Math.max(0, face - (juvayFee || 0));
+        const wamSeller = orows[0].wam_fee_seller_cents
+          ?? orows[0].quote_snapshot?.wam_fee_seller_cents
+          ?? 0;
+        merchantNet = Math.max(0, face - (juvayFee || 0) - (Number(wamSeller) || 0));
       }
     } catch (_) { /* migration optional until applied */ }
   }
@@ -192,6 +196,23 @@ app.post('/api/wam/webhook', async (req, res) => {
     return res.status(400).json({ error: 'amountCents must equal face only' });
   }
   try {
+    if (isRefundEvent(event)) {
+      const refunded = await refundWamPayment(pool, {
+        eventId,
+        paymentId: event.payment_id || event.paymentId || null,
+        orderId: event.order_id || event.orderId || null,
+        reason: event.reason || event.type || 'webhook_refund',
+        metadata: event,
+      });
+      return res.json({
+        ok: true,
+        refund: true,
+        duplicate: !!refunded.duplicate,
+        fulfill: false,
+        paymentId: refunded.paymentId || null,
+        note: 'Juvay ledger reversed. This does not claim the Wam refund itself completed.',
+      });
+    }
     const result = await fulfillWamPayment(pool, {
       eventId,
       amountCents,

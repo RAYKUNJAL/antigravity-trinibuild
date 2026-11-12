@@ -11,6 +11,7 @@ import CODDashboard from './pages/CODDashboard';
 import AffiliateDashboard from './pages/AffiliateDashboard';
 import DocumentCenter from './pages/DocumentCenter';
 import PricingPage from './pages/PricingPage';
+import FeesPage from './pages/FeesPage';
 import PricingCheckout from './pages/PricingCheckout';
 import { DemoSamplePage } from './pages/DemoSamplePage';
 
@@ -280,6 +281,7 @@ const App: React.FC = () => {
               <Route path="/carib-ads" element={<CaribAdsLanding />} />
               <Route path="/advertise" element={<CaribAdsLanding />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/fees" element={<FeesPage />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/affiliate" element={<AffiliateProgram />} />
               <Route path="/earn" element={<AffiliateDashboard />} />

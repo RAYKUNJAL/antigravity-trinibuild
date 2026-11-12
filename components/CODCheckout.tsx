@@ -15,6 +15,15 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { orderService, CreateOrderData } from '../services/orderService';
+import { CheckoutRails } from './CheckoutRails';
+import { fetchWamStatus } from '../services/wamStatus';
+import {
+  quoteAllRails,
+  paymentMethodForRail,
+  formatTtdCents,
+  type PaymentRail,
+  type FeeQuote,
+} from '../services/juvayFees';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,7 +47,7 @@ export interface StoreInfo {
   bank_holder?: string;
 }
 
-type PaymentMethod = 'cod' | 'bank_transfer' | 'card';
+type PaymentMethod = PaymentRail;
 type DeliveryMethod = 'standard' | 'express' | 'pickup';
 type CheckoutStep = 'details' | 'delivery' | 'payment' | 'review' | 'confirmed';
 
@@ -91,33 +100,6 @@ const StepDots: React.FC<{ step: CheckoutStep }> = ({ step }) => {
     </div>
   );
 };
-
-// ─── COD Trust Badge ──────────────────────────────────────────────────────────
-
-const CODTrustBadge: React.FC = () => (
-  <motion.div
-    initial={{ opacity: 0, y: -8 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="rounded-2xl p-4 mb-6"
-    style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '1.5px solid #86efac' }}
-  >
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0">
-        <Shield size={18} className="text-white" />
-      </div>
-      <div>
-        <p className="text-sm font-black text-green-800 mb-1">
-          ✅ Most Popular in Trinidad — 9 in 10 customers choose Cash on Delivery
-        </p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {['Inspect before paying', 'WhatsApp updates', 'Easy returns'].map(t => (
-            <span key={t} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{t}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
 
 // ─── Bank Transfer Panel ──────────────────────────────────────────────────────
 
@@ -290,7 +272,7 @@ const OrderSummary: React.FC<{
           <span>Total</span>
           <span style={{ color: '#E61E2B' }}>TT${total.toFixed(2)}</span>
         </div>
-        {payment === 'cod' && (
+        {(payment === 'cod' || payment === 'cash_pickup') && (
           <div className="rounded-xl bg-green-50 border border-green-200 p-3 mt-2">
             <p className="text-xs text-green-700 font-semibold">💵 Cash to prepare</p>
             <p className="text-xl font-black text-green-800 mt-0.5">TT${total.toFixed(2)}</p>
@@ -324,7 +306,7 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
     landmark: '',
     notes: '',
     delivery: 'pickup',
-    payment: 'cod',
+    payment: 'cash_pickup',
     transferProof: null,
     scheduleNow: true,
     scheduledDate: '',
@@ -341,7 +323,52 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
     return DELIVERY_FEES[form.delivery];
   }, [form.delivery, isFreeDelivery]);
 
-  const total = subtotal + deliveryFee();
+  const deliveryFeeDollars = deliveryFee();
+  const subtotalCents = Math.round(subtotal * 100);
+  const deliveryFeeCents = Math.round(deliveryFeeDollars * 100);
+  const [wamConfigured, setWamConfigured] = useState(false);
+  const [quotes, setQuotes] = useState<Record<PaymentRail, FeeQuote>>(() =>
+    quoteAllRails({ subtotalCents, deliveryFeeCents, planSlug: 'free' }).quotes
+  );
+
+  useEffect(() => {
+    fetchWamStatus().then((s) => setWamConfigured(s.configured));
+  }, []);
+
+  useEffect(() => {
+    const local = quoteAllRails({ subtotalCents, deliveryFeeCents, planSlug: 'free' }).quotes;
+    setQuotes(local);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/orders/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            store_id: store.id,
+            items: items.map((i) => ({
+              product_id: i.id,
+              name: i.name,
+              quantity: i.quantity,
+              price: i.price,
+            })),
+            delivery_fee: deliveryFeeDollars,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && res.ok && data?.quotes) {
+          setQuotes(data.quotes);
+          if (typeof data.wam_configured === 'boolean') setWamConfigured(data.wam_configured);
+        }
+      } catch {
+        /* keep local quote — server is source of truth when reachable */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [subtotalCents, deliveryFeeCents, store.id, items, deliveryFeeDollars]);
+
+  const selectedQuote = quotes[form.payment];
+  const total = (selectedQuote?.total_buyer_pays_cents ?? Math.round((subtotal + deliveryFeeDollars) * 100)) / 100;
 
   const update = (key: keyof CheckoutState, value: any) =>
     setForm(prev => ({ ...prev, [key]: value }));
@@ -353,15 +380,15 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
       case 'delivery':
         return true;
       case 'payment':
-        if (form.payment === 'cod') return form.cashConfirmed;
-        if (form.payment === 'bank_transfer') return !!form.transferProof;
+        if (form.payment === 'cod' || form.payment === 'cash_pickup') return form.cashConfirmed;
+        if (form.payment === 'wam_wallet' || form.payment === 'wam_card') return wamConfigured;
         return true;
       case 'review':
         return true;
       default:
         return false;
     }
-  }, [step, form]);
+  }, [step, form, wamConfigured]);
 
   const stepOrder: CheckoutStep[] = ['details', 'delivery', 'payment', 'review'];
 
@@ -380,51 +407,95 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
     setSubmitting(true);
     setError('');
     try {
-      const orderData: CreateOrderData = {
-        storeId: store.id!,
-        items: items.map(i => ({
+      const rail: PaymentRail = form.payment;
+      const paymentMethod = paymentMethodForRail(rail);
+      const fulfillment = form.delivery === 'pickup' ? 'pickup' : 'delivery';
+      const payload = {
+        store_id: store.id,
+        items: items.map((i) => ({
+          product_id: String(i.id),
           productId: String(i.id),
           quantity: i.quantity,
           price: i.price,
           name: i.name,
         })),
-        shippingAddress: {
-          name: form.name,
-          phone: form.phone,
-          street: form.address + (form.landmark ? ` (near ${form.landmark})` : ''),
-          city: form.city,
-        },
-        paymentMethod: form.payment,
-        deliveryOption: form.delivery === 'express' ? 'express' :
-                        form.delivery === 'pickup' ? 'pickup' : 'standard',
-        notes: [
-          form.notes,
-          form.payment === 'bank_transfer' && form.transferProof
-            ? `Transfer proof uploaded: ${form.transferProof}`
-            : '',
-        ].filter(Boolean).join(' | '),
-        email: '',
+        payment_method: paymentMethod,
+        payment_rail: rail,
+        fulfillment,
+        customer_name: form.name,
+        customer_phone: form.phone,
+        customer_address: `${form.address}${form.landmark ? ` (near ${form.landmark})` : ''}, ${form.city}`,
+        delivery_fee: deliveryFeeDollars,
+        notes: form.notes || undefined,
       };
 
-      const order = await orderService.createOrder(orderData);
+      let order: { id?: string; order_ref?: string; order_number?: string } | null = null;
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          // Fall back to the legacy cash path only when store_orders is not migrated,
+          // and only for cash rails — never pretend a Wam charge succeeded.
+          const migr = res.status === 503 && /not migrated/i.test(String(data.error || ''));
+          if (!migr || paymentMethod === 'wam') {
+            throw new Error(data.error || `Checkout failed (${res.status})`);
+          }
+          const orderData: CreateOrderData = {
+            storeId: store.id!,
+            items: items.map(i => ({
+              productId: String(i.id),
+              quantity: i.quantity,
+              price: i.price,
+              name: i.name,
+            })),
+            shippingAddress: {
+              name: form.name,
+              phone: form.phone,
+              street: form.address + (form.landmark ? ` (near ${form.landmark})` : ''),
+              city: form.city,
+            },
+            paymentMethod: paymentMethod === 'cash_pickup' ? 'cod' : 'cod',
+            deliveryOption: form.delivery === 'express' ? 'express' :
+                            form.delivery === 'pickup' ? 'pickup' : 'standard',
+            notes: form.notes,
+            email: '',
+          };
+          const legacy = await orderService.createOrder(orderData);
+          order = legacy;
+        } else {
+          order = data.order || data;
+        }
+      } catch (err: any) {
+        throw err;
+      }
+
+      const orderLabel = order?.order_ref || order?.order_number || (order?.id ? String(order.id) : '');
+      const payLabel =
+        rail === 'wam_wallet' ? 'Wam wallet (awaiting payment — a charge does not fulfill the order)' :
+        rail === 'wam_card' ? 'Card via Wam (awaiting payment — a charge does not fulfill the order)' :
+        rail === 'cash_pickup' ? 'Cash pickup' : 'Cash on delivery';
 
       // WhatsApp confirmation
       if (store.whatsapp) {
         const msg = [
           `🛒 *New Order from Juvay*`,
-          `Order: ${order.order_number || 'TRN-' + Date.now()}`,
+          `Order: ${orderLabel || 'pending'}`,
           `Customer: ${form.name} · ${form.phone}`,
           `Deliver to: ${form.address}, ${form.city}`,
           `Items: ${items.map(i => `${i.quantity}x ${i.name}`).join(', ')}`,
-          `Total: TT$${total.toFixed(2)}`,
-          `Payment: ${form.payment === 'cod' ? '💵 Cash on Delivery' : form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💵 Cash'}`,
+          `Total: ${formatTtdCents(selectedQuote?.total_buyer_pays_cents ?? Math.round(total * 100))}`,
+          `Payment: ${payLabel}`,
           `Delivery: ${form.delivery}`,
         ].join('\n');
         window.open(`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
       }
 
       setStep('confirmed');
-      onComplete(order.order_number || String(order.id), form.payment);
+      onComplete(orderLabel || String(Date.now()), form.payment);
     } catch (err: any) {
       setError(err.message || 'Failed to place order. Please try again.');
     } finally {
@@ -612,79 +683,17 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
   );
 
   const renderPayment = () => (
-    <div className="space-y-4">
-      <h2 className="text-xl font-black text-gray-900">Payment Method</h2>
-
-      {/* COD — STAR of the show */}
-      <div className="relative">
-        <motion.button
-          onClick={() => update('payment', 'cod')}
-          whileTap={{ scale: 0.98 }}
-          className="w-full text-left rounded-2xl border-2 p-4 transition-all"
-          style={form.payment === 'cod'
-            ? { borderColor: '#16a34a', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)' }
-            : { borderColor: '#e5e7eb', background: '#fff' }
-          }
-        >
-          <div className="absolute -top-3 left-4">
-            <span className="bg-green-500 text-white text-xs font-black px-3 py-0.5 rounded-full shadow">
-              ⭐ MOST POPULAR
-            </span>
-          </div>
-          <div className="flex items-center gap-3 mt-2">
-            <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center flex-shrink-0">
-              <Banknote size={24} className="text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-black text-gray-900">💵 Cash on Delivery</p>
-              <p className="text-xs text-gray-500 mt-0.5">Pay with cash when the driver arrives. No card rail.</p>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                {['Inspect items first', 'No card needed', 'Safe & secure'].map(t => (
-                  <span key={t} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{t}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.button>
-
-        {/* Cash confirmation checkbox */}
-        <AnimatePresence>
-          {form.payment === 'cod' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-3 p-4 rounded-2xl bg-green-50 border border-green-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold text-green-800">Cash to have ready:</p>
-                  <p className="text-2xl font-black text-green-700">TT${total.toFixed(2)}</p>
-                </div>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <div
-                    onClick={() => update('cashConfirmed', !form.cashConfirmed)}
-                    className="w-5 h-5 rounded-md border-2 flex-shrink-0 mt-0.5 flex items-center justify-center cursor-pointer transition-all"
-                    style={form.cashConfirmed
-                      ? { background: '#16a34a', borderColor: '#16a34a' }
-                      : { borderColor: '#9ca3af' }
-                    }
-                  >
-                    {form.cashConfirmed && <Check size={11} className="text-white" />}
-                  </div>
-                  <span className="text-xs text-green-700 font-semibold leading-relaxed">
-                    I confirm I'll have TT${total.toFixed(2)} ready in cash when the driver arrives.
-                    I understand I can inspect items before paying.
-                  </span>
-                </label>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Bank transfer and WiPay are not live rails on Juvay. Cash only. */}
-    </div>
+    <CheckoutRails
+      quotes={quotes}
+      selected={form.payment}
+      onSelect={(rail) => {
+        update('payment', rail);
+        if (rail !== 'cod' && rail !== 'cash_pickup') update('cashConfirmed', false);
+      }}
+      wamConfigured={wamConfigured}
+      cashConfirmed={form.cashConfirmed}
+      onCashConfirmed={(v) => update('cashConfirmed', v)}
+    />
   );
 
   const renderReview = () => {
@@ -714,11 +723,12 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
           {
             title: 'Payment',
             items: [[
-              form.payment === 'cod' ? '💵 Cash on Delivery' :
-              form.payment === 'bank_transfer' ? '🏦 Bank Transfer' : '💵 Cash on Delivery',
-              form.payment === 'cod' ? `Prepare TT$${total.toFixed(2)} cash` :
-              form.payment === 'bank_transfer' ? (form.transferProof ? '✓ Proof uploaded' : 'No proof uploaded') :
-              `Prepare TT$${total.toFixed(2)} cash`
+              form.payment === 'wam_wallet' ? 'Wam wallet' :
+              form.payment === 'wam_card' ? 'Card via Wam' :
+              form.payment === 'cash_pickup' ? 'Cash pickup' : 'Cash on delivery',
+              form.payment === 'wam_wallet' || form.payment === 'wam_card'
+                ? `You pay ${formatTtdCents(selectedQuote?.total_buyer_pays_cents ?? Math.round(total * 100))} — awaiting payment`
+                : `Prepare ${formatTtdCents(selectedQuote?.total_buyer_pays_cents ?? Math.round(total * 100))} cash`
             ]]
           }
         ].map(section => (
@@ -777,7 +787,6 @@ export const CODCheckout: React.FC<CODCheckoutProps> = ({ items, store, onComple
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <StepDots step={step} />
 
-          {step === 'payment' && <CODTrustBadge />}
 
           <AnimatePresence mode="wait">
             <motion.div

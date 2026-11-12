@@ -12,7 +12,7 @@ export const AFFILIATE_SUBSCRIPTION_CUT = 0.10;
 
 /** Basis points on successful Wam online face amount (display defaults; server is source of truth). */
 export const JUVAY_FEE_BPS_FREE = 450;
-export const JUVAY_FEE_BPS_PREMIUM = 300;
+export const JUVAY_FEE_BPS_PREMIUM = 250;
 
 export const JUVAY_PLANS = [
   {
@@ -27,7 +27,7 @@ export const JUVAY_PLANS = [
       'juvay.app store slug',
       'Cash at pickup',
       'Cash on delivery (buyer handling fee)',
-      'Wam online pay when configured (platform fee on successful sales)',
+      'Wam online pay when configured (4.5% Juvay fee on successful sales, capped at TT$25)',
     ],
     paid: false,
   },
@@ -40,7 +40,7 @@ export const JUVAY_PLANS = [
     juvayFeeBps: JUVAY_FEE_BPS_PREMIUM,
     features: [
       'Unlimited listings',
-      'Lower Juvay fee on Wam online sales',
+      'Lower 2.5% Juvay fee on Wam online sales, capped at TT$25',
       'Everything in Free',
       'AI product drafts (review before publish)',
     ],

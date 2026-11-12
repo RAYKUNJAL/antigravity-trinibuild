@@ -2,6 +2,7 @@
  * /pricing — one TTD table. Paid CTAs stay hidden until bank checkout is a real path.
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
 import { FREE_LISTING_LIMIT } from '../services/juvayPlans';
@@ -44,6 +45,16 @@ export default function PricingPage() {
               ))}
             </ul>
           </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Transaction fees</h2>
+          <p className="text-sm text-gray-600 mb-3">
+            Free store, unlimited listings, 0% on cash. 4.5% on Free and 2.5% on Premium
+            for successful online Wam sales, capped at TT$25. No listing, payout, or monthly fee on Free.
+            30-day notice before any change. Ads optional. Discounts opt-in only.
+          </p>
+          <Link to="/fees" className="text-sm font-semibold text-red-600 hover:underline">See the full rate card →</Link>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
