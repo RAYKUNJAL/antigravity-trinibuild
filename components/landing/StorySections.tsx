@@ -70,7 +70,7 @@ export const StorySections: React.FC<Props> = ({ onProgress }) => {
           id={`story-${s.id}`}
           className="flex min-h-[72vh] items-center px-4 py-16 sm:px-6 lg:px-8"
         >
-          <article className="ml-auto w-full max-w-lg rounded-3xl border border-white/15 bg-[#0b1f24]/88 p-6 text-[#fff8f0] shadow-2xl backdrop-blur-md sm:p-8">
+          <article className="mx-auto w-full max-w-lg rounded-3xl border border-white/15 bg-[#0b1f24]/92 p-6 text-[#fff8f0] shadow-2xl backdrop-blur-md sm:p-8 lg:mx-0 lg:ml-8">
             <p className="text-xs font-bold uppercase tracking-widest text-[#f5c14a]">{s.kicker}</p>
             <h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">{s.title}</h2>
             <p className="mt-4 text-base leading-relaxed text-[#efe4d0]">{s.body}</p>

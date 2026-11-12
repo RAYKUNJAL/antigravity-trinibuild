@@ -38,16 +38,22 @@ export const HeroStage: React.FC<Props> = ({ progress, className = '' }) => {
       import('./JuvayHeroScene')
         .then(({ createJuvayHeroScene }) => {
           if (cancelled || !canvasRef.current) return;
+          const wide = window.innerWidth >= 1024;
           const handle = createJuvayHeroScene(canvasRef.current, {
             dprCap: prefs.dprCap,
             reducedMotion: prefs.reducedMotion,
+            shadows: wide && prefs.dprCap > 1 && !prefs.lowPower,
           });
           sceneRef.current = handle;
           handle.setProgress(progress);
+          handle.setFrame(wide ? 'desktop' : 'mobile');
           handle.resize();
           setEnhanced(true);
 
-          ro = new ResizeObserver(() => handle.resize());
+          ro = new ResizeObserver(() => {
+            handle.resize();
+            handle.setFrame(window.innerWidth >= 1024 ? 'desktop' : 'mobile');
+          });
           if (wrapRef.current) ro.observe(wrapRef.current);
 
           io = new IntersectionObserver(

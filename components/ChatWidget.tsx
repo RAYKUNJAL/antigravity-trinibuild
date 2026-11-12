@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageCircle, X, Send, Loader2, Sparkles, Store, Home, HardHat, Car, FileText } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,6 +17,8 @@ interface ChatWidgetProps {
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ mode: initialMode, vendorContext }) => {
+  const { pathname } = useLocation();
+  const onLanding = pathname === '/' || pathname === '/landing';
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState(initialMode);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -181,7 +184,10 @@ Current user is browsing Juvay.`;
 
   return (
     // Adjusted positioning: bottom-24 on mobile to clear sticky footers, bottom-6 on desktop
-    <div className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 font-sans">
+    <div className={onLanding
+      ? 'fixed top-20 right-3 z-50 font-sans md:top-auto md:bottom-6 md:right-6'
+      : 'fixed bottom-24 right-4 z-50 font-sans md:bottom-6 md:right-6'
+    }>
       {/* Chat Window */}
       {isOpen && (
         <div className="bg-white rounded-2xl shadow-2xl w-80 sm:w-96 h-[500px] flex flex-col mb-4 border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-10 fade-in">

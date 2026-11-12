@@ -138,8 +138,11 @@ export const LandingPageCRO: React.FC = () => {
         {/* Sticky 3D / poster stage, with hero copy and scroll story overlaid */}
         <div className="relative pb-[100svh] -mb-[100svh]">
           <div className="sticky top-0 z-0 h-[100svh] w-full">
-            <HeroStage progress={progress} />
-            <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-[#0b1f24] from-0% via-[#0b1f24]/88 via-42% to-transparent to-62% lg:block" />
+            {/* Solid left column on desktop so copy never sits on the stall. */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[46%] bg-[#0b1f24] lg:block" />
+            <div className="h-full w-full lg:absolute lg:inset-y-0 lg:left-[46%] lg:w-[54%]">
+              <HeroStage progress={progress} />
+            </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#0b1f24] to-transparent lg:hidden" />
           </div>
 
@@ -147,7 +150,7 @@ export const LandingPageCRO: React.FC = () => {
             <section className="flex min-h-[100svh] flex-col lg:grid lg:grid-cols-[minmax(0,46%)_minmax(0,54%)]">
               <div
                 id="juvay-hero-copy"
-                className="mt-auto bg-[#0b1f24] px-5 pb-8 pt-20 text-[#fff8f0] sm:px-8 lg:mt-0 lg:flex lg:bg-transparent lg:items-center lg:px-12 lg:pt-24 lg:pb-16"
+                className="mt-auto bg-[#0b1f24] px-5 pb-8 pt-20 text-[#fff8f0] sm:px-8 lg:mt-0 lg:flex lg:bg-[#0b1f24] lg:items-center lg:px-12 lg:pt-24 lg:pb-16"
               >
                 <div className="mx-auto w-full max-w-xl">
                   <p className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#fde68a]">
@@ -177,7 +180,7 @@ export const LandingPageCRO: React.FC = () => {
                       <CheckIcon /> Be one of the first sellers
                     </li>
                   </ul>
-                  <div id="juvay-hero-cta" className="mt-7 flex flex-col gap-3 pr-20 sm:flex-row sm:pr-0">
+                  <div id="juvay-hero-cta" className="mt-7 flex flex-col gap-3 sm:flex-row">
                     <Link
                       to="/create-store"
                       className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-[#b50f21] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
@@ -205,7 +208,7 @@ export const LandingPageCRO: React.FC = () => {
         </div>
 
         {/* How it works — 3 clear steps, solid surface after the 3D story */}
-        <section id="how-it-works" className="bg-[#FFF8F0] px-4 py-20 sm:px-6 lg:px-8">
+        <section id="how-it-works" className="scroll-mt-20 bg-[#FFF8F0] px-4 py-20 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
             <div className="mx-auto max-w-2xl text-center">
               <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#0d9488]">How it works</p>
