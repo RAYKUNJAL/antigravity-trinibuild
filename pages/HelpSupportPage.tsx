@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Search, ChevronDown, Video, FileText, Users } from 'lucide-react';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 interface FAQItem {
   category: string;
@@ -16,15 +17,15 @@ export const HelpSupportPage: React.FC = () => {
       category: 'Getting Started',
       items: [
         {
-          q: 'How do I create a store on TriniBuild?',
+          q: 'How do I create a store on Juvay?',
           a: 'Click "Create Store" and follow our 3-step wizard. It takes less than 2 minutes! Add your business name, choose a category, and you\'re ready to start listing products.'
         },
         {
           q: 'Is there a setup fee or credit card required?',
-          a: 'No! Juvay is free to start. No setup fees, no credit card required. Start with 5 free product listings. Starter (TT$99/mo) and Business (TT$329/mo) open when Wam can take that money. One TTD table on /pricing. No USD menu.'
+          a: `No! Juvay is free to start. No setup fees, no credit card required. ${FREE_INCLUDES_COPY}. Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY} See /pricing.`
         },
         {
-          q: 'Can I use TriniBuild if I don\'t have a bank account?',
+          q: 'Can I use Juvay if I don\'t have a bank account?',
           a: 'Yes! Cash on Delivery (COD) is our default payment method. Customers pay you in cash when they receive their order. No bank account or payment processing needed.'
         }
       ]
@@ -34,7 +35,7 @@ export const HelpSupportPage: React.FC = () => {
       items: [
         {
           q: 'How do I add products to my store?',
-          a: 'Go to your dashboard and click "Add Product". Fill in the details (name, price, description, photos). Our AI Product Lister (Pro feature) can generate descriptions for you!'
+          a: 'Go to your dashboard and click "Add Product". Fill in the details (name, price, description, photos). Our AI Product Lister can generate descriptions for you.'
         },
         {
           q: 'Can I edit products after listing them?',
@@ -42,7 +43,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How many products can I list?',
-          a: 'Free plan: 5 products. Starter and Business: unlimited listings. Paid CTAs stay hidden until Wam is on.'
+          a: `${FREE_INCLUDES_COPY}. Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`
         }
       ]
     },
@@ -76,11 +77,11 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I use my own courier?',
-          a: 'Yes. You can arrange your own delivery and mark it as self-delivery, or offer pickup. TriniRides fare is not quoted unless that product is live for that store.'
+          a: 'Yes. You can arrange your own delivery and mark it as self-delivery, or offer pickup. Juvay Rides fare is not quoted unless that product is live for that store.'
         },
         {
           q: 'How do I track deliveries?',
-          a: 'When using TriniRides, both you and the customer can track the delivery in real-time. For self-delivery, update the order status and send tracking via WhatsApp.'
+          a: 'Pickup and seller-arranged delivery have no live ride tracker on this origin. For self-delivery, update the order status and send tracking via WhatsApp.'
         }
       ]
     },
@@ -89,7 +90,7 @@ export const HelpSupportPage: React.FC = () => {
       items: [
         {
           q: 'How do I get more customers?',
-          a: 'Use email marketing (Pro feature) to reach your subscribers, share your store on WhatsApp & social media, leverage QR codes for in-store promotion, and optimize for search (SEO help available).'
+          a: 'Share your store on WhatsApp and social media, use QR codes for in-store promotion, and see /pricing for Premium. ' + PAID_UPGRADE_UNAVAILABLE_COPY
         },
         {
           q: 'What is the AI Product Lister?',
@@ -97,7 +98,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I run promotions and discounts?',
-          a: 'Yes! Pro plan includes coupon system. Create discount codes, flash sales, loyalty rewards, and bulk discounts. Track performance in real-time.'
+          a: 'You can create discount codes, flash sales, loyalty rewards, and bulk discounts from your store tools. See /pricing for the Free and Premium plans.'
         }
       ]
     },
@@ -110,11 +111,11 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I have multiple stores?',
-          a: 'Not with one account. Create a separate TriniBuild account for each business. Or upgrade to Business plan for multi-user account management.'
+          a: 'Not with one account today. Create a separate Juvay account for each business. There is no multi-user plan on offer.'
         },
         {
-          q: 'How do I upgrade to Pro or Business?',
-          a: 'Click "Upgrade" in your dashboard. Choose monthly or yearly billing. Upgrade is instant and you get access to all Pro/Business features immediately.'
+          q: 'How do I upgrade to Premium?',
+          a: `Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY} There is no pay button and an upgrade is not instant. See /pricing.`
         }
       ]
     }
@@ -175,7 +176,7 @@ export const HelpSupportPage: React.FC = () => {
             How Can We Help?
           </motion.h1>
           <motion.p variants={item} className="text-lg text-gray-600 mb-8">
-            Find answers to your questions about TriniBuild, or contact our support team.
+            Find answers to your questions about Juvay, or contact our support team.
           </motion.p>
 
           {/* Search */}
@@ -299,7 +300,7 @@ export const HelpSupportPage: React.FC = () => {
           <Users className="w-12 h-12 mx-auto mb-4" />
           <h2 className="text-3xl font-black mb-4">Join Our Community</h2>
           <p className="text-red-100 mb-8 text-lg">
-            Connect with other TriniBuild merchants, share tips, and learn from their success
+            Connect with other Juvay merchants, share tips, and learn from their success
           </p>
           <button className="bg-white text-[#E61E2B] px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
             Join Facebook Community

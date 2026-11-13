@@ -12,7 +12,7 @@ export const DOCUMENT_CATALOG = [
     id: 'proof_of_income',
     title: 'Proof of Income',
     subtitle: 'For bank accounts & visa applications',
-    description: 'Official letter verifying your TriniBuild store earnings, accepted by T&T banks and embassies.',
+    description: 'Official letter verifying your Juvay store earnings, accepted by T&T banks and embassies.',
     icon: '💰',
     color: '#10B981',
     price_ttd: 0,
@@ -108,7 +108,7 @@ export const DOCUMENT_CATALOG = [
     id: 'financial_statement',
     title: 'Financial Statement',
     subtitle: 'Profit & Loss for BIR / banks',
-    description: 'Simple financial statement from your TriniBuild store data for tax or banking purposes.',
+    description: 'Simple financial statement from your Juvay store data for tax or banking purposes.',
     icon: '📊',
     color: '#0891B2',
     price_ttd: 150,
@@ -146,20 +146,20 @@ export const DOCUMENT_CATALOG = [
 
 const SYSTEM_PROMPTS: Record<string, string> = {
   proof_of_income: `You are a professional document writer for Trinidad & Tobago businesses. 
-Generate a formal Proof of Income letter on behalf of TriniBuild / R&R Digital Solutions Ltd.
+Generate a formal Proof of Income letter on behalf of Juvay / R&R Digital Solutions Ltd.
 The letter should: state the business owner's name, business name, average monthly income in TTD,
-reference the income period, note that earnings are from verified e-commerce activity on TriniBuild,
-and be signed by the TriniBuild Platform Management team. Use formal British English. Include current date.
-Format as a proper business letter with letterhead reference to TriniBuild (trinibuild.com).
+reference the income period, note that earnings are from verified e-commerce activity on Juvay,
+and be signed by the Juvay Platform Management team. Use formal British English. Include current date.
+Format as a proper business letter with letterhead reference to Juvay (juvay.app).
 DO NOT include any placeholder text — use only the data provided.`,
 
-  bank_account_letter: `Generate a formal Bank Account Reference Letter for a TriniBuild merchant.
+  bank_account_letter: `Generate a formal Bank Account Reference Letter for a Juvay merchant.
 The letter supports opening a business bank account at a T&T commercial bank.
 Include: business verification, platform membership status, estimated monthly transactions in TTD,
-character reference. Use formal British English. Sign as TriniBuild Platform, R&R Digital Solutions Ltd.`,
+character reference. Use formal British English. Sign as Juvay Platform, R&R Digital Solutions Ltd.`,
 
-  visa_support_letter: `Generate a professional Visa Support / Sponsorship Letter for a TriniBuild business owner.
-The letter confirms: the person's business on TriniBuild, their income, the travel purpose,
+  visa_support_letter: `Generate a professional Visa Support / Sponsorship Letter for a Juvay business owner.
+The letter confirms: the person's business on Juvay, their income, the travel purpose,
 and provides financial sponsorship confirmation. Tailor to the destination country's embassy requirements.
 Use formal language. Include R&R Digital Solutions Ltd company details as the issuer.`,
 
@@ -169,11 +169,11 @@ reporting structure, probation period (if applicable). Reference the Industrial 
 Use formal British English. The employer signs as the business owner.`,
 
   loan_support_letter: `Generate a Business Loan Support Letter for a Trinidad & Tobago bank.
-The letter should: describe the business, its revenue on TriniBuild, the loan purpose,
+The letter should: describe the business, its revenue on Juvay, the loan purpose,
 repayment capacity based on monthly revenue, and character reference.
 Include financial highlights showing the business can service the loan. Formal British English.`,
 
-  financial_statement: `Generate a simple Profit & Loss Financial Statement for a TriniBuild merchant.
+  financial_statement: `Generate a simple Profit & Loss Financial Statement for a Juvay merchant.
 Include: revenue summary, expenses summary, net profit, gross margin percentage.
 Format as a proper accounting document with a balance at the bottom.
 Note it is an internally prepared statement and advise professional audit for official purposes.`,
@@ -264,7 +264,7 @@ Generate the complete, print-ready document. No placeholders, no instructions �
     const doc = DOCUMENT_CATALOG.find(d => d.id === document_type);
     return `
 TRINIBUILD PLATFORM — OFFICIAL DOCUMENT
-R&R Digital Solutions Ltd | trinibuild.com | info@trinibuild.com
+R&R Digital Solutions Ltd | juvay.app | support@juvay.app
 ════════════════════════════════════════════════════════════════
 
 ${content}
@@ -272,8 +272,8 @@ ${content}
 ════════════════════════════════════════════════════════════════
 Document Type: ${doc?.title || document_type}
 Generated: ${new Date().toLocaleString('en-TT')}
-Platform: TriniBuild (trinibuild.com)
-Note: This document is generated by TriniBuild AI and represents
+Platform: Juvay (juvay.app)
+Note: This document is generated by Juvay AI and represents
 accurate information provided by the business owner. For legal 
 proceedings, obtain a notarized version from a T&T notary public.
 ════════════════════════════════════════════════════════════════

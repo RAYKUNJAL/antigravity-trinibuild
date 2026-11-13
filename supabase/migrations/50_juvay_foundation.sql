@@ -111,7 +111,6 @@ CREATE TABLE IF NOT EXISTS public.user_plan_subscriptions (
   plan_slug TEXT REFERENCES public.plan_tiers(slug) DEFAULT 'free',
   status TEXT DEFAULT 'active' CHECK (status IN ('active','cancelled','expired','past_due')),
   source TEXT DEFAULT 'free' CHECK (source IN ('free','paypal','bank_pay','admin')),
-  paypal_subscription_id TEXT,
   started_at TIMESTAMPTZ DEFAULT NOW(),
   expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),

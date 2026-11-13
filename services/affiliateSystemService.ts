@@ -6,6 +6,7 @@
  */
 
 import { supabase } from './supabaseClient';
+import { AFFILIATE_CUT_COPY, PREMIUM_INTRO_PRICE_TTD, PREMIUM_THEN_PRICE_TTD, AFFILIATE_SUBSCRIPTION_CUT } from './juvayPlans';
 
 export interface AffiliateProfile {
   id: string;
@@ -60,8 +61,12 @@ export const TIER_CONFIG = {
 };
 
 export const COMMISSION_EVENTS = {
-  subscription_starter: { label: 'Starter subscription referred', amount_ttd: 9.90 },
-  subscription_business: { label: 'Business subscription referred', amount_ttd: 32.90 },
+  subscription_premium: {
+    label: 'Premium subscription referred',
+    amount_ttd: Number((PREMIUM_INTRO_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2)),
+    then_amount_ttd: Number((PREMIUM_THEN_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2)),
+    copy: AFFILIATE_CUT_COPY,
+  },
 };
 
 export const affiliateSystemService = {
@@ -206,7 +211,7 @@ export const affiliateSystemService = {
   },
 
   getReferralLink(referral_code: string): string {
-    return `https://trinibuild.com/signup?ref=${referral_code}`;
+    return `https://juvay.app/signup?ref=${referral_code}`;
   },
 
   getTierProgress(profile: AffiliateProfile): { percentage: number; next_tier: string | null; referrals_needed: number } {

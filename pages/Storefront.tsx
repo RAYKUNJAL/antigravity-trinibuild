@@ -12,6 +12,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { storeService, Store } from '../services/storeService';
 import { orderService, CreateOrderData } from '../services/orderService';
+import { isPaidSellerPlan, PREMIUM_PRICE_COPY } from '../services/juvayPlans';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CartItem {
@@ -60,7 +61,7 @@ const StorefrontNav: React.FC<{
       className="text-white text-xs py-2 px-4 text-center font-semibold tracking-widest"
       style={{ background: '#E61E2B' }}
     >
-      🇹🇹 FREE DELIVERY on orders over TT$200 · Pay with Cash, Linx, or Card
+      🇹🇹 Cash pickup and cash on delivery are always available. Online Wam wallet and card show fees at checkout when Wam is configured — a charge does not fulfill the order.
     </div>
 
     {/* Main nav */}
@@ -950,7 +951,7 @@ export const Storefront: React.FC = () => {
   }, [products, searchQuery, selectedCategory, sortBy, priceMax]);
 
   const cartCount = cartItems.reduce((s, i) => s + i.quantity, 0);
-  const isPaid = store?.plan_tier === 'pro' || store?.plan_tier === 'premium' || store?.plan_tier === 'business';
+  const isPaid = isPaidSellerPlan(store?.plan_tier);
 
   const addToCart = useCallback((product: Product, qty = 1) => {
     setCartItems(prev => {
@@ -1135,7 +1136,7 @@ export const Storefront: React.FC = () => {
             <div className="max-w-xl mx-auto px-4 py-8">
               <ReservationPremiumGate
                 onUpgrade={() => window.open('/pricing', '_blank')}
-                planPrice="TT$99/mo"
+                planPrice={PREMIUM_PRICE_COPY}
               />
               <button
                 onClick={() => setView('product')}

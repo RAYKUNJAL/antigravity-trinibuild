@@ -184,8 +184,8 @@ export const StoreBuilder: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>{store?.name || 'Store Builder'} - TriniBuild Dashboard</title>
-                <meta name="description" content="Manage your TriniBuild store with our commercial-grade dashboard" />
+                <title>{store?.name || 'Store Builder'} - Juvay Dashboard</title>
+                <meta name="description" content="Manage your Juvay store with our commercial-grade dashboard" />
                 <meta name="robots" content="noindex, nofollow" />
             </Helmet>
 
@@ -1084,13 +1084,13 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
 
     return (
         <div className="space-y-6">
-            {/* TriniBuild Go Integration */}
+            {/* Juvay Rides Integration */}
             <div className={`p-6 rounded-xl ${trinibuildGoEnabled ? 'bg-gradient-to-r from-green-600 to-green-700' : 'bg-gradient-to-r from-blue-600 to-blue-700'} text-white`}>
                 <div className="flex items-start justify-between">
                     <div>
                         <h3 className="text-xl font-bold mb-2 flex items-center">
                             <Truck className="h-6 w-6 mr-2" />
-                            TriniBuild Go Integration
+                            Juvay Rides Integration
                         </h3>
                         <p className="mb-4 opacity-90">Connect to our driver network for on-demand delivery across Trinidad & Tobago</p>
                         <ul className="text-sm opacity-80 space-y-1 mb-4">
@@ -1109,14 +1109,14 @@ const DeliveryTab: React.FC<{ store: StoreType; onUpdate: (updates: Partial<Stor
                                 saveChanges(deliveryZones, freeDeliveryThreshold, { enabled: pickupEnabled, address: pickupAddress }, newVal);
                             }}
                             className="sr-only peer"
-                            aria-label="Enable TriniBuild Go"
+                            aria-label="Enable Juvay Rides"
                         />
                         <div className="w-14 h-7 bg-white/30 peer-checked:bg-white rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white peer-checked:after:bg-green-600 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-7"></div>
                     </label>
                 </div>
                 {trinibuildGoEnabled && (
                     <div className="mt-4 p-4 bg-white/10 rounded-lg">
-                        <p className="text-sm font-bold">🟢 Connected to TriniBuild Go</p>
+                        <p className="text-sm font-bold">🟢 Connected to Juvay Rides</p>
                         <p className="text-xs opacity-80">Orders will be automatically dispatched to nearby drivers</p>
                     </div>
                 )}

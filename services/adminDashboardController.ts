@@ -12,6 +12,7 @@
 
 import { supabase } from './supabaseClient';
 import Anthropic from '@anthropic-ai/sdk';
+import { monthlyPriceTtdForPlan } from './juvayPlans';
 
 interface AIAgentStatus {
   agentId: string;
@@ -141,7 +142,7 @@ export function getDomainOptions(): DomainOption[] {
   return [
     {
       type: 'trinibuild',
-      url: 'https://trinibuild.com/store/{business-slug}',
+      url: 'https://juvay.app/store/{business-slug}',
       price: 0,
       annual: false,
       description: 'Free subdomain on TriniBuild platform',
@@ -157,14 +158,14 @@ export function getDomainOptions(): DomainOption[] {
     {
       type: 'custom-domain',
       url: '{yourdomain}.com',
-      price: 99,
+      price: 0,
       annual: true,
       description: 'We buy & manage your custom domain',
       benefits: [
         'Custom branded domain',
         'TriniBuild buys domain for you',
         'Auto-renewed annually',
-        'Included in Pro/Business plan',
+        'Price not published on the Free/Premium plan table',
         'Premium perception',
         'Full owner of content',
       ],
@@ -172,7 +173,7 @@ export function getDomainOptions(): DomainOption[] {
     {
       type: 'export-code',
       url: 'your-server.com',
-      price: 199,
+      price: 0,
       annual: false,
       description: 'Export React code, deploy yourself',
       benefits: [
@@ -204,7 +205,7 @@ export async function createWebsiteWithDomain(
   let url = '';
 
   if (domainOption === 'trinibuild') {
-    url = `https://trinibuild.com/store/${businessSlug}`;
+    url = `https://juvay.app/store/${businessSlug}`;
   } else if (domainOption === 'custom-domain') {
     // Buy domain automatically
     const domain = `${businessSlug}.com.tt`; // or .com if available
@@ -292,7 +293,7 @@ export async function exportWebsiteCode(websiteId: string): Promise<{
 
 7. Deploy to Vercel, Netlify, or your own server
 
-Full docs: https://trinibuild.com/docs/export-code
+Full docs: https://juvay.app/docs/export-code
     `,
   };
 }
@@ -396,7 +397,13 @@ async function calculateMetrics(websites: GeneratedWebsiteRecord[]): Promise<any
     totalConverted,
     totalRevenue,
     avgConversionRate: totalGenerated > 0 ? (totalConverted / totalGenerated) * 100 : 0,
-    mrrActive: totalConverted * 199, // Assuming avg TT$199/mo
+    mrrActive: websites.reduce((sum, w: any) => {
+      const billed = w?.stats?.subscription_revenue ?? w?.billedMonthlyTtd ?? w?.subscription_amount_ttd;
+      const plan = w?.plan || w?.plan_tier || w?.subscription_plan || w?.subscription_tier;
+      // Only count a real billed amount, or a recorded paid plan at the official then-price. No assumed conversion.
+      if (typeof billed === 'number' && Number.isFinite(billed)) return sum + billed;
+      return sum + monthlyPriceTtdForPlan(plan);
+    }, 0),
   };
 }
 

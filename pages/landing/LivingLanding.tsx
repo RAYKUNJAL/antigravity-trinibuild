@@ -8,7 +8,7 @@ export const LivingLanding: React.FC = () => {
    return (
       <div className="min-h-screen bg-white font-sans">
          <SEO
-            title="TriniBuild Living - Real Estate Marketplace"
+            title="Juvay Living - Real Estate Marketplace"
             description="Find your dream home or list your property in Trinidad & Tobago. Verified listings, AI valuations, and direct agent connections."
             keywords="real estate trinidad, houses for sale trinidad, apartments for rent trinidad, trinidad property"
          />
@@ -20,7 +20,7 @@ export const LivingLanding: React.FC = () => {
             </div>
             <div className="relative z-10 text-center px-4 max-w-5xl animate-in fade-in slide-in-from-bottom-8 duration-700">
                <span className="bg-blue-500/20 text-blue-200 border border-blue-500/50 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-widest mb-8 inline-block backdrop-blur-md">
-                  TriniBuild Living
+                  Juvay Living
                </span>
                <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight tracking-tight">
                   Stop scrolling through <br />
@@ -86,7 +86,7 @@ export const LivingLanding: React.FC = () => {
             </div>
          </div>
 
-         {/* SOLUTION: The TriniBuild Way */}
+         {/* SOLUTION: The Juvay Way */}
          <div className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -115,7 +115,7 @@ export const LivingLanding: React.FC = () => {
                         <span className="text-blue-600">Democratized.</span>
                      </h2>
                      <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                        We use AI and strict verification to create the only safe marketplace in the Caribbean. If it's on TriniBuild Living, it's real, it's available, and the price is transparent.
+                        We use AI and strict verification to create the only safe marketplace in the Caribbean. If it's on Juvay Living, it's real, it's available, and the price is transparent.
                      </p>
 
                      <ul className="space-y-6">

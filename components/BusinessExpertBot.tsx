@@ -3,6 +3,7 @@ import { Send, Shield, Lock, FileText, Download, Briefcase, User, Save, AlertTri
 import { aiService } from '../services/ai';
 import { supabase } from '../services/supabaseClient';
 import { Link } from 'react-router-dom';
+import { PAID_UPGRADE_UNAVAILABLE_COPY, PREMIUM_PRICE_COPY } from '../services/juvayPlans';
 
 interface Message {
     id: string;
@@ -25,7 +26,7 @@ export const BusinessExpertBot: React.FC = () => {
         {
             id: '1',
             sender: 'bot',
-            text: "Hello! I am the TriniBuild Business Expert. I can help you with banking regulations, visa applications, and business registration in Trinidad & Tobago. How can I assist you today?",
+            text: "Hello! I am the Juvay Business Expert. I can help you with banking regulations, visa applications, and business registration in Trinidad & Tobago. How can I assist you today?",
             timestamp: new Date()
         }
     ]);
@@ -101,7 +102,7 @@ export const BusinessExpertBot: React.FC = () => {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 sender: 'bot',
-                text: "🔒 You have reached the limit of the free trial. Please upgrade to a Pro plan to continue consulting with the Business Expert and to generate official documents.",
+                text: `🔒 You have reached the limit of the free trial. Premium is ${PREMIUM_PRICE_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`,
                 timestamp: new Date()
             }]);
             return;

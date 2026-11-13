@@ -118,20 +118,6 @@ const allPosts: BlogPost[] = [
     isLocationBlog: true
   },
   {
-    id: '6',
-    title: "Chaguanas Events & Tickets: Find Local Entertainment",
-    excerpt: "From fetes to community events, discover what's happening in Chaguanas and how to sell or buy tickets easily.",
-    category: "Events & Tickets",
-    author: "Juvay AI",
-    date: "Dec 02, 2025",
-    image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=800",
-    location: "Chaguanas",
-    vertical: "tickets",
-    readTime: 5,
-    slug: "tickets-in-chaguanas",
-    isLocationBlog: true
-  },
-  {
     id: '7',
     title: "Rideshare & Delivery in Scarborough, Tobago",
     excerpt: "How Tobagonians are earning extra income with rideshare and delivery services through Juvay.",
@@ -145,17 +131,6 @@ const allPosts: BlogPost[] = [
     slug: "rideshare-in-scarborough",
     isLocationBlog: true
   },
-  {
-    id: '8',
-    title: "Introducing TriniRides: The Future of Transport",
-    excerpt: "We are expanding! Learn about our new rideshare features and how drivers can earn more.",
-    category: "Platform News",
-    author: "Juvay Team",
-    date: "Nov 25, 2025",
-    image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=800",
-    readTime: 4,
-    slug: "introducing-trinirides"
-  }
 ];
 
 // Categories

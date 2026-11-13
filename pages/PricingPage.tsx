@@ -2,9 +2,17 @@
  * /pricing — one TTD table. Paid CTAs stay hidden until bank checkout is a real path.
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
-import { FREE_LISTING_LIMIT } from '../services/juvayPlans';
+import { YouKeepCalculator } from '../components/YouKeepCalculator';
+import {
+  PREMIUM_PRICE_COPY,
+  FREE_INCLUDES_COPY,
+  PREMIUM_INCLUDES_COPY,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+  FREE_INCLUDE_FEATURES,
+} from '../services/juvayPlans';
 
 export default function PricingPage() {
   return (
@@ -15,14 +23,14 @@ export default function PricingPage() {
             Start Free. Bank payment setup in progress.
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            One TTD table: Free, Starter, Business. Cash pickup and COD on Free.
-            No USD menu. No 0% commission claim.
+            Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
           </p>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-8">
         <JuvayPriceTable />
+        <YouKeepCalculator defaultDollars={100} planSlug="premium" />
 
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
@@ -30,13 +38,7 @@ export default function PricingPage() {
           </div>
           <div className="p-6">
             <ul className="space-y-2">
-              {[
-                `List up to ${FREE_LISTING_LIMIT} products`,
-                'juvay.app store slug',
-                'Cash at pickup',
-                'Cash on delivery',
-                'SSL on juvay.app',
-              ].map((item) => (
+              {[...FREE_INCLUDE_FEATURES].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm text-gray-600">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   {item}
@@ -47,15 +49,24 @@ export default function PricingPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Transaction fees</h2>
+          <p className="text-sm text-gray-600 mb-3">
+            {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}.
+            No listing, payout, or monthly fee on Free. 30-day notice before any change. Ads optional. Discounts opt-in only.
+          </p>
+          <Link to="/fees" className="text-sm font-semibold text-red-600 hover:underline">See the full rate card →</Link>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Payment questions</h2>
           <dl className="space-y-4 text-sm text-gray-600">
             <div>
               <dt className="font-semibold text-gray-900">Is Free really free?</dt>
-              <dd>Yes. {FREE_LISTING_LIMIT} listings, cash pickup, and COD. No credit card.</dd>
+              <dd>Yes. {FREE_INCLUDES_COPY} No credit card.</dd>
             </div>
             <div>
-              <dt className="font-semibold text-gray-900">How do I pay for Starter or Business?</dt>
-              <dd>Those CTAs stay hidden until bank checkout is a real path. A charge does not auto-upgrade a plan.</dd>
+              <dt className="font-semibold text-gray-900">How do I pay for Premium?</dt>
+              <dd>{PAID_UPGRADE_UNAVAILABLE_COPY} A charge does not auto-upgrade a plan. Free: {FREE_INCLUDES_COPY}</dd>
             </div>
           </dl>
         </div>

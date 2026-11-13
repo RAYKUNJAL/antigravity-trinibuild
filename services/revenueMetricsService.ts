@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { monthlyPriceTtdForPlan } from './juvayPlans';
 
 export interface SaaSMetrics {
     // Core Revenue Metrics
@@ -53,17 +54,10 @@ export const revenueMetricsService = {
 
             if (!stores) return 0;
 
-            // Subscription pricing (based on your tiers)
-            const tierPricing: Record<string, number> = {
-                'FREE': 0,
-                'STARTER': 25,      // $25/month
-                'PROFESSIONAL': 75, // $75/month
-                'ENTERPRISE': 199   // $199/month
-            };
-
-            const mrr = stores.reduce((sum, store) => {
-                const tier = store.subscription_tier?.toUpperCase() || 'FREE';
-                return sum + (tierPricing[tier] || 0);
+            // Official Free/Premium prices only. Use a recorded billed amount when present; never invent a conversion or retired tier price.
+            const mrr = stores.reduce((sum, store: any) => {
+                const billed = store.billed_monthly_ttd ?? store.subscription_amount_ttd ?? store.mrr_ttd;
+                return sum + monthlyPriceTtdForPlan(store.subscription_tier, billed);
             }, 0);
 
             return mrr;

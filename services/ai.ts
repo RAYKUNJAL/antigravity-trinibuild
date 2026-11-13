@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { generateOptimizedListing, type ProductListingOptimized } from './aiListingOptimizer';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from './juvayPlans';
 
 /**
  * Juvay AI Service v4 — GPT-4o mini
@@ -136,14 +137,13 @@ ${TRINI_PERSONALITY}
 PLATFORM SERVICES:
 - FREE Online Stores (10 items free, 15 templates, 5-min setup)
 - Business Directory (52 categories across T&T)
-- Digital Services (Game Pass, Netflix, Spotify — PayPal checkout)
-- TriniRides (ride-share, TT$25 base + TT$4/km, GPS tracked)
-- Real Estate listings, Jobs board, Events & Tickets
+- Digital Services (Game Pass, Netflix, Spotify — codes are not for sale; not a live rail)
+- Real Estate listings, Jobs board
 - AI Document Assistant (/documents) — job letters, visa letters, proof of income
-- VAT Tax Tracker, Referral Program (/earn)
+- VAT reports (coming soon, not live yet), Referral Program (/earn)
 
 PRICING: Hustle (Free) | Pro ($199 TTD/mo) | Premium ($399 TTD/mo) | Business ($799 TTD/mo)
-ROUTES: /create-store, /directory, /digital, /rides, /real-estate, /jobs, /tickets, /documents, /earn, /pricing, /blog
+ROUTES: /create-store, /directory, /digital, /rides, /real-estate, /jobs, /documents, /earn, /pricing, /blog
 
 ═══ T&T BANKING KNOWLEDGE ═══
 MAJOR BANKS & WHAT THEY OFFER SMALL BUSINESSES:
@@ -214,12 +214,10 @@ Juvay Affiliate Program (/earn):
 - Best for: influencers, business consultants, accountants who advise SMEs, community leaders
 
 WAYS TO EARN ON JUVAY:
-1. Sell products/services through your store (COD, bank transfer, PayPal)
+1. Sell products/services through your store (cash on delivery / cash at pickup only)
 2. Affiliate referrals — earn from every business you bring to the platform
-3. TriniRides driver — deliver orders and earn per delivery
-4. Service provider — list your professional services in the directory
-5. Event promoter — sell tickets through the events platform
-6. Content creator — blog and attract traffic to your store
+3. Service provider — list your professional services in the directory
+4. Content creator — blog and attract traffic to your store
 
 ═══ T&T WORK & BUSINESS ═══
 POPULAR BUSINESS TYPES IN T&T:
@@ -243,8 +241,8 @@ How COD works for Trinidad businesses:
 2. Customer places order — no payment needed upfront
 3. Merchant gets WhatsApp notification with order details
 4. Merchant confirms order and prepares items
-5. Delivery arranged: TriniRides (TT$25 + TT$4/km) or merchant's own driver or customer pickup
-6. Driver delivers and collects cash or Linx payment at door
+5. Delivery arranged: merchant's own driver or customer pickup
+6. Driver delivers and collects cash at door
 7. Merchant marks order complete in dashboard
 8. Cash reconciled — merchant keeps product amount, delivery fee goes to driver
 
@@ -261,7 +259,7 @@ DOCUMENTS YOU GENERATE:
 2. Proof of Income — for banks (Republic, Scotiabank, First Citizens, JMMB), visa applications, rental agreements, TTMF/HMB mortgage applications. Include: monthly income, period covered, source, platform verification statement.
 3. Visa Support Letters — US Embassy POS (B1/B2), Canadian High Commission (visitor), UK High Commission (standard visitor), Schengen (tourist/business). Include: relationship to applicant, purpose, duration, financial responsibility, ties to Trinidad.
 4. Contractor Agreements — independent contractor terms, scope of work, payment schedule (weekly/biweekly/monthly/milestone), intellectual property, termination clause, NIS note
-5. VAT Registration Certificates — BIR-ready, 12.5% rate, business details, registration date, BIR file number field
+5. VAT Registration Certificates — draft support document, 12.5% rate, business details, registration date, BIR file number field
 6. Employment Verification — confirming employment status, start date, position, salary range, department
 7. Salary Confirmation — for TTMF mortgage, HMB mortgage, commercial bank loans. Include: gross salary, net salary, deductions (NIS, PAYE, health surcharge), employment duration
 8. Business Reference Letters — for suppliers, government tenders, bank facility applications. Include: years in operation, nature of business, payment history, creditworthiness statement
@@ -348,15 +346,11 @@ PUBLIC TRANSPORT:
 - PH taxis (private hire): Set routes, fixed rates. Stands at City Gate, Curepe Junction, Chaguanas, San Fernando.
 - Water taxi: POS to San Fernando, fast service ~50 min. TT$15 one-way.
 
-TRINIRRIDES:
-- TT$25 base fare + TT$4/km
-- GPS tracked in real-time
-- Cash or digital payment accepted
-- WhatsApp integration for driver communication
-- Driver rating system
-- Delivery service available for businesses (COD collection)
+RIDES:
+- The /rides page stays empty unless live drivers are on this origin.
+- Do not invent a fare, a driver, or a live booking button.
 
-Suggest /rides for booking. Parent: R&R Digital Solutions.`,
+Parent: R&R Digital Solutions.`,
 
     service_expert: `You are Juvay's Service Expert — you connect people with professionals across T&T.
 ${TRINI_PERSONALITY}
@@ -529,8 +523,8 @@ WHATSAPP: ${storeData.whatsapp || 'Not listed'}
 PRODUCTS:
 ${products}
 
-PAYMENT: Cash on Delivery (COD), Bank Transfer, PayPal
-DELIVERY: TriniRides delivery, Standard delivery, Store pickup`;
+PAYMENT: Cash on delivery / cash at pickup only
+DELIVERY: Store pickup or the merchant's own driver. No live ride rail.`;
 }
 
 // ─── Trini Fallback Responses ────────────────────────────────────────────────
@@ -549,23 +543,23 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (mode === 'paperwork_assistant' || msg.match(/\b(document|letter|visa|proof|income|job letter|contract|paperwork)\b/)) {
-        return "I could generate these documents for yuh right now:\n\n📄 **Job Offer Letter** — Free\n💰 **Proof of Income** — Pro plan\n✈️ **Visa Support Letter** — Pro plan\n📋 **Contractor Agreement** — Pro plan\n🧾 **VAT Certificate** — Pro plan\n\nWhich one yuh need? Tell meh the details and I go sort it out. Real ting.";
+        return "I could generate these documents for yuh right now:\n\n📄 **Job Offer Letter** — Free\n💰 **Proof of Income** — Premium\n✈️ **Visa Support Letter** — Premium\n📋 **Contractor Agreement** — Premium\n🧾 **VAT Certificate** — Premium\n\n" + PAID_UPGRADE_UNAVAILABLE_COPY + " Which one yuh need? Tell meh the details and I go sort it out. Real ting.";
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**Juvay Pricing:**\n\n🆓 **Free:** 5 product listings, cash pickup, COD\n💎 **Starter (TT$99/mo):** Unlimited listings — opens when Wam can take the money\n🏆 **Business (TT$329/mo):** Everything in Starter plus branding\n\nOne TTD table. No USD menu. Check [/pricing](/pricing).";
+        return "**Juvay Pricing:**\n\n🆓 **Free:** " + FREE_INCLUDES_COPY + "\n💎 **Premium:** " + PREMIUM_PRICE_COPY + ". " + PREMIUM_INCLUDES_COPY + ". " + PAID_UPGRADE_UNAVAILABLE_COPY + "\n\nSee [/pricing](/pricing).";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {
-        return "Creating a store is real easy — 5 minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product or skip\n4. Share yuh https://juvay.app/store/slug link\n\nFirst 5 products free. No credit card needed. 🇹🇹";
+        return "Creating a store is real easy — a few minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product (name and a price) or skip\n4. Share yuh https://juvay.app/store/slug link\n\n" + FREE_INCLUDES_COPY + " No credit card needed. 🇹🇹";
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {
-        return "**How COD works on Juvay:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange delivery (TriniRides or yuh own driver)\n4. Driver delivers and collects cash or Linx payment\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
+        return "**How COD works on Juvay:**\n\n1. Customer places order on yuh store\n2. You get a WhatsApp notification to confirm\n3. You arrange pickup or yuh own delivery\n4. Customer pays cash at pickup or at the door\n5. Order marked complete in yuh dashboard\n\nSimple! No bank account or credit card needed from the customer side. That's how T&T does business. 💪";
     }
 
     if (msg.match(/\b(ride|taxi|transport|driver|maxi)\b/)) {
-        return "TriniRides got yuh covered:\n\n🚗 TT$25 base + TT$4/km\n📍 GPS tracked\n💬 WhatsApp updates\n💵 Cash accepted\n\nCheck [/rides](/rides) to book!";
+        return "Rides are not a live rail on this origin. Juvay does not invent drivers or fares. The [/rides](/rides) page stays empty until real drivers are on.";
     }
 
     if (msg.match(/\b(property|house|apartment|rent|real estate|land)\b/)) {
@@ -577,7 +571,7 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (msg.match(/\b(what|who|tell me about|explain).*(trinibuild|platform|website|this)\b/)) {
-        return "**Juvay** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🎮 Digital services (Game Pass, Netflix, etc.)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n🎫 Events & tickets\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
+        return "**Juvay** is Trinidad & Tobago's own digital platform. We help local businesses get online and customers find what they need.\n\nWe offer:\n🏪 Free online stores with COD\n📖 Business directory (52 categories)\n🚗 Ride-share\n🏠 Real estate\n💼 Jobs board\n📄 AI document generator\n\nBuilt by R&R Digital Solutions, right here in T&T. 🇹🇹\n\nWhat yuh want to know more about?";
     }
 
     return "I here to help! I could assist with:\n\n• 🏪 **Stores** — create and manage yuh online shop\n• 📄 **Documents** — job letters, visa letters, proof of income\n• 🔍 **Directory** — find any business or service in T&T\n• 🚗 **Rides** — book transportation\n• 🏠 **Real Estate** — property listings\n• 💰 **COD selling** — how cash on delivery works\n\nJust tell meh what yuh need, pardner!";

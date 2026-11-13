@@ -261,7 +261,7 @@ const OverviewSection: React.FC<{
         <div className="flex items-center justify-between">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Command Center</h1>
-                <p className="text-gray-500">TriniBuild AI OS v2.0</p>
+                <p className="text-gray-500">Juvay AI OS v2.0</p>
             </div>
             <button onClick={onRefresh} title="Refresh Dashboard" aria-label="Refresh Dashboard" className="p-2 text-gray-500 hover:text-trini-red">
                 <RefreshCw className="h-5 w-5" />

@@ -1,0 +1,1400 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ISLAND, STORE_STARTERS, isFoodLikeStarter, type StarterId, type StoreStarter } from '../../services/storeStarters';
+import {
+  formatSelectedModifiers,
+  sumModifierDeltas,
+  validateModifierSelection,
+  type ProductModifierGroup,
+  type SelectedModifier,
+} from '../../services/productModifiers';
+import { applyMerchantTheme, socialHref } from '../../services/merchantTheme';
+import { StoreCheckout, type CheckoutLine } from './StoreCheckout';
+import { loadSavedCart, saveCart, clearSavedCart } from '../../services/savedCart';
+import {
+  announcementLine,
+  closedFoodNextOpen,
+  currencyPrefix,
+  emptyCatalogCopy,
+  featuredItems,
+  formatPrice,
+  itemIsSellable,
+  itemStockLabel,
+  liveItems,
+  realTrustChips,
+  reviewBadge,
+  shouldRenderBlock,
+  showAboutSection,
+  showContactSection,
+  showIllustrativeBanner,
+  showOrderCta,
+  showWhatsApp,
+  type StorefrontItem,
+  type StorefrontModel,
+  type StorefrontVariant,
+} from '../../services/storefrontHonesty';
+import { ShoppingBag } from 'lucide-react';
+import { CTA, HEADER_H, LINEN, RADIUS } from '../../services/storeDesignTokens';
+import { illustrativeSampleItems, isSampleItem } from '../../services/illustrativeSamples';
+import { HeroMedia, resolveHeroSrc } from './HeroMedia';
+import { CatalogCard } from './CatalogCard';
+import { ProductPage } from './ProductPage';
+import { CollectionPage, decodeCategorySlug } from './CollectionPage';
+
+export type StorefrontEditField = 'headline' | 'sub' | 'about';
+
+export interface StorefrontEditor {
+  onFieldChange: (field: StorefrontEditField, value: string) => void;
+  onHeroUpload: (dataUrl: string) => void;
+}
+
+function waHref(e164: string, text?: string): string {
+  const base = `https://wa.me/${e164.replace('+', '')}`;
+  return text ? `${base}?text=${encodeURIComponent(text)}` : base;
+}
+
+const SMALL_CTA: React.CSSProperties = {
+  minWidth: 140,
+  minHeight: CTA.height,
+  height: CTA.height,
+  borderRadius: CTA.radius,
+  fontSize: CTA.fontSize,
+  fontWeight: CTA.weight,
+  letterSpacing: 0.2,
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0 20px',
+};
+
+function heroKicker(model: StorefrontModel, starter: StoreStarter): string {
+  return [model.area, model.island, model.specialty].filter(Boolean).join(' · ') || starter.kicker;
+}
+
+const HeroCopy: React.FC<{
+  model: StorefrontModel;
+  starter: StoreStarter;
+  p: StoreStarter['palette'];
+  editor?: StorefrontEditor;
+  headlineStyle: React.CSSProperties;
+  subStyle?: React.CSSProperties;
+  showKicker?: boolean;
+  kickerStyle?: React.CSSProperties;
+}> = ({ model, starter, p, editor, headlineStyle, subStyle, showKicker = true, kickerStyle }) => (
+  <>
+    {showKicker ? (
+      <p style={{ margin: '0 0 12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7, ...kickerStyle }}>
+        {heroKicker(model, starter)}
+      </p>
+    ) : null}
+    <EditableText
+      as="h1"
+      field="headline"
+      editor={editor}
+      value={model.hero?.headline || starter.heroHeadline}
+      style={{ fontFamily: p.headingFont, lineHeight: 0.95, margin: '0 0 16px', fontWeight: 600, ...headlineStyle }}
+    />
+    {(model.hero?.sub || editor) ? (
+      <EditableText
+        field="sub"
+        editor={editor}
+        value={model.hero?.sub || ''}
+        style={{ margin: '0 0 22px', fontSize: 15, maxWidth: '40ch', lineHeight: 1.55, opacity: 0.85, ...subStyle }}
+      />
+    ) : null}
+  </>
+);
+
+const HeroBlock: React.FC<{
+  model: StorefrontModel;
+  starter: StoreStarter;
+  p: StoreStarter['palette'];
+  heroSrc: string;
+  editor?: StorefrontEditor;
+  cta: string;
+  ctaStyle: React.CSSProperties;
+  showCta: boolean;
+  closedNote: string;
+  wa: string;
+  featured: StorefrontItem[];
+  scrollToCatalog: () => void;
+}> = ({ model, starter, p, heroSrc, editor, cta, ctaStyle, showCta, closedNote, wa, featured, scrollToCatalog }) => {
+  const action = showCta ? (
+    <button type="button" onClick={scrollToCatalog} style={ctaStyle}>{cta}</button>
+  ) : (
+    <div style={{ fontWeight: 600 }}>{closedNote}</div>
+  );
+  const foodHours = model.templateId === 'food' && model.hours ? (
+    wa ? (
+      <a href={waHref(wa, `Reserve at ${model.storeName}. Hours: ${model.hours}`)} style={{ marginTop: 14, color: p.heroText, fontSize: 13 }}>
+        Reserve
+      </a>
+    ) : (
+      <div style={{ marginTop: 14, fontSize: 13, opacity: 0.8 }}>Hours: {model.hours}</div>
+    )
+  ) : null;
+  const photo = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority />;
+  const photoFill = <HeroMedia model={model} starter={starter} src={heroSrc} editable={!!editor} onUpload={editor?.onHeroUpload} priority fill />;
+
+  const onPanelCta: React.CSSProperties = {
+    ...SMALL_CTA,
+    background: p.heroText,
+    color: p.heroBg,
+    border: 'none',
+  };
+  const panelAction = showCta ? (
+    <button type="button" onClick={scrollToCatalog} style={onPanelCta}>{cta}</button>
+  ) : (
+    <div style={{ fontWeight: 600 }}>{closedNote}</div>
+  );
+  const panelStyle: React.CSSProperties = {
+    background: p.heroBg,
+    color: p.heroText,
+    padding: '32px 36px',
+    borderRadius: 8,
+    maxWidth: 480,
+  };
+
+  if (starter.heroLayout === 'split' || starter.heroLayout === 'split_reverse' || starter.heroLayout === 'desk') {
+    const copy = (
+      <div className="juvay-hero-copy-panel" data-hero-panel="split" style={{ background: p.heroBg, color: p.heroText, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8vw 48px 6vw' }}>
+        <HeroCopy model={model} starter={starter} p={p} editor={editor} headlineStyle={{ fontSize: 'clamp(36px, 6vw, 68px)' }} />
+        {action}
+        {starter.heroLayout === 'desk' ? (
+          <div style={{ marginTop: 18, maxWidth: 320, minHeight: 44, border: `1px solid ${p.heroText}`, opacity: 0.55, display: 'flex', alignItems: 'center', padding: '0 12px', fontSize: 13 }}>
+            Search parts. Fit is a merchant note.
+          </div>
+        ) : null}
+        {foodHours}
+      </div>
+    );
+    const reverse = starter.heroLayout === 'split_reverse';
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '70vh' }} className="juvay-hero-split">
+        {reverse ? photo : copy}
+        {reverse ? copy : photo}
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'bleed') {
+    return (
+      <div style={{ position: 'relative', minHeight: '70vh', background: p.heroBg, color: p.heroText }}>
+        {photoFill}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            background: 'linear-gradient(90deg, rgba(20,20,20,0.45) 0%, rgba(20,20,20,0.12) 48%, transparent 72%)',
+          }}
+        />
+        <div
+          className="juvay-hero-copy-panel juvay-hero-bleed-panel"
+          data-hero-panel="bleed"
+          style={{
+            ...panelStyle,
+            position: 'absolute',
+            left: '6vw',
+            bottom: '10vh',
+            zIndex: 2,
+            pointerEvents: editor ? 'auto' : undefined,
+          }}
+        >
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontStyle: 'italic', fontSize: 'clamp(40px, 7vw, 68px)', fontWeight: 500 }}
+          />
+          {panelAction}
+        </div>
+        {featured[0] && featured[0].price != null ? (
+          <div className="juvay-hero-featured" style={{ position: 'absolute', right: '6vw', bottom: '12vh', background: p.surface, color: p.text, padding: '12px 14px', width: 200, zIndex: 2 }}>
+            <div style={{ fontFamily: p.headingFont, fontStyle: 'italic', fontSize: 14 }}>{featured[0].name}</div>
+            <div style={{ color: p.text, fontSize: 13, marginTop: 4 }}>{formatPrice(model, featured[0].price)}</div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'stack') {
+    return (
+      <div style={{ background: p.surface, color: p.text }}>
+        <div style={{ position: 'relative', minHeight: '46vh', background: p.field }}>
+          {photoFill}
+        </div>
+        <div className="juvay-hero-copy-panel" data-hero-panel="stack" style={{ padding: '36px 6vw 40px', maxWidth: 720, background: p.surface, color: p.text }}>
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(36px, 6vw, 60px)', color: p.text }}
+            kickerStyle={{ color: p.muted, opacity: 1 }}
+            subStyle={{ color: p.muted, opacity: 1 }}
+          />
+          {action}
+        </div>
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'rail') {
+    return (
+      <div style={{ position: 'relative', minHeight: '52vh', background: p.heroBg, color: p.heroText }}>
+        {photoFill}
+        <div
+          className="juvay-hero-copy-panel"
+          data-hero-panel="rail"
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 0, background: p.heroBg, color: p.heroText, padding: '28px 6vw', zIndex: 2 }}
+        >
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 500 }}
+            subStyle={{ marginBottom: 16 }}
+          />
+          {panelAction}
+        </div>
+      </div>
+    );
+  }
+
+  if (starter.heroLayout === 'card') {
+    return (
+      <div style={{ position: 'relative', minHeight: '70vh', background: p.field, color: p.text }}>
+        {photoFill}
+        <div
+          style={{
+            position: 'absolute',
+            right: '6vw',
+            top: '14vh',
+            width: 'min(420px, 42vw)',
+            background: p.surface,
+            color: p.text,
+            padding: '32px 28px',
+            zIndex: 2,
+            pointerEvents: editor ? 'auto' : undefined,
+          }}
+          className="juvay-hero-card juvay-hero-copy-panel"
+          data-hero-panel="card"
+        >
+          <HeroCopy
+            model={model}
+            starter={starter}
+            p={p}
+            editor={editor}
+            headlineStyle={{ fontSize: 'clamp(32px, 4vw, 48px)', color: p.text }}
+            kickerStyle={{ color: p.muted, opacity: 1 }}
+            subStyle={{ color: p.muted, opacity: 1 }}
+          />
+          {action}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', minHeight: '70vh', background: p.heroBg, color: p.heroText }}>
+      {photoFill}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          background: 'linear-gradient(180deg, rgba(20,20,20,0.2) 0%, rgba(20,20,20,0.45) 100%)',
+        }}
+      />
+      <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 32, zIndex: 2 }}>
+        <div className="juvay-hero-copy-panel" data-hero-panel="overlay" style={{ ...panelStyle, marginInline: 'auto' }}>
+          <h1 style={{ fontFamily: p.headingFont, fontSize: 'clamp(44px, 8vw, 80px)', lineHeight: 0.95, margin: '0 0 10px', fontWeight: 600, color: p.heroText }}>
+            {model.storeName || starter.name}
+          </h1>
+          <EditableText
+            field="headline"
+            editor={editor}
+            value={model.hero?.headline || starter.heroHeadline}
+            style={{ margin: '0 0 18px', fontSize: 16, maxWidth: '40ch', marginInline: 'auto' }}
+          />
+          {panelAction}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+function EmptyCatalogFrame({ model, p }: { model: StorefrontModel; p: StoreStarter['palette'] }) {
+  const starter = STORE_STARTERS[model.templateId];
+  const ghost = { background: p.field, border: `1px dashed ${p.border}` };
+  const label = (
+    <div style={{ textAlign: 'center', color: p.muted, padding: '8px 12px 0', fontSize: 14 }}>{emptyCatalogCopy(model)}</div>
+  );
+  switch (starter.catalogKind) {
+    case 'menu':
+      return (
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: `1px dashed ${p.border}` }}>
+              <div style={{ width: '40%', height: 14, ...ghost }} />
+              <div style={{ width: 48, height: 14, ...ghost }} />
+            </div>
+          ))}
+          {label}
+        </div>
+      );
+    case 'services':
+      return (
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          {[0, 1].map((i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', borderBottom: `1px dashed ${p.border}` }}>
+              <div style={{ width: '36%', height: 16, ...ghost }} />
+              <div style={{ width: 88, height: 32, borderRadius: 999, ...ghost }} />
+            </div>
+          ))}
+          {label}
+        </div>
+      );
+    case 'lookbook':
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }} className="juvay-grid">
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ height: 220, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+    case 'shades':
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }} className="juvay-grid">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ height: 88, borderRadius: 999, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+    case 'furniture':
+      return (
+        <div>
+          <div style={{ height: 260, maxWidth: 560, margin: '0 auto', ...ghost }} />
+          {label}
+        </div>
+      );
+    case 'gadgets':
+    case 'parts':
+    case 'tiles':
+    default:
+      return (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }} className="juvay-grid">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ height: starter.catalogKind === 'tiles' ? 140 : 120, ...ghost }} />
+            ))}
+          </div>
+          {label}
+        </div>
+      );
+  }
+}
+
+const EditableText: React.FC<{
+  value: string;
+  field: StorefrontEditField;
+  editor?: StorefrontEditor;
+  as?: 'h1' | 'p' | 'div';
+  style?: React.CSSProperties;
+}> = ({ value, field, editor, as = 'p', style }) => {
+  const Tag = as;
+  if (!editor) return <Tag style={style}>{value}</Tag>;
+  return (
+    <Tag
+      style={{ ...style, outline: '1px dashed rgba(255,255,255,0.28)', cursor: 'text' }}
+      contentEditable
+      suppressContentEditableWarning
+      onBlur={(e) => editor.onFieldChange(field, e.currentTarget.textContent || '')}
+    >
+      {value}
+    </Tag>
+  );
+};
+
+export const JuvayStorefront: React.FC<{
+  model: StorefrontModel;
+  onPrimaryCta?: () => void;
+  editor?: StorefrontEditor;
+  productId?: string;
+  categorySlug?: string;
+}> = ({ model, onPrimaryCta, editor, productId, categorySlug }) => {
+  const navigate = useNavigate();
+  const starter = STORE_STARTERS[model.templateId];
+  const p = applyMerchantTheme(starter.palette, { colors: model.colors, fontPair: model.fontPair });
+  const buy = { background: p.accent, color: p.accentText, border: 'none' };
+  const items = liveItems(model);
+  const featured = featuredItems(model);
+  const badge = reviewBadge(model.reviewCount);
+  const cta = starter.cta;
+  const closedNote = closedFoodNextOpen(model);
+  const showCta = showOrderCta(model);
+  const wa = showWhatsApp(model) ? model.whatsappE164! : '';
+  const empty = items.length === 0;
+  const isIllustrative = showIllustrativeBanner(model);
+  const announce = announcementLine(model);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const [heroGone, setHeroGone] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState<Array<{ item: StorefrontItem; variant?: StorefrontVariant; qty: number; note?: string; selectedModifiers?: SelectedModifier[] }>>([]);
+  const [picker, setPicker] = useState<StorefrontItem | null>(null);
+  const [localPdp, setLocalPdp] = useState<StorefrontItem | null>(null);
+  const [pickedVariant, setPickedVariant] = useState<string>('');
+  const [pickedMods, setPickedMods] = useState<SelectedModifier[]>([]);
+  const [pickQty, setPickQty] = useState(1);
+  const [foodNote, setFoodNote] = useState('');
+  const [fulfill, setFulfill] = useState<'pickup' | 'cod' | ''>('');
+  const [cashExact, setCashExact] = useState<'exact' | 'change' | ''>('');
+  const [query, setQuery] = useState('');
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cartHydrated, setCartHydrated] = useState(false);
+
+  useEffect(() => {
+    const el = heroRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => setHeroGone(!entry.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const visibleItems = useMemo(() => {
+    if (!query.trim()) return items;
+    const q = query.toLowerCase();
+    return items.filter((item) =>
+      [item.name, item.compatibilityNote, item.description, item.specs]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(q)),
+    );
+  }, [items, query]);
+
+  const cartTotal = cart.reduce((sum, line) => {
+    const unit = (Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers);
+    return sum + unit * line.qty;
+  }, 0);
+  const cartCount = cart.reduce((s, l) => s + l.qty, 0);
+  const face = formatPrice(model, cartTotal) || `${currencyPrefix(model)}0`;
+
+  const openPicker = (item: StorefrontItem) => {
+    setPicker(item);
+    setPickedVariant('');
+    setPickedMods([]);
+    setPickQty(1);
+  };
+
+  const openItem = (item: StorefrontItem) => {
+    if (model.slug && model.mode !== 'illustrative') {
+      navigate(`/store/${encodeURIComponent(model.slug)}/p/${encodeURIComponent(item.id)}`);
+      return;
+    }
+    setLocalPdp(item);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closePdp = () => {
+    if (model.slug && model.mode !== 'illustrative' && productId) {
+      navigate(`/store/${encodeURIComponent(model.slug)}`);
+      return;
+    }
+    setLocalPdp(null);
+  };
+
+  const routeItem = productId ? items.find((i) => i.id === productId) || null : null;
+  const pdpItem = routeItem || localPdp;
+  const showingPdp = !!productId || !!localPdp;
+
+  const [localCategory, setLocalCategory] = useState<string | null>(null);
+  const activeCategory = (categorySlug && decodeCategorySlug(categorySlug)) || localCategory;
+  const showingCollection = !!activeCategory && !showingPdp;
+
+  const categoryLabels: string[] = model.mode === 'illustrative'
+    ? ['All', 'Featured', ...Array.from(new Set(items.map((i) => (i.category || '').trim()).filter(Boolean)))]
+    : ['All', ...Array.from(new Set(items.map((i) => (i.category || '').trim()).filter(Boolean)))];
+
+  const openCategory = (label: string) => {
+    if (label === 'All') {
+      setLocalCategory(null);
+      setQuery('');
+      if (model.slug && model.mode !== 'illustrative') {
+        navigate(`/store/${encodeURIComponent(model.slug)}`);
+      }
+      return;
+    }
+    if (model.slug && model.mode !== 'illustrative') {
+      navigate(`/store/${encodeURIComponent(model.slug)}/c/${encodeURIComponent(label)}`);
+      return;
+    }
+    setLocalCategory(label);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeCollection = () => {
+    setLocalCategory(null);
+    if (model.slug && model.mode !== 'illustrative' && categorySlug) {
+      navigate(`/store/${encodeURIComponent(model.slug)}`);
+    }
+  };
+
+  const addLine = (item: StorefrontItem, variant?: StorefrontVariant, selectedModifiers?: SelectedModifier[], qtyOverride?: number) => {
+    if (!itemIsSellable(item) || model.soldOutToday || isSampleItem(item) || model.mode === 'illustrative') return;
+    const groups = item.modifierGroups || [];
+    const needsVariant = !!(item.variants && item.variants.length);
+    const needsMods = groups.length > 0;
+    if ((needsVariant && !variant) || (needsMods && selectedModifiers == null)) {
+      openPicker(item);
+      return;
+    }
+    if (needsMods) {
+      const check = validateModifierSelection(groups, selectedModifiers || []);
+      if (!check.ok) return;
+    }
+    const qty = Math.max(1, qtyOverride || (starter.countOrder ? pickQty : 1));
+    const modKey = (selectedModifiers || []).map((m) => m.optionId).sort().join(',');
+    setCart((prev) => {
+      const key = `${item.id}:${variant?.id || ''}:${modKey}`;
+      const found = prev.find((l) => {
+        const k = `${l.item.id}:${l.variant?.id || ''}:${(l.selectedModifiers || []).map((m) => m.optionId).sort().join(',')}`;
+        return k === key;
+      });
+      if (found) return prev.map((l) => (l === found ? { ...l, qty: l.qty + qty, note: foodNote || l.note } : l));
+      return [...prev, { item, variant, qty, note: foodNote || undefined, selectedModifiers: selectedModifiers || undefined }];
+    });
+    setPicker(null);
+    setCartOpen(true);
+  };
+
+  const toggleMod = (group: ProductModifierGroup, optionId: string) => {
+    const opt = group.options.find((o) => o.id === optionId);
+    if (!opt || opt.soldOut) return;
+    setPickedMods((prev) => {
+      const without = prev.filter((s) => s.groupId !== group.id || (group.mode === 'multi' && s.optionId !== optionId));
+      if (group.mode === 'multi' && prev.some((s) => s.groupId === group.id && s.optionId === optionId)) {
+        return without;
+      }
+      return [
+        ...without.filter((s) => group.mode === 'multi' || s.groupId !== group.id),
+        {
+          groupId: group.id,
+          groupName: group.name,
+          optionId: opt.id,
+          optionLabel: opt.label,
+          priceDelta: Number(opt.priceDelta) || 0,
+        },
+      ];
+    });
+  };
+
+  const scrollToCatalog = () => {
+    if (onPrimaryCta) {
+      onPrimaryCta();
+      return;
+    }
+    document.getElementById('juvay-catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const ghost = starter.heroLayout === 'bleed' && !model.colors?.accent;
+  const ctaStyle: React.CSSProperties = ghost
+    ? { ...SMALL_CTA, background: 'transparent', color: p.heroText, border: `1px solid ${p.heroText}` }
+    : { ...SMALL_CTA, ...buy };
+  const heroSrc = resolveHeroSrc(model);
+  const chips = realTrustChips(model);
+
+  const upsell = items.filter((i) => i.inStock !== false && !cart.some((l) => l.item.id === i.id)).slice(0, 1);
+  const showUpsell = items.length >= 2 && upsell.length > 0;
+
+  useEffect(() => {
+    if (!model.logo || (model.mode !== 'published' && model.mode !== 'merchant_preview')) return;
+    let link = document.querySelector('link[rel="icon"][data-juvay="logo"]') as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      link.setAttribute('data-juvay', 'logo');
+      document.head.appendChild(link);
+    }
+    link.href = model.logo;
+  }, [model.logo, model.mode]);
+
+  useEffect(() => {
+    if (!model.slug || cartHydrated) return;
+    const restored = loadSavedCart(model.slug, items);
+    if (restored.length) setCart(restored);
+    setCartHydrated(true);
+  }, [model.slug, items, cartHydrated]);
+
+  useEffect(() => {
+    if (!model.slug || !cartHydrated) return;
+    saveCart(model.slug, cart);
+  }, [cart, model.slug, cartHydrated]);
+
+  const socials = [
+    { key: 'instagram' as const, href: socialHref('instagram', model.social?.instagram) },
+    { key: 'facebook' as const, href: socialHref('facebook', model.social?.facebook) },
+    { key: 'tiktok' as const, href: socialHref('tiktok', model.social?.tiktok) },
+  ].filter((row) => row.href);
+
+  return (
+    <div
+      className="juvay-sf"
+      style={{
+        minHeight: '100%',
+        background: p.bg,
+        color: p.text,
+        fontFamily: p.bodyFont,
+        backgroundImage: /^#(?:0|1[0-9a-f]{5})/i.test(p.bg) ? undefined : LINEN,
+      }}
+    >
+      {p.fontHref ? <link rel="stylesheet" href={p.fontHref} /> : null}
+
+      {isIllustrative && (
+        <div style={{ background: ISLAND.mango, color: ISLAND.mangoInk, textAlign: 'center', fontSize: 11, fontWeight: 700, letterSpacing: 1.4, padding: '8px 12px', textTransform: 'uppercase' }}>
+          Preview
+        </div>
+      )}
+
+      {model.soldOutToday ? (
+        <div style={{ background: ISLAND.pepper, color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: 700, padding: '10px 12px' }}>
+          Sold out today
+        </div>
+      ) : null}
+
+      {announce ? (
+        <div style={{ background: p.heroBg, color: p.heroText, textAlign: 'center', fontSize: 11, letterSpacing: 0.4, padding: '6px 12px' }}>
+          {announce}
+        </div>
+      ) : null}
+
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 30,
+          height: HEADER_H,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 6vw',
+          background: p.surface,
+          borderBottom: `1px solid ${p.border}`,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setLocalPdp(null);
+            setLocalCategory(null);
+            if ((productId || categorySlug) && model.slug && model.mode !== 'illustrative') {
+              navigate(`/store/${encodeURIComponent(model.slug)}`);
+            }
+          }}
+          style={{ fontFamily: p.headingFont, fontSize: 20, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', color: p.text, cursor: 'pointer', padding: 0, letterSpacing: '-0.02em' }}
+        >
+          {model.logo ? (
+            <img loading="lazy" src={model.logo} alt="" width={36} height={36} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          ) : null}
+          {model.storeName || starter.name}
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 13 }}>
+          {model.isOpen === true && model.hours ? (
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.08, textTransform: 'uppercase', color: ISLAND.teal }}>Open</span>
+          ) : null}
+          {model.isOpen === false ? <span style={{ fontSize: 12, color: p.muted }}>{closedNote || 'Closed'}</span> : null}
+          {Number(model.reviewCount || 0) > 0 ? <span style={{ color: p.muted }}>{badge.label}</span> : null}
+          {model.mode === 'published' ? (
+            <button
+              type="button"
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? window.location.href : '';
+                const text = `${model.storeName || ''} on Juvay`;
+                if (navigator.share) {
+                  navigator.share({ title: text, text, url }).catch(() => {});
+                  return;
+                }
+                window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank');
+              }}
+              style={{ background: 'none', border: 'none', color: p.text, fontSize: 12, cursor: 'pointer', minHeight: 32 }}
+            >
+              Share
+            </button>
+          ) : null}
+          {wa ? (
+            <a href={waHref(wa, `Hello ${model.storeName}`)} style={{ color: ISLAND.teal, textDecoration: 'none', minHeight: 32, display: 'inline-flex', alignItems: 'center' }}>
+              WhatsApp
+            </a>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            aria-label={cartCount ? `Cart, ${cartCount} items` : 'Cart'}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: p.text,
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
+              position: 'relative',
+              padding: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <ShoppingBag size={22} strokeWidth={1.75} aria-hidden />
+            {cartCount > 0 ? (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 4,
+                  right: 0,
+                  minWidth: 18,
+                  height: 18,
+                  padding: '0 5px',
+                  borderRadius: 999,
+                  background: p.text,
+                  color: p.surface,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                }}
+              >
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            ) : null}
+          </button>
+        </div>
+      </header>
+
+      {showingPdp ? (
+        <ProductPage
+          model={model}
+          item={pdpItem}
+          palette={p}
+          onBack={closePdp}
+          onAdd={(item, variant, mods, qty) => addLine(item, variant, mods, qty)}
+        />
+      ) : showingCollection && activeCategory ? (
+        <CollectionPage
+          model={model}
+          palette={p}
+          categorySlug={activeCategory}
+          onBack={closeCollection}
+          onAdd={(item) => addLine(item)}
+          onOpen={openItem}
+          categories={categoryLabels}
+          onSelectCategory={openCategory}
+        />
+      ) : (
+      <>
+      {shouldRenderBlock('hero', model) && (
+        <section ref={heroRef as any} style={{ minHeight: starter.heroLayout === 'rail' ? '52vh' : starter.heroLayout === 'stack' ? undefined : '70vh', background: p.heroBg }}>
+          <HeroBlock
+            model={model}
+            starter={starter}
+            p={p}
+            heroSrc={heroSrc}
+            editor={editor}
+            cta={cta}
+            ctaStyle={ctaStyle}
+            showCta={showCta}
+            closedNote={closedNote}
+            wa={wa}
+            featured={featured}
+            scrollToCatalog={scrollToCatalog}
+          />
+        </section>
+      )}
+
+      {shouldRenderBlock('trust', model) && chips.length > 0 ? (
+        <div style={{ padding: '14px 6vw', display: 'flex', flexWrap: 'wrap', gap: 8, background: p.surface, alignItems: 'center' }}>
+          {chips.map((chip) => (
+            <span key={chip} style={{ fontSize: 12, color: p.muted, padding: '0 12px 0 0' }}>{chip}</span>
+          ))}
+          {model.wamLive ? (
+            <span style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>Wam checkout</span>
+          ) : null}
+          {model.acceptsCashPickup !== false ? (
+            <span style={{ fontSize: 12, color: p.accent, border: `1px solid ${p.accent}`, padding: '4px 10px' }}>Cash on pickup</span>
+          ) : null}
+          <a href="/refund.html" style={{ fontSize: 12, color: p.accent, padding: '4px 10px' }}>Refund policy</a>
+        </div>
+      ) : null}
+
+      {(model.hours || model.pickupAddress || model.mapDirectionsUrl) && isFoodLikeStarter(model.templateId) ? (
+        <div style={{ padding: '16px 6vw', background: p.bg, borderBottom: `1px solid ${p.border}`, fontSize: 14 }}>
+          {model.hours ? <div style={{ marginBottom: 6 }}><strong>Hours</strong> · {model.hours}</div> : null}
+          {model.pickupAddress ? <div style={{ marginBottom: 6 }}><strong>Pickup</strong> · {model.pickupAddress}</div> : null}
+          {model.prepMinutes != null && model.prepMinutes > 0 ? (
+            <div style={{ marginBottom: 6 }}><strong>Usually ready</strong> · about {model.prepMinutes} minutes (estimate)</div>
+          ) : null}
+          {model.mapDirectionsUrl ? (
+            <a href={model.mapDirectionsUrl} target="_blank" rel="noreferrer" style={{ color: ISLAND.teal, fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+              Map / directions
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+
+      {(showAboutSection(model) || editor) ? (
+        <section style={{ padding: '40px 6vw', maxWidth: 'calc(40ch + 12vw)' }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, margin: '0 0 10px' }}>About</h2>
+          <EditableText
+            field="about"
+            editor={editor}
+            value={model.about || ''}
+            style={{ margin: 0, fontSize: 16, lineHeight: 1.65, color: p.muted, maxWidth: '40ch' }}
+          />
+        </section>
+      ) : null}
+
+      {showContactSection(model) ? (
+        <section style={{ padding: '8px 6vw 36px', maxWidth: 560 }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, margin: '0 0 10px' }}>Contact / Hours</h2>
+          {model.hours ? <div style={{ marginBottom: 6 }}>{model.hours}</div> : null}
+          {model.pickupAddress ? <div style={{ marginBottom: 6 }}>{model.pickupAddress}</div> : null}
+          {model.phone ? <div style={{ marginBottom: 6 }}>{model.phone}</div> : null}
+          {wa ? (
+            <a href={waHref(wa, `Hello ${model.storeName}`)} style={{ color: p.accent }}>WhatsApp</a>
+          ) : null}
+        </section>
+      ) : null}
+
+      {(model.templateId === 'auto' || model.templateId === 'electronics') ? (
+        <div style={{ padding: '0 6vw 8px' }}>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={
+              model.templateId === 'auto'
+                ? 'Search parts. Fit is a merchant note.'
+                : 'Search gadgets. Specs only if the seller typed them.'
+            }
+            style={{ width: '100%', maxWidth: 360, minHeight: 44, border: `1px solid ${p.border}`, background: p.surface, padding: '0 12px' }}
+          />
+        </div>
+      ) : null}
+
+      
+      {shouldRenderBlock('category_rail', model) ? (
+        <section style={{ padding: '20px 6vw 8px' }} aria-label="Categories">
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 8 }}>
+            {categoryLabels.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => openCategory(label)}
+                style={{
+                  flex: '0 0 auto',
+                  minHeight: 40,
+                  padding: '0 14px',
+                  borderRadius: 999,
+                  border: `1px solid ${p.border}`,
+                  background: p.surface,
+                  color: p.text,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {shouldRenderBlock('banner', model) ? (
+        <section style={{ padding: '12px 6vw 28px' }}>
+          <div
+            style={{
+              borderRadius: RADIUS.sm,
+              padding: '36px 32px',
+              background: p.surface,
+              color: p.text,
+              display: 'grid',
+              gap: 8,
+              border: `1px solid ${p.border}`,
+            }}
+          >
+            <div style={{ fontSize: 12, letterSpacing: 0.4, opacity: 0.9 }}>
+              {model.mode === 'illustrative' ? 'Your banner' : 'From the shop'}
+            </div>
+            <div style={{ fontFamily: p.headingFont, fontSize: 22, fontWeight: 500, maxWidth: '36ch' }}>
+              {model.announcement?.trim()
+                || (model.mode === 'illustrative'
+                  ? 'Your promo goes here.'
+                  : model.announcement)}
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.92 }}>Cash pickup · COD{model.wamLive ? ' · Wam online' : ''}</div>
+          </div>
+        </section>
+      ) : null}
+
+{(shouldRenderBlock('featured', model) || shouldRenderBlock('featured_combo', model) || shouldRenderBlock('lookbook', model)) && featured.length > 0 ? (
+        <section style={{ padding: '8px 6vw 36px' }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
+            {starter.featuredTitle}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: featured.length === 1 ? '1fr' : 'repeat(4, 1fr)', gap: 28 }} className="juvay-grid">
+            {featured.map((item) => (
+              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} onOpen={() => openItem(item)} large={model.templateId === 'home'} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="juvay-catalog" style={{ padding: `12px 6vw ${heroGone ? 88 : 48}px` }}>
+        <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 20px', textAlign: 'center' }}>
+          {starter.catalogTitle}
+        </h2>
+        {empty ? (
+          <EmptyCatalogFrame model={model} p={p} />
+        ) : shouldRenderBlock('menu', model) || shouldRenderBlock('service_list', model) ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720, margin: '0 auto' }}>
+            {visibleItems.map((item) => {
+              const price = formatPrice(model, item.price);
+              return (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', padding: '16px 0', borderBottom: `1px solid ${p.border}` }}>
+                  <button type="button" onClick={() => openItem(item)} style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, background: 'none', border: 'none', color: 'inherit', textAlign: 'left', cursor: 'pointer', padding: 0 }}>
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt="" width={72} height={72} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: RADIUS.sm, flex: '0 0 auto' }} />
+                    ) : null}
+                    <div>
+                      <div style={{ fontFamily: p.headingFont, fontSize: 18, fontWeight: 500 }}>
+                        {item.name}
+                      </div>
+                      {item.description ? <div style={{ fontSize: 13, color: p.muted, maxWidth: '40ch', marginTop: 4, lineHeight: 1.45 }}>{item.description}</div> : null}
+                    </div>
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {price ? <strong style={{ color: p.text, fontWeight: 600 }}>{price}</strong> : null}
+                    {itemStockLabel(item) ? <span style={{ fontSize: 12, color: p.muted }}>{itemStockLabel(item)}</span> : null}
+                    {itemIsSellable(item) && !isSampleItem(item) && model.mode !== 'illustrative' ? (
+                      <button type="button" onClick={() => addLine(item)} style={{ ...SMALL_CTA, ...buy }}>Add</button>
+                    ) : isSampleItem(item) || model.mode === 'illustrative' ? (
+                      <span style={{ fontSize: 12, color: p.muted }}>Layout only</span>
+                    ) : (
+                      <span style={{ fontSize: 12, color: p.muted }}>Sold out</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 28 }} className="juvay-grid">
+            {visibleItems.map((item) => (
+              <CatalogCard key={item.id} item={item} model={model} palette={p} onAdd={() => addLine(item)} onOpen={() => openItem(item)} large={model.templateId === 'home'} />
+            ))}
+          </div>
+        )}
+        {(starter.showsSidesSlot || model.sidesSlotLabel) ? (
+          <div style={{ marginTop: 24, padding: 16, border: `1px dashed ${p.border}`, borderRadius: 8, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
+            <div style={{ fontFamily: p.headingFont, fontSize: 16, marginBottom: 6 }}>Sides</div>
+            <p style={{ margin: 0, fontSize: 13, color: p.muted }}>
+              {model.sidesSlotLabel || 'Saheena / aloo pie / bake & saltfish — left empty for you to fill. No sample prices.'}
+            </p>
+          </div>
+        ) : null}
+      </section>
+
+      {shouldRenderBlock('how', model) && (
+        <section style={{ padding: '8px 6vw 40px', maxWidth: 720 }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 16px' }}>How it works</h2>
+          <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 16 }}>
+            {model.how!.map((step) => (
+              <li key={step.title}>
+                <div style={{ fontFamily: p.headingFont, fontSize: 18, marginBottom: 4 }}>{step.title}</div>
+                <div style={{ color: p.muted, fontSize: 14, maxWidth: '40ch', lineHeight: 1.55 }}>{step.body}</div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      
+      {shouldRenderBlock('testimonials', model) ? (
+        <section style={{ padding: '28px 6vw 40px', background: p.surface }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 8px', textAlign: 'center' }}>Reviews</h2>
+          {Number(model.reviewCount || 0) > 0 ? (
+            <div>
+              <p style={{ textAlign: 'center', color: p.muted, fontSize: 14 }}>
+                {reviewBadge(model.reviewCount).label} on this shop
+                {model.reviewAverage != null ? ` · rated ${Number(model.reviewAverage).toFixed(1)} from completed orders` : ''}.
+              </p>
+              {(model.reviews || []).length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, maxWidth: 560, margin: '16px auto 0' }}>
+                  {model.reviews!.slice(0, 8).map((rev, i) => (
+                    <li key={i} style={{ borderTop: `1px solid ${p.border}`, padding: '12px 0', fontSize: 14 }}>
+                      <div style={{ fontWeight: 700 }}>{rev.rating}/5</div>
+                      {rev.body ? <p style={{ margin: '6px 0 0', color: p.text }}>{rev.body}</p> : null}
+                      {rev.created_at ? <p style={{ margin: '4px 0 0', fontSize: 12, color: p.muted }}>{String(rev.created_at).slice(0, 10)}</p> : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : (
+            <div style={{ maxWidth: 520, margin: '12px auto 0', textAlign: 'center', padding: '28px 16px', border: `1px dashed ${p.border}`, borderRadius: 16, color: p.muted, fontSize: 14, lineHeight: 1.55 }}>
+              No reviews yet
+            </div>
+          )}
+        </section>
+      ) : null}
+
+{shouldRenderBlock('faq', model) && (
+        <section style={{ padding: '8px 6vw 40px', maxWidth: 720 }}>
+          <h2 style={{ fontFamily: p.headingFont, fontSize: 28, fontWeight: 500, margin: '0 0 16px' }}>FAQ</h2>
+          <dl style={{ margin: 0 }}>
+            {model.faq!.map((row) => (
+              <div key={row.q} style={{ borderTop: `1px solid ${p.border}`, padding: '14px 0' }}>
+                <dt style={{ fontWeight: 600, marginBottom: 6 }}>{row.q}</dt>
+                <dd style={{ margin: 0, color: p.muted, fontSize: 14, maxWidth: '40ch', lineHeight: 1.55 }}>{row.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {shouldRenderBlock('footer', model) && (
+        <footer style={{ padding: '56px 6vw 64px', borderTop: `1px solid ${p.border}`, color: p.muted, fontSize: 13, display: 'grid', gap: 4 }}>
+          <div style={{ fontFamily: p.headingFont, color: p.text, fontSize: 20, marginBottom: 6 }}>{model.storeName || starter.name}</div>
+          {model.island ? <div>{model.island}</div> : null}
+          {socials.length ? (
+            <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
+              {socials.map((row) => (
+                <a key={row.key} href={row.href} style={{ color: p.accent, textTransform: 'capitalize' }}>{row.key}</a>
+              ))}
+            </div>
+          ) : null}
+          <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
+            <a href="/terms.html" style={{ color: ISLAND.teal }}>Terms</a>
+            <a href="/privacy.html" style={{ color: ISLAND.teal }}>Privacy</a>
+            <a href="/refund.html" style={{ color: ISLAND.teal }}>Refunds</a>
+          </div>
+          <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {model.acceptsCashPickup !== false ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>Cash pickup</span> : null}
+            {model.acceptsCod ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>COD</span> : null}
+            {model.wamLive ? <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 999, border: `1px solid ${p.border}` }}>Wam</span> : null}
+          </div>
+          <div style={{ marginTop: 16 }}>Juvay · {model.storeName || starter.name}</div>
+          <div style={{ marginTop: 4, fontSize: 12 }}>Prices in {currencyPrefix(model)}. No USD convert on this page.</div>
+        </footer>
+      )}
+
+      </>
+      )}
+
+      {((shouldRenderBlock('sticky', model) && heroGone && showCta) || cartCount > 0) && model.mode !== 'illustrative' && !showingPdp && (
+        <div
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 24,
+            minHeight: 56,
+            padding: '8px 16px calc(8px + env(safe-area-inset-bottom))',
+            background: p.surface,
+            borderTop: `1px solid ${p.border}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, color: p.muted }}>{cartCount ? face : starter.name}</div>
+            {isFoodLikeStarter(model.templateId) ? (
+              <input
+                value={foodNote}
+                onChange={(e) => setFoodNote(e.target.value)}
+                placeholder="Note for the vendor"
+                style={{ width: '100%', border: 'none', background: 'transparent', fontSize: 12, color: p.text }}
+              />
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => (cartCount ? (setCartOpen(true), setCheckoutOpen(false)) : scrollToCatalog())}
+            style={{ minHeight: 44, minWidth: 140, ...buy, fontWeight: 700 }}
+          >
+            {cartCount ? `View cart · ${face}` : cta}
+          </button>
+        </div>
+      )}
+
+      {picker && (
+        <div role="dialog" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 40, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setPicker(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: p.surface, width: '100%', maxWidth: 420, padding: 20, maxHeight: '88vh', overflow: 'auto' }}>
+            <div style={{ fontFamily: p.headingFont, fontSize: 20, marginBottom: 8 }}>{picker.name}</div>
+            {starter.countOrder ? (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 12, color: p.muted, marginBottom: 8 }}>How many?</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setPickQty(n)}
+                      style={{ minHeight: 48, minWidth: 48, borderRadius: 8, border: `1px solid ${pickQty === n ? p.text : p.border}`, background: pickQty === n ? p.text : 'transparent', color: pickQty === n ? p.surface : p.text, fontWeight: 700 }}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {(picker.variants || []).length ? (
+              <>
+                <p style={{ fontSize: 13, color: p.muted, margin: '0 0 8px' }}>Pick a variant</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 14px' }}>
+                  {(picker.variants || []).map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setPickedVariant(v.id)}
+                      style={{ minHeight: 44, padding: '0 14px', border: `1px solid ${pickedVariant === v.id ? p.text : p.border}`, background: pickedVariant === v.id ? p.text : 'transparent', color: pickedVariant === v.id ? p.surface : p.text }}
+                    >
+                      {v.title}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
+            {(picker.modifierGroups || []).map((group) => (
+              <div key={group.id} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                  {group.name}{group.required ? ' *' : ''}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {group.options.map((opt) => {
+                    const on = pickedMods.some((s) => s.groupId === group.id && s.optionId === opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        disabled={!!opt.soldOut}
+                        onClick={() => toggleMod(group, opt.id)}
+                        style={{
+                          minHeight: 44,
+                          padding: '0 12px',
+                          borderRadius: group.ui === 'levels' ? 999 : 8,
+                          border: `1px solid ${on ? p.accent : p.border}`,
+                          background: on ? p.accent : 'transparent',
+                          color: on ? p.accentText : p.text,
+                          opacity: opt.soldOut ? 0.4 : 1,
+                          fontSize: 13,
+                        }}
+                      >
+                        {opt.label}{opt.priceDelta ? ` +${opt.priceDelta}` : ''}{opt.soldOut ? ' · Sold out' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              disabled={
+                !!((picker.variants || []).length && !pickedVariant)
+                || (picker.modifierGroups || []).some((g) => g.required && !pickedMods.some((s) => s.groupId === g.id))
+              }
+              onClick={() => addLine(
+                picker,
+                picker.variants?.find((v) => v.id === pickedVariant),
+                picker.modifierGroups?.length ? pickedMods : undefined,
+                starter.countOrder ? pickQty : 1,
+              )}
+              style={{ ...SMALL_CTA, width: '100%', height: 48, ...buy, fontSize: 15, position: 'sticky', bottom: 0 }}
+            >
+              {(() => {
+                const unit = (Number((picker.variants?.find((v) => v.id === pickedVariant)?.price) ?? picker.price) || 0) + sumModifierDeltas(pickedMods);
+                const qty = starter.countOrder ? pickQty : 1;
+                const priced = formatPrice(model, unit * qty);
+                return priced ? `Add to cart · ${priced}` : (starter.countOrder ? `Add · ${pickQty}` : 'Add to cart');
+              })()}
+            </button>
+            {wa ? (
+              <a
+                href={waHref(wa, `Hi, I'd like to order ${starter.countOrder ? pickQty : 1}× ${picker.name} from ${model.storeName}`)}
+                style={{ display: 'grid', placeItems: 'center', minHeight: 44, marginTop: 8, color: ISLAND.teal, fontWeight: 700, textDecoration: 'none' }}
+              >
+                Order on WhatsApp
+              </a>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {cartOpen && (
+        <div role="dialog" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 42 }} onClick={() => setCartOpen(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 'min(100%, 380px)',
+              background: p.surface,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            className="juvay-cart"
+          >
+            <div style={{ padding: 16, display: 'flex', justifyContent: 'space-between' }}>
+              <strong>Cart</strong>
+              <button type="button" onClick={() => setCartOpen(false)} style={{ background: 'none', border: 'none', color: p.text }}>Close</button>
+            </div>
+            <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+              {cart.length === 0 ? <p style={{ color: p.muted }}>Nothing in the cart yet.</p> : cart.map((line, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div>
+                    {line.item.name} ×{line.qty}{line.variant ? ` · ${line.variant.title}` : ''}
+                    {line.selectedModifiers?.length ? (
+                      <div style={{ fontSize: 12, color: p.muted }}>{formatSelectedModifiers(line.selectedModifiers)}</div>
+                    ) : null}
+                    {line.note ? <div style={{ fontSize: 12, color: p.muted }}>{line.note}</div> : null}
+                  </div>
+                  <span style={{ color: p.text, fontWeight: 600 }}>{formatPrice(model, ((Number(line.variant?.price ?? line.item.price) || 0) + sumModifierDeltas(line.selectedModifiers)) * line.qty)}</span>
+                </div>
+              ))}
+              {showUpsell ? (
+                <button type="button" onClick={() => addLine(upsell[0])} style={{ marginTop: 8, background: 'none', border: `1px solid ${p.border}`, color: p.text, padding: '8px 10px' }}>
+                  Also in this shop: {upsell[0].name}
+                </button>
+              ) : null}
+              {(model.acceptsCashPickup || model.acceptsCod) && cart.length > 0 ? (
+                <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
+                  {model.acceptsCashPickup ? (
+                    <label><input type="radio" name="ful" checked={fulfill === 'pickup'} onChange={() => setFulfill('pickup')} /> Pickup</label>
+                  ) : null}
+                  {model.acceptsCod ? (
+                    <label><input type="radio" name="ful" checked={fulfill === 'cod'} onChange={() => setFulfill('cod')} /> Cash on delivery</label>
+                  ) : null}
+                  {fulfill ? (
+                    <div style={{ display: 'grid', gap: 6, fontSize: 13 }}>
+                      <label><input type="radio" name="cash" checked={cashExact === 'exact'} onChange={() => setCashExact('exact')} /> Cash exact</label>
+                      <label><input type="radio" name="cash" checked={cashExact === 'change'} onChange={() => setCashExact('change')} /> I need change</label>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+            <div style={{ padding: 16, borderTop: `1px solid ${p.border}` }}>
+              {checkoutOpen ? (
+                <StoreCheckout
+                  model={model}
+                  lines={cart as CheckoutLine[]}
+                  onBack={() => setCheckoutOpen(false)}
+                  colors={{ accent: p.accent, accentText: p.accentText, text: p.text, muted: p.muted, border: p.border, surface: p.surface }}
+                  onPlaced={(result) => {
+                    clearSavedCart(model.slug || '');
+                    setCart([]);
+                    setCartOpen(false);
+                    setCheckoutOpen(false);
+                    const path = `/order/${encodeURIComponent(result.order_ref)}`;
+                    if (result.vendor_whatsapp) {
+                      // Buyer can tell the shop from the confirmation page.
+                    }
+                    window.location.href = path;
+                  }}
+                />
+              ) : (
+                <>
+                  <div style={{ marginBottom: 10, fontWeight: 700 }}>Face total {face}</div>
+                  {model.storeId && cart.length > 0 && model.mode !== 'illustrative' ? (
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutOpen(true)}
+                      style={{ display: 'grid', placeItems: 'center', width: '100%', minHeight: 48, background: p.accent, color: p.accentText, border: 'none', fontWeight: 700, marginBottom: 8 }}
+                    >
+                      Proceed to checkout
+                    </button>
+                  ) : null}
+                  {wa ? (
+                    <a
+                      href={waHref(wa, `Order from ${model.storeName}: ${cart.map((l) => {
+                        const mods = formatSelectedModifiers(l.selectedModifiers);
+                        return `${l.item.name} x${l.qty}${mods ? ` (${mods})` : ''}`;
+                      }).join('; ')}. ${face}${fulfill === 'cod' ? ' · Cash on delivery' : fulfill === 'pickup' ? ' · Cash on pickup' : ''}`)}
+                      style={{ display: 'grid', placeItems: 'center', minHeight: 44, background: 'transparent', color: p.text, border: `1px solid ${p.border}`, textDecoration: 'none', fontWeight: 700 }}
+                    >
+                      WhatsApp this order
+                    </a>
+                  ) : (
+                    !model.storeId ? (
+                      <div style={{ fontSize: 13, color: p.muted }}>No WhatsApp on this shop. Pay on the rails that are on.</div>
+                    ) : null
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 800px) {
+          .juvay-hero-split { grid-template-columns: 1fr !important; }
+          .juvay-hero-card { position: relative !important; right: auto !important; top: auto !important; width: auto !important; margin: 24px 6vw 32px; }
+          .juvay-hero-bleed-panel { left: 4vw !important; right: 4vw !important; max-width: none !important; bottom: 6vh !important; padding: 24px 22px !important; }
+          .juvay-hero-featured { display: none !important; }
+          .juvay-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 16px !important; }
+          .juvay-cart { top: auto !important; height: 70vh; border-radius: 16px 16px 0 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export function illustrativeModel(templateId: StarterId): StorefrontModel {
+  const starter = STORE_STARTERS[templateId];
+  const foodLike = isFoodLikeStarter(templateId);
+  return {
+    templateId,
+    storeName: starter.name,
+    mode: 'illustrative',
+    items: illustrativeSampleItems(templateId),
+    reviewCount: 0,
+    acceptsCashPickup: true,
+    acceptsCod: foodLike,
+    hero: { headline: starter.heroHeadline, sub: starter.useWhen, image: starter.heroImage },
+    trustChips: starter.chips,
+    sidesSlotLabel: starter.showsSidesSlot
+      ? 'Sides (saheena / aloo pie / bake & saltfish) — left empty for the merchant to fill'
+      : undefined,
+    dailySpecials: templateId === 'street_food' ? 'Daily specials — merchant types what’s on today' : undefined,
+    how: [
+      { title: '1. Island layout', body: 'Hero, category rails, grids, and sticky cart — blocks hide when they have no real data.' },
+      { title: '2. Cash & WhatsApp first', body: 'Pickup and COD chips stay honest. No invented products, reviews, or card gateways.' },
+      { title: '3. Make it yours', body: foodLike
+        ? 'Add wraps or plates, edit condiment option-groups, set hours and sold-out. Publish when you choose.'
+        : 'Add your name, island, hours, and priced items. Publish when you choose.' },
+    ],
+    faq: [
+      { q: 'Is this a real shop?', a: 'No. This is a preview of the layout, not a live shop.' },
+      { q: 'How do Caribbean buyers pay?', a: 'Cash when you collect, or cash on delivery if that option is on. Wam online only when configured — never PayPal.' },
+      { q: 'Where are the products?', a: 'The items here are placeholders so you can see the layout. A published shop only shows what you add.' },
+    ],
+  };
+}
+
+export default JuvayStorefront;

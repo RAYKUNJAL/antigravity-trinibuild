@@ -13,6 +13,7 @@ import {
 import { supabase } from '../services/supabaseClient';
 import { affiliateSystemService, AffiliateProfile, AffiliateReferral, TIER_CONFIG, COMMISSION_EVENTS } from '../services/affiliateSystemService';
 import { useNavigate } from 'react-router-dom';
+import { AFFILIATE_CUT_COPY } from '../services/juvayPlans';
 
 const TIER_COLORS = {
   bronze: { bg: 'from-amber-700 to-amber-600', badge: 'bg-amber-100 text-amber-800', icon: '🥉' },
@@ -66,7 +67,7 @@ export default function AffiliateDashboard() {
   const shareWhatsApp = () => {
     if (!profile) return;
     const link = affiliateSystemService.getReferralLink(profile.referral_code);
-    const msg = encodeURIComponent(`🇹🇹 Start your free online store on TriniBuild!\n\nSell anything with Cash on Delivery — no credit card needed.\n\nJoin here: ${link}\n\nMy code: ${profile.referral_code}`);
+    const msg = encodeURIComponent(`🇹🇹 Start your free online store on Juvay!\n\nSell anything with Cash on Delivery — no credit card needed.\n\nJoin here: ${link}\n\nMy code: ${profile.referral_code}`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 
@@ -175,7 +176,7 @@ export default function AffiliateDashboard() {
           </div>
           <p className="text-xs text-gray-400 mt-3">
             Code: <span className="font-mono font-bold text-gray-600">{profile.referral_code}</span> · 
-            You earn 10% of the paid subscription: TT${COMMISSION_EVENTS.subscription_starter.amount_ttd} on Starter, TT${COMMISSION_EVENTS.subscription_business.amount_ttd} on Business
+            You earn {AFFILIATE_CUT_COPY}
           </p>
         </div>
 
@@ -222,14 +223,14 @@ export default function AffiliateDashboard() {
                       <Gift className="w-4 h-4 text-red-500" />
                       <span className="text-sm text-gray-700">{event.label}</span>
                     </div>
-                    <span className="text-sm font-bold text-green-600">+TT${event.amount_ttd}</span>
+                    <span className="text-sm font-bold text-green-600">{event.copy || `+TT$${event.amount_ttd}`}</span>
                   </div>
                 ))}
               </div>
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                 <p className="text-xs text-yellow-800 font-medium">
                   🏆 Your tier upgrades automatically based on paid referrals:
-                  10% of the paid subscription. Starter TT$99 → TT$9.90. Business TT$329 → TT$32.90.
+                  {AFFILIATE_CUT_COPY} Paid only when Premium is actually billed. Until Wam checkout takes a real payment, paid upgrades aren't available yet.
                 </p>
               </div>
             </div>

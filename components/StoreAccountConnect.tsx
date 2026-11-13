@@ -112,7 +112,7 @@ export default function StoreAccountConnect({ onConnect }: StoreAccountConnectPr
                 </button>
               </div>
               <p className="text-gray-600 mt-2">
-                Link your TriniBuild store to enable AI-powered listing optimization
+                Link your Juvay store to enable AI-powered listing optimization
               </p>
             </div>
 

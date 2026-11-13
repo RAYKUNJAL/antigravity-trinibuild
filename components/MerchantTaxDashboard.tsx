@@ -113,6 +113,19 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
     );
   }
 
+  if (!report) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-4 md:p-8">
+        <div className="max-w-2xl mx-auto rounded-2xl border border-gray-200 bg-white p-8">
+          <h1 className="text-3xl font-black text-gray-900 mb-3">VAT tracking coming soon</h1>
+          <p className="text-gray-600">
+            VAT reports are coming soon. Until then, keep your own records for BIR and check your filing with your accountant.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -127,7 +140,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
             🇹🇹 Tax Dashboard
           </h1>
           <p className="text-gray-600">
-            Automatic Trinidad tax tracking - No accountant needed!
+            Trinidad VAT tracking
           </p>
         </motion.div>
 
@@ -150,13 +163,13 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
             <option value="2026-01">January 2026</option>
           </select>
           
-          <button
+          {report && (<button
             onClick={exportToBIR}
             className="ml-auto flex items-center gap-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
           >
             <Download size={20} />
-            Export for BIR
-          </button>
+            Export
+          </button>)}
         </motion.div>
 
         {/* Key Metrics */}
@@ -305,7 +318,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
                       Ready to File
                     </p>
                     <p className="text-xs text-green-700 mt-1">
-                      Your report is complete and BIR-ready. Export above.
+                      Check your figures with your accountant before filing.
                     </p>
                   </div>
                 </div>

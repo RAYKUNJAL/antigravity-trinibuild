@@ -93,7 +93,7 @@ export const DriveWithUs: React.FC = () => {
 
                             <div className="flex flex-col sm:flex-row gap-4 mb-8">
                                 <button
-                                    onClick={() => navigate('/drive/signup')}
+                                    onClick={() => navigate('/drive')}
                                     className="bg-yellow-400 hover:bg-yellow-500 text-trini-black px-8 py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl"
                                 >
                                     Apply to drive
@@ -195,7 +195,7 @@ export const DriveWithUs: React.FC = () => {
 
                     <div className="mt-12 text-center">
                         <button
-                            onClick={() => navigate('/drive/signup')}
+                            onClick={() => navigate('/drive')}
                             className="bg-trini-red hover:bg-red-700 text-white px-12 py-5 rounded-lg font-bold text-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-3 mx-auto"
                         >
                             Apply to drive
@@ -278,7 +278,7 @@ export const DriveWithUs: React.FC = () => {
                     </p>
 
                     <button
-                        onClick={() => navigate('/drive/signup')}
+                        onClick={() => navigate('/drive')}
                         className="bg-white text-trini-red px-12 py-5 rounded-lg font-bold text-xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all inline-flex items-center gap-3"
                     >
                         Apply free

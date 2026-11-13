@@ -6,6 +6,14 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { track, trackPageView } from '../services/eventTracker';
+import { SellerLedger } from '../components/SellerLedger';
+import { SellerGrowthCard } from '../components/SellerGrowthCard';
+import { YouKeepCalculator } from '../components/YouKeepCalculator';
+import { FirstSaleChecklist } from '../components/FirstSaleChecklist';
+import { StoreAvailabilityToggles } from '../components/StoreAvailabilityToggles';
+import { StallQrSign, StallSignActions } from '../components/StallQrSign';
+import { PremiumOffer } from '../components/PremiumOffer';
+import { SellerWhatsAppOrders } from '../components/SellerWhatsAppOrders';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -259,7 +267,7 @@ export const JuvayDashboard: React.FC = () => {
     if (productsCount < 5) {
       return {
         title: 'Add more products',
-        subtitle: 'Stores with 10+ products get 3x more orders.',
+        subtitle: 'Add a photo and a price on each item, then share your link.',
         cta: 'Add product',
         icon: Plus,
         onClick: () => navigate('/store-builder'),
@@ -364,7 +372,7 @@ export const JuvayDashboard: React.FC = () => {
               to="/pricing"
               className="ml-2 text-xs font-bold text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full hover:bg-yellow-200 flex items-center"
             >
-              <Crown className="h-3 w-3 mr-1" /> Upgrade to Pro
+              <Crown className="h-3 w-3 mr-1" /> See Premium
             </Link>
           )}
         </div>
@@ -414,6 +422,18 @@ export const JuvayDashboard: React.FC = () => {
           </div>
         )}
 
+        <div className="mt-4">
+          <FirstSaleChecklist slug={store.slug} onShare={shareStore} />
+        </div>
+
+        <div className="mt-4">
+          <SellerGrowthCard />
+        </div>
+
+        <div className="mt-4">
+          <StoreAvailabilityToggles />
+        </div>
+
         {/* RECENT ORDERS */}
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
@@ -452,6 +472,40 @@ export const JuvayDashboard: React.FC = () => {
             </div>
           )}
         </div>
+
+        <div className="mt-6">
+          <SellerLedger />
+        </div>
+
+        <div className="mt-6">
+          <YouKeepCalculator defaultDollars={12} compact />
+        </div>
+
+        <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-5">
+          <h2 className="text-lg font-bold text-gray-900">Bring my store over</h2>
+          <p className="text-sm text-gray-500 mt-1">Import a public website, a CSV, or photos as drafts you review. Every seller gets 5 free photo listings. Website and CSV import come with Premium.</p>
+          <Link
+            to="/import-store"
+            className="inline-flex mt-4 min-h-[44px] items-center rounded-xl bg-gray-900 px-4 text-sm font-bold text-white"
+          >
+            Open import
+          </Link>
+        </div>
+
+        <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Free stall QR sign</h2>
+          <p className="text-xs text-gray-500">Print this and hang it at the stall. Buyers scan to open your shop.</p>
+          <StallQrSign storeName={store.name} slug={store.slug} />
+          <StallSignActions slug={store.slug} />
+        </div>
+
+        {isFree && (
+          <div className="mt-6">
+            <PremiumOffer />
+          </div>
+        )}
+
+        <SellerWhatsAppOrders />
 
         {/* QUICK ACTIONS */}
         <div className="mt-6">

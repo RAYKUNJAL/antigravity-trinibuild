@@ -14,6 +14,8 @@ import { storeService } from '../services/storeService';
 import { subscriptionService } from '../services/subscriptionService';
 import type { Store as StoreType, Product, Order } from '../types';
 import { getPlaceholderImage } from '../components/templates/placeholderImage';
+import { MerchantItemFields } from '../components/MerchantItemFields';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 // ============================================
 // TYPES
@@ -22,8 +24,10 @@ import { getPlaceholderImage } from '../components/templates/placeholderImage';
 interface ProductForm {
   name: string;
   description: string;
-  price: number;
-  stock: number;
+  price: string;
+  qty: string;
+  sku: string;
+  variant: string;
   category: string;
   image_url: string;
   status: 'active' | 'draft' | 'archived';
@@ -146,10 +150,10 @@ export const StoreDashboard: React.FC = () => {
   // Forms
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState<ProductForm>({
-    name: '', description: '', price: 0, stock: 0, category: '', image_url: '', status: 'active'
+    name: '', description: '', price: '', qty: '', sku: '', variant: '', category: '', image_url: '', status: 'active'
   });
   const [showProductModal, setShowProductModal] = useState(false);
-  const [maxProducts, setMaxProducts] = useState<number>(5);
+  const [maxProducts, setMaxProducts] = useState<number>(-1);
   const [planSlug, setPlanSlug] = useState<string>('free');
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,7 +211,7 @@ export const StoreDashboard: React.FC = () => {
       // Load plan limit
       if (user) {
         const { plan } = await subscriptionService.getUserPlan(user.id);
-        setMaxProducts(plan?.max_products ?? 5);
+        setMaxProducts(plan?.max_products ?? -1);
         setPlanSlug(plan?.slug ?? 'free');
       }
 
@@ -232,7 +236,7 @@ export const StoreDashboard: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { plan } = await subscriptionService.getUserPlan(user.id);
-        const limit = plan?.max_products ?? 5;
+        const limit = plan?.max_products ?? -1;
         setMaxProducts(limit);
         setPlanSlug(plan?.slug ?? 'free');
         // -1 means unlimited
@@ -246,7 +250,7 @@ export const StoreDashboard: React.FC = () => {
     }
     setEditingProduct(null);
     setProductForm({
-      name: '', description: '', price: 0, stock: 0,
+      name: '', description: '', price: '', qty: '', sku: '', variant: '',
       category: '', image_url: '', status: 'active'
     });
     setShowProductModal(true);
@@ -257,8 +261,10 @@ export const StoreDashboard: React.FC = () => {
     setProductForm({
       name: product.name,
       description: product.description || '',
-      price: product.price,
-      stock: product.stock ?? 0,
+      price: product.price != null ? String(product.price) : '',
+      qty: product.stock == null ? '' : String(product.stock),
+      sku: (product as any).sku || '',
+      variant: '',
       category: product.category || '',
       image_url: product.image_url || '',
       status: (product as any).status || 'active'
@@ -272,13 +278,26 @@ export const StoreDashboard: React.FC = () => {
     setError(null);
 
     try {
+      if (!productForm.name.trim()) {
+        setError('Item name is required');
+        setSaving(false);
+        return;
+      }
+      if (productForm.price.trim() === '' || !Number.isFinite(Number(productForm.price))) {
+        setError('Price TT$ is required');
+        setSaving(false);
+        return;
+      }
+      const qtyText = productForm.qty.trim();
+      const stock = qtyText === '' ? null : (/^\d+$/.test(qtyText) ? Number(qtyText) : null);
       const payload = {
         store_id: store.id,
-        name: productForm.name,
+        name: productForm.name.trim(),
         description: productForm.description,
         price: Number(productForm.price),
         base_price: Number(productForm.price),
-        stock: Number(productForm.stock),
+        stock,
+        sku: productForm.sku.trim() || undefined,
         category: productForm.category,
         image_url: productForm.image_url,
         status: productForm.status,
@@ -542,7 +561,7 @@ export const StoreDashboard: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{store?.name || 'Dashboard'} - TriniBuild</title>
+        <title>{store?.name || 'Dashboard'} - Juvay</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -589,7 +608,7 @@ export const StoreDashboard: React.FC = () => {
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
             >
-              <Home className="w-4 h-4" /> Back to TriniBuild
+              <Home className="w-4 h-4" /> Back to Juvay
             </button>
           </div>
         </aside>
@@ -617,7 +636,7 @@ export const StoreDashboard: React.FC = () => {
                   onClick={() => navigate('/pricing')}
                   className="text-sm font-semibold text-red-600 hover:text-red-700 whitespace-nowrap"
                 >
-                  Upgrade to Pro →
+                  See Premium →
                 </button>
               </div>
             )}
@@ -1175,7 +1194,7 @@ export const StoreDashboard: React.FC = () => {
                     {[
                       { name: 'Cash on Delivery (COD)', desc: 'Collect payment on delivery.', enabled: true },
                       { name: 'WhatsApp Order', desc: 'Customers order via WhatsApp chat.', enabled: true },
-                      { name: 'Online Card Payment', desc: 'Accept credit/debit cards (coming soon).', enabled: false },
+                      { name: 'Wam online pay', desc: 'Wam checkout when configured on this host. Cash pickup and COD stay available.', enabled: false },
                     ].map((method, i) => (
                       <div key={i} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                         <div>
@@ -1277,74 +1296,35 @@ export const StoreDashboard: React.FC = () => {
               </button>
             </div>
             <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
-                <input
-                  type="text"
-                  value={productForm.name}
-                  onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea
-                  value={productForm.description}
-                  onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900 resize-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price (TT$) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                  <input
-                    type="number"
-                    value={productForm.stock}
-                    onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-              </div>
+              <MerchantItemFields
+                heading={editingProduct ? 'Edit item' : 'Add item'}
+                name={productForm.name}
+                price={productForm.price}
+                qty={productForm.qty}
+                sku={productForm.sku}
+                variant={productForm.variant}
+                description={productForm.description}
+                image={productForm.image_url}
+                storeName={store?.name}
+                onChange={(patch) => setProductForm({
+                  ...productForm,
+                  name: patch.name ?? productForm.name,
+                  price: patch.price ?? productForm.price,
+                  qty: patch.qty ?? productForm.qty,
+                  sku: patch.sku ?? productForm.sku,
+                  variant: patch.variant ?? productForm.variant,
+                  description: patch.description ?? productForm.description,
+                  image_url: patch.image ?? productForm.image_url,
+                })}
+              />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <input
                   type="text"
                   value={productForm.category}
                   onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
+                  className="w-full min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                <input
-                  type="url"
-                  value={productForm.image_url}
-                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                />
-                <div className="mt-2">
-                  <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm cursor-pointer text-gray-700">
-                    <Upload className="w-4 h-4" /> Upload Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-                    />
-                  </label>
-                  {uploading && <span className="ml-2 text-xs text-gray-500">Uploading...</span>}
-                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
@@ -1387,7 +1367,7 @@ export const StoreDashboard: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Product Limit Reached</h3>
             <p className="text-gray-600 mb-6">
-              You've reached your {maxProducts} product limit on the {planSlug === 'free' ? 'Free' : planSlug} plan. Upgrade to Pro to add unlimited products. TT$300/mo.
+              You've hit a plan product limit ({maxProducts}). {FREE_INCLUDES_COPY} If you see this, the server plan_tiers.max_products may still be capped. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
             </p>
             <div className="flex gap-3">
               <button
@@ -1400,7 +1380,7 @@ export const StoreDashboard: React.FC = () => {
                 onClick={() => { setShowLimitModal(false); navigate('/pricing'); }}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg"
               >
-                Upgrade to Pro
+                See /pricing
               </button>
             </div>
           </div>

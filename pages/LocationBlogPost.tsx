@@ -39,13 +39,13 @@ const SAMPLE_BLOGS: StoredBlog[] = [
         island: 'Trinidad',
         vertical_key: 'jobs',
         vertical_label: 'Jobs & Gigs',
-        seo_title: 'Jobs in Port of Spain: Find Work & Gigs | TriniBuild',
-        meta_description: 'Discover job opportunities and gig work in Port of Spain, Trinidad. TriniBuild helps you find local jobs, prove income, and build your career. Start free today!',
+        seo_title: 'Jobs in Port of Spain: Find Work & Gigs | Juvay',
+        meta_description: 'Discover job opportunities and gig work in Port of Spain, Trinidad. Juvay helps you find local jobs, prove income, and build your career. Start free today!',
         url_slug: 'jobs-in-port-of-spain',
         primary_keyword: 'jobs in Port of Spain',
-        secondary_keywords: ['work in Port of Spain', 'gigs Port of Spain', 'TriniBuild jobs'],
-        h1: 'How People in Port of Spain Can Find Online Jobs and Gigs Using TriniBuild',
-        headings: ['The Job Hunt Challenge in Port of Spain', 'How TriniBuild Helps You Find Work', 'Getting Started: Your Step-by-Step Guide'],
+        secondary_keywords: ['work in Port of Spain', 'gigs Port of Spain', 'Juvay jobs'],
+        h1: 'How People in Port of Spain Can Find Online Jobs and Gigs Using Juvay',
+        headings: ['The Job Hunt Challenge in Port of Spain', 'How Juvay Helps You Find Work', 'Getting Started: Your Step-by-Step Guide'],
         body_markdown: '',
         body_html: `
       <p class="lead text-xl text-gray-600 mb-6">In the heart of Trinidad's capital, finding stable work or side hustles can feel like navigating Queen's Park Savannah during rush hour—overwhelming but not impossible.</p>
@@ -53,12 +53,12 @@ const SAMPLE_BLOGS: StoredBlog[] = [
       <h2>The Job Hunt Challenge in Port of Spain</h2>
       <p>For many in Port of Spain, the traditional job search means endless scrolling through outdated newspaper classifieds or walking from office to office with a stack of résumés. Banks require proof of income for everything from credit cards to apartment rentals, but how do you prove income when you're hustling between gigs?</p>
       
-      <h2>How TriniBuild Helps You Find Work</h2>
-      <p>TriniBuild's free platform changes everything. Create your profile, list your skills, and connect with employers looking for talent in Port of Spain. Our AI-powered job letters help you present yourself professionally, while our income tracking gives you the documentation banks and landlords need.</p>
+      <h2>How Juvay Helps You Find Work</h2>
+      <p>Juvay's free platform changes everything. Create your profile, list your skills, and connect with employers looking for talent in Port of Spain. Our AI-powered job letters help you present yourself professionally, while our income tracking gives you the documentation banks and landlords need.</p>
       
       <h2>Getting Started: Your Step-by-Step Guide</h2>
       <ol>
-        <li>Sign up for your free TriniBuild account</li>
+        <li>Sign up for your free Juvay account</li>
         <li>Complete your professional profile</li>
         <li>Browse jobs in Port of Spain</li>
         <li>Apply directly or set up your service page</li>
@@ -66,17 +66,17 @@ const SAMPLE_BLOGS: StoredBlog[] = [
       </ol>
       
       <p class="mt-6 p-4 bg-trini-red/10 rounded-lg border border-trini-red/20">
-        <strong>Ready to get started?</strong> Join thousands in Port of Spain already using TriniBuild to find work and build their careers. 
+        <strong>Ready to get started?</strong> Join thousands in Port of Spain already using Juvay to find work and build their careers. 
         <a href="/signup" class="text-trini-red font-bold hover:underline">Sign up free today →</a>
       </p>
     `,
         cta_blocks: [
-            { position: 'intro', text: 'Join thousands in Port of Spain already using TriniBuild.' },
-            { position: 'end', text: 'Sign up free and start using TriniBuild in Port of Spain now.' }
+            { position: 'intro', text: 'Join thousands in Port of Spain already using Juvay.' },
+            { position: 'end', text: 'Sign up free and start using Juvay in Port of Spain now.' }
         ],
         internal_links_used: [
             { anchor_text: 'browse jobs and gigs', url: '/jobs', feature_key: 'jobs' },
-            { anchor_text: 'create your free TriniBuild page', url: '/free-website', feature_key: 'free_webpages' }
+            { anchor_text: 'create your free Juvay page', url: '/free-website', feature_key: 'free_webpages' }
         ],
         word_count: 450,
         reading_time_minutes: 3,
@@ -86,7 +86,7 @@ const SAMPLE_BLOGS: StoredBlog[] = [
         open_graph: {},
         twitter_card: {},
         created_at: '2025-12-01T00:00:00Z',
-        author: 'TriniBuild Team',
+        author: 'Juvay Team',
         featured_image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200'
     }
 ];
@@ -135,7 +135,7 @@ const updateMetaTags = (blog: StoredBlog, shareUrl: string) => {
     setMetaTag('og:title', blog.seo_title, true);
     setMetaTag('og:description', blog.meta_description, true);
     setMetaTag('og:url', shareUrl, true);
-    setMetaTag('og:site_name', 'TriniBuild', true);
+    setMetaTag('og:site_name', 'Juvay', true);
     if (blog.featured_image) {
         setMetaTag('og:image', blog.featured_image, true);
     }
@@ -171,14 +171,14 @@ const updateMetaTags = (blog: StoredBlog, shareUrl: string) => {
         "description": blog.meta_description,
         "author": {
             "@type": "Organization",
-            "name": blog.author || "TriniBuild"
+            "name": blog.author || "Juvay"
         },
         "publisher": {
             "@type": "Organization",
-            "name": "TriniBuild",
+            "name": "Juvay",
             "logo": {
                 "@type": "ImageObject",
-                "url": "https://trinibuild.com/logo.png"
+                "url": "https://juvay.app/logo.png"
             }
         },
         "datePublished": blog.created_at,
@@ -223,7 +223,7 @@ export const LocationBlogPost: React.FC = () => {
                 setRelatedBlogs(related);
 
                 // Update meta tags for SEO
-                const shareUrl = `https://trinibuild.com/blog/${foundBlog.url_slug}`;
+                const shareUrl = `https://juvay.app/blog/${foundBlog.url_slug}`;
                 updateMetaTags(foundBlog, shareUrl);
             }
 
@@ -234,7 +234,7 @@ export const LocationBlogPost: React.FC = () => {
 
         // Cleanup function to reset title when leaving
         return () => {
-            document.title = 'TriniBuild - Build Your Digital Hustle';
+            document.title = 'Juvay - Build Your Digital Hustle';
         };
     }, [slug]);
 
@@ -261,7 +261,7 @@ export const LocationBlogPost: React.FC = () => {
         );
     }
 
-    const shareUrl = `https://trinibuild.com/blog/${blog.url_slug}`;
+    const shareUrl = `https://juvay.app/blog/${blog.url_slug}`;
 
     const handleShare = async (platform: string) => {
         const shareData = {
@@ -326,7 +326,7 @@ export const LocationBlogPost: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">
                                 <span className="flex items-center gap-1.5">
                                     <User className="h-4 w-4" />
-                                    {blog.author || 'TriniBuild Team'}
+                                    {blog.author || 'Juvay Team'}
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="h-4 w-4" />
@@ -385,7 +385,7 @@ export const LocationBlogPost: React.FC = () => {
                                 <div className="mt-12 p-6 bg-gray-50 rounded-2xl">
                                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                                         <ExternalLink className="h-5 w-5 text-trini-red" />
-                                        Explore More on TriniBuild
+                                        Explore More on Juvay
                                     </h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {blog.internal_links_used.map((link, i) => (
@@ -439,7 +439,7 @@ export const LocationBlogPost: React.FC = () => {
                                     <TrendingUp className="h-10 w-10 mb-4 opacity-80" />
                                     <h3 className="font-bold text-xl mb-2">Start Your Journey</h3>
                                     <p className="text-white/80 text-sm mb-6">
-                                        Join thousands in {blog.location_name} using TriniBuild to grow their business and find opportunities.
+                                        Join thousands in {blog.location_name} using Juvay to grow their business and find opportunities.
                                     </p>
                                     <Link
                                         to="/signup"

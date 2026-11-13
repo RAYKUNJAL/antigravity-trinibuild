@@ -1,11 +1,17 @@
 import React from 'react';
 import { Sparkles, Check } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Link } from 'react-router-dom';
+import {
+  PREMIUM_PRICE_COPY,
+  PREMIUM_INCLUDES_COPY,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+  FREE_INCLUDES_COPY,
+} from '../../services/juvayPlans';
 
 const plans = [
-  { name: 'Basic', price: '$10/mo', features: ['1 AI tool', 'Basic features'] },
-  { name: 'Growth', price: '$19/mo', features: ['3 AI tools', 'Enhanced features'] },
-  { name: 'Pro', price: '$49/mo', features: ['All AI tools', 'Advanced features', 'Priority support'] },
+  { name: 'Free', price: 'TT$0', features: [FREE_INCLUDES_COPY] },
+  { name: 'Premium', price: PREMIUM_PRICE_COPY, features: [PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY] },
 ];
 
 export const UpgradeCTA: React.FC = () => {
@@ -33,9 +39,12 @@ export const UpgradeCTA: React.FC = () => {
           </div>
         ))}
       </div>
-      <Button variant="secondary" fullWidth>
-        Upgrade Now
-      </Button>
+      <Link to="/pricing" className="block">
+        <Button variant="secondary" fullWidth>
+          See /pricing
+        </Button>
+      </Link>
+      <p className="text-xs text-white/80 mt-3">{PAID_UPGRADE_UNAVAILABLE_COPY}</p>
     </div>
   );
 };

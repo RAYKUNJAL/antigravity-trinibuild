@@ -11,9 +11,10 @@ import { supabase } from '../services/supabaseClient';
 import { LogoBuilder } from '../components/LogoBuilder';
 import { ThemeGenerator } from '../components/ThemeGenerator';
 import { AIGeneratingOverlay } from '../components/AIGeneratingOverlay';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, PREMIUM_INCLUDES_COPY } from '../services/juvayPlans';
 
 // Placeholder logo URL
-const LOGO_URL = "https://trinibuild.com/wp-content/uploads/2023/05/TriniBuild-Logo.png";
+const LOGO_URL = "/juvay-logo.png";
 
 export const StoreCreator: React.FC = () => {
    const [searchParams] = useSearchParams();
@@ -288,11 +289,11 @@ export const StoreCreator: React.FC = () => {
    return (
       <>
          <Helmet>
-            <title>Create Your Free Online Store | TriniBuild Store Builder Trinidad</title>
+            <title>Create Your Free Online Store | Juvay Store Builder Trinidad</title>
             <meta name="description" content="Build your online store in 5 minutes. No coding required. Free for Trinidad & Tobago businesses. AI-powered logo, theme, and product generation." />
-            <meta name="keywords" content="create online store Trinidad, free store builder T&T, sell online Tobago, ecommerce Trinidad, TriniBuild store creator" />
-            <link rel="canonical" href="https://trinibuild.com/#/create-store" />
-            <meta property="og:title" content="Create Your Free Store - TriniBuild" />
+            <meta name="keywords" content="create online store Trinidad, free store builder T&T, sell online Tobago, ecommerce Trinidad, Juvay store creator" />
+            <link rel="canonical" href="https://juvay.app/create-store" />
+            <meta property="og:title" content="Create Your Free Store - Juvay" />
             <meta property="og:description" content="Build and launch your online store in 5 minutes. Free for Trinidad & Tobago." />
          </Helmet>
          <div className="min-h-screen bg-gray-50 py-12 font-sans relative overflow-x-hidden">
@@ -733,7 +734,7 @@ export const StoreCreator: React.FC = () => {
                                  <CheckCircle className="h-6 w-6 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
                                  <div>
                                     <h3 className="font-bold text-gray-900">Verified Business Badge</h3>
-                                    <p className="text-sm text-gray-600">Instantly build trust. Verified stores get 3x more clicks.</p>
+                                    <p className="text-sm text-gray-600">The Verified badge is free and earned when Wam verifies the shop. We do not publish a click rate.</p>
                                  </div>
                               </div>
 
@@ -741,7 +742,7 @@ export const StoreCreator: React.FC = () => {
                                  <Zap className="h-6 w-6 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
                                  <div>
                                     <h3 className="font-bold text-gray-900">24h Homepage Boost</h3>
-                                    <p className="text-sm text-gray-600">Get featured on the front page of TriniBuild for 24 hours.</p>
+                                    <p className="text-sm text-gray-600">Get featured on the front page of Juvay for 24 hours.</p>
                                  </div>
                               </div>
 
@@ -756,12 +757,9 @@ export const StoreCreator: React.FC = () => {
 
                            {/* Pricing */}
                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-6 mb-6 text-center">
-                              <p className="text-sm opacity-75 line-through mb-1">Regular Price: TT$199</p>
-                              <div className="flex items-center justify-center gap-3 mb-2">
-                                 <span className="text-5xl font-extrabold">TT$49</span>
-                                 <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">75% OFF</div>
-                              </div>
-                              <p className="text-sm opacity-90">One-time payment • Limited time offer</p>
+                              <p className="text-2xl font-extrabold leading-snug">{PREMIUM_PRICE_COPY}</p>
+                              <p className="text-sm opacity-90 mt-3">{PREMIUM_INCLUDES_COPY}</p>
+                              <p className="text-sm opacity-75 mt-2">{PAID_UPGRADE_UNAVAILABLE_COPY}</p>
                            </div>
 
                            <p className="mb-4 text-sm text-gray-600 text-center">
@@ -794,14 +792,14 @@ export const StoreCreator: React.FC = () => {
 
                         <div className="p-6 overflow-y-auto flex-grow bg-white text-gray-600 leading-relaxed text-sm">
                            <div className="prose prose-sm max-w-none">
-                              <p className="font-bold mb-4">By creating a store on TriniBuild, you agree to the following terms:</p>
+                              <p className="font-bold mb-4">By creating a store on Juvay, you agree to the following terms:</p>
 
                               <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
                                  <h4 className="font-bold text-gray-800 mb-2">1. Vendor Responsibilities</h4>
                                  <p className="mb-2">You are responsible for product accuracy, delivery, safety, legality, refunds, and customer communication.</p>
 
                                  <h4 className="font-bold text-gray-800 mb-2 mt-4">2. Independent Business</h4>
-                                 <p className="mb-2">You operate as an independent business entity. TriniBuild provides the platform but is not your employer or partner.</p>
+                                 <p className="mb-2">You operate as an independent business entity. Juvay provides the platform but is not your employer or partner.</p>
 
                                  <h4 className="font-bold text-gray-800 mb-2 mt-4">3. Prohibited Items</h4>
                                  <p className="mb-2">Strictly prohibited: weapons, illegal drugs, counterfeit goods, or any items illegal under Trinidad & Tobago law.</p>

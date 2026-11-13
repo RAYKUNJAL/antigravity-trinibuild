@@ -104,7 +104,7 @@ export const SellerOnboardingPage: React.FC = () => {
             Ready to Start Selling?
           </motion.h1>
           <motion.p variants={item} className="text-xl text-red-100 mb-8">
-            Join thousands of Caribbean merchants selling online with TriniBuild
+            Join thousands of Caribbean merchants selling online with Juvay
           </motion.p>
         </div>
       </motion.section>
@@ -180,7 +180,7 @@ export const SellerOnboardingPage: React.FC = () => {
       >
         <div className="max-w-6xl mx-auto">
           <motion.h2 variants={item} className="text-3xl font-black text-center mb-16">
-            Why Choose TriniBuild?
+            Why Choose Juvay?
           </motion.h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {benefits.map((benefit, idx) => (
@@ -252,52 +252,16 @@ export const SellerOnboardingPage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Testimonials */}
       <motion.section 
         className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50"
-        variants={container}
+        variants={item}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
       >
-        <div className="max-w-4xl mx-auto">
-          <motion.h2 variants={item} className="text-3xl font-black text-center mb-12">
-            What Sellers Say
-          </motion.h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: 'Maria Santos',
-                business: 'Fashion Boutique',
-                quote: 'I went from 0 to 100 orders in 3 months. TriniBuild is a game-changer!'
-              },
-              {
-                name: 'Rajesh Patel',
-                business: 'Electronics Store',
-                quote: 'No more payment processing headaches. COD is perfect for Trinidad.'
-              },
-              {
-                name: 'Jessica Clarke',
-                business: 'Home Bakery',
-                quote: 'The AI product lister saved me so much time. Highly recommend!'
-              }
-            ].map((testimonial, idx) => (
-              <motion.div
-                key={idx}
-                variants={item}
-                className="bg-white rounded-lg p-6 border border-gray-200"
-              >
-                <div className="flex text-yellow-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i}>⭐</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
-                <p className="font-bold text-gray-900">{testimonial.name}</p>
-                <p className="text-sm text-gray-600">{testimonial.business}</p>
-              </motion.div>
-            ))}
-          </div>
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-black mb-4">What sellers say</h2>
+          <p className="text-gray-600">Empty until a real seller writes it. Juvay does not invent quotes.</p>
         </div>
       </motion.section>
 

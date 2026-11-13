@@ -20,14 +20,7 @@ interface CampaignLite {
   conversions?: number;
 }
 
-const SAMPLE_CLIENTS = [
-  'Massy Motors',
-  'Republic Bank',
-  'KFC Trinidad',
-  'Petal Pushers',
-  'Doubles King',
-  'Island Threads'
-];
+const SAMPLE_CLIENTS: string[] = [];
 
 function actionBadgeClasses(action: AgentAction['action']): string {
   switch (action) {
@@ -81,7 +74,7 @@ export function AgentDashboard() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
 
   // Weekly report state
-  const [selectedClient, setSelectedClient] = useState(SAMPLE_CLIENTS[0]);
+  const [selectedClient, setSelectedClient] = useState('');
   const [report, setReport] = useState<string>('');
   const [reportLoading, setReportLoading] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);

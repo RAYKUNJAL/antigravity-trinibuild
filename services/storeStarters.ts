@@ -1,0 +1,602 @@
+import { FONT_DISPLAY, FONT_SANS, heroSources } from './storeDesignTokens';
+
+/**
+ * Ten locked store starters. Same chrome. Type changes blocks + copy + palette.
+ * Island niche food (doubles, street_food) share the Street food gallery category.
+ * No invented shop names. No dummy SKUs.
+ */
+
+export type StarterId =
+  | 'food'
+  | 'fashion'
+  | 'services'
+  | 'general'
+  | 'beauty'
+  | 'home'
+  | 'electronics'
+  | 'auto'
+  | 'doubles'
+  | 'street_food';
+
+export type StorefrontBlock =
+  | 'hero'
+  | 'trust'
+  | 'featured_combo'
+  | 'featured'
+  | 'lookbook'
+  | 'menu'
+  | 'grid'
+  | 'service_list'
+  | 'how'
+  | 'sticky'
+  | 'faq'
+  | 'category_rail'
+  | 'banner'
+  | 'testimonials'
+  | 'footer';
+
+export type HeroLayout = 'split' | 'split_reverse' | 'bleed' | 'overlay' | 'stack' | 'rail' | 'desk' | 'card';
+
+export type CatalogKind = 'menu' | 'lookbook' | 'services' | 'tiles' | 'shades' | 'furniture' | 'gadgets' | 'parts';
+
+export interface StarterPalette {
+  bg: string;
+  surface: string;
+  text: string;
+  muted: string;
+  accent: string;
+  accentText: string;
+  heroBg: string;
+  heroText: string;
+  border: string;
+  headingFont: string;
+  bodyFont: string;
+  fontHref: string;
+  field: string;
+}
+
+export interface StoreStarter {
+  id: StarterId;
+  name: string;
+  useWhen: string;
+  chips: string[];
+  cta: string;
+  heroHeadline: string;
+  heroLayout: HeroLayout;
+  kicker: string;
+  catalogTitle: string;
+  featuredTitle: string;
+  catalogKind: CatalogKind;
+  blocks: StorefrontBlock[];
+  palette: StarterPalette;
+  emptyCatalog: string;
+  merchantEmpty: string;
+  /** Original abstract hero art. Illustrative until the merchant uploads. */
+  heroImage: string;
+  /** Gallery filter bucket. Street niches share street_food. */
+  galleryCategory?: string;
+  /** Reusable product option-group preset (services/productModifiers). */
+  modifierPreset?: 'doubles' | 'street_food' | null;
+  /** Menu-first count chips (1 double, 2, 3…). */
+  countOrder?: boolean;
+  /** Empty sides slot (saheena / aloo pie / bake & saltfish) for merchant fill. */
+  showsSidesSlot?: boolean;
+  /** Product-card image ratio. */
+  cardAspect?: '1 / 1' | '4 / 5' | '3 / 4';
+  /** srcset for the starter hero (960 / 1440 WebP). */
+  heroSrcSet?: string;
+  heroSizes?: string;
+}
+
+export const STARTER_IDS: StarterId[] = [
+  'food', 'fashion', 'services', 'general', 'beauty', 'home', 'electronics', 'auto',
+  'doubles', 'street_food',
+];
+
+export const GALLERY_FILTERS = [
+  { id: 'all', name: 'All' },
+  { id: 'food', name: 'Food' },
+  { id: 'street_food', name: 'Street food' },
+  { id: 'fashion', name: 'Fashion' },
+  { id: 'services', name: 'Services' },
+  { id: 'general', name: 'General' },
+  { id: 'beauty', name: 'Beauty' },
+  { id: 'home', name: 'Home' },
+  { id: 'electronics', name: 'Electronics' },
+  { id: 'auto', name: 'Auto' },
+];
+
+export function isFoodLikeStarter(id: StarterId | string | null | undefined): boolean {
+  return id === 'food' || id === 'doubles' || id === 'street_food';
+}
+
+export const FAQ_PAY_LINE =
+  'Cash when you collect, or cash on delivery if that option is on. We do not ask for PayPal.';
+
+export const ISLAND = {
+  sand: '#FFF8F0',
+  mango: '#FFC300',
+  mangoInk: '#141414',
+  teal: '#0D9488',
+  pepper: '#E31C23',
+};
+
+/** Empty — starters use a system stack. Kept so older theme overlays do not request a stylesheet. */
+const SERIF_SANS = '';
+
+export const STORE_STARTERS: Record<StarterId, StoreStarter> = {
+  food: {
+    id: 'food',
+    name: 'Food',
+    useWhen: 'Roti, doubles, bakery, street stall — a menu, not a catalog.',
+    chips: ['Menu', 'Cash / COD', 'Pickup hours'],
+    cta: 'Order now',
+    heroHeadline: 'Cooked this morning. Ready when you reach.',
+    heroLayout: 'split',
+    kicker: 'Menu',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Today',
+    catalogKind: 'menu',
+    blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing on the menu yet.',
+    merchantEmpty: 'Add your first plate',
+    heroImage: heroSources('food').src,
+    heroSrcSet: heroSources('food').srcSet,
+    heroSizes: heroSources('food').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#1c140c',
+      surface: '#2a1d12',
+      text: '#f6edd8',
+      muted: '#c9b089',
+      accent: '#d4a017',
+      accentText: '#1c140c',
+      heroBg: '#1c140c',
+      heroText: '#f6edd8',
+      border: 'rgba(212,160,23,0.28)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'radial-gradient(ellipse at 58% 42%, #d4a017 0%, #7a3f12 48%, #1c140c 100%)',
+    },
+  },
+  fashion: {
+    id: 'fashion',
+    name: 'Fashion',
+    useWhen: 'Boutique, carnival wear, streetwear. Try it. See the price.',
+    chips: ['Lookbook', 'The rack', 'Size before add'],
+    cta: 'Shop now',
+    heroHeadline: 'Pieces you can try. Prices you can see.',
+    heroLayout: 'bleed',
+    kicker: 'Lookbook',
+    catalogTitle: 'The rack',
+    featuredTitle: 'Lookbook',
+    catalogKind: 'lookbook',
+    blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No pieces listed yet.',
+    merchantEmpty: 'Add your first piece',
+    heroImage: heroSources('fashion').src,
+    heroSrcSet: heroSources('fashion').srcSet,
+    heroSizes: heroSources('fashion').sizes,
+    cardAspect: '4 / 5',
+    palette: {
+      bg: '#F3EEE6',
+      surface: '#FFF8F0',
+      text: '#141414',
+      muted: '#5c574e',
+      accent: '#141414',
+      accentText: '#F3EEE6',
+      heroBg: '#141414',
+      heroText: '#F3EEE6',
+      border: 'rgba(20,20,20,0.12)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(165deg, #2c2c2c 0%, #141414 42%, #c4b8a4 100%)',
+    },
+  },
+  services: {
+    id: 'services',
+    name: 'Services',
+    useWhen: 'Barber, salon chair, repairs, lessons — book a time.',
+    chips: ['Service list', 'Book a time', 'Cash when you come'],
+    cta: 'Book now',
+    heroHeadline: 'Book a time. Pay cash when you come.',
+    heroLayout: 'split_reverse',
+    kicker: 'Book a time',
+    catalogTitle: 'Services',
+    featuredTitle: 'Services',
+    catalogKind: 'services',
+    blocks: ['hero', 'trust', 'category_rail', 'service_list', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No services listed yet.',
+    merchantEmpty: 'Add your first service',
+    heroImage: heroSources('services').src,
+    heroSrcSet: heroSources('services').srcSet,
+    heroSizes: heroSources('services').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#F3F5F2',
+      surface: '#FFF8F0',
+      text: '#1e293b',
+      muted: '#475569',
+      accent: '#84cc16',
+      accentText: '#14532d',
+      heroBg: '#1e293b',
+      heroText: '#f8fafc',
+      border: 'rgba(30,41,59,0.12)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(180deg, #1e293b 0%, #334155 52%, #84cc16 100%)',
+    },
+  },
+  general: {
+    id: 'general',
+    name: 'General',
+    useWhen: 'Mixed retail / marketplace stall. The free one-page default.',
+    chips: ['One-page shop', 'Cash or pickup', 'Product tiles'],
+    cta: 'Shop now',
+    heroHeadline: 'Shop local. Cash or pickup.',
+    heroLayout: 'overlay',
+    kicker: 'Shop',
+    catalogTitle: 'Shop',
+    featuredTitle: 'On the table',
+    catalogKind: 'tiles',
+    blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing in the shop yet.',
+    merchantEmpty: 'Add your first item',
+    heroImage: heroSources('general').src,
+    heroSrcSet: heroSources('general').srcSet,
+    heroSizes: heroSources('general').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#FFF8F0',
+      surface: '#FFF8F0',
+      text: '#2a2a2a',
+      muted: '#6b6256',
+      accent: '#c4a574',
+      accentText: '#2a2a2a',
+      heroBg: '#2a2a2a',
+      heroText: '#FFF8F0',
+      border: 'rgba(42,42,42,0.12)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(160deg, #3d3429 0%, #c4a574 56%, #FFF8F0 100%)',
+    },
+  },
+  beauty: {
+    id: 'beauty',
+    name: 'Beauty',
+    useWhen: 'Retail cosmetics and kits. Chair or salon booking is Services.',
+    chips: ['Kits & shades', 'Cash on pickup', 'Retail only'],
+    cta: 'Shop now',
+    heroHeadline: 'Shades and kits. Cash on pickup.',
+    heroLayout: 'card',
+    kicker: 'Retail beauty',
+    catalogTitle: 'Kits',
+    featuredTitle: 'Shades',
+    catalogKind: 'shades',
+    blocks: ['hero', 'trust', 'category_rail', 'lookbook', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No shades or kits listed yet.',
+    merchantEmpty: 'Add your first shade or kit',
+    heroImage: heroSources('beauty').src,
+    heroSrcSet: heroSources('beauty').srcSet,
+    heroSizes: heroSources('beauty').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#FAF6F3',
+      surface: '#FFF8F0',
+      text: '#3d2c2e',
+      muted: '#7a5f62',
+      accent: '#d4a5a5',
+      accentText: '#3d2c2e',
+      heroBg: '#f3e4e4',
+      heroText: '#3d2c2e',
+      border: 'rgba(212,165,165,0.4)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'radial-gradient(circle at 40% 30%, #f7e8e8 0%, #d4a5a5 58%, #3d2c2e 100%)',
+    },
+  },
+  home: {
+    id: 'home',
+    name: 'Home',
+    useWhen: 'Furniture and household pieces. Larger tiles. Price on the piece.',
+    chips: ['Furniture tile', 'Pickup', 'Price on the piece'],
+    cta: 'Shop now',
+    heroHeadline: 'Furniture you can see. Price on the piece.',
+    heroLayout: 'stack',
+    kicker: 'Furniture',
+    catalogTitle: 'Furniture',
+    featuredTitle: 'The piece',
+    catalogKind: 'furniture',
+    blocks: ['hero', 'trust', 'category_rail', 'featured', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No furniture listed yet.',
+    merchantEmpty: 'Add your first piece',
+    heroImage: heroSources('home').src,
+    heroSrcSet: heroSources('home').srcSet,
+    heroSizes: heroSources('home').sizes,
+    cardAspect: '4 / 5',
+    palette: {
+      bg: '#F3EFE8',
+      surface: '#FFF8F0',
+      text: '#3d3429',
+      muted: '#6e6558',
+      accent: '#8b7355',
+      accentText: '#FFF8F0',
+      heroBg: '#e8dfd2',
+      heroText: '#3d3429',
+      border: 'rgba(139,115,85,0.28)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(180deg, #e8dfd2 0%, #8b7355 68%, #3d3429 100%)',
+    },
+  },
+  electronics: {
+    id: 'electronics',
+    name: 'Electronics',
+    useWhen: 'Phones and gadgets. Color or storage only if the SKU has them.',
+    chips: ['Search + specs', 'Variant before add', 'Cash or pickup'],
+    cta: 'Shop now',
+    heroHeadline: 'Phones and gadgets. Price on the piece.',
+    heroLayout: 'rail',
+    kicker: 'Gadgets',
+    catalogTitle: 'Gadgets',
+    featuredTitle: 'Featured',
+    catalogKind: 'gadgets',
+    blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No gadgets listed yet.',
+    merchantEmpty: 'Add your first gadget',
+    heroImage: heroSources('electronics').src,
+    heroSrcSet: heroSources('electronics').srcSet,
+    heroSizes: heroSources('electronics').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#F4F6F6',
+      surface: '#FFF8F0',
+      text: '#0a0f14',
+      muted: '#4a5560',
+      accent: '#0D9488',
+      accentText: '#FFF8F0',
+      heroBg: '#0a0f14',
+      heroText: '#e8f4f2',
+      border: 'rgba(13,148,136,0.22)',
+      headingFont: FONT_SANS,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(160deg, #0a0f14 0%, #0D9488 52%, #0a0f14 100%)',
+    },
+  },
+  auto: {
+    id: 'auto',
+    name: 'Auto',
+    useWhen: 'Parts and accessories. Search + grid. Fit is a merchant note, not a checker.',
+    chips: ['Search + grid', 'Merchant fit note', 'Cash or pickup'],
+    cta: 'Shop now',
+    heroHeadline: 'Parts and accessories. Ask if it fits.',
+    heroLayout: 'desk',
+    kicker: 'Parts',
+    catalogTitle: 'Parts',
+    featuredTitle: 'Parts',
+    catalogKind: 'parts',
+    blocks: ['hero', 'trust', 'category_rail', 'grid', 'banner', 'how', 'testimonials', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'No parts listed yet.',
+    merchantEmpty: 'Add your first part',
+    heroImage: heroSources('auto').src,
+    heroSrcSet: heroSources('auto').srcSet,
+    heroSizes: heroSources('auto').sizes,
+    cardAspect: '1 / 1',
+    palette: {
+      bg: '#F6F3EE',
+      surface: '#FFF8F0',
+      text: '#1a1a1a',
+      muted: '#5c5348',
+      accent: '#d97706',
+      accentText: '#1a1a1a',
+      heroBg: '#1a1a1a',
+      heroText: '#f4efe6',
+      border: 'rgba(217,119,6,0.28)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'linear-gradient(160deg, #1a1a1a 0%, #d97706 46%, #111 100%)',
+    },
+  },
+  doubles: {
+    id: 'doubles',
+    name: 'Doubles vendor',
+    useWhen: 'Trinidad & Tobago doubles — bara, channa, condiments by the wrap. Menu-first mobile.',
+    chips: ['Count order', 'Condiment options', 'Cash / COD', 'WhatsApp'],
+    cta: 'Order doubles',
+    heroHeadline: 'Fresh doubles. Pepper how you like it.',
+    heroLayout: 'stack',
+    kicker: 'Doubles',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Wraps',
+    catalogKind: 'menu',
+    blocks: ['hero', 'trust', 'category_rail', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing on the doubles menu yet.',
+    merchantEmpty: 'Add your first wrap (bara + channa)',
+    heroImage: heroSources('doubles').src,
+    heroSrcSet: heroSources('doubles').srcSet,
+    heroSizes: heroSources('doubles').sizes,
+    cardAspect: '1 / 1',
+    galleryCategory: 'street_food',
+    modifierPreset: 'doubles',
+    countOrder: true,
+    showsSidesSlot: true,
+    palette: {
+      bg: '#1a120c',
+      surface: '#26180f',
+      text: '#f7ecd8',
+      muted: '#c9b089',
+      accent: '#e8a317',
+      accentText: '#1a120c',
+      heroBg: '#1a120c',
+      heroText: '#f7ecd8',
+      border: 'rgba(232,163,23,0.3)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'radial-gradient(ellipse at 55% 40%, #e8a317 0%, #7a3f12 48%, #1a120c 100%)',
+    },
+  },
+  street_food: {
+    id: 'street_food',
+    name: 'Street food vendor',
+    useWhen: 'Corn soup, fried chicken, roti, bake — street stall with sizes, spice, and daily specials.',
+    chips: ['Daily specials', 'Size & spice', 'Cash / COD', 'Hours'],
+    cta: 'Order now',
+    heroHeadline: 'Hot off the stall. Ready when you reach.',
+    heroLayout: 'split',
+    kicker: 'Street food',
+    catalogTitle: 'Menu',
+    featuredTitle: 'Today',
+    catalogKind: 'menu',
+    blocks: ['hero', 'trust', 'category_rail', 'featured_combo', 'menu', 'banner', 'how', 'sticky', 'faq', 'footer'],
+    emptyCatalog: 'Nothing on the stall menu yet.',
+    merchantEmpty: 'Add your first plate',
+    heroImage: heroSources('street_food').src,
+    heroSrcSet: heroSources('street_food').srcSet,
+    heroSizes: heroSources('street_food').sizes,
+    cardAspect: '1 / 1',
+    galleryCategory: 'street_food',
+    modifierPreset: 'street_food',
+    countOrder: true,
+    showsSidesSlot: false,
+    palette: {
+      bg: '#14100c',
+      surface: '#221810',
+      text: '#f5ecd9',
+      muted: '#c4b08a',
+      accent: '#f97316',
+      accentText: '#14100c',
+      heroBg: '#14100c',
+      heroText: '#f5ecd9',
+      border: 'rgba(249,115,22,0.32)',
+      headingFont: FONT_DISPLAY,
+      bodyFont: FONT_SANS,
+      fontHref: '',
+      field: 'radial-gradient(ellipse at 50% 35%, #f97316 0%, #9a3412 50%, #14100c 100%)',
+    },
+  },
+};
+
+export const GALLERY_TO_STARTER: Record<string, StarterId> = {
+  food: 'food',
+  fashion: 'fashion',
+  services: 'services',
+  general: 'general',
+  beauty: 'beauty',
+  home: 'home',
+  electronics: 'electronics',
+  auto: 'auto',
+  doubles: 'doubles',
+  street_food: 'street_food',
+  'street-food': 'street_food',
+  basic: 'general',
+  basic_storefront: 'general',
+  roti_shop_pro: 'food',
+  doubles_breakfast_pro: 'doubles',
+  restaurant_premium: 'food',
+  restaurant: 'food',
+  clothing_store_pro: 'fashion',
+  sneaker_streetwear: 'fashion',
+  salon_barber_pro: 'services',
+  professional: 'services',
+  modern_market: 'general',
+  'island-commerce': 'general',
+  ecommerce: 'general',
+  furniture_home_store: 'home',
+  beauty_cosmetics_store: 'beauty',
+  wellness_supplements: 'beauty',
+  tech_gadgets_store: 'electronics',
+  auto_accessories_store: 'auto',
+  multi_location_enterprise: 'general',
+  'premium-3-column': 'general',
+  'premium-fashion': 'fashion',
+  'premium-restaurant': 'food',
+  'premium-beauty': 'beauty',
+  'premium-ecommerce': 'general',
+};
+
+export function isStarterId(value: string | null | undefined): value is StarterId {
+  return !!value && STARTER_IDS.includes(value as StarterId);
+}
+
+export function resolveStarterId(raw?: string | null): StarterId {
+  if (!raw) return 'general';
+  const mapped = GALLERY_TO_STARTER[raw];
+  if (mapped) return mapped;
+  if (isStarterId(raw)) return raw;
+  return 'general';
+}
+
+export function starterList(): Array<StoreStarter & { galleryId: string }> {
+  return STARTER_IDS.map((id) => ({ ...STORE_STARTERS[id], galleryId: id }));
+}
+
+export function applyCopyTokens(template: string, tokens: Record<string, string>): string {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => tokens[key] ?? '');
+}
+
+export function defaultHowSteps(input: {
+  templateId: StarterId;
+  acceptsPickup?: boolean;
+  acceptsCod?: boolean;
+  wamLive?: boolean;
+}): Array<{ title: string; body: string }> {
+  const browse =
+    isFoodLikeStarter(input.templateId) ? 'See the menu' :
+    input.templateId === 'services' ? 'Pick a service' :
+    input.templateId === 'auto' ? 'Search the parts' :
+    'Browse the shop';
+  const action =
+    isFoodLikeStarter(input.templateId) ? 'Place your order' :
+    input.templateId === 'services' ? 'Book a time' :
+    'Ask for the piece';
+  const payBits: string[] = [];
+  if (input.acceptsPickup) payBits.push('cash when you collect');
+  if (input.acceptsCod) payBits.push('cash on delivery if we deliver to you');
+  if (input.wamLive) payBits.push('card or Wam if that checkout is on for this shop');
+  const pay = payBits.length
+    ? payBits.join(', or ')
+    : 'pay in a way this shop has turned on — we do not invent a rail';
+  return [
+    { title: '1. ' + browse, body: 'What is listed is what is for sale. Empty means nothing is listed yet.' },
+    { title: '2. ' + action, body: input.templateId === 'services' ? 'A time you can keep. No fake reviews.' : 'Message or order from this page.' },
+    { title: '3. Pay on the live rails', body: pay.charAt(0).toUpperCase() + pay.slice(1) + '.' },
+  ];
+}
+
+export function defaultFaq(input: {
+  acceptsPickup?: boolean;
+  acceptsCod?: boolean;
+  hours?: string;
+  pickupAddress?: string;
+  deliveryAreas?: string;
+}): Array<{ q: string; a: string }> {
+  const faq: Array<{ q: string; a: string }> = [
+    { q: 'How do I pay?', a: FAQ_PAY_LINE },
+  ];
+  if (input.deliveryAreas || input.acceptsCod || input.acceptsPickup || input.pickupAddress) {
+    const bits: string[] = [];
+    if (input.acceptsPickup || input.pickupAddress) {
+      bits.push(input.pickupAddress ? `Pickup at ${input.pickupAddress}.` : 'Pickup is on.');
+    }
+    if (input.deliveryAreas) bits.push(`Delivery areas: ${input.deliveryAreas}.`);
+    else if (input.acceptsCod) bits.push('Cash on delivery if that option is on for your area.');
+    if (!bits.length) bits.push('Ask the shop. We do not invent a delivery zone.');
+    faq.push({ q: 'Pickup or delivery?', a: bits.join(' ') });
+  }
+  if (input.hours) {
+    faq.push({ q: 'When are you open?', a: input.hours });
+  }
+  if (faq.length < 3) {
+    faq.push({ q: 'Do you take PayPal?', a: 'No. Cash when you collect, or cash on delivery if that option is on.' });
+  }
+  return faq.slice(0, 3);
+}

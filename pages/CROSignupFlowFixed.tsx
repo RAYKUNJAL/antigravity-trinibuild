@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Sparkles, Check, ArrowRight, Mail, Phone, User,
-    Shield, Clock, MessageCircle, Chrome, Facebook
+    Shield, Clock, MessageCircle, Chrome
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabaseClient';
@@ -51,20 +51,6 @@ export const CROSignupFlow: React.FC = () => {
             if (error) throw error;
         } catch (err: any) {
             setError(err.message || 'Google signup failed');
-        }
-    };
-
-    const handleFacebookSignup = async () => {
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'facebook',
-                options: {
-                    redirectTo: `${window.location.origin}/signup?step=complete&type=${formData.userType}`
-                }
-            });
-            if (error) throw error;
-        } catch (err: any) {
-            setError(err.message || 'Facebook signup failed');
         }
     };
 
@@ -138,7 +124,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Open your online store',
             icon: '🏪',
             color: '#0066CC',
-            benefits: ['Free forever', 'Delivery included', '1,000+ stores']
+            benefits: ['Free store, unlimited products', 'Cash, COD and Wam checkout', 'No credit card to start']
         },
         {
             id: 'driver',
@@ -146,7 +132,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Deliver & make money',
             icon: '🚗',
             color: '#10b981',
-            benefits: ['Flexible hours', 'Daily payouts', 'TT$500+/week']
+            benefits: ['Sign up if driving opens', 'No payout figures published', 'No driver program is live']
         },
         {
             id: 'customer',
@@ -154,15 +140,15 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Support Trinidad businesses',
             icon: '🛍️',
             color: '#E61E2B',
-            benefits: ['Free delivery', 'Cash on delivery', '500+ stores']
+            benefits: ['Shop local stores', 'Cash on delivery', 'Pay when you collect']
         }
     ];
 
     return (
         <>
             <Helmet>
-                <title>Join TriniBuild - 30 Seconds | Trinidad & Tobago</title>
-                <meta name="description" content="Join 10,000+ Trinis. Start selling or shopping in 30 seconds." />
+                <title>Join Juvay - 30 Seconds | Trinidad & Tobago</title>
+                <meta name="description" content="Open a free Juvay store — unlimited products, cash, COD and Wam checkout." />
             </Helmet>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
@@ -174,7 +160,7 @@ export const CROSignupFlow: React.FC = () => {
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-black" style={{ color: '#E61E2B' }}>
-                            TriniBuild
+                            Juvay
                         </h1>
                         <p className="text-gray-600 mt-2">Join in 30 seconds</p>
                     </div>
@@ -232,13 +218,6 @@ export const CROSignupFlow: React.FC = () => {
                                                 >
                                                     <Chrome size={20} />
                                                     Continue with Google
-                                                </button>
-                                                <button
-                                                    onClick={handleFacebookSignup}
-                                                    className="w-full py-3 px-4 border-2 border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-3"
-                                                >
-                                                    <Facebook size={20} />
-                                                    Continue with Facebook
                                                 </button>
                                             </div>
 
@@ -348,7 +327,7 @@ export const CROSignupFlow: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                             <Check size={14} />
-                            <span>10,000+ users</span>
+                            <span>Free to start</span>
                         </div>
                     </div>
                 </motion.div>

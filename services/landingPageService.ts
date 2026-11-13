@@ -1,5 +1,5 @@
 /**
- * TriniBuild AI Micro Landing Page Generator
+ * Juvay AI Micro Landing Page Generator
  * Key: keyword_landing_engine
  * 
  * Auto-generates SEO-optimized landing pages for high-opportunity keywords.
@@ -76,9 +76,9 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
     schemaType: string;
 }> = {
     jobs: {
-        titleTemplate: '{keyword} in {location} | Find Jobs on TriniBuild',
+        titleTemplate: '{keyword} in {location} | Find Jobs on Juvay',
         h1Template: 'Find {keyword} Jobs in {location}',
-        metaTemplate: 'Looking for {keyword} jobs in {location}? Browse {count}+ verified job listings on TriniBuild. Apply today and start your career in Trinidad & Tobago.',
+        metaTemplate: 'Looking for {keyword} jobs in {location}? Browse {count}+ verified job listings on Juvay. Apply today and start your career in Trinidad & Tobago.',
         benefits: [
             'Verified employers only',
             'Apply directly through the platform',
@@ -89,7 +89,7 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
         schemaType: 'JobPosting'
     },
     real_estate: {
-        titleTemplate: '{keyword} in {location} | Rentals & Properties | TriniBuild',
+        titleTemplate: '{keyword} in {location} | Rentals & Properties | Juvay',
         h1Template: '{keyword} for Rent in {location}',
         metaTemplate: 'Find the best {keyword} in {location}, Trinidad. Browse verified listings with photos, prices, and direct landlord contact. No agent fees.',
         benefits: [
@@ -102,9 +102,9 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
         schemaType: 'RealEstateListing'
     },
     services: {
-        titleTemplate: '{keyword} in {location} | Trusted Professionals | TriniBuild',
+        titleTemplate: '{keyword} in {location} | Trusted Professionals | Juvay',
         h1Template: 'Best {keyword} in {location}',
-        metaTemplate: 'Need a {keyword} in {location}? Find verified, reviewed professionals on TriniBuild. Compare prices, read reviews, and book instantly.',
+        metaTemplate: 'Need a {keyword} in {location}? Find verified, reviewed professionals on Juvay. Compare prices, read reviews, and book instantly.',
         benefits: [
             'ID-verified professionals',
             'Read real customer reviews',
@@ -115,9 +115,9 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
         schemaType: 'LocalBusiness'
     },
     events: {
-        titleTemplate: '{keyword} in {location} | Buy Tickets | TriniBuild',
+        titleTemplate: '{keyword} in {location} | Buy Tickets | Juvay',
         h1Template: '{keyword} Events in {location}',
-        metaTemplate: 'Get tickets for {keyword} in {location}. Secure, verified tickets with QR codes. No scalper prices. Buy now on TriniBuild.',
+        metaTemplate: 'Get tickets for {keyword} in {location}. Secure, verified tickets with QR codes. No scalper prices. Buy now on Juvay.',
         benefits: [
             'Guaranteed authentic tickets',
             'Instant digital delivery',
@@ -128,7 +128,7 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
         schemaType: 'Event'
     },
     marketplace: {
-        titleTemplate: '{keyword} for Sale in {location} | TriniBuild Marketplace',
+        titleTemplate: '{keyword} for Sale in {location} | Juvay Marketplace',
         h1Template: 'Buy {keyword} in {location}',
         metaTemplate: 'Shop for {keyword} in {location}. New and used items from verified sellers. Safe transactions and local pickup available.',
         benefits: [
@@ -141,9 +141,9 @@ const VERTICAL_TEMPLATES: Record<LandingPageVertical, {
         schemaType: 'Product'
     },
     rideshare: {
-        titleTemplate: '{keyword} | QuickRides Trinidad | TriniBuild',
+        titleTemplate: '{keyword} | QuickRides Trinidad | Juvay',
         h1Template: '{keyword} Rides in Trinidad',
-        metaTemplate: 'Book {keyword} with TriniBuild QuickRides. Trusted drivers, fixed prices, and real-time GPS tracking. Available 24/7 across Trinidad.',
+        metaTemplate: 'Book {keyword} with Juvay QuickRides. Trusted drivers, fixed prices, and real-time GPS tracking. Available 24/7 across Trinidad.',
         benefits: [
             'Fixed prices - no surge pricing',
             'Verified, background-checked drivers',
@@ -163,13 +163,13 @@ const FAQ_TEMPLATES: Record<LandingPageVertical, string[]> = {
     jobs: [
         'How do I apply for {keyword} jobs in {location}?',
         'What salary can I expect for {keyword} positions in Trinidad?',
-        'Are the {keyword} jobs on TriniBuild verified?',
+        'Are the {keyword} jobs on Juvay verified?',
         'How long does the application process take?',
         'Can I set up job alerts for {keyword} in {location}?'
     ],
     real_estate: [
         'What is the average rent for {keyword} in {location}?',
-        'How do I contact landlords directly on TriniBuild?',
+        'How do I contact landlords directly on Juvay?',
         'Is a deposit required for {keyword} rentals?',
         'Can I schedule a property viewing online?',
         'Are the {keyword} listings verified?'
@@ -177,7 +177,7 @@ const FAQ_TEMPLATES: Record<LandingPageVertical, string[]> = {
     services: [
         'How do I find a trusted {keyword} in {location}?',
         'What is the average cost for {keyword} services?',
-        'Are the {keyword} providers on TriniBuild verified?',
+        'Are the {keyword} providers on Juvay verified?',
         'Can I read reviews before booking?',
         'What if I\'m not satisfied with the service?'
     ],
@@ -189,7 +189,7 @@ const FAQ_TEMPLATES: Record<LandingPageVertical, string[]> = {
         'Are there group discounts for {keyword} events?'
     ],
     marketplace: [
-        'Is it safe to buy {keyword} on TriniBuild?',
+        'Is it safe to buy {keyword} on Juvay?',
         'How do I contact sellers for {keyword}?',
         'What payment methods are accepted?',
         'Can I return {keyword} if it\'s not as described?',
@@ -197,7 +197,7 @@ const FAQ_TEMPLATES: Record<LandingPageVertical, string[]> = {
     ],
     rideshare: [
         'How much does a {keyword} ride cost?',
-        'Are TriniBuild drivers verified?',
+        'Are Juvay drivers verified?',
         'Can I book a {keyword} ride in advance?',
         'What areas in Trinidad do you cover?',
         'How do I pay for my ride?'
@@ -310,7 +310,7 @@ const generateIntroParagraph = async (
     const prompt = `Write a compelling 2-3 sentence intro paragraph for a landing page about "${keyword}" in ${location}, Trinidad. 
 Target audience: ${targetAudience || 'people in Trinidad looking for ' + keyword}.
 Category: ${vertical}.
-Be concise, engaging, and include local context. Mention TriniBuild as the platform.`;
+Be concise, engaging, and include local context. Mention Juvay as the platform.`;
 
     try {
         const response = await aiService.generateText(prompt,
@@ -318,7 +318,7 @@ Be concise, engaging, and include local context. Mention TriniBuild as the platf
         );
         return response.trim();
     } catch {
-        return `Looking for ${keyword} in ${location}? TriniBuild connects you with the best options across Trinidad & Tobago. Browse verified listings and find exactly what you need.`;
+        return `Looking for ${keyword} in ${location}? Juvay connects you with the best options across Trinidad & Tobago. Browse verified listings and find exactly what you need.`;
     }
 };
 
@@ -337,7 +337,7 @@ const generateLocalContext = async (
         );
         return response.trim();
     } catch {
-        return `${location} is a vibrant area in Trinidad with a strong local community. TriniBuild has extensive coverage in this area.`;
+        return `${location} is a vibrant area in Trinidad with a strong local community. Juvay has extensive coverage in this area.`;
     }
 };
 
@@ -353,15 +353,15 @@ const generateFaqAnswers = async (
         q.replace(/{keyword}/g, keyword).replace(/{location}/g, location)
     );
 
-    const prompt = `Answer these FAQs concisely (1-2 sentences each) for a TriniBuild landing page:
+    const prompt = `Answer these FAQs concisely (1-2 sentences each) for a Juvay landing page:
 
 ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 
-Context: TriniBuild is Trinidad's leading digital platform for jobs, rentals, services, and more. Be helpful and specific to T&T.`;
+Context: Juvay is Trinidad's leading digital platform for jobs, rentals, services, and more. Be helpful and specific to T&T.`;
 
     try {
         const response = await aiService.generateText(prompt,
-            'You are a TriniBuild customer service expert.'
+            'You are a Juvay customer service expert.'
         );
 
         // Parse responses
@@ -393,8 +393,8 @@ const generateSchemaData = (
         },
         'provider': {
             '@type': 'Organization',
-            'name': 'TriniBuild',
-            'url': 'https://trinibuild.com'
+            'name': 'Juvay',
+            'url': 'https://juvay.app'
         }
     };
 

@@ -13,6 +13,7 @@ import {
 import { supabase } from '../services/supabaseClient';
 import { documentCenterService, DOCUMENT_CATALOG } from '../services/documentCenterService';
 import { useNavigate } from 'react-router-dom';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 const CATEGORIES = [
   { id: 'all', label: 'All Documents' },
@@ -202,7 +203,7 @@ export default function DocumentCenter() {
                 <Star className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-yellow-800">2 documents free with your account</p>
-                  <p className="text-xs text-yellow-700 mt-0.5">Paid document tools open with Starter (TT$99/mo) on /pricing when Wam can take that money.</p>
+                  <p className="text-xs text-yellow-700 mt-0.5">Paid document tools would open with Premium ({PREMIUM_PRICE_COPY}) on /pricing. {PAID_UPGRADE_UNAVAILABLE_COPY}</p>
                 </div>
               </div>
             )}
@@ -245,10 +246,10 @@ export default function DocumentCenter() {
             <p className="text-gray-500 mb-6">{selectedDoc.description}</p>
             <div className="bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl p-6 mb-4">
               <p className="font-bold text-lg mb-1">See /pricing</p>
-              <p className="text-red-100 text-sm mb-4">Starter TT$99 / Business TT$329. One TTD table. No USD menu.</p>
-              <p className="text-3xl font-black mb-1">TT$99<span className="text-sm font-normal">/month</span></p>
+              <p className="text-red-100 text-sm mb-4">Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}</p>
+              <p className="text-2xl font-black mb-1 leading-snug">{PREMIUM_PRICE_COPY}</p>
               <a href="/pricing" className="block mt-4 bg-white text-red-600 font-bold py-3 rounded-xl hover:bg-red-50 transition-colors">
-                Upgrade Now →
+                See pricing →
               </a>
             </div>
             <button onClick={() => setSelectedDoc(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back to documents</button>
@@ -357,8 +358,8 @@ export default function DocumentCenter() {
               {/* Official header */}
               <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-sm">TriniBuild Platform — Official Document</p>
-                  <p className="text-gray-400 text-xs">R&R Digital Solutions Ltd · trinibuild.com</p>
+                  <p className="font-bold text-sm">Juvay Platform — Official Document</p>
+                  <p className="text-gray-400 text-xs">R&R Digital Solutions Ltd · juvay.app</p>
                 </div>
                 <FileText className="w-6 h-6 text-gray-400" />
               </div>

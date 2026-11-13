@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 /**
  * SuccessStoriesPage — pre-launch placeholder.
@@ -42,7 +43,7 @@ export const SuccessStoriesPage: React.FC = () => {
           </h1>
 
           <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            TriniBuild is a brand-new Trinidad-built platform. We don't have a stable of
+            Juvay is a brand-new Trinidad-built platform. We don't have a stable of
             testimonials yet, and we won't invent any. What we do have: a working store
             builder, AI product listing, cash-on-delivery checkout, and a founding offer
             for the first 100 merchants.
@@ -53,7 +54,7 @@ export const SuccessStoriesPage: React.FC = () => {
             <ul className="space-y-3 mb-6">
               <li className="flex items-start gap-3">
                 <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>
-                <span className="text-gray-200">Free Pro plan for 6 months (TT$1,194 value) — unlimited products, AI listing tool, analytics</span>
+                <span className="text-gray-200">Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>
@@ -82,13 +83,11 @@ export const SuccessStoriesPage: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="https://wa.me/18680000000"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:support@juvay.app"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp the team
+              Email support@juvay.app
             </a>
           </div>
         </div>

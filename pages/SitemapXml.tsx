@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 const STATIC_PATHS = [
-    '', 'website-builder', 'pricing', 'jobs', 'real-estate', 'classifieds',
-    'events', 'driver-pass', 'documents',
+    '', 'website-builder', 'pricing', 'fees', 'jobs', 'real-estate', 'classifieds',
+    'events', 'driver-pass', 'documents', 'fresh-catch', 'rides',
 ];
 
 export default function SitemapXml() {

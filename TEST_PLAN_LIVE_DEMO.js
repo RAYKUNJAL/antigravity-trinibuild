@@ -104,8 +104,7 @@
  * - 500 demos/day = $5/day = $150/month
  * - Rate limit (5 per IP) caps max at ~500 unique IPs/day = $5/day max
  * - If conversion rate is 10% signup, 500 demos = 50 signups
- * - If 10% go Pro (TT$199/mo), that's 5 × TT$199 = TT$995/mo revenue
- * - ROI: Spend $150/mo, earn TT$995/mo = 6.6x return
+ * - Do not assume a paid conversion rate or invent MRR. Premium is TT$49/month for the first 3 months, then TT$79/month, and paid upgrades aren't available yet.
  */
 
 console.log('This is not a runnable test — it is a manual checklist for Ray');

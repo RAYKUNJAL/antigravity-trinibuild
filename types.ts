@@ -2,9 +2,13 @@
 // -- SUBSCRIPTION TIERS --
 export enum SubscriptionTier {
   FREE = 'free',
-  STARTER = 'starter',
-  PROFESSIONAL = 'professional',
-  ENTERPRISE = 'enterprise'
+  PREMIUM = 'premium',
+  /** @deprecated Legacy paid tier — maps to Premium */
+  STARTER = 'premium',
+  /** @deprecated Legacy paid tier — maps to Premium */
+  PROFESSIONAL = 'premium',
+  /** @deprecated Legacy paid tier — maps to Premium */
+  ENTERPRISE = 'premium',
 }
 
 // -- BLOG POST INTERFACE --

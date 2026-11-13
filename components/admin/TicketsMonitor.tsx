@@ -79,9 +79,9 @@ export const TicketsMonitor: React.FC = () => {
             <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <Ticket className="h-7 w-7 text-purple-500" />
-                    Tickets & Events Monitor
+                    Tickets route monitor
                 </h1>
-                <p className="text-gray-500">Track event performance and ticket sales</p>
+                <p className="text-gray-500">Honest empty. No invented events or sales.</p>
             </div>
 
             {loading ? (

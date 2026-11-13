@@ -132,7 +132,7 @@ export const AdminDashboard: React.FC = () => {
                 <Zap className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-light">TriniBuild Control Center</h1>
+                <h1 className="text-3xl font-light">Juvay Control Center</h1>
                 <p className="text-sm text-slate-400">
                   Paperclip AI Agents • 24/7 Autonomous Scaling
                 </p>
@@ -225,7 +225,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-4">
                 {/* Juvay.com */}
                 <DomainOptionCard
-                  title="TriniBuild Subdomain"
+                  title="Juvay Subdomain"
                   description="Free forever on our platform"
                   price="FREE"
                   active={domainTab === 'trinibuild'}
@@ -242,7 +242,7 @@ export const AdminDashboard: React.FC = () => {
                 <DomainOptionCard
                   title="Custom Domain"
                   description="We buy & manage for you"
-                  price="TT$99/year"
+                  price="Price not published"
                   active={domainTab === 'custom'}
                   benefits={[
                     '✓ Custom branded domain',
@@ -258,7 +258,7 @@ export const AdminDashboard: React.FC = () => {
                 <DomainOptionCard
                   title="Export Code"
                   description="Deploy on your server"
-                  price="TT$199"
+                  price="Price not published"
                   active={domainTab === 'export'}
                   benefits={[
                     '✓ Full React code provided',

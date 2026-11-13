@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
 import { JuvayPriceTable } from '../../components/JuvayPriceTable';
+import { PREMIUM_PRICE_COPY, FREE_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../../services/juvayPlans';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
-    Phone, Mail, MessageCircle, MapPin, Star, Clock, Truck, Shield, Award,
+    Mail, Star, Clock, Truck, Shield, Award,
     ArrowRight, Zap, DollarSign, Users, TrendingUp, Package, Calendar
 } from 'lucide-react';
 
@@ -223,7 +224,7 @@ export const FoodServicesLanding: React.FC = () => {
                                 Simple Pricing for Food Businesses
                             </h2>
                             <p className="text-xl text-gray-600">
-                                One TTD table matching /pricing. Free TT$0 / Starter TT$99 / Business TT$329.
+                                One TTD table matching /pricing. Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
                             </p>
                         </div>
 
@@ -238,18 +239,18 @@ export const FoodServicesLanding: React.FC = () => {
                             Ready to Start Taking Online Orders?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Free is 5 listings, cash pickup, and COD. No invented merchant count.
+                            Free: {FREE_INCLUDES_COPY}. No invented merchant count.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <button className="bg-white text-orange-600 px-12 py-5 rounded-full font-extrabold text-xl hover:bg-gray-100 transition-all shadow-2xl hover:scale-105">
                                 Get Started Free
                             </button>
                             <a
-                                href="https://wa.me/18685552845"
-                                className="bg-green-500 text-white px-12 py-5 rounded-full font-extrabold text-xl hover:bg-green-600 transition-all shadow-2xl hover:scale-105 flex items-center justify-center"
+                                href="mailto:support@juvay.app"
+                                className="bg-white/15 text-white px-12 py-5 rounded-full font-extrabold text-xl hover:bg-white/25 transition-all shadow-2xl hover:scale-105 flex items-center justify-center"
                             >
-                                <MessageCircle className="mr-2 h-6 w-6" />
-                                WhatsApp We
+                                <Mail className="mr-2 h-6 w-6" />
+                                Email support@juvay.app
                             </a>
                         </div>
                         <p className="text-sm text-white/80">

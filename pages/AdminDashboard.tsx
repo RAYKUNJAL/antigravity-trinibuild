@@ -42,7 +42,7 @@ export const AdminDashboard: React.FC = () => {
    // Vendor Logic
    const [vendors, setVendors] = useState<any[]>([
       { id: 'v1', name: 'Roti King', owner: 'Rajesh K.', email: 'rajesh@example.com', status: 'active', plan: 'Free', verified: false, revenue: 450 },
-      { id: 'v2', name: 'Island Styles', owner: 'Sarah M.', email: 'sarah@example.com', status: 'active', plan: 'Starter', verified: true, revenue: 1200 },
+      { id: 'v2', name: 'Island Styles', owner: 'Sarah M.', email: 'sarah@example.com', status: 'active', plan: 'Premium', verified: true, revenue: 1200 },
    ]);
 
    // Regular Users Logic (Drivers/Customers)
@@ -203,7 +203,7 @@ export const AdminDashboard: React.FC = () => {
    // Grant Premium (The "Gift" Feature)
    const handleGiftPremium = (id: string, type: 'vendor' | 'user') => {
       if (type === 'vendor') {
-         setVendors(vendors.map(v => v.id === id ? { ...v, plan: SubscriptionTier.ENTERPRISE, isLifetime: true } : v));
+         setVendors(vendors.map(v => v.id === id ? { ...v, plan: SubscriptionTier.PREMIUM, isLifetime: true } : v));
       } else {
          setUsers(users.map(u => u.id === id ? { ...u, isLifetime: true, badge: 'VIP' } : u));
       }
@@ -231,7 +231,7 @@ export const AdminDashboard: React.FC = () => {
             title: article.title,
             excerpt: article.excerpt,
             content: article.content,
-            author: 'TriniBuild AI',
+            author: 'Juvay AI',
             date: new Date().toLocaleDateString(),
             category: 'News',
             image: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=800', // Placeholder
@@ -666,7 +666,7 @@ export const AdminDashboard: React.FC = () => {
                      <div className="space-y-4">
                         <div>
                            <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Global Meta Title</label>
-                           <input type="text" aria-label="Global Meta Title" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="TriniBuild - Trinidad Business Directory" />
+                           <input type="text" aria-label="Global Meta Title" className="w-full border border-gray-300 bg-white text-gray-900 rounded p-2 text-sm" defaultValue="Juvay - Trinidad Business Directory" />
                         </div>
                         <div>
                            <label className="block text-xs font-bold text-gray-900 uppercase mb-1">Target Keywords (Comma Sep)</label>

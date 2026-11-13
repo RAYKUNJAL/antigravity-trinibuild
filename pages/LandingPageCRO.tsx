@@ -1,1065 +1,474 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
-import {
-  ArrowRight, Check, Star, TrendingUp, Zap, ShoppingCart,
-  Lock, Clock, Users, DollarSign, Smartphone, BarChart3,
-  MessageCircle, MessageSquare, AlertCircle, ChevronDown,
-  Upload, Sparkles, Image as ImageIcon, Tag, ExternalLink
-} from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion';
-import { ga4Analytics } from '../services/ga4AnalyticsService';
-import { facebookPixel } from '../services/facebookPixelService';
-import { abTesting } from '../services/abTestingService';
-import { WorkingAIDemo } from '../components/WorkingAIDemo';
-import { ServicesShowcase } from '../components/ServicesShowcase';
-import { JuvayPriceTable } from '../components/JuvayPriceTable';
-
-/* ────────────────────────────────────────────────────────────────────────
-   SOCIAL PROOF DATA
-   ──────────────────────────────────────────────────────────────────────── */
-
-const TICKER_MERCHANTS = [
-  { name: 'Roti shops', location: 'Food & drink', avatar: '🍛' },
-  { name: 'Boutiques', location: 'Fashion', avatar: '👗' },
-  { name: 'Barbers & salons', location: 'Services', avatar: '💈' },
-  { name: 'Auto parts', location: 'Automotive', avatar: '🔧' },
-  { name: 'Doubles vendors', location: 'Street food', avatar: '🫓' },
-  { name: 'Bakeries', location: 'Food & drink', avatar: '🧁' },
-  { name: 'Electronics', location: 'Retail', avatar: '📱' },
-  { name: 'Beauty supply', location: 'Beauty', avatar: '💄' },
-];
-
-const STATS_ROW = [
-  { value: '14', label: 'store templates' },
-  { value: '5 min', label: 'to launch' },
-  { value: '🇹🇹', label: 'built in T&T' },
-];
-
-const STORE_SHOWCASE = [
-  { name: 'Fashion Boutique', category: 'Fashion & Apparel', location: 'Product grid · variants · lookbook', img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80' },
-  { name: 'Roti & Food Shop', category: 'Food & Beverage', location: 'Menu · WhatsApp ordering · COD', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80' },
-  { name: 'Tech & Gadgets', category: 'Electronics', location: 'Specs · comparisons · warranty', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80' },
-  { name: 'Beauty & Cosmetics', category: 'Beauty & Cosmetics', location: 'Shade match · bundles · subscribe', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&q=80' },
-  { name: 'Furniture & Home', category: 'Furniture & Home', location: 'Sale pricing · trust badges', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80' },
-  { name: 'Auto & Accessories', category: 'Auto Parts', location: 'Part finder · vehicle match', img: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80' },
-];
-
-const TESTIMONIALS_REMOVED = true; // (Removed fabricated reviews — replaced by honest WHY_TRINIBUILD section above.)
-
-/* Robust fade-in: content is visible by default (opacity 1). Animation is
-   purely additive — if framer-motion never fires whileInView, the element
-   still renders fully visible. initial={false} skips the initial render frame
-   so the element starts at its natural (visible) state instead of opacity:0. */
-const fadeInUp = {
-  initial: false,
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.1 },
-  transition: { duration: 0.5 },
-};
-
-/* ── Social Proof Ticker (scrolling marquee) ── */
-const SocialProofTicker: React.FC = () => (
-  <section className="py-10 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white overflow-hidden">
-    <div className="max-w-7xl mx-auto">
-      {/* Stat row */}
-      <div className="grid grid-cols-3 gap-4 sm:gap-8 max-w-2xl mx-auto mb-8">
-        {STATS_ROW.map((s, i) => (
-          <motion.div key={i} {...fadeInUp} transition={{ ...fadeInUp.transition, delay: i * 0.1 }} className="text-center">
-            <div className="text-2xl sm:text-3xl font-black text-trini-red">{s.value}</div>
-            <div className="text-xs sm:text-sm text-gray-400 mt-1">{s.label}</div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Marquee */}
-      <div className="relative">
-        <p className="text-center text-xs uppercase tracking-widest text-gray-500 mb-4">Built for every kind of T&T business</p>
-        <div className="overflow-hidden relative">
-          {/* Edge fade */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none" />
-          <div className="flex gap-6 animate-[ticker_30s_linear_infinite] w-max">
-            {[...TICKER_MERCHANTS, ...TICKER_MERCHANTS].map((m, i) => (
-              <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-4 py-2 flex-shrink-0">
-                <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-lg flex-shrink-0" aria-hidden>{m.avatar}</span>
-                <span className="text-sm font-semibold whitespace-nowrap">
-                  {m.name} <span className="text-gray-400 font-normal">· {m.location}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-/* ── Stores Built on Juvay showcase ── */
-const StoreShowcase: React.FC = () => (
-  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-    <div className="max-w-6xl mx-auto">
-      <motion.div {...fadeInUp} className="text-center mb-14">
-        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">What You Can Build</h2>
-        <p className="text-lg text-gray-600">Real store designs ready for your business — pick a look and make it yours in minutes.</p>
-      </motion.div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {STORE_SHOWCASE.map((store, idx) => (
-          <motion.div
-            key={idx}
-            {...fadeInUp}
-            transition={{ ...fadeInUp.transition, delay: idx * 0.08 }}
-            className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow duration-300"
-          >
-            <div className="relative h-44 overflow-hidden">
-              <img src={store.img} alt={store.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <span className="absolute top-3 left-3 text-[10px] font-black uppercase tracking-wider bg-white/90 text-gray-800 px-2 py-1 rounded-full">
-                {store.category}
-              </span>
-              <span className="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider bg-trini-red text-white px-2 py-1 rounded-full">
-                Template
-              </span>
-            </div>
-            <div className="p-5">
-              <h3 className="font-bold text-gray-900 text-lg">{store.name}</h3>
-              <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
-                {store.location}
-              </p>
-              <a
-                href="/templates"
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-trini-red hover:underline"
-              >
-                Preview Template <ExternalLink size={14} />
-              </a>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-/* ── Why merchants choose us (honest value props — no fabricated reviews) ── */
-const WHY_TRINIBUILD = [
-  {
-    icon: '🇹🇹',
-    title: 'Built right here',
-    body: 'Made in Trinidad & Tobago for T&T businesses — COD, WhatsApp ordering, and TT$ pricing baked in from day one.',
-  },
-  {
-    icon: '💸',
-    title: 'Free to start, no card',
-    body: 'Launch a real store on the free plan with no credit card. Test your business before you ever pay a cent.',
-  },
-  {
-    icon: '⚡',
-    title: 'Live in about 5 minutes',
-    body: 'Pick a template, add your products with the AI lister, and share your store link the same afternoon.',
-  },
-];
-
-const Testimonials: React.FC = () => (
-  <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-    <div className="max-w-5xl mx-auto">
-      <motion.div {...fadeInUp} className="text-center mb-14">
-        <span className="inline-block text-xs font-black uppercase tracking-widest text-trini-red mb-3">Founding Merchants · First 100</span>
-        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Be one of our first stores</h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Juvay is brand-new and built in T&amp;T. We're looking for founding merchants to grow with — and rewarding them for being first.
-        </p>
-      </motion.div>
-
-      <div className="grid md:grid-cols-3 gap-6">
-        {WHY_TRINIBUILD.map((item, idx) => (
-          <motion.div
-            key={idx}
-            {...fadeInUp}
-            transition={{ ...fadeInUp.transition, delay: idx * 0.1 }}
-            className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex flex-col"
-          >
-            <div className="text-3xl mb-4">{item.icon}</div>
-            <h3 className="font-bold text-gray-900 text-lg mb-2">{item.title}</h3>
-            <p className="text-gray-600 text-sm flex-1 leading-relaxed">{item.body}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div {...fadeInUp} className="text-center mt-10">
-        <a href="/create-store" className="inline-flex items-center gap-2 bg-trini-red text-white font-bold px-7 py-3.5 rounded-xl hover:bg-red-700 transition-colors">
-          Start My Free Store <ArrowRight size={18} />
-        </a>
-      </motion.div>
-    </div>
-  </section>
-);
-
-/* ── Founding-merchant banner (honest — no fabricated counts) ── */
-const MerchantCounter: React.FC = () => {
-  return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-trini-red to-orange-600 text-white">
-      <div className="max-w-3xl mx-auto text-center">
-        <motion.div {...fadeInUp}>
-          <div className="text-4xl sm:text-5xl font-black mb-3">Get in early. 🇹🇹</div>
-          <div className="text-xl sm:text-2xl font-bold">Founding merchant spots are open now</div>
-          <p className="text-white/85 mt-3 text-sm sm:text-base max-w-xl mx-auto">
-            Juvay just launched. Be one of the first Trinidad &amp; Tobago businesses to claim a free store — and help shape what we build next.
-          </p>
-          <a href="/create-store" className="inline-flex items-center gap-2 bg-white text-trini-red font-bold px-7 py-3.5 rounded-xl mt-6 hover:bg-gray-100 transition-colors">
-            Claim Your Free Store <ArrowRight size={18} />
-          </a>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-/* ────────────────────────────────────────────────────────────────────────
-   AI PRODUCT LISTER DEMO — split layout, typewriter before→after
-   ──────────────────────────────────────────────────────────────────────── */
-
-const TYPEWRITER_DESC =
-  'Elegant quartz movement timepiece with a classic stainless steel finish. Perfect for formal occasions or everyday wear. Water-resistant and built to last.';
-
-const ListerDemo: React.FC = () => {
-  // Default to the finished state so the listing card is ALWAYS visible even
-  // if the inView trigger never fires. The typewriter/count-up is purely an
-  // enhancement that replays when scrolled into view.
-  const [typed, setTyped] = useState(TYPEWRITER_DESC);
-  const [showResult, setShowResult] = useState(true);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(sectionRef, { once: true, amount: 0.1 });
-
-  useEffect(() => {
-    if (!inView) return;
-    // Replay the before→after reveal as an enhancement.
-    setShowResult(false);
-    setTyped('');
-    const reveal = setTimeout(() => setShowResult(true), 800);
-    return () => clearTimeout(reveal);
-  }, [inView]);
-
-  useEffect(() => {
-    if (!showResult) return;
-    // Only run the typewriter if we reset it above; otherwise keep full text.
-    if (typed.length >= TYPEWRITER_DESC.length) return;
-    let i = typed.length;
-    const id = setInterval(() => {
-      i++;
-      setTyped(TYPEWRITER_DESC.slice(0, i));
-      if (i >= TYPEWRITER_DESC.length) clearInterval(id);
-    }, 28);
-    return () => clearInterval(id);
-  }, [showResult]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const tags = ['Luxury Watch', 'Quartz', 'Stainless Steel', 'Classic', 'Water Resistant'];
-
-  return (
-    <section ref={sectionRef} className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <motion.div {...fadeInUp} className="text-center mb-14">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">AI Product Lister</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">From Photo to Listing in Seconds</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload a product photo. Our AI writes the title, SEO description, and keyword tags automatically.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* LEFT — Upload widget */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center"
-          >
-            <div className="w-20 h-20 mx-auto rounded-full bg-indigo-100 flex items-center justify-center mb-4">
-              <Upload className="w-9 h-9 text-indigo-600" />
-            </div>
-            <h3 className="font-bold text-gray-900 mb-1">Upload Product Photo</h3>
-            <p className="text-sm text-gray-500 mb-4">PNG, JPG up to 10MB</p>
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <ImageIcon size={14} /> Or drag & drop
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-indigo-600">
-              <Sparkles size={16} /> AI is ready
-            </div>
-          </motion.div>
-
-          {/* RIGHT — Before → After result */}
-          <motion.div
-            initial={false}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.1 }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            {/* Raw watch photo (before) */}
-            <div className={`absolute inset-0 transition-opacity duration-500 ${showResult ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Raw watch"
-                loading="lazy"
-                className="w-full h-72 object-cover rounded-2xl"
-              />
-              <div className="absolute inset-0 bg-black/30 rounded-2xl flex items-center justify-center">
-                <div className="flex items-center gap-2 text-white font-bold animate-pulse">
-                  <Sparkles size={20} /> Analyzing photo...
-                </div>
-              </div>
-            </div>
-
-            {/* Finished listing card (after) */}
-            <div className={`bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden transition-all duration-500 ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <img
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"
-                alt="Premium Quartz Timepiece"
-                loading="lazy"
-                className="w-full h-44 object-cover"
-              />
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-black text-gray-900 text-lg">Premium Quartz Timepiece — Classic Edition</h3>
-                </div>
-                <div className="text-2xl font-bold text-trini-red mb-3">TT$1,299</div>
-                <p className="text-sm text-gray-600 mb-4 min-h-[60px]">
-                  {typed}
-                  {typed.length < TYPEWRITER_DESC.length && <span className="animate-pulse">|</span>}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full">
-                      <Tag size={11} /> {t}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-
 /**
- * LandingPageCRO.tsx
- * 
- * STRATEGY:
- * - Cold traffic landing page (not existing users)
- * - Single conversion goal: "Start My Free Store"
- * - Hero-focused COD merchant messaging
- * - Proof-based copy (testimonials, numbers, walkthroughs)
- * - Minimal distraction (no marketplace/jobs/rides on this page)
- * - Mobile-first (60% of traffic)
- * - SEO-optimized for T&T merchant keywords
- * - Revenue-focused UX (funnels to TT$99-399/mo plans)
+ * Juvay home — immersive, 3D, high-converting landing.
+ * Honesty: no invented stats, reviews, seller counts or proven pay→fulfill claims.
  */
+import React, { useCallback, useLayoutEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
+import { HeroStage } from '../components/landing/HeroStage';
+import { StorySections } from '../components/landing/StorySections';
+import { TemplateShowcase } from '../components/landing/TemplateShowcase';
+import { FeeKeepCalculator } from '../components/landing/FeeKeepCalculator';
+import { LandingFaq } from '../components/landing/LandingFaq';
+import { StickyMobileCta } from '../components/landing/StickyMobileCta';
+import { VisionDemo } from '../components/landing/VisionDemo';
+import { FEE_DEFAULTS, formatFeePercent, formatTtdCents } from '../services/juvayFees';
+import { FRESH_CATCH_APP_URL, FRESH_CATCH_PATH, FRESH_CATCH_TAGLINE, FRESH_CATCH_TITLE } from '../services/freshCatchLink';
+import { ExitIntentPopup } from '../components/ExitIntentPopup';
 
-const TRUST_POINTS = [
-  { number: 'Free', label: 'Forever, not a trial' },
-  { number: '0', label: 'Credit card required' },
-  { number: '2 min', label: 'From signup to live store' },
-  { number: '🇹🇹', label: 'Built in Trinidad' }
+function useDesktopHero() {
+  const [desktop, setDesktop] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+  useLayoutEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => setDesktop(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+  return desktop;
+}
+
+
+const HOW = [
+  {
+    n: '1',
+    title: 'Create your free store',
+    body: 'Pick a starter, name your shop and you have a page. No credit card. Unlimited products.',
+  },
+  {
+    n: '2',
+    title: 'Add what you sell',
+    body: 'Snap a photo to draft a name, then you type the TT$ price. Or type everything yourself.',
+  },
+  {
+    n: '3',
+    title: 'Share and get paid',
+    body: 'Send your link on WhatsApp. Take cash pickup or cash on delivery at 0%. Sell online with Wam when you are ready.',
+  },
 ];
 
-const FOUNDING_OFFER = {
-  title: 'We\'re just getting started — and the first 100 merchants get something special',
-  bullet_points: [
-    'Free Starter plan for 6 months (a TT$1,194 value — unlimited products, AI listing tool, advanced analytics)',
-    'Direct WhatsApp line to the founding team — you get heard, fast',
-    'Featured placement on the Juvay marketplace when it launches',
-    'Your feedback shapes what we build next'
-  ],
-  caveat: 'Why the offer? We\'re a brand-new Trinidad-built platform. We want founding merchants who help us get it right, and we want to reward them for being first.'
+const OG_IMAGE = 'https://juvay.app/og-juvay-home.png';
+const TITLE = 'Your free Caribbean store — no credit card | Juvay';
+const DESCRIPTION =
+  'Juvay is the Amazon for the Caribbean. Every seller gets a free website and store — Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card. Sell online with Wam when you are ready.';
+
+const faqJson = () => {
+  const freePct = formatFeePercent(FEE_DEFAULTS.juvayFeeBpsFree);
+  const cap = formatTtdCents(FEE_DEFAULTS.juvayFeeCapCents);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'Is it really free?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Yes. Every Caribbean seller can create a free website and store. Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card. Juvay earns ${freePct} only when a buyer pays you online with Wam, capped at ${cap} per order.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do I need a credit card or a bank account?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No credit card is required to create your store or to take cash orders. A Wam account is what vendors use to get paid out on online sales, in countries where Wam is available. You can start with cash pickup and cash on delivery alone.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How do I get paid?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Cash pickup and cash on delivery: the buyer pays you in cash, and that money is yours immediately. Online Wam payments are designed so the buyer pays through Wam, the order is marked paid, and the fee shows on your seller ledger. Cash and COD are available to use now.',
+        },
+      },
+    ],
+  };
 };
 
-const HOW_IT_WORKS = [
-  {
-    step: '1',
-    title: 'Create Your Free Store',
-    description: 'Your business name, add a photo, choose your products. Done in 5 minutes. No credit card needed.',
-    icon: '🏪'
-  },
-  {
-    step: '2',
-    title: 'Add Your Products (Fast)',
-    description: 'Upload photos or use AI to create listings instantly. Works even if you have no barcodes or inventory system.',
-    icon: '📸'
-  },
-  {
-    step: '3',
-    title: 'Customers Order via COD',
-    description: 'They place an order, confirm pickup or delivery. You get a WhatsApp notification immediately.',
-    icon: '📱'
-  },
-  {
-    step: '4',
-    title: 'Collect Cash, Grow Your Business',
-    description: 'Customer pays cash on delivery, you confirm the order complete. Track everything in your dashboard.',
-    icon: '💰'
-  }
-];
-
-const COD_EXPLAINED = [
-  {
-    title: 'Order Placed',
-    description: 'Customer chooses your products and picks COD at checkout.'
-  },
-  {
-    title: 'You Get Notified',
-    description: 'Instant WhatsApp or SMS alert with customer details and delivery address.'
-  },
-  {
-    title: 'Confirm & Deliver',
-    description: 'Arrange your own delivery or offer pickup. A ride fare is only shown when that product is live for that store — this page does not quote one.'
-  },
-  {
-    title: 'Order Complete',
-    description: 'Customer has product, you have cash. Mark order delivered in your dashboard. Money is yours.'
-  }
-];
-
-const FEATURES = [
-  {
-    title: 'Free Online Store',
-    description: 'Professional storefront that loads fast. Mobile-friendly. Looks like you spent money building it.',
-    icon: <ShoppingCart className="w-6 h-6" />
-  },
-  {
-    title: '5 Free Products',
-    description: 'List 5 items free forever. Test your business before upgrading. Upgrade anytime.'
-  },
-  {
-    title: 'COD Checkout',
-    description: 'Cash on delivery and cash at pickup. Supported online payments appear only when that rail is actually on for the store.'
-  },
-  {
-    title: 'AI Product Lister',
-    description: 'Take a photo. AI writes the description, picks keywords, prices it. 30 seconds per product.'
-  },
-  {
-    title: 'Order Dashboard',
-    description: 'See all orders, delivery status, customer contact info. Everything in one place.'
-  },
-  {
-    title: 'VAT Tracker',
-    description: 'Track 12.5% VAT automatically. Generate reports for BIR. Stay organized for taxes.'
-  },
-  {
-    title: 'Delivery Options',
-    description: 'Arrange your own delivery, or let customers pick it up. Ride fare is only shown when that product is live for that store.'
-  },
-  {
-    title: 'WhatsApp Ready',
-    description: 'Get order notifications on WhatsApp. Confirm deliveries on WhatsApp. No app needed.'
-  }
-];
-
-const PRICING_TIERS = [
-  {
-    name: 'Free',
-    price: 'TT$0',
-    period: 'forever',
-    description: 'Start selling',
-    features: [
-      '5 product listings',
-      'juvay.app store slug',
-      'Cash at pickup',
-      'Cash on delivery'
-    ],
-    cta: 'Start Free',
-    highlighted: false
-  },
-  {
-    name: 'Starter',
-    price: 'TT$99',
-    period: '/month',
-    description: 'Bank payment setup in progress',
-    features: [
-      'Unlimited listings',
-      'Everything in Free',
-      'AI product drafts'
-    ],
-    cta: 'Starter',
-    highlighted: true
-  },
-  {
-    name: 'Business',
-    price: 'TT$329',
-    period: '/month',
-    description: 'Bank payment setup in progress',
-    features: [
-      'Everything in Starter',
-      'Custom branding',
-      'Priority support'
-    ],
-    cta: 'Business',
-    highlighted: false
-  }
-];
-
-const OBJECTION_HANDLERS = [
-  {
-    question: 'Do I need a bank account or credit card?',
-    answer: 'No. You collect cash on delivery. No account required. No payment processing fees. Money is yours instantly.',
-    icon: '❌'
-  },
-  {
-    question: 'What if a customer doesn\'t answer when delivery arrives?',
-    answer: 'You control what happens. You can refuse the order, reschedule, or let the driver handle it. We\'ll show you how in setup.',
-    icon: '🤝'
-  },
-  {
-    question: 'Can I start selling if I have no inventory system?',
-    answer: 'Yes. Use our AI lister to create descriptions from photos. Or list products manually. No barcodes needed.',
-    icon: '✅'
-  },
-  {
-    question: 'How do I know customers will trust me?',
-    answer: 'Verified seller badge, reviews system, and business verification. We also show your phone number so customers can call you.',
-    icon: '⭐'
-  },
-  {
-    question: 'What if I only want to do WhatsApp selling?',
-    answer: 'Share your store link on WhatsApp. Customers order there, you confirm, delivery happens, cash collected. Simple as that.',
-    icon: '💬'
-  }
-];
+function removeLcpShell() {
+  const shell = document.getElementById('juvay-lcp-shell');
+  if (shell) shell.remove();
+}
 
 export const LandingPageCRO: React.FC = () => {
-  const navigate = useNavigate();
-  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
-  const [emailInput, setEmailInput] = useState('');
-  const [variant, setVariant] = useState('control');
-  const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Mobile sticky CTA: show only after the hero has scrolled out of view
-  useEffect(() => {
-    const heroEl = heroRef.current;
-    if (!heroEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Show sticky CTA once hero is no longer visible (scrolled past)
-        setShowStickyCTA(!entry.isIntersecting);
-      },
-      { threshold: 0 }
-    );
-    observer.observe(heroEl);
-    return () => observer.disconnect();
+  const [progress, setProgress] = useState(0.5);
+  const onProgress = useCallback((t: number) => {
+    // Hero opens on a finished stall (~0.5). The story adds products, phone, chat and pay.
+    setProgress(0.5 + t * 0.5);
   }, []);
 
-  // Initialize analytics and tracking
-  useEffect(() => {
-    // Get user's A/B test variant
-    const userVariant = abTesting.getUserVariant();
-    setVariant(userVariant);
+  const desktopHero = useDesktopHero();
 
-    // Track page view
-    ga4Analytics.trackPageView(userVariant);
-    facebookPixel.trackPageView();
-
-    // Track scroll depth
-    let maxScroll = 0;
-    const handleScroll = () => {
-      const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      if (scrollPercent > maxScroll) {
-        maxScroll = scrollPercent;
-        if (maxScroll % 25 === 0) {
-          ga4Analytics.trackScrollDepth(Math.round(maxScroll));
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  useLayoutEffect(() => {
+    removeLcpShell();
   }, []);
 
-  const handleStartFree = (source: string = 'hero') => {
-    // Track signup start
-    ga4Analytics.trackSignupStart('Start My Free Store', source);
-    facebookPixel.trackSignupStart(source);
-
-    navigate('/signup');
-  };
-
-  const handleEmailCTA = () => {
-    if (emailInput) {
-      ga4Analytics.trackFormComplete('email_cta_form', true);
-      facebookPixel.trackCustom('LeadCapture', { email: emailInput });
-      navigate('/signup');
-    }
-  };
+  const freePct = formatFeePercent(FEE_DEFAULTS.juvayFeeBpsFree);
 
   return (
     <>
       <Helmet>
-        {/* SEO Title & Description (Cold Traffic) */}
-        <title>Free Online Store for Trinidad & Tobago | COD Selling Made Easy | Juvay</title>
-        <meta
-          name="description"
-          content="Start selling online in Trinidad & Tobago with cash on delivery. Free store, 5 free products, no credit card required. Built in T&T."
-        />
-        <meta
-          name="keywords"
-          content="online store Trinidad, sell online T&T, cash on delivery Trinidad, free store builder, Trinidad business, Tobago online selling, Juvay, SME platform"
-        />
+        <title>{TITLE}</title>
+        <meta name="description" content={DESCRIPTION} />
         <link rel="canonical" href="https://juvay.app/" />
-
-        {/* Open Graph for Social Sharing */}
-        <meta property="og:title" content="Free Online Store for Trinidad & Tobago - Start Selling with COD" />
-        <meta
-          property="og:description"
-          content="Launching in T&T: a free online store builder with COD checkout. No credit card, 5 products free."
-        />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Juvay" />
+        <meta property="og:title" content="Your free Caribbean store — no credit card" />
+        <meta property="og:description" content={DESCRIPTION} />
+        <meta property="og:image" content={OG_IMAGE} />
         <meta property="og:url" content="https://juvay.app/" />
-        <meta property="og:image" content="https://juvay.app/juvay-logo.png" />
-
-        {/* Twitter Card */}
+        <meta property="og:locale" content="en_TT" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Free Online Store for Trinidad - COD Selling" />
-        <meta name="twitter:description" content="Start your online store free. No credit card, no tech skills needed. Built for Trinidad merchants." />
-
-        {/* Schema - SoftwareApplication (no fake aggregateRating — FTC/Google penalty risk) */}
+        <meta name="twitter:title" content="Your free Caribbean store — no credit card" />
+        <meta name="twitter:description" content={DESCRIPTION} />
+        <meta name="twitter:image" content={OG_IMAGE} />
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'Juvay',
-            description: 'Free online store builder for Trinidad & Tobago businesses with cash on delivery support',
-            url: 'https://trinibuild.com/',
+            description: DESCRIPTION,
+            url: 'https://juvay.app/',
             applicationCategory: 'ECommerce',
             operatingSystem: 'Web',
             offers: {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'TTD',
-              description: 'Free online store with 5 products'
-            }
+              description: 'Free online store. Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card required.',
+            },
           })}
         </script>
+        <script type="application/ld+json">{JSON.stringify(faqJson())}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-white font-sans">
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* HERO - PRIMARY CONVERSION ZONE */}
-        {/* ════════════════════════════════════════════════════════════════ */}
+      <ExitIntentPopup />
 
-        <section ref={heroRef} className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-900 to-gray-800 text-white overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-trini-red/10 rounded-full blur-3xl -z-0"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-trini-red/5 rounded-full blur-3xl -z-0"></div>
+      <a
+        href="#juvay-hero-copy"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-20 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:font-bold focus:text-[#141414]"
+      >
+        Skip to content
+      </a>
 
-          <div className="relative z-10 max-w-4xl mx-auto">
-            {/* Eyebrow */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-6"
-            >
-              <span className="inline-block px-4 py-2 bg-trini-red/20 border border-trini-red/40 rounded-full text-sm font-semibold text-trini-red">
-                🇹🇹 Built for Trinidad & Tobago Businesses
-              </span>
-            </motion.div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 text-white">
-              Sell Online with{' '}
-              <span className="text-orange-400">
-                Cash on Delivery
-              </span>
-              {' — No Credit Card — Powered by Juvay'}
-            </h1>
-
-            {/* Subheadline */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed"
-            >
-              Create your free online store in 5 minutes. Add products with AI. Cash on delivery and pickup.
-              Built in Trinidad & Tobago, launching to founding merchants now.
-            </motion.p>
-
-            {/* Trust Strip */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap gap-4 justify-center mb-10 text-sm text-gray-300"
-            >
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-400" />
-                Free lifetime store
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-400" />
-                5 free listings
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-400" />
-                No credit card needed
-              </span>
-              <span className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-400" />
-                Setup in 5 minutes
-              </span>
-            </motion.div>
-
-            {/* Primary CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-10"
-            >
-              <button
-                onClick={handleStartFree}
-                className="px-8 py-4 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
-              >
-                Start My Free Store
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setExpandedFAQ(0)}
-                className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-300"
-              >
-                See How It Works
-              </button>
-            </motion.div>
-
-            {/* Secondary CTA - Email */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-center text-sm text-gray-400"
-            >
-              <p>No spam. No hidden fees. Free forever plan available.</p>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* SOCIAL PROOF TICKER — right below hero */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <SocialProofTicker />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* AI PRODUCT LISTER DEMO — split layout, typewriter before→after */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <ListerDemo />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* LIVE AI DEMO — answers "does this actually work?" in under 6 sec */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <WorkingAIDemo />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* PROOF SECTION - Honest framing (no fake stats, no fake testimonials) */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                No gotchas. No credit card. No risk.
-              </h2>
-              <p className="text-lg text-gray-600">
-                Made for Trinidad merchants who want to get online without paying to find out if it works for them.
+      <div className="bg-[#0b1f24] font-sans text-[#141414] pb-20 md:pb-0">
+        {/* Mobile: compact CTA near the top, then a real-height stall (poster fallback stays). */}
+        {!desktopHero ? (
+        <div>
+          <section className="bg-[#0b1f24] px-5 pb-4 pt-20 text-[#fff8f0] sm:px-8">
+            <div id="juvay-hero-copy" className="mx-auto w-full max-w-xl">
+              <p className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#fde68a]">
+                The Amazon for the Caribbean
               </p>
-            </div>
-
-            {/* Trust points grid (risk reversals, not fake stats) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-              {TRUST_POINTS.map((point, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-6 text-center shadow-sm">
-                  <div className="text-3xl sm:text-4xl font-bold text-trini-red mb-2">{point.number}</div>
-                  <div className="text-sm text-gray-600">{point.label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Founding merchant offer */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-8 sm:p-10">
-              <div className="inline-block px-3 py-1 bg-trini-red/20 text-trini-red rounded-full text-xs font-bold tracking-wide uppercase mb-4">
-                Founding Merchants · Limited to first 100
+              <h1 className="mt-4 text-[2.05rem] font-black leading-[1.08] tracking-tight">
+                Your free store.
+                <br />
+                <span className="text-[#f5c14a]">No credit card.</span>
+              </h1>
+              <div id="juvay-hero-cta" className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/create-store"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-[#b50f21] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                >
+                  Create your free store
+                </Link>
+                <Link
+                  to="/templates"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-6 py-3 text-base font-bold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                >
+                  See templates
+                </Link>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4">{FOUNDING_OFFER.title}</h3>
-              <ul className="space-y-3 mb-6">
-                {FOUNDING_OFFER.bullet_points.map((b, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>
-                    <span className="text-gray-200">{b}</span>
-                  </li>
-                ))}
+            </div>
+          </section>
+          <div className="relative h-[58svh] min-h-[380px] w-full">
+            <HeroStage progress={progress} />
+          </div>
+          <div className="bg-[#0b1f24] px-5 pb-10 pt-6 text-[#fff8f0] sm:px-8">
+            <div className="mx-auto w-full max-w-xl">
+              <p className="text-base leading-relaxed text-[#efe4d0]">
+                Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
+                and market stalls, boutiques. Unlimited products. 0% on cash and COD. Sell
+                online with Wam when you are ready.
+              </p>
+              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#efe4d0]">
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> Unlimited products
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> No credit card
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> 0% on cash
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckIcon /> Be one of the first sellers
+                </li>
               </ul>
-              <p className="text-sm text-gray-400 italic border-t border-gray-700 pt-4">
-                {FOUNDING_OFFER.caveat}
+              <p className="mt-4 text-sm text-[#c9b89a]">
+                Free to start. Juvay takes {freePct} only on online Wam sales, capped at{' '}
+                {formatTtdCents(FEE_DEFAULTS.juvayFeeCapCents)}.
               </p>
             </div>
           </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* HOW IT WORKS - Clear Workflow */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                How Juvay Works for Your Business
-              </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Four simple steps from store creation to your first sale.
-              </p>
-            </div>
-
-            {/* 4-Step Flow */}
-            <div className="grid md:grid-cols-4 gap-6 mb-16">
-              {HOW_IT_WORKS.map((item, idx) => (
-                <div key={idx} className="relative">
-                  {/* Connector Line */}
-                  {idx < HOW_IT_WORKS.length - 1 && (
-                    <div className="hidden md:block absolute top-16 left-full w-6 h-0.5 bg-trini-red/20"></div>
-                  )}
-
-                  {/* Card */}
-                  <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-6 border border-gray-200 h-full">
-                    <div className="text-5xl mb-4">{item.icon}</div>
-                    <div className="text-2xl font-bold text-trini-red mb-2">Step {item.step}</div>
-                    <h3 className="font-bold text-gray-900 mb-3">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* COD Explained */}
-            <div className="bg-gray-50 rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
-                How Cash on Delivery Actually Works
-              </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {COD_EXPLAINED.map((step, idx) => (
-                  <div key={idx} className="flex flex-col">
-                    <div className="w-10 h-10 bg-trini-red text-white rounded-full flex items-center justify-center font-bold mb-4">
-                      {idx + 1}
-                    </div>
-                    <h4 className="font-bold text-gray-900 mb-2">{step.title}</h4>
-                    <p className="text-gray-600">{step.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* FEATURES - What You Get */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Everything You Need to Run a Simple Online Store
-              </h2>
-              <p className="text-lg text-gray-600">
-                No complicated setup. No expensive software. Just the tools that matter for T&T businesses.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {FEATURES.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-lg transition-all duration-300"
-                >
-                  {feature.icon && <div className="text-3xl mb-3">{feature.icon}</div>}
-                  <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* STORES BUILT ON TRINIBUILD — showcase grid */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <StoreShowcase />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* TESTIMONIALS — 3-col card grid */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <Testimonials />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* ANIMATED MERCHANT COUNTER — counts up on scroll into view */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-        <MerchantCounter />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* PRICING - Revenue Driver */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Simple Pricing. No Surprises.
-              </h2>
-              <p className="text-lg text-gray-600">
-                Start free forever. Upgrade anytime to unlock unlimited products and advanced tools.
-              </p>
-            </div>
-
-            <JuvayPriceTable />
-
-            <div className="text-center mt-12 text-gray-600">
-              <p className="mb-2">
-                All plans include free store, COD checkout, order dashboard, and WhatsApp notifications.
-              </p>
-              <p className="text-sm">
-                No setup fees. No hidden charges. Cancel anytime.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* OBJECTION HANDLERS - FAQ */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Common Questions from Trinidad Merchants
-              </h2>
-              <p className="text-lg text-gray-600">
-                We answer the stuff that actually matters when you're deciding to go online.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {OBJECTION_HANDLERS.map((item, idx) => (
-                <div key={idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === idx ? null : idx)}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="flex items-center gap-4 text-left">
-                      <span className="text-2xl">{item.icon}</span>
-                      <span className="font-semibold text-gray-900">{item.question}</span>
-                    </span>
-                    <ChevronDown
-                      className={`w-5 h-5 text-gray-600 transition-transform ${
-                        expandedFAQ === idx ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {expandedFAQ === idx && (
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-gray-700">
-                      {item.answer}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* SERVICES SHOWCASE - cross-link all 7 service landings              */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <ServicesShowcase />
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* FINAL CTA - Urgency */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-              Ready to Start Selling Online?
-            </h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Your first 5 free listings are waiting. No credit card, no risk, no obligation.
-              Start your free store right now.
-            </p>
-            <button
-              onClick={handleStartFree}
-              className="px-10 py-5 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              Create My Free Store Now
-              <ArrowRight className="w-5 h-5 ml-2 inline" />
-            </button>
-            <p className="mt-6 text-sm text-gray-400">
-              Takes 5 minutes. No spam. Free forever plan available.
-            </p>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════ */}
-        {/* FOOTER CTA - Safety Net */}
-        {/* ════════════════════════════════════════════════════════════════ */}
-
-        <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 border-t border-gray-200">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-lg p-8 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Still not sure? Let's chat.
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Questions about COD, setup, delivery, or anything else? Our team is here to help.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a
-                  href="https://wa.me/1868-YOUR-NUMBER?text=I%20have%20questions%20about%20Juvay"
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  Chat on WhatsApp
-                </a>
-                <button
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold rounded-lg transition-colors"
-                >
-                  <MessageSquare className="w-5 h-5" />
-                  Send Message
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {/* MOBILE STICKY CTA — appears after scrolling past the hero */}
-      {/* Hidden on md+ screens. z-40 sits below modal overlays but above content. */}
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {showStickyCTA && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] px-4 py-3">
-          <button
-            onClick={() => handleStartFree('mobile_sticky_cta')}
-            className="w-full py-3.5 bg-trini-red hover:bg-red-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-md"
-          >
-            Start My Free Store
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <StorySections onProgress={onProgress} />
         </div>
-      )}
+        ) : (
+        <div className="relative pb-[100svh] -mb-[100svh]">
+          <div className="sticky top-0 z-0 h-[100svh] w-full">
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-[46%] bg-[#0b1f24]" />
+            <div className="absolute inset-y-0 left-[46%] w-[54%]">
+              <HeroStage progress={progress} />
+            </div>
+          </div>
+
+          <div className="relative z-10 -mt-[100svh]">
+            <section className="grid min-h-[100svh] grid-cols-[minmax(0,46%)_minmax(0,54%)]">
+              <div id="juvay-hero-copy" className="flex bg-[#0b1f24] items-center px-12 pt-24 pb-16 text-[#fff8f0]">
+                <div className="mx-auto w-full max-w-xl">
+                  <p className="inline-block rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#fde68a]">
+                    The Amazon for the Caribbean
+                  </p>
+                  <h1 className="mt-5 text-6xl font-black leading-[1.08] tracking-tight">
+                    Your free store.
+                    <br />
+                    <span className="text-[#f5c14a]">No credit card.</span>
+                  </h1>
+                  <p className="mt-5 text-lg leading-relaxed text-[#efe4d0]">
+                    Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
+                    and market stalls, boutiques. Unlimited products. 0% on cash and COD. Sell
+                    online with Wam when you are ready.
+                  </p>
+                  <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#efe4d0]">
+                    <li className="flex items-center gap-1.5">
+                      <CheckIcon /> Unlimited products
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <CheckIcon /> No credit card
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <CheckIcon /> 0% on cash
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                      <CheckIcon /> Be one of the first sellers
+                    </li>
+                  </ul>
+                  <div id="juvay-hero-cta" className="mt-7 flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      to="/create-store"
+                      className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 py-3 text-base font-bold text-white shadow-lg hover:bg-[#b50f21] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                    >
+                      Create your free store
+                    </Link>
+                    <Link
+                      to="/templates"
+                      className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-6 py-3 text-base font-bold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+                    >
+                      See templates
+                    </Link>
+                  </div>
+                  <p className="mt-4 text-sm text-[#c9b89a]">
+                    Free to start. Juvay takes {freePct} only on online Wam sales, capped at{' '}
+                    {formatTtdCents(FEE_DEFAULTS.juvayFeeCapCents)}.
+                  </p>
+                </div>
+              </div>
+              <div className="pointer-events-none" aria-hidden />
+            </section>
+
+            <StorySections onProgress={onProgress} />
+          </div>
+        </div>
+        )}
+
+        {/* How it works — 3 clear steps, solid surface after the 3D story */}
+        <section id="how-it-works" className="scroll-mt-20 bg-[#FFF8F0] px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#0d9488]">How it works</p>
+              <h2 className="text-3xl font-black tracking-tight text-[#141414] sm:text-4xl">
+                Three steps, from stall to store
+              </h2>
+            </div>
+            <ol className="mt-12 grid gap-5 md:grid-cols-3">
+              {HOW.map((s) => (
+                <li key={s.n} className="rounded-2xl border border-[#e8dcc8] bg-white p-6 shadow-sm">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#ce1126] font-black text-white">
+                    {s.n}
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-[#141414]">{s.title}</h3>
+                  <p className="mt-2 text-[#4a453d] leading-relaxed">{s.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+
+        {/* Lead magnets — honest, not a live Premium checkout */}
+        <section id="bring-store" className="bg-[#FFF8F0] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-[#e8dcc8] bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0d9488]">Free for every seller</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-[#141414]">5 free photo listings</h2>
+              <p className="mt-3 text-[#4a453d] leading-relaxed">
+                Snap a photo to draft a name and description. You type the TT$ price. Vision never sets the price. After five,
+                unlimited photo listings come with Premium.
+              </p>
+              <Link
+                to="/create-store"
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-[#ce1126] px-5 text-sm font-bold text-white hover:bg-[#b50f21]"
+              >
+                Try a photo listing
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-[#e8dcc8] bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0d9488]">Coming with Premium</p>
+              <h2 className="mt-3 text-2xl font-black tracking-tight text-[#141414]">Bring my store over</h2>
+              <p className="mt-3 text-[#4a453d] leading-relaxed">
+                Point us at a public store URL, upload a CSV, or add bulk photos. Everything lands as a draft you review and
+                confirm. Prices are kept only when they are on the source or typed by you.
+              </p>
+              <Link
+                to="/import-store"
+                className="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-xl border-2 border-[#141414] px-5 text-sm font-bold text-[#141414] hover:bg-[#141414] hover:text-white"
+              >
+                See how import works
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <TemplateShowcase />
+        <FeeKeepCalculator />
+
+        {/* Cash-first reassurance */}
+        <section className="bg-[#0b1f24] px-4 py-16 text-[#fff8f0] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Cash first. Online when you are ready.</h2>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#efe4d0]">
+              Plenty of Caribbean sellers live on cash — and that is fine. Cash pickup and cash on delivery stay free, with 0% on cash and COD.
+              Online Wam payments are how buyers can pay you by wallet or card later. We explain how that is
+              designed to work; we will not call it proven until a live order has been walked through.
+            </p>
+          </div>
+        </section>
+
+
+        {/* Fresh Catch vertical — honest entry, no invented depot counts */}
+        <section id="fresh-catch" className="scroll-mt-20 bg-[#FFF8F0] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-[#e8dcc8] bg-[#0b1f24] text-[#fff8f0] shadow-sm">
+            <div className="grid gap-8 p-8 md:grid-cols-2 md:items-center md:p-12">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#fde68a]">A Juvay market</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{FRESH_CATCH_TITLE}</h2>
+                <p className="mt-4 text-lg leading-relaxed text-[#efe4d0]">{FRESH_CATCH_TAGLINE}</p>
+                <p className="mt-3 text-sm text-[#c9b89a]">
+                  0% on cash and COD. Online Wam when it is set up. We do not take PayPal.
+                </p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    to={FRESH_CATCH_PATH}
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 text-base font-bold text-white hover:bg-[#b50f21]"
+                  >
+                    About Fresh Catch
+                  </Link>
+                  <a
+                    href={FRESH_CATCH_APP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-6 text-base font-bold text-white hover:bg-white/10"
+                  >
+                    Open the market
+                  </a>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-[#fde68a]">How it stays honest</p>
+                <ul className="mt-4 space-y-3 text-[#efe4d0]">
+                  <li>Only catch that a fisherman or depot has listed is shown.</li>
+                  <li>If nothing is listed, the market is empty — we do not fill it with demo shops.</li>
+                  <li>You set your own prices. Juvay does not invent them.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <VisionDemo />
+        <LandingFaq />
+
+        {/* Final CTA */}
+        <section className="bg-[#0b1f24] px-4 py-20 text-center text-[#fff8f0] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#fde68a]">Be one of the first sellers</p>
+            <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">Open your free Caribbean store</h2>
+            <p className="mt-5 text-lg text-[#efe4d0]">
+              No credit card. Unlimited products. Cash pickup and cash on delivery at 0%. From a doubles stall to a boutique —
+              your page, your prices, your customers.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                to="/create-store"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-8 py-3.5 text-lg font-bold text-white hover:bg-[#b50f21] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+              >
+                Create your free store
+              </Link>
+              <Link
+                to="/templates"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-8 py-3.5 text-lg font-bold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5c14a]"
+              >
+                See templates
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <footer className="border-t border-white/10 bg-[#071518] px-4 py-10 text-sm text-[#c9b89a] sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
+            <p>© {new Date().getFullYear()} Juvay. A free store for every Caribbean seller.</p>
+            <nav className="flex flex-wrap items-center justify-center gap-4">
+              <Link to="/fees" className="hover:text-white">
+                Fees
+              </Link>
+              <Link to="/fresh-catch" className="hover:text-white">
+                Fresh Catch
+              </Link>
+              <Link to="/templates" className="hover:text-white">
+                Templates
+              </Link>
+              <a href="/terms.html" className="hover:text-white">
+                Terms
+              </a>
+              <a href="/privacy.html" className="hover:text-white">
+                Privacy
+              </a>
+              <a href="mailto:support@juvay.app" className="hover:text-white">
+                support@juvay.app
+              </a>
+            </nav>
+          </div>
+        </footer>
+
+        <StickyMobileCta />
+      </div>
     </>
   );
 };
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-[#2dd4bf]">
+      <path
+        fill="currentColor"
+        d="M13.2 4.2a.75.75 0 0 1 0 1.06l-6.2 6.2a.75.75 0 0 1-1.06 0l-3-3A.75.75 0 0 1 4 7.4l2.47 2.47 5.67-5.67a.75.75 0 0 1 1.06 0Z"
+      />
+    </svg>
+  );
+}
 
 export default LandingPageCRO;

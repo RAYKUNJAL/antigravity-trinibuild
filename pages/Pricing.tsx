@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
-import { FREE_LISTING_LIMIT } from '../services/juvayPlans';
+import { premiumPriceCopy, FREE_INCLUDES_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 export const Pricing: React.FC = () => {
   return (
@@ -10,7 +10,7 @@ export const Pricing: React.FC = () => {
         <title>Pricing | Juvay</title>
         <meta
           name="description"
-          content={`Juvay Free / Starter / Business. Free plan includes ${FREE_LISTING_LIMIT} listings. Cash pickup and COD. Paid plans open when Wam can take the money.`}
+          content={`Juvay Free and Premium. Free: ${FREE_INCLUDES_COPY}. Premium is ${premiumPriceCopy()}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`}
         />
         <link rel="canonical" href="https://juvay.app/pricing" />
       </Helmet>
@@ -19,7 +19,7 @@ export const Pricing: React.FC = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-black text-gray-900 mb-3">One TTD price table</h1>
             <p className="text-gray-600">
-              Free, Starter, and Business. {FREE_LISTING_LIMIT} listings on Free. No USD menu. No 0% commission claim.
+              Free and Premium. {FREE_INCLUDES_COPY}. Premium is {premiumPriceCopy()}. {PREMIUM_INCLUDES_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
             </p>
           </div>
           <JuvayPriceTable />

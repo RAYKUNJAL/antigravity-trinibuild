@@ -2,29 +2,28 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Search, MessageCircle, ArrowRight, Store as StoreIcon, Loader2, Package } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { activeWamCountries, getWamCountry } from '../services/wamCountries';
 
-// ── Island config ──────────────────────────────────────────────────────────
-// Maps island id (as stored in DB) → { flag, name, currencySymbol, currencyCode }
-const ISLAND_CONFIG: Record<string, { flag: string; name: string; currencySymbol: string; currencyCode: string }> = {
-  tt: { flag: '🇹🇹', name: 'Trinidad & Tobago', currencySymbol: 'TT$', currencyCode: 'TTD' },
-  jm: { flag: '🇯🇲', name: 'Jamaica', currencySymbol: 'J$', currencyCode: 'JMD' },
-  bb: { flag: '🇧🇧', name: 'Barbados', currencySymbol: 'Bds$', currencyCode: 'BBD' },
-  gy: { flag: '🇬🇾', name: 'Guyana', currencySymbol: 'G$', currencyCode: 'GYD' },
-  lc: { flag: '🇱🇨', name: 'St. Lucia', currencySymbol: 'EC$', currencyCode: 'XCD' },
-  gd: { flag: '🇬🇩', name: 'Grenada', currencySymbol: 'EC$', currencyCode: 'XCD' },
-  vc: { flag: '🇻🇨', name: 'St. Vincent', currencySymbol: 'EC$', currencyCode: 'XCD' },
-  ag: { flag: '🇦🇬', name: 'Antigua', currencySymbol: 'EC$', currencyCode: 'XCD' },
-  other: { flag: '🌴', name: 'Eastern Caribbean', currencySymbol: 'US$', currencyCode: 'USD' },
-};
+// ── Island config from WAM_COUNTRIES (wam.money/caribbean) ──────────────────
+const ISLAND_CONFIG: Record<string, { flag: string; name: string; currencySymbol: string; currencyCode: string }> = Object.fromEntries(
+  activeWamCountries().map((c) => [
+    c.id,
+    {
+      flag: c.flag,
+      name: c.name,
+      currencySymbol: c.currency_symbol || 'US$',
+      currencyCode: c.currency_code || 'USD',
+    },
+  ])
+);
+ISLAND_CONFIG.other = { flag: '🌴', name: 'Wider Caribbean', currencySymbol: 'US$', currencyCode: 'USD' };
 
-// Pills shown in header — value is the island id to filter by (or 'all')
 const ISLAND_PILLS: { label: string; value: string }[] = [
   { label: 'All 🌍', value: 'all' },
-  { label: 'T&T 🇹🇹', value: 'tt' },
-  { label: 'Jamaica 🇯🇲', value: 'jm' },
-  { label: 'Barbados 🇧🇧', value: 'bb' },
-  { label: 'Guyana 🇬🇾', value: 'gy' },
-  { label: 'Eastern Caribbean 🌴', value: 'ec' }, // special: matches lc/gd/vc/ag/other
+  ...activeWamCountries()
+    .filter((c) => c.ads_priority <= 20)
+    .slice(0, 10)
+    .map((c) => ({ label: `${c.flag} ${c.name}`, value: c.id })),
 ];
 
 const CATEGORY_PILLS: { label: string; value: string }[] = [
@@ -40,17 +39,23 @@ const CATEGORY_PILLS: { label: string; value: string }[] = [
 const EC_ISLAND_IDS = ['lc', 'gd', 'vc', 'ag', 'other'];
 
 // 6 islands highlighted in bottom section
-const FEATURED_ISLANDS: { id: string; name: string; flag: string }[] = [
-  { id: 'tt', name: 'Trinidad & Tobago', flag: '🇹🇹' },
-  { id: 'jm', name: 'Jamaica', flag: '🇯🇲' },
-  { id: 'bb', name: 'Barbados', flag: '🇧🇧' },
-  { id: 'gy', name: 'Guyana', flag: '🇬🇾' },
-  { id: 'lc', name: 'St. Lucia', flag: '🇱🇨' },
-  { id: 'gd', name: 'Grenada', flag: '🇬🇩' },
-];
+const FEATURED_ISLANDS: { id: string; name: string; flag: string }[] = activeWamCountries()
+  .slice(0, 12)
+  .map((c) => ({ id: c.id, name: c.name, flag: c.flag }));
 
-const getIslandConfig = (island: string | null | undefined) =>
-  (island && ISLAND_CONFIG[island]) || ISLAND_CONFIG.other;
+const getIslandConfig = (island: string | null | undefined) => {
+  if (island && ISLAND_CONFIG[island]) return ISLAND_CONFIG[island];
+  const byName = getWamCountry(island || '');
+  if (byName) {
+    return {
+      flag: byName.flag,
+      name: byName.name,
+      currencySymbol: byName.currency_symbol || 'US$',
+      currencyCode: byName.currency_code || 'USD',
+    };
+  }
+  return ISLAND_CONFIG.other;
+};
 
 const getIslandFlag = (island: string | null | undefined) => getIslandConfig(island).flag;
 const getCurrencySymbol = (island: string | null | undefined) => getIslandConfig(island).currencySymbol;

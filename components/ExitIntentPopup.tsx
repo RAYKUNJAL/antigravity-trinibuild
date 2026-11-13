@@ -90,7 +90,7 @@ export const ExitIntentPopup: React.FC = () => {
                                     <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <p className="font-bold text-gray-900">5 Marketplace Spots</p>
-                                        <p className="text-sm text-gray-600">Reach thousands of Trinidad shoppers</p>
+                                        <p className="text-sm text-gray-600">Reach thousands of Trinidad shoppers*</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
@@ -101,6 +101,7 @@ export const ExitIntentPopup: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            <p className="mt-4 text-xs leading-snug text-gray-500">*Projected reach as Juvay launches.</p>
                         </div>
 
                         {/* Founding merchant framing */}

@@ -20,49 +20,42 @@ export const simpleAuthService = {
     try {
       console.log('🔐 [simpleAuthService] signup START:', { email, name });
 
-      // Call backend registration endpoint
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify({
           email,
           password,
-          firstName: name.split(' ')[0] || name,
-          lastName: name.split(' ').slice(1).join(' ') || '',
-          phone: ''
-        })
+          full_name: name,
+        }),
       });
 
       console.log('🔐 [simpleAuthService] signup response status:', response.status);
 
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMsg = errorData.error || `Signup failed with status ${response.status}`;
+        const errorMsg = result.error || `Signup failed with status ${response.status}`;
         console.error('🔴 [simpleAuthService] Backend error:', errorMsg);
         throw new Error(errorMsg);
       }
 
-      const result = await response.json();
-
-      if (!result.data || !result.data.user) {
-        throw new Error('No user returned from signup');
+      if (!result.token || !result.user?.id) {
+        throw new Error('Signup did not return an account.');
       }
 
-      const userData = result.data.user;
-
-      // Create user object
+      const userData = result.user;
       const user: SimpleUser = {
         id: userData.id,
         email: userData.email || email,
-        name: name || email.split('@')[0],
-        role: userData.role || 'user'
+        name: userData.full_name || name || email.split('@')[0],
+        role: userData.role || 'user',
       };
 
-      // Store in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('authToken', result.data.token || '');
+      localStorage.setItem('authToken', result.token);
 
       console.log('✅ [simpleAuthService] signup SUCCESS');
       return { success: true, user };

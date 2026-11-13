@@ -317,7 +317,7 @@ export const RealEstate: React.FC = () => {
                               </div>
                               <div>
                                  <div className="font-bold text-gray-900">Listing Agent</div>
-                                 <div className="text-xs text-gray-500">TriniBuild Premier</div>
+                                 <div className="text-xs text-gray-500">Juvay Premier</div>
                               </div>
                            </div>
                            <form className="space-y-3">
