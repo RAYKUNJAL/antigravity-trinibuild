@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Settings, ChevronDown, LogOut, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Menu, X, User, Settings, ChevronDown, LogOut, FileText, Store, ShoppingCart, Car, Briefcase, Building2, DollarSign, Gift, Mail, Star, Store as StoreIcon, UtensilsCrossed, ShoppingBag, Home as HomeIcon, ArrowRight, Facebook, Instagram, Twitter, Youtube, Fish } from 'lucide-react';
 import { IslandSelector } from './IslandFilter';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { simpleAuthService } from '../services/simpleAuthService';
@@ -23,6 +23,7 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed, description: 'Menus, reservations, COD orders' },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag, description: 'List & sell anything fast' },
   { name: 'Juvay Rides', path: '/rides', icon: Car, description: 'Cash island rides / parent school-run' },
+  { name: 'Juvay Fresh Catch', path: '/fresh-catch', icon: Fish, description: 'Seafood from local fishermen and depots' },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase, description: 'Find work or hire pros' },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon, description: 'Buy, rent, sell property' },
 ];
@@ -41,6 +42,7 @@ const MOBILE_LINKS = [
   { name: 'Explore', path: '/explore', icon: ShoppingBag },
   { name: 'Marketplace', path: '/classifieds', icon: ShoppingCart },
   { name: 'Rides', path: '/rides', icon: Car },
+  { name: 'Fresh Catch', path: '/fresh-catch', icon: Fish },
   { name: 'Drive', path: '/drive', icon: Car },
   { name: 'School run', path: '/rides/school-run', icon: Car },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText },
@@ -49,6 +51,7 @@ const MOBILE_LINKS = [
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
   { name: 'Juvay Rides', path: '/rides', icon: Car },
+  { name: 'Juvay Fresh Catch', path: '/fresh-catch', icon: Fish },
   { name: 'For Job Seekers', path: '/jobs', icon: Briefcase },
   { name: 'For Real Estate', path: '/real-estate', icon: HomeIcon },
   { name: 'Spin & Win', path: '/spin-wheel', icon: Gift },
@@ -204,6 +207,7 @@ export const Navbar: React.FC = () => {
               <>
                 <Link to="/templates" className={lc('/templates')}>Templates</Link>
                 <Link to="/fees" className={lc('/fees')}>Fees</Link>
+                <Link to="/fresh-catch" className={lc('/fresh-catch')}>Fresh Catch</Link>
                 <a href="/#how-it-works" className={lc('/#how-it-works')}>How it works</a>
               </>
             ) : (
@@ -219,6 +223,9 @@ export const Navbar: React.FC = () => {
             </Link>
             <Link to="/rides" className={lc('/rides')}>
               Rides
+            </Link>
+            <Link to="/fresh-catch" className={lc('/fresh-catch')}>
+              Fresh Catch
             </Link>
             <Link to="/drive" className={lc('/drive')}>
               Drive

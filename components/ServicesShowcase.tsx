@@ -28,6 +28,7 @@ import {
   Car,
   Briefcase,
   Building2,
+  Fish,
   ArrowRight,
 } from 'lucide-react';
 
@@ -37,7 +38,8 @@ export type ServiceSlug =
   | 'marketplace'
   | 'rides'
   | 'jobs'
-  | 'living';
+  | 'living'
+  | 'fresh-catch';
 
 interface ServiceItem {
   slug: ServiceSlug;
@@ -96,6 +98,17 @@ export const SERVICES: ServiceItem[] = [
     accentBg: 'bg-blue-50',
     accentText: 'text-blue-600',
     accentBorder: 'hover:border-blue-500',
+  },
+  {
+    slug: 'fresh-catch',
+    icon: Fish,
+    title: 'Fresh Catch',
+    tagline: 'Seafood from local fishermen and depots — only what is actually listed',
+    cta: 'Open Fresh Catch',
+    path: '/fresh-catch',
+    accentBg: 'bg-teal-50',
+    accentText: 'text-teal-700',
+    accentBorder: 'hover:border-teal-500',
   },
   {
     slug: 'jobs',
@@ -158,7 +171,7 @@ export const ServicesShowcase: React.FC<Props> = ({
     subtitle ??
     (currentSlug
       ? 'One account, every island business tool — built for entrepreneurs.'
-      : 'One platform. Six powerful services. Built for Trinidad & Tobago entrepreneurs.');
+      : 'One platform. Stores, marketplace, rides, jobs, Fresh Catch, and more — built for Trinidad & Tobago entrepreneurs.');
 
   const isCompact = variant === 'compact';
 
@@ -189,7 +202,7 @@ export const ServicesShowcase: React.FC<Props> = ({
         <div
           className={`grid gap-4 ${
             isCompact
-              ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
+              ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
           }`}
         >

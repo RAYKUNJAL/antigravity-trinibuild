@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
                 onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span class="font-bold text-2xl text-trini-black">Juvay</span>'; }} />
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-xs leading-relaxed">
-              Trinidad & Tobago's complete digital business platform. Stores, marketplace, rides, jobs, digital services, and AI tools — all in one place. For we, by we.
+              Trinidad & Tobago's digital business platform. Stores, marketplace, rides, jobs, Fresh Catch seafood, digital services, and AI tools — all in one place. For we, by we.
             </p>
             <div className="flex items-center text-gray-500 text-sm mb-2">
               <MapPin className="h-4 w-4 mr-2 flex-shrink-0" /> Port of Spain, Trinidad & Tobago
@@ -52,6 +52,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/templates" className="text-sm text-gray-400 hover:text-white transition-colors">Store Templates</Link></li>
               <li><Link to="/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">Jobs Board</Link></li>
               <li><Link to="/rides" className="text-sm text-gray-400 hover:text-white transition-colors">Rides</Link></li>
+              <li><Link to="/fresh-catch" className="text-sm text-gray-400 hover:text-white transition-colors">Fresh Catch</Link></li>
               <li><Link to="/drive" className="text-sm text-gray-400 hover:text-white transition-colors">Drive</Link></li>
               <li><Link to="/rides/school-run" className="text-sm text-gray-400 hover:text-white transition-colors">School run</Link></li>
               <li><Link to="/real-estate" className="text-sm text-gray-400 hover:text-white transition-colors">Real Estate</Link></li>
@@ -68,6 +69,7 @@ export const Footer: React.FC = () => {
               <li><Link to="/services/food" className="text-sm text-gray-400 hover:text-white transition-colors">For Restaurants</Link></li>
               <li><Link to="/services/marketplace" className="text-sm text-gray-400 hover:text-white transition-colors">For Marketplaces</Link></li>
               <li><Link to="/services/jobs" className="text-sm text-gray-400 hover:text-white transition-colors">For Job Seekers</Link></li>
+              <li><Link to="/services/fresh-catch" className="text-sm text-gray-400 hover:text-white transition-colors">Fresh Catch</Link></li>
               <li><Link to="/services/living" className="text-sm text-gray-400 hover:text-white transition-colors">For Real Estate</Link></li>
               <li><Link to="/carib-ads" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1">Advertise with Juvay <span className="text-[9px] bg-trini-red text-white px-1 rounded-full font-bold">NEW</span></Link></li>
             </ul>

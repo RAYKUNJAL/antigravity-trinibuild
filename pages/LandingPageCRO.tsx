@@ -13,6 +13,7 @@ import { LandingFaq } from '../components/landing/LandingFaq';
 import { StickyMobileCta } from '../components/landing/StickyMobileCta';
 import { VisionDemo } from '../components/landing/VisionDemo';
 import { FEE_DEFAULTS, formatFeePercent, formatTtdCents } from '../services/juvayFees';
+import { FRESH_CATCH_APP_URL, FRESH_CATCH_PATH, FRESH_CATCH_TAGLINE, FRESH_CATCH_TITLE } from '../services/freshCatchLink';
 
 function useDesktopHero() {
   const [desktop, setDesktop] = useState(() =>
@@ -354,6 +355,47 @@ export const LandingPageCRO: React.FC = () => {
           </div>
         </section>
 
+
+        {/* Fresh Catch vertical — honest entry, no invented depot counts */}
+        <section id="fresh-catch" className="scroll-mt-20 bg-[#FFF8F0] px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-[#e8dcc8] bg-[#0b1f24] text-[#fff8f0] shadow-sm">
+            <div className="grid gap-8 p-8 md:grid-cols-2 md:items-center md:p-12">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#fde68a]">A Juvay market</p>
+                <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{FRESH_CATCH_TITLE}</h2>
+                <p className="mt-4 text-lg leading-relaxed text-[#efe4d0]">{FRESH_CATCH_TAGLINE}</p>
+                <p className="mt-3 text-sm text-[#c9b89a]">
+                  Cash pickup and cash on delivery at 0% commission. Online Wam when it is set up. We do not take PayPal.
+                </p>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    to={FRESH_CATCH_PATH}
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ce1126] px-6 text-base font-bold text-white hover:bg-[#b50f21]"
+                  >
+                    About Fresh Catch
+                  </Link>
+                  <a
+                    href={FRESH_CATCH_APP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-[48px] items-center justify-center rounded-xl border-2 border-white/80 px-6 text-base font-bold text-white hover:bg-white/10"
+                  >
+                    Open the market
+                  </a>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-[#fde68a]">How it stays honest</p>
+                <ul className="mt-4 space-y-3 text-[#efe4d0]">
+                  <li>Only catch that a fisherman or depot has listed is shown.</li>
+                  <li>If nothing is listed, the market is empty — we do not fill it with demo shops.</li>
+                  <li>You set your own prices. Juvay does not invent them.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <VisionDemo />
         <LandingFaq />
 
@@ -389,6 +431,9 @@ export const LandingPageCRO: React.FC = () => {
             <nav className="flex flex-wrap items-center justify-center gap-4">
               <Link to="/fees" className="hover:text-white">
                 Fees
+              </Link>
+              <Link to="/fresh-catch" className="hover:text-white">
+                Fresh Catch
               </Link>
               <Link to="/templates" className="hover:text-white">
                 Templates

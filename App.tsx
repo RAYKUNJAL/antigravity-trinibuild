@@ -97,6 +97,7 @@ import { PromoterOnboarding } from './pages/PromoterOnboarding';
 import { LivingLanding } from './pages/landing/LivingLanding';
 import { StoreServicesLanding } from './pages/landing/StoreServicesLanding';
 import { FoodServicesLanding } from './pages/landing/FoodServicesLanding';
+import { FreshCatchLanding } from './pages/landing/FreshCatchLanding';
 // StoreBuilder removed - replaced by StoreBuilderV3 (imported above)
 import { AdminRoute, ProtectedRoute } from './components/ProtectedRoute';
 import { NotFound } from './pages/NotFound';
@@ -258,6 +259,9 @@ const App: React.FC = () => {
               <Route path="/services/jobs" element={<JobsLanding />} />
               <Route path="/services/tickets" element={<TicketsLanding />} />
               <Route path="/services/living" element={<LivingLanding />} />
+              <Route path="/services/fresh-catch" element={<FreshCatchLanding />} />
+              <Route path="/solutions/fresh-catch" element={<FreshCatchLanding />} />
+              <Route path="/fresh-catch" element={<FreshCatchLanding />} />
 
               {/* Store Builder & Storefront */}
               <Route path="/create-store" element={<StoreBuilderV3 />} />
