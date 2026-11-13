@@ -100,7 +100,7 @@ function mountDeliveryTrackingRoutes(app, opts = {}) {
   app.get('/api/tracking/status', requireAuth, (req, res) => safe(res, async () => {
     const storeId = req.query.storeId || req.query.store_id;
     const result = await tracking.statusFor(actorFrom(req), storeId);
-    return res.json(result);
+    return sendResult(res, result);
   }));
 
   app.get('/api/routes', mna('POST', '/api/routes'));

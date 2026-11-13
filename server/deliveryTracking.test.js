@@ -1,9 +1,13 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const {
   createTracking,
   createMemoryStore,
+  createFileStore,
   trackingPaidGate,
   trackingPlanTiers,
   trackingRequirePaid,
@@ -23,6 +27,9 @@ const {
   googleRoutesEta,
   LOCKED_FALLBACK_COPY,
   DEFAULTS,
+  STORE_ACCESS_DENIED,
+  isShareTokenFormat,
+  SHARE_TOKEN_MIN_LENGTH,
 } = require('./deliveryTracking');
 
 
@@ -461,6 +468,119 @@ const g403 = await (googleRoutesEta({
 }));
 assert.strictEqual(g403.error, true);
 assert.strictEqual(g403.status, 403);
+
+
+// ── security: store ownership (IDOR) and unguessable share tokens ──
+assert.strictEqual(SHARE_TOKEN_MIN_LENGTH, 22);
+assert.strictEqual(isShareTokenFormat('abc'), false);
+assert.strictEqual(isShareTokenFormat('short'), false);
+assert.strictEqual(isShareTokenFormat('not-a-real-token-xxxxxxxxxxxx'), true);
+
+const idorMem = createMemoryStore({
+  routes: [],
+  stops: [],
+  locations: [],
+  events: [],
+  stores: [
+    { id: 'shop-premium', owner_id: 'owner-premium', plan_tier: 'premium', tracking_addon: false, tracking_extra_vehicles: 0 },
+    { id: 'shop-free', owner_id: 'free-seller', plan_tier: 'free' },
+  ],
+});
+const idorApi = createTracking({
+  store: idorMem,
+  env: { TRACKING_REQUIRE_PAID: 'true' },
+  now: () => now + 300000,
+  alerter: { emit() {} },
+  log() {},
+});
+const ownerPremium = { id: 'owner-premium' };
+const freeSeller = { id: 'free-seller' };
+const visitStop = [{ label: 'A', lat: 10.5, lng: -61.5 }];
+ok(await (idorApi.createRoute(ownerPremium, {
+  kind: 'visit', driverUserId: 'driver-p', storeId: 'shop-premium', stops: visitStop,
+}, BASE_PAID)));
+const premiumOpenBefore = await idorMem.countOpenJobs({ storeId: 'shop-premium' });
+assert.strictEqual(premiumOpenBefore, 1);
+
+const stolenEnt = await idorApi.entitlementFor(freeSeller, 'shop-premium');
+assert.strictEqual(stolenEnt.status, 403);
+assert.strictEqual(stolenEnt.error, STORE_ACCESS_DENIED);
+assert.ok(!stolenEnt.planTier || stolenEnt.planTier !== 'premium' || stolenEnt.error);
+
+const stolenStatus = await idorApi.statusFor(freeSeller, 'shop-premium');
+assert.strictEqual(stolenStatus.status, 403);
+assert.strictEqual(stolenStatus.error, STORE_ACCESS_DENIED);
+assert.ok(stolenStatus.allowed == null || stolenStatus.allowed === false);
+
+// Even an injected Premium entitlement must not create a job on someone else's shop.
+const stolenCreate = await idorApi.createRoute(freeSeller, {
+  kind: 'visit', driverUserId: 'driver-x', storeId: 'shop-premium', stops: visitStop,
+}, { planTier: 'premium' });
+assert.strictEqual(stolenCreate.status, 403);
+assert.strictEqual(stolenCreate.error, STORE_ACCESS_DENIED);
+assert.ok(!stolenCreate.route);
+const premiumOpenAfter = await idorMem.countOpenJobs({ storeId: 'shop-premium' });
+assert.strictEqual(premiumOpenAfter, premiumOpenBefore);
+
+// Owner can still use their own shop.
+const ownStatus = await idorApi.statusFor(ownerPremium, 'shop-premium');
+assert.ok(!ownStatus.error);
+assert.strictEqual(ownStatus.allowed, true);
+
+// File-store path: same ownership rule, no route row written.
+const tmpDir = fs.mkdtempSync(require('path').join(require('os').tmpdir(), 'juvay-track-'));
+const filePath = require('path').join(tmpDir, 'store.json');
+fs.writeFileSync(filePath, JSON.stringify({
+  routes: [],
+  stops: [],
+  locations: [],
+  events: [],
+  stores: [
+    { id: 'shop-premium', owner_id: 'owner-premium', plan_tier: 'premium' },
+  ],
+}));
+const fileStore = createFileStore(filePath);
+const fileApi = createTracking({
+  store: fileStore,
+  env: { TRACKING_REQUIRE_PAID: 'true' },
+  now: () => now + 400000,
+  alerter: { emit() {} },
+  log() {},
+});
+ok(await (fileApi.createRoute(ownerPremium, {
+  kind: 'visit', driverUserId: 'driver-p', storeId: 'shop-premium', stops: visitStop,
+}, BASE_PAID)));
+const fileOpenBefore = await fileStore.countOpenJobs({ storeId: 'shop-premium' });
+assert.strictEqual(fileOpenBefore, 1);
+const fileStolen = await fileApi.createRoute(freeSeller, {
+  kind: 'visit', driverUserId: 'driver-x', storeId: 'shop-premium', stops: visitStop,
+}, { planTier: 'premium' });
+assert.strictEqual(fileStolen.status, 403);
+assert.ok(!fileStolen.route);
+assert.strictEqual(await fileStore.countOpenJobs({ storeId: 'shop-premium' }), fileOpenBefore);
+const persisted = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+assert.strictEqual((persisted.routes || []).filter((r) => r.storeId === 'shop-premium' && r.status !== 'ended').length, 1);
+
+// Client-supplied shareToken is ignored; stored token is server-made (≥128 bits).
+const tokenApi = createTracking({
+  store: createMemoryStore(),
+  env: { TRACKING_REQUIRE_PAID: 'true' },
+  now: () => now + 500000,
+  alerter: { emit() {} },
+  log() {},
+});
+const clientTok = ok(await (tokenApi.createRoute(seller, {
+  kind: 'visit',
+  driverUserId: 'driver-1',
+  stops: [{ label: 'A', lat: 10.5, lng: -61.5, shareToken: 'abc' }],
+}, PAID)));
+const storedToken = clientTok.route.stops[0].shareToken;
+assert.notStrictEqual(storedToken, 'abc');
+assert.ok(storedToken.length >= SHARE_TOKEN_MIN_LENGTH, `token length ${storedToken.length}`);
+assert.ok(isShareTokenFormat(storedToken));
+const shortView = await tokenApi.trackByToken('abc');
+assert.strictEqual(shortView.status, 404);
+assert.ok(shortView.error);
 
 console.log('deliveryTracking tests: ok');
 }

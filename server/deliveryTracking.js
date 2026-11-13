@@ -219,7 +219,61 @@ function newId() {
 }
 
 function newShareToken() {
+  // 24 bytes = 192 bits, 32-char base64url. Always server-issued.
   return crypto.randomBytes(24).toString('base64url');
+}
+
+// 16 bytes of entropy is 128 bits and encodes to 22 base64url chars.
+const SHARE_TOKEN_MIN_LENGTH = 22;
+const SHARE_TOKEN_RE = /^[A-Za-z0-9_-]{22,}$/;
+
+function isShareTokenFormat(token) {
+  return typeof token === 'string' && SHARE_TOKEN_RE.test(token);
+}
+
+const STORE_ACCESS_DENIED = 'You can only use tracking for a shop you own.';
+
+function actorOwnsLookedUpStore(userId, looked) {
+  if (!userId || !looked || !looked.store) return false;
+  const id = String(userId);
+  const store = looked.store;
+  const ownerId = store.owner_id || store.ownerId;
+  if (ownerId && String(ownerId) === id) return true;
+  const members = store.memberIds || store.member_ids || [];
+  return members.some((m) => m != null && String(m) === id);
+}
+
+async function lookupStoreFromPool(pool, storeId) {
+  if (!pool) return { unavailable: true };
+  if (!storeId) return { found: false };
+  const { rows } = await pool.query(
+    'SELECT id, plan_tier, tracking_addon, tracking_extra_vehicles, owner_id FROM stores WHERE id = $1',
+    [storeId],
+  );
+  if (!rows[0]) return { found: false };
+  const store = { ...rows[0], memberIds: [] };
+  try {
+    const staff = await pool.query(
+      'SELECT user_id FROM store_staff WHERE store_id = $1',
+      [storeId],
+    );
+    store.memberIds = (staff.rows || []).map((r) => r.user_id).filter((id) => id != null);
+  } catch (_) {
+    // store_staff is optional; ownership still stands on owner_id.
+  }
+  return { found: true, store };
+}
+
+async function assertStoreAccess(lookup, userId, storeId) {
+  if (!storeId) return { ok: true, skipped: true };
+  if (!userId) return { ok: false, status: 403, error: STORE_ACCESS_DENIED };
+  if (typeof lookup !== 'function') return { ok: true, skipped: true };
+  const looked = await lookup(storeId);
+  if (!looked || looked.unavailable) return { ok: true, skipped: true };
+  if (!looked.found || !actorOwnsLookedUpStore(userId, looked)) {
+    return { ok: false, status: 403, error: STORE_ACCESS_DENIED };
+  }
+  return { ok: true, store: looked.store };
 }
 
 function validLatLng(p) {
@@ -492,6 +546,12 @@ function createMemoryStore(initial) {
         return false;
       }).length;
     },
+    async getStore(storeId) {
+      // No stores list means this is a test/memory store without a catalog.
+      if (!Array.isArray(s.stores)) return { unavailable: true };
+      const store = s.stores.find((st) => String(st.id) === String(storeId));
+      return store ? { found: true, store } : { found: false };
+    },
   };
 }
 
@@ -523,6 +583,7 @@ function createFileStore(filePath) {
     lastLocation: memory.lastLocation,
     listEvents: memory.listEvents,
     countOpenJobs: memory.countOpenJobs,
+    getStore: memory.getStore,
     saveRoute: wrap(memory.saveRoute),
     saveStop: wrap(memory.saveStop),
     addLocation: wrap(memory.addLocation),
@@ -693,28 +754,38 @@ function createPgStore(pool) {
       );
       return rows[0] ? rows[0].n : 0;
     },
+    async getStore(storeId) {
+      return lookupStoreFromPool(pool, storeId);
+    },
+    pool,
   };
 }
 
-async function resolveEntitlement(pool, { userId, storeId }, env) {
+async function resolveEntitlement(pool, { userId, storeId }, env, extras = {}) {
   const entitlement = { planTier: 'free', trackingAddon: false, plans: [] };
+  let looked = null;
+  if (storeId) {
+    if (extras.store) looked = { found: true, store: extras.store };
+    else if (typeof extras.lookupStore === 'function') looked = await extras.lookupStore(storeId);
+    else if (pool) looked = await lookupStoreFromPool(pool, storeId);
+    else looked = { unavailable: true };
+    // A known store (or a missing store in a real catalog) must belong to the actor.
+    if (looked && !looked.unavailable) {
+      if (!looked.found || !actorOwnsLookedUpStore(userId, looked)) {
+        return { error: STORE_ACCESS_DENIED, status: 403 };
+      }
+      const row = looked.store;
+      entitlement.planTier = row.plan_tier || 'free';
+      entitlement.trackingAddon = row.tracking_addon === true;
+      entitlement.trackingExtraVehicles = Number(row.tracking_extra_vehicles) || 0;
+    }
+  }
   if (!pool) return entitlement;
   try {
     const { rows: plans } = await pool.query('SELECT slug, name FROM plan_tiers');
     entitlement.plans = plans || [];
   } catch (_) { /* plan_tiers may be absent */ }
   try {
-    if (storeId) {
-      const { rows } = await pool.query(
-        'SELECT plan_tier, tracking_addon, tracking_extra_vehicles, owner_id FROM stores WHERE id = $1',
-        [storeId],
-      );
-      if (rows[0]) {
-        entitlement.planTier = rows[0].plan_tier || 'free';
-        entitlement.trackingAddon = rows[0].tracking_addon === true;
-        entitlement.trackingExtraVehicles = Number(rows[0].tracking_extra_vehicles) || 0;
-      }
-    }
     if (userId) {
       const { rows } = await pool.query(
         `SELECT pt.slug, pt.name
@@ -798,7 +869,7 @@ function createTracking(opts = {}) {
         sequence: seq,
         role,
         orderRef: s.orderRef || s.order_ref || null,
-        shareToken: s.shareToken || newShareToken(),
+        shareToken: newShareToken(),
         status: 'pending',
         label: s.label || s.address || null,
         lat: lat == null ? null : lat,
@@ -812,7 +883,37 @@ function createTracking(opts = {}) {
     return { stops };
   }
 
+  async function lookupStore(storeId) {
+    if (typeof opts.lookupStore === 'function') return opts.lookupStore(storeId);
+    if (store && typeof store.getStore === 'function') return store.getStore(storeId);
+    const pool = opts.pool || (store && store.pool);
+    if (pool) return lookupStoreFromPool(pool, storeId);
+    return { unavailable: true };
+  }
+
+  async function requireStoreAccess(userId, storeId) {
+    return assertStoreAccess((id) => lookupStore(id), userId, storeId);
+  }
+
+  async function authorizeJobActor(route, user, action) {
+    if (!canDrive(route, user)) {
+      return { error: `Only the assigned driver or seller can ${action} this job`, status: 403 };
+    }
+    const isDriver = user && route.driverUserId && String(user.id) === String(route.driverUserId);
+    if (isDriver) return { ok: true };
+    if (route.storeId) {
+      const access = await requireStoreAccess(user && user.id, route.storeId);
+      if (!access.ok) return { error: access.error, status: 403 };
+    }
+    return { ok: true };
+  }
+
   async function createRoute(actor, body, entitlement) {
+    const requestedStoreId = (body && (body.storeId || body.store_id)) || null;
+    if (requestedStoreId) {
+      const access = await requireStoreAccess(actor && actor.id, requestedStoreId);
+      if (!access.ok) return { error: access.error, status: 403 };
+    }
     const gate = trackingPaidGate(entitlement || {}, env);
     if (!gate.allowed) {
       return { error: gate.message, status: 403, locked: true, upgrade: true, planNames: gate.planNames, message: gate.message, maxVehicles: gate.maxVehicles, extraVehiclePriceTtd: gate.extraVehiclePriceTtd };
@@ -909,7 +1010,8 @@ function createTracking(opts = {}) {
   async function getRoute(routeId, user) {
     const loaded = await loadJob(routeId);
     if (loaded.error) return loaded;
-    if (!canDrive(loaded.route, user)) return { error: 'Only the assigned driver or seller can view this job', status: 403 };
+    const authz = await authorizeJobActor(loaded.route, user, 'view');
+    if (!authz.ok) return authz;
     const loc = locationView(loaded.route, loaded.lastFix, nowMs(clock), cfg());
     return { route: operatorView(loaded.route, loaded.stops), location: loc };
   }
@@ -934,7 +1036,8 @@ function createTracking(opts = {}) {
     const loaded = await loadJob(routeId);
     if (loaded.error) return loaded;
     const { route, stops } = loaded;
-    if (!canDrive(route, user)) return { error: 'Only the assigned driver or seller can start this job', status: 403 };
+    const authz = await authorizeJobActor(route, user, 'start');
+    if (!authz.ok) return authz;
     if (route.status === 'ended') return { error: 'This job has ended', status: 400 };
     if (route.status === 'active') return { route: operatorView(route, stops), alreadyActive: true };
     const at = nowMs(clock);
@@ -951,7 +1054,8 @@ function createTracking(opts = {}) {
     const loaded = await loadJob(routeId);
     if (loaded.error) return loaded;
     const { route, stops } = loaded;
-    if (!canDrive(route, user)) return { error: 'Only the assigned driver or seller can end this job', status: 403 };
+    const authz = await authorizeJobActor(route, user, 'end');
+    if (!authz.ok) return authz;
     const at = nowMs(clock);
     route.status = 'ended';
     route.endedAt = at;
@@ -964,7 +1068,8 @@ function createTracking(opts = {}) {
     const loaded = await loadJob(routeId);
     if (loaded.error) return loaded;
     const { route, lastFix } = loaded;
-    if (!canDrive(route, user)) return { error: 'Only the assigned driver or seller can share a location', status: 403 };
+    const authz = await authorizeJobActor(route, user, 'share a location');
+    if (!authz.ok) return authz;
     if (route.status !== 'active') return { error: 'Location is only accepted while the job is active', status: 400 };
     const lat = Number(body && body.lat);
     const lng = Number(body && body.lng);
@@ -1006,7 +1111,8 @@ function createTracking(opts = {}) {
     const loaded = await loadJob(routeId);
     if (loaded.error) return loaded;
     const { route, stops } = loaded;
-    if (!canDrive(route, user)) return { error: 'Only the assigned driver or seller can mark a stop delivered', status: 403 };
+    const authz = await authorizeJobActor(route, user, 'mark a stop delivered');
+    if (!authz.ok) return authz;
     if (route.status === 'ended') return { error: 'This job has ended', status: 400 };
     const stop = stops.find((s) => s.id === stopId);
     if (!stop) return { error: 'Stop not found', status: 404 };
@@ -1070,6 +1176,8 @@ function createTracking(opts = {}) {
   async function trackByToken(token) {
     const tok = String(token || '').trim();
     if (!tok) return { error: 'Missing token', status: 400 };
+    // Reject short or malformed tokens before any store lookup.
+    if (!isShareTokenFormat(tok)) return { error: 'Tracking link not found', status: 404 };
     const stop = await store.findStopByToken(tok);
     if (!stop) return { error: 'Tracking link not found', status: 404 };
     const route = await store.getRoute(stop.routeId);
@@ -1122,12 +1230,24 @@ function createTracking(opts = {}) {
   }
 
   async function entitlementFor(actor, storeId, injected) {
+    if (storeId) {
+      const access = await requireStoreAccess(actor && actor.id, storeId);
+      if (!access.ok) return { error: access.error, status: 403 };
+      if (injected) return injected;
+      return resolveEntitlement(opts.pool || (store && store.pool), { userId: actor && actor.id, storeId }, env, {
+        store: access.store,
+        lookupStore,
+      });
+    }
     if (injected) return injected;
-    return resolveEntitlement(opts.pool || (store.pool), { userId: actor && actor.id, storeId }, env);
+    return resolveEntitlement(opts.pool || (store && store.pool), { userId: actor && actor.id, storeId }, env, {
+      lookupStore,
+    });
   }
 
   async function statusFor(actor, storeId, injected) {
     const entitlement = await entitlementFor(actor, storeId, injected);
+    if (entitlement && entitlement.error) return entitlement;
     const gate = trackingPaidGate(entitlement, env);
     let usedVehicles = 0;
     if (typeof store.countOpenJobs === 'function' && actor) {
@@ -1205,4 +1325,10 @@ module.exports = {
   resolveEntitlement,
   createRateLimiter,
   parseDurationSeconds,
+  newShareToken,
+  isShareTokenFormat,
+  assertStoreAccess,
+  lookupStoreFromPool,
+  STORE_ACCESS_DENIED,
+  SHARE_TOKEN_MIN_LENGTH,
 };
