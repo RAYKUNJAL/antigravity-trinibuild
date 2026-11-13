@@ -155,7 +155,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
             className="ml-auto flex items-center gap-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
           >
             <Download size={20} />
-            Export for BIR
+            Export summary
           </button>
         </motion.div>
 
@@ -305,7 +305,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
                       Ready to File
                     </p>
                     <p className="text-xs text-green-700 mt-1">
-                      Your report is complete and BIR-ready. Export above.
+                      Your summary is ready. Export above and check it with your accountant.
                     </p>
                   </div>
                 </div>

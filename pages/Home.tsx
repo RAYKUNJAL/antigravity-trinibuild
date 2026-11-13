@@ -428,21 +428,21 @@ export const Home: React.FC = () => {
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">VAT Tax Tracker</h3>
                         <p className="text-gray-600 mb-6">
-                           Automatically calculate your 12.5% VAT on every sale. Generate BIR-ready quarterly reports. 
-                           Track your tax obligations in real-time so you never miss a filing deadline.
+                           Estimate 12.5% VAT on the sales you record and export a summary for your accountant. 
+                           Not tax advice, so check your filing with your accountant or BIR.
                         </p>
                         <div className="space-y-3 mb-6">
                            <div className="flex items-center gap-3">
                               <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Auto-calculate 12.5% VAT per sale</span>
+                              <span className="text-sm text-gray-700 font-medium">Estimate 12.5% VAT on recorded sales</span>
                            </div>
                            <div className="flex items-center gap-3">
                               <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">BIR quarterly report generation</span>
+                              <span className="text-sm text-gray-700 font-medium">Export a summary for your accountant</span>
                            </div>
                            <div className="flex items-center gap-3">
                               <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Filing deadline reminders</span>
+                              <span className="text-sm text-gray-700 font-medium">Key T&amp;T filing dates listed</span>
                            </div>
                            <div className="flex items-center gap-3">
                               <Check className="h-5 w-5 text-green-500" />
