@@ -5,6 +5,15 @@
 import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { formatFeePercent } from '../services/juvayFees';
+import {
+  PREMIUM_PRICE_COPY,
+  PREMIUM_INCLUDE_FEATURES,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+  PREMIUM_INTRO_PRICE_TTD,
+  PREMIUM_INTRO_MONTHS,
+  PREMIUM_THEN_PRICE_TTD,
+  JUVAY_FEE_BPS_PREMIUM,
+} from '../services/juvayPlans';
 
 interface PremiumPayload {
   offer: {
@@ -32,16 +41,12 @@ export const PremiumOffer: React.FC = () => {
 
   const offer = data?.offer || {
     name: 'Premium',
-    intro_price_ttd: 49,
-    intro_months: 3,
-    then_price_ttd: 79,
-    juvay_fee_bps: 250,
-    features: [
-      'Lower 2.5% Juvay fee on successful online Wam sales, capped at TT$25',
-      'Unlimited listings (same as Free)',
-      '0% Juvay commission on cash pickup and cash on delivery',
-    ],
-    note: 'Checkout is not open yet.',
+    intro_price_ttd: PREMIUM_INTRO_PRICE_TTD,
+    intro_months: PREMIUM_INTRO_MONTHS,
+    then_price_ttd: PREMIUM_THEN_PRICE_TTD,
+    juvay_fee_bps: JUVAY_FEE_BPS_PREMIUM,
+    features: [...PREMIUM_INCLUDE_FEATURES],
+    note: PAID_UPGRADE_UNAVAILABLE_COPY,
   };
   const enabled = data?.checkout_enabled === true;
 
@@ -49,11 +54,8 @@ export const PremiumOffer: React.FC = () => {
     <div className="bg-white rounded-2xl border-2 border-red-500 shadow-lg p-6 flex flex-col">
       <p className="text-xs font-bold uppercase tracking-wider text-red-600 mb-2">Year-end offer</p>
       <h3 className="text-xl font-black text-gray-900">{offer.name}</h3>
-      <p className="mt-3">
-        <span className="text-4xl font-black text-gray-900">TT${offer.intro_price_ttd}</span>
-        <span className="text-gray-500 ml-1">/month for {offer.intro_months} months</span>
-      </p>
-      <p className="text-sm text-gray-600 mt-1">Then TT${offer.then_price_ttd}/month. {formatFeePercent(offer.juvay_fee_bps)} Juvay fee on online Wam sales, capped at TT$25.</p>
+      <p className="mt-3 text-2xl font-black text-gray-900 leading-snug">{PREMIUM_PRICE_COPY}</p>
+      <p className="text-sm text-gray-600 mt-1">{formatFeePercent(offer.juvay_fee_bps)} Juvay fee on online Wam sales, capped at TT$25.</p>
       <ul className="mt-6 space-y-2 flex-1">
         {offer.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
@@ -69,7 +71,7 @@ export const PremiumOffer: React.FC = () => {
           </p>
         ) : (
           <p className="w-full py-3 rounded-xl bg-gray-50 text-gray-500 text-sm font-semibold text-center">
-            Premium checkout is not open yet. Free already includes unlimited listings and 0% on cash.
+            {PAID_UPGRADE_UNAVAILABLE_COPY}
           </p>
         )}
       </div>

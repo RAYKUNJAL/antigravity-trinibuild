@@ -310,7 +310,7 @@ function publicRateCard(cfg) {
     ads_optional: true,
     ads_enabled: c.adsEnabled,
     discounts_opt_in_only: true,
-    premium_pricing: 'Premium is TT$49/month for the first 3 months, then TT$79/month. 2.5% Juvay fee on online Wam sales, capped at TT$25. Checkout is not open (PREMIUM_CHECKOUT_ENABLED=false)',
+    premium_pricing: 'Premium is TT$49/month for the first 3 months, then TT$79/month. Fee drops to 2.5%, unlimited photo listings, "Bring my store over", live delivery tracking for 1 vehicle. Until Wam checkout takes a real payment, paid upgrades aren\'t available yet. Checkout is not open (PREMIUM_CHECKOUT_ENABLED=false)',
     cod_handling_fee_cents_default: c.codHandlingFeeCentsDefault,
     cod_handling_fee_note: 'proposal — buyer-paid handling fee, not a Juvay commission',
     wam: {

@@ -19,12 +19,12 @@ const PREMIUM_OFFER = {
   period: '/month',
   juvay_fee_bps: 250,
   features: [
-    'Lower 2.5% Juvay fee on successful online Wam sales, capped at TT$25',
-    'Unlimited listings (same as Free)',
-    '0% Juvay commission on cash pickup and cash on delivery',
-    'Custom domain option when that rail is offered',
+    'Fee drops to 2.5%',
+    'unlimited photo listings',
+    '"Bring my store over"',
+    'live delivery tracking for 1 vehicle',
   ],
-  note: 'Intro TT$49/month for the first 3 months, then TT$79/month. Prices are the year-end offer, not a live charge. Checkout stays off until PREMIUM_CHECKOUT_ENABLED=true and a real pay path is proven.',
+  note: 'TT$49/month for the first 3 months, then TT$79/month. Until Wam checkout takes a real payment, paid upgrades aren\'t available yet. Checkout stays off until PREMIUM_CHECKOUT_ENABLED=true and a real pay path is proven.',
 };
 
 function isPremiumCheckoutEnabled(env) {
@@ -40,7 +40,7 @@ function premiumPayload(env) {
     buy_button: enabled,
     message: enabled
       ? 'Premium checkout flag is on. A charge does not auto-upgrade a plan until pay→fulfill is proven.'
-      : 'Premium checkout is not open yet. PREMIUM_CHECKOUT_ENABLED=false. The 2.5% fee applies once a shop is on Premium.',
+      : "Until Wam checkout takes a real payment, paid upgrades aren't available yet. Premium checkout is not open yet. PREMIUM_CHECKOUT_ENABLED=false.",
   };
 }
 

@@ -6,6 +6,13 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { JuvayPriceTable } from '../components/JuvayPriceTable';
 import { YouKeepCalculator } from '../components/YouKeepCalculator';
+import {
+  PREMIUM_PRICE_COPY,
+  FREE_INCLUDES_COPY,
+  PREMIUM_INCLUDES_COPY,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+  FREE_INCLUDE_FEATURES,
+} from '../services/juvayPlans';
 
 export default function PricingPage() {
   return (
@@ -16,8 +23,7 @@ export default function PricingPage() {
             Start Free. Bank payment setup in progress.
           </h1>
           <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Free is free, with unlimited listings and 0% on cash. Premium is TT$49/month for the first
-            3 months, then TT$79/month, with a 2.5% online Wam fee (capped at TT$25). Checkout stays off until it is opened.
+            Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
           </p>
         </div>
       </div>
@@ -32,13 +38,7 @@ export default function PricingPage() {
           </div>
           <div className="p-6">
             <ul className="space-y-2">
-              {[
-                'Unlimited product listings',
-                'juvay.app store slug',
-                'Cash at pickup',
-                'Cash on delivery',
-                'SSL on juvay.app',
-              ].map((item) => (
+              {[...FREE_INCLUDE_FEATURES].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm text-gray-600">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   {item}
@@ -51,9 +51,8 @@ export default function PricingPage() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-3">Transaction fees</h2>
           <p className="text-sm text-gray-600 mb-3">
-            Free store, unlimited listings, 0% on cash. 4.5% on Free and 2.5% on Premium
-            for successful online Wam sales, capped at TT$25. No listing, payout, or monthly fee on Free.
-            30-day notice before any change. Ads optional. Discounts opt-in only.
+            {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}.
+            No listing, payout, or monthly fee on Free. 30-day notice before any change. Ads optional. Discounts opt-in only.
           </p>
           <Link to="/fees" className="text-sm font-semibold text-red-600 hover:underline">See the full rate card →</Link>
         </div>
@@ -63,11 +62,11 @@ export default function PricingPage() {
           <dl className="space-y-4 text-sm text-gray-600">
             <div>
               <dt className="font-semibold text-gray-900">Is Free really free?</dt>
-              <dd>Yes. unlimited listings, cash pickup, and COD. No credit card.</dd>
+              <dd>Yes. {FREE_INCLUDES_COPY} No credit card.</dd>
             </div>
             <div>
               <dt className="font-semibold text-gray-900">How do I pay for Premium?</dt>
-              <dd>Premium checkout is not open yet (PREMIUM_CHECKOUT_ENABLED is off). A charge does not auto-upgrade a plan. Free already includes unlimited listings and 0% on cash.</dd>
+              <dd>{PAID_UPGRADE_UNAVAILABLE_COPY} A charge does not auto-upgrade a plan. Free: {FREE_INCLUDES_COPY}</dd>
             </div>
           </dl>
         </div>

@@ -11,6 +11,7 @@ import {
   WAM_RATE_LABEL,
   type PaymentRail,
 } from '../services/juvayFees';
+import { JUVAY_FEE_BPS_FREE, JUVAY_FEE_BPS_PREMIUM, normalizeSellerPlan } from '../services/juvayPlans';
 
 const RAIL_LABEL: Record<PaymentRail, string> = {
   wam_wallet: 'Wam wallet',
@@ -25,7 +26,7 @@ export const YouKeepCalculator: React.FC<{
   compact?: boolean;
 }> = ({ defaultDollars = 12, planSlug = 'free', compact }) => {
   const [dollars, setDollars] = useState(String(defaultDollars));
-  const [plan, setPlan] = useState(planSlug === 'premium' || planSlug === 'starter' || planSlug === 'business' || planSlug === 'pro' ? 'premium' : 'free');
+  const [plan, setPlan] = useState(normalizeSellerPlan(planSlug));
   const [rail, setRail] = useState<PaymentRail>('wam_wallet');
 
   const cents = Math.max(0, Math.round((Number(dollars) || 0) * 100));
@@ -63,8 +64,8 @@ export const YouKeepCalculator: React.FC<{
             onChange={(e) => setPlan(e.target.value)}
             className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
           >
-            <option value="free">Free ({formatFeePercent(450)} online)</option>
-            <option value="premium">Premium ({formatFeePercent(250)} online)</option>
+            <option value="free">Free ({formatFeePercent(JUVAY_FEE_BPS_FREE)} online)</option>
+            <option value="premium">Premium ({formatFeePercent(JUVAY_FEE_BPS_PREMIUM)} online)</option>
           </select>
         </label>
       </div>

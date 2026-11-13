@@ -8,6 +8,7 @@
 import { supabase } from './supabaseClient';
 import { STARTER_IDS, STORE_STARTERS } from './storeStarters';
 import { wamCountryNames } from './wamCountries';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from './juvayPlans';
 
 // ---------- Types ----------
 export type SectionType =
@@ -408,7 +409,7 @@ export async function publishSite(site: BuilderSite): Promise<BuilderSite> {
         if (isFree) {
             const { count } = await supabase.from('builder_sites').select('id', { count: 'exact', head: true })
                 .eq('owner_id', user.id).eq('status', 'published').neq('id', site.id || '00000000-0000-0000-0000-000000000000');
-            if ((count || 0) >= 1) throw new Error('Free plan includes 1 published website. Upgrade to Pro (TT$199/mo) for unlimited sites + premium templates + unlimited AI.');
+            if ((count || 0) >= 1) throw new Error(`Free includes 1 store. Premium is ${PREMIUM_PRICE_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`);
         }
     }
     let slug = site.slug || slugify(site.business_name);

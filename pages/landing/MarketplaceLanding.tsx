@@ -25,7 +25,7 @@ export const MarketplaceLanding: React.FC = () => {
                      We Built A <span className="text-trini-red">Free Digital Store</span> For Every Vendor.
                   </h1>
                   <p className="text-xl text-gray-300 mb-8 max-w-2xl">
-                     Most vendors can't afford a $5,000 website. So we made it free. Unlimited listings, cash on delivery, no credit card required.
+                     Most vendors can't afford a $5,000 website. So we made it free. Unlimited products, 0% on cash and COD, no credit card required.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                      <Link to="/create-store" className="bg-trini-red text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-red-700 transition-all shadow-lg hover:shadow-red-900/50 flex items-center justify-center">

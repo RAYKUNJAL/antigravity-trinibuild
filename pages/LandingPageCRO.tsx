@@ -34,7 +34,7 @@ const HOW = [
   {
     n: '1',
     title: 'Create your free store',
-    body: 'Pick a starter, name your shop and you have a page. No credit card. Unlimited listings.',
+    body: 'Pick a starter, name your shop and you have a page. No credit card. Unlimited products.',
   },
   {
     n: '2',
@@ -51,7 +51,7 @@ const HOW = [
 const OG_IMAGE = 'https://juvay.app/og-juvay-home.png';
 const TITLE = 'Your free Caribbean store — no credit card | Juvay';
 const DESCRIPTION =
-  'Juvay is the Amazon for the Caribbean. Every seller gets a free website and store — unlimited listings, no credit card. Cash pickup and cash on delivery are 0% commission. Sell online with Wam when you are ready.';
+  'Juvay is the Amazon for the Caribbean. Every seller gets a free website and store — Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card. Sell online with Wam when you are ready.';
 
 const faqJson = () => {
   const freePct = formatFeePercent(FEE_DEFAULTS.juvayFeeBpsFree);
@@ -65,7 +65,7 @@ const faqJson = () => {
         name: 'Is it really free?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `Yes. Every Caribbean seller can create a free website and store, with unlimited listings and no credit card. Juvay earns ${freePct} only when a buyer pays you online with Wam, capped at ${cap} per order. Cash pickup and cash on delivery carry 0% commission.`,
+          text: `Yes. Every Caribbean seller can create a free website and store. Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card. Juvay earns ${freePct} only when a buyer pays you online with Wam, capped at ${cap} per order.`,
         },
       },
       {
@@ -138,7 +138,7 @@ export const LandingPageCRO: React.FC = () => {
               '@type': 'Offer',
               price: '0',
               priceCurrency: 'TTD',
-              description: 'Free online store with unlimited listings. No credit card required.',
+              description: 'Free online store. Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD. No credit card required.',
             },
           })}
         </script>
@@ -189,12 +189,12 @@ export const LandingPageCRO: React.FC = () => {
             <div className="mx-auto w-full max-w-xl">
               <p className="text-base leading-relaxed text-[#efe4d0]">
                 Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
-                and market stalls, boutiques. Unlimited listings. Cash pickup and cash on delivery are 0% commission. Sell
+                and market stalls, boutiques. Unlimited products. 0% on cash and COD. Sell
                 online with Wam when you are ready.
               </p>
               <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#efe4d0]">
                 <li className="flex items-center gap-1.5">
-                  <CheckIcon /> Unlimited listings
+                  <CheckIcon /> Unlimited products
                 </li>
                 <li className="flex items-center gap-1.5">
                   <CheckIcon /> No credit card
@@ -237,12 +237,12 @@ export const LandingPageCRO: React.FC = () => {
                   </h1>
                   <p className="mt-5 text-lg leading-relaxed text-[#efe4d0]">
                     Every Caribbean seller gets a free website and store — doubles vendors, corn soup and fried chicken, fish
-                    and market stalls, boutiques. Unlimited listings. Cash pickup and cash on delivery are 0% commission. Sell
+                    and market stalls, boutiques. Unlimited products. 0% on cash and COD. Sell
                     online with Wam when you are ready.
                   </p>
                   <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[#efe4d0]">
                     <li className="flex items-center gap-1.5">
-                      <CheckIcon /> Unlimited listings
+                      <CheckIcon /> Unlimited products
                     </li>
                     <li className="flex items-center gap-1.5">
                       <CheckIcon /> No credit card
@@ -348,8 +348,8 @@ export const LandingPageCRO: React.FC = () => {
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Cash first. Online when you are ready.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#efe4d0]">
-              Plenty of Caribbean sellers live on cash — and that is fine. Cash pickup and cash on delivery stay free, with 0%
-              commission. Online Wam payments are how buyers can pay you by wallet or card later. We explain how that is
+              Plenty of Caribbean sellers live on cash — and that is fine. Cash pickup and cash on delivery stay free, with 0% on cash and COD.
+              Online Wam payments are how buyers can pay you by wallet or card later. We explain how that is
               designed to work; we will not call it proven until a live order has been walked through.
             </p>
           </div>
@@ -365,7 +365,7 @@ export const LandingPageCRO: React.FC = () => {
                 <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">{FRESH_CATCH_TITLE}</h2>
                 <p className="mt-4 text-lg leading-relaxed text-[#efe4d0]">{FRESH_CATCH_TAGLINE}</p>
                 <p className="mt-3 text-sm text-[#c9b89a]">
-                  Cash pickup and cash on delivery at 0% commission. Online Wam when it is set up. We do not take PayPal.
+                  0% on cash and COD. Online Wam when it is set up. We do not take PayPal.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <Link
@@ -405,7 +405,7 @@ export const LandingPageCRO: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-widest text-[#fde68a]">Be one of the first sellers</p>
             <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">Open your free Caribbean store</h2>
             <p className="mt-5 text-lg text-[#efe4d0]">
-              No credit card. Unlimited listings. Cash pickup and cash on delivery at 0%. From a doubles stall to a boutique —
+              No credit card. Unlimited products. Cash pickup and cash on delivery at 0%. From a doubles stall to a boutique —
               your page, your prices, your customers.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

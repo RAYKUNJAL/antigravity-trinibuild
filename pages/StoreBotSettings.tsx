@@ -4,6 +4,7 @@ import { Bot, Save, ArrowLeft, MessageSquare, Sparkles, Lock, Brain, Check, Eye 
 import { supabase } from '../services/supabaseClient';
 import { authService, User } from '../services/authService';
 import { subscriptionService } from '../services/subscriptionService';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 export const StoreBotSettings: React.FC = () => {
     const navigate = useNavigate();
@@ -199,15 +200,15 @@ Always be friendly, speak with a Caribbean warmth, and help customers find what 
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
                             <Lock className="h-8 w-8 text-red-600" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">Pro Feature Locked</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Premium Feature Locked</h2>
                         <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                            The AI Chatbot is a Pro feature. Upgrade to Pro for TT$300/mo to enable your storefront bot.
+                            The AI Chatbot is a Premium feature. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
                         </p>
                         <button
                             onClick={() => navigate('/pricing')}
                             className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition-colors shadow-lg"
                         >
-                            Upgrade to Pro →
+                            See /pricing →
                         </button>
                     </div>
                 )}

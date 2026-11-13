@@ -20,9 +20,8 @@ function useItems(): Array<{ q: string; a: React.ReactNode }> {
       q: 'Is it really free?',
       a: (
         <>
-          Yes. Every Caribbean seller can create a free website and store, with unlimited listings and no credit card. Juvay
-          earns {freePct} only when a buyer pays you online with Wam, capped at {cap} per order. Cash pickup and cash on
-          delivery carry 0% commission.
+          Yes. Every Caribbean seller can create a free website and store, with Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD, and no credit card. Juvay
+          earns {freePct} only when a buyer pays you online with Wam, capped at {cap} per order.
         </>
       ),
     },

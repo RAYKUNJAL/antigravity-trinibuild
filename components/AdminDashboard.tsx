@@ -242,7 +242,7 @@ export const AdminDashboard: React.FC = () => {
                 <DomainOptionCard
                   title="Custom Domain"
                   description="We buy & manage for you"
-                  price="TT$99/year"
+                  price="Price not published"
                   active={domainTab === 'custom'}
                   benefits={[
                     '✓ Custom branded domain',
@@ -258,7 +258,7 @@ export const AdminDashboard: React.FC = () => {
                 <DomainOptionCard
                   title="Export Code"
                   description="Deploy on your server"
-                  price="TT$199"
+                  price="Price not published"
                   active={domainTab === 'export'}
                   benefits={[
                     '✓ Full React code provided',

@@ -11,6 +11,7 @@ import { supabase } from '../services/supabaseClient';
 import { LogoBuilder } from '../components/LogoBuilder';
 import { ThemeGenerator } from '../components/ThemeGenerator';
 import { AIGeneratingOverlay } from '../components/AIGeneratingOverlay';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, PREMIUM_INCLUDES_COPY } from '../services/juvayPlans';
 
 // Placeholder logo URL
 const LOGO_URL = "/juvay-logo.png";
@@ -756,12 +757,9 @@ export const StoreCreator: React.FC = () => {
 
                            {/* Pricing */}
                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-6 mb-6 text-center">
-                              <p className="text-sm opacity-75 line-through mb-1">Regular Price: TT$199</p>
-                              <div className="flex items-center justify-center gap-3 mb-2">
-                                 <span className="text-5xl font-extrabold">TT$49</span>
-                                 <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">75% OFF</div>
-                              </div>
-                              <p className="text-sm opacity-90">One-time payment • Limited time offer</p>
+                              <p className="text-2xl font-extrabold leading-snug">{PREMIUM_PRICE_COPY}</p>
+                              <p className="text-sm opacity-90 mt-3">{PREMIUM_INCLUDES_COPY}</p>
+                              <p className="text-sm opacity-75 mt-2">{PAID_UPGRADE_UNAVAILABLE_COPY}</p>
                            </div>
 
                            <p className="mb-4 text-sm text-gray-600 text-center">

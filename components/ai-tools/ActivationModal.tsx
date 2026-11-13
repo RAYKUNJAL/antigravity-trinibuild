@@ -1,6 +1,11 @@
 import React from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import {
+  PREMIUM_PRICE_COPY,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+  FREE_INCLUDES_COPY,
+} from '../../services/juvayPlans';
 
 interface ActivationModalProps {
   isOpen: boolean;
@@ -10,14 +15,12 @@ interface ActivationModalProps {
 }
 
 const plans = [
-  { id: 'free_trial', name: 'Free Trial', price: '$0', desc: '14 days, all features' },
-  { id: 'basic', name: 'Basic', price: '$10/mo', desc: '1 tool, basic features' },
-  { id: 'growth', name: 'Growth', price: '$19/mo', desc: '3 tools, enhanced' },
-  { id: 'pro', name: 'Pro', price: '$49/mo', desc: 'All tools, priority' },
+  { id: 'free', name: 'Free', price: 'TT$0', desc: FREE_INCLUDES_COPY },
+  { id: 'premium', name: 'Premium', price: PREMIUM_PRICE_COPY, desc: PAID_UPGRADE_UNAVAILABLE_COPY },
 ];
 
 export const ActivationModal: React.FC<ActivationModalProps> = ({ isOpen, onClose, toolName, onActivate }) => {
-  const [selected, setSelected] = React.useState('free_trial');
+  const [selected, setSelected] = React.useState('free');
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Activate ${toolName}`}>

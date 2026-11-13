@@ -1,5 +1,5 @@
 /**
- * Public Juvay rate card. Plain copy. Premium is TT$49/month for 3 months, then TT$79.
+ * Public Juvay rate card. Plain copy. Premium is TT$49/month for the first 3 months, then TT$79/month.
  * Checkout is not open. Wam figures are
  * the published rate — confirm with Wam. Does not claim pay→fulfill works.
  */
@@ -9,6 +9,12 @@ import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { publicRateCard, formatFeePercent, formatTtdCents, FEE_DEFAULTS } from '../services/juvayFees';
 import { YouKeepCalculator } from '../components/YouKeepCalculator';
+import {
+  PREMIUM_PRICE_COPY,
+  FREE_INCLUDES_COPY,
+  PREMIUM_INCLUDES_COPY,
+  PAID_UPGRADE_UNAVAILABLE_COPY,
+} from '../services/juvayPlans';
 
 type Card = ReturnType<typeof publicRateCard>;
 
@@ -37,7 +43,7 @@ export default function FeesPage() {
         <title>Fees | Juvay</title>
         <meta
           name="description"
-          content={`Juvay is free to start, with unlimited listings and 0% on cash. ${freePct} on Free and ${premPct} on Premium for online Wam sales, capped at ${cap}.`}
+          content={`Free: ${FREE_INCLUDES_COPY}. Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`}
         />
         <link rel="canonical" href="https://juvay.app/fees" />
       </Helmet>
@@ -47,8 +53,8 @@ export default function FeesPage() {
             <p className="text-xs font-bold uppercase tracking-widest text-red-600 mb-3">Rate card</p>
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">Juvay fees, in plain words</h1>
             <p className="text-lg text-gray-600">
-              A free store, unlimited listings, and no commission on cash. Online Wam sales
-              carry a capped Juvay fee, and Wam&apos;s own processing fee is passed through — we never absorb it.
+              {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}. Online Wam sales
+              carry a capped Juvay fee, and Wam&apos;s own processing fee is passed through — we never absorb it. {PAID_UPGRADE_UNAVAILABLE_COPY}
             </p>
           </div>
         </div>
@@ -59,8 +65,7 @@ export default function FeesPage() {
             <ul className="space-y-3 text-sm text-gray-700">
               {[
                 'Free store. No credit card to sign up.',
-                'Unlimited listings. No listing fee.',
-                '0% Juvay commission on cash pickup and cash on delivery.',
+                FREE_INCLUDES_COPY,
                 `${freePct} Juvay fee on Free, on successful online Wam sales (wallet or card). Computed on the item subtotal. Capped at ${cap} per order. No minimum fee.`,
                 `${premPct} Juvay fee on Premium, same rules, same ${cap} cap.`,
                 'No payout fee. No monthly fee on Free.',

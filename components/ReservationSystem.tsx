@@ -16,6 +16,7 @@ import {
   ArrowRight, Store, MessageCircle, Info, Loader2
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1131,7 +1132,7 @@ export const MerchantReservationDashboard: React.FC<MerchantReservationDashboard
 export const ReservationPremiumGate: React.FC<{
   onUpgrade: () => void;
   planPrice?: string;
-}> = ({ onUpgrade, planPrice = 'TT$99/mo' }) => (
+}> = ({ onUpgrade, planPrice = PREMIUM_PRICE_COPY }) => (
   <motion.div
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
@@ -1182,19 +1183,6 @@ export const ReservationPremiumGate: React.FC<{
         ))}
       </div>
 
-      {/* Social proof */}
-      <div className="flex items-center gap-3 mb-6 bg-white/5 rounded-xl p-3">
-        <div className="flex -space-x-2">
-          {['#E61E2B','#16a34a','#2563eb','#f59e0b'].map((c, i) => (
-            <div key={i} className="w-7 h-7 rounded-full border-2 border-gray-900 flex items-center justify-center text-xs text-white font-bold" style={{ background: c }}>
-              {['M','P','D','S'][i]}
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-gray-400">
-          <span className="text-white font-bold">240+ stores</span> use QR reservations to reduce no-shows by 65%
-        </p>
-      </div>
 
       {/* CTA */}
       <motion.button
@@ -1204,10 +1192,10 @@ export const ReservationPremiumGate: React.FC<{
         className="w-full py-4 rounded-2xl font-black text-black text-base flex items-center justify-center gap-2"
         style={{ background: 'linear-gradient(135deg, #FFD700, #fbbf24)' }}
       >
-        Upgrade to Pro — {planPrice} <ArrowRight size={16} />
+        See Premium — {planPrice} <ArrowRight size={16} />
       </motion.button>
       <p className="text-center text-xs text-gray-500 mt-3">
-        Cancel anytime · No setup fee · Includes all Juvay Pro features
+        {PAID_UPGRADE_UNAVAILABLE_COPY}
       </p>
     </div>
 

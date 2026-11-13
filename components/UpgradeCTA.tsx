@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Zap, ArrowRight, Lock, Sparkles } from 'lucide-react';
 import { PRICING_PLANS, PricingTier } from '../services/pricingService';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 import { useNavigate } from 'react-router-dom';
 
 interface UpgradeCTAProps {
@@ -39,7 +40,7 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
             <div>
               <p className="font-bold">{feature} is available on {targetPlan.name}</p>
               <p className="text-sm text-white/80">
-                Premium is TT$49/month for 3 months, then TT$79. Checkout is not open yet.
+                {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
               </p>
             </div>
           </div>
@@ -115,10 +116,9 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
           {/* Pricing */}
           <div className="mb-6 p-4 bg-gradient-to-br from-trini-red/10 to-red-100 rounded-xl">
             <div className="flex items-baseline justify-center gap-2 mb-1">
-              <span className="text-3xl font-black text-gray-900">
-                TT$49
+              <span className="text-xl font-black text-gray-900 leading-snug">
+                {PREMIUM_PRICE_COPY}
               </span>
-              <span className="text-gray-600">/month for 3 months, then TT$79</span>
             </div>
             <p className="text-center text-sm text-gray-600">
               Same TTD table as /pricing. No yearly discount is published.
@@ -174,7 +174,7 @@ export const UpgradeCTA: React.FC<UpgradeCTAProps> = ({
               className="px-6 py-2 bg-trini-red text-white rounded-lg font-bold hover:bg-red-700 flex items-center gap-2"
             >
               <Zap className="w-4 h-4" />
-              See /pricing — TT$49/mo intro, then TT$79
+              See /pricing — {PREMIUM_PRICE_COPY}
             </motion.button>
 
             <a
@@ -206,9 +206,10 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   children,
   showPreview = true
 }) => {
-  const hasAccess = 
+  const paid = (tier: PricingTier) => tier === 'premium' || tier === 'pro' || tier === 'starter' || tier === 'business';
+  const hasAccess =
     currentTier === requiredTier ||
-    (requiredTier === 'pro' && currentTier === 'premium') ||
+    (paid(requiredTier) && paid(currentTier)) ||
     (requiredTier === 'free');
 
   if (hasAccess) {

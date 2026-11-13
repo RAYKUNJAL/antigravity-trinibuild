@@ -42,7 +42,7 @@ export const AdminDashboard: React.FC = () => {
    // Vendor Logic
    const [vendors, setVendors] = useState<any[]>([
       { id: 'v1', name: 'Roti King', owner: 'Rajesh K.', email: 'rajesh@example.com', status: 'active', plan: 'Free', verified: false, revenue: 450 },
-      { id: 'v2', name: 'Island Styles', owner: 'Sarah M.', email: 'sarah@example.com', status: 'active', plan: 'Starter', verified: true, revenue: 1200 },
+      { id: 'v2', name: 'Island Styles', owner: 'Sarah M.', email: 'sarah@example.com', status: 'active', plan: 'Premium', verified: true, revenue: 1200 },
    ]);
 
    // Regular Users Logic (Drivers/Customers)
@@ -203,7 +203,7 @@ export const AdminDashboard: React.FC = () => {
    // Grant Premium (The "Gift" Feature)
    const handleGiftPremium = (id: string, type: 'vendor' | 'user') => {
       if (type === 'vendor') {
-         setVendors(vendors.map(v => v.id === id ? { ...v, plan: SubscriptionTier.ENTERPRISE, isLifetime: true } : v));
+         setVendors(vendors.map(v => v.id === id ? { ...v, plan: SubscriptionTier.PREMIUM, isLifetime: true } : v));
       } else {
          setUsers(users.map(u => u.id === id ? { ...u, isLifetime: true, badge: 'VIP' } : u));
       }

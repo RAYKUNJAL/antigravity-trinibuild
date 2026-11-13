@@ -3,6 +3,7 @@
  * Server (env-backed) is the source of truth — prefer API quotes at checkout.
  * Keep in sync with server/juvayFees.js. Wam figures: "Wam published rate, confirm with Wam".
  */
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, PREMIUM_INCLUDES_COPY } from './juvayPlans';
 
 export const WAM_RATE_LABEL = 'Wam published rate, confirm with Wam';
 
@@ -299,7 +300,7 @@ export function publicRateCard(cfg?: FeeConfig) {
     ads_optional: true,
     ads_enabled: c.adsEnabled,
     discounts_opt_in_only: true,
-    premium_pricing: 'Premium is TT$49/month for the first 3 months, then TT$79/month. 2.5% Juvay fee on online Wam sales, capped at TT$25. Checkout is not open (PREMIUM_CHECKOUT_ENABLED=false)' as const,
+    premium_pricing: `Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY} Checkout is not open (PREMIUM_CHECKOUT_ENABLED=false)`,
     cod_handling_fee_cents_default: c.codHandlingFeeCentsDefault,
     cod_handling_fee_note: 'proposal — buyer-paid handling fee, not a Juvay commission',
     wam: {

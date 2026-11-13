@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
 import { JuvayPriceTable } from '../../components/JuvayPriceTable';
+import { PREMIUM_PRICE_COPY, FREE_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../../services/juvayPlans';
 
 export const StoreServicesLanding: React.FC = () => {
     const navigate = useNavigate();
@@ -163,7 +164,7 @@ export const StoreServicesLanding: React.FC = () => {
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
-                                        Unlimited listings on Free
+                                        {FREE_INCLUDES_COPY}
                                     </div>
                                     <div className="flex items-center">
                                         <Check className="h-5 w-5 mr-2" />
@@ -195,7 +196,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 Everything You Need to Sell Online
                             </h2>
                             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                                Built for Trinidad & Tobago. Cash pickup and COD are on. No 0% commission claim.
+                                Built for Trinidad & Tobago. 0% on cash and COD. Cash pickup and COD are on.
                             </p>
                         </div>
 
@@ -305,7 +306,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 >
                                     See /pricing — Free / Premium <ChevronRight className="h-5 w-5" />
                                 </button>
-                                <p className="text-xs text-gray-600 mt-3">One TTD table: Free and Premium (TT$49/month intro for 3 months, then TT$79). Checkout is not open yet.</p>
+                                <p className="text-xs text-gray-600 mt-3">One TTD table: Free and Premium. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}</p>
                             </div>
 
                             {/* Right — visual mockup of QR receipt + calendar */}
@@ -451,7 +452,7 @@ export const StoreServicesLanding: React.FC = () => {
                                 Simple, Transparent Pricing
                             </h2>
                             <p className="text-xl text-gray-600">
-                                One TTD table matching /pricing. Free TT$0. Premium TT$49/month for 3 months, then TT$79. Checkout is not open yet.
+                                One TTD table matching /pricing. Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
                             </p>
                         </div>
 
@@ -466,7 +467,7 @@ export const StoreServicesLanding: React.FC = () => {
                             Ready to Start Selling Online?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Free is unlimited listings, cash pickup, and COD. No invented merchant count.
+                            Free: {FREE_INCLUDES_COPY}. No invented merchant count.
                         </p>
                         <button
                             onClick={() => document.getElementById('quiz')?.scrollIntoView({ behavior: 'smooth' })}

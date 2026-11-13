@@ -3,8 +3,8 @@
  * 
  * Complete system for managing three domain options:
  * 1. trinibuild.com - Free subdomain (default)
- * 2. Custom domain - We buy and host for you (TT$99/year)
- * 3. Export code - You deploy yourself (TT$199 one-time)
+ * 2. Custom domain - We buy and host for you (price not published on the Free/Premium table)
+ * 3. Export code - You deploy yourself (price not published on the Free/Premium table)
  */
 
 import { supabase } from './supabaseClient';
@@ -65,14 +65,14 @@ export function getDomainOptions(): Record<DomainType, DomainOption> {
     'custom-domain': {
       type: 'custom-domain',
       url: '{yourdomain}.com',
-      price: 99,
+      price: 0,
       annual: true,
       description: 'We buy & manage your custom domain',
       benefits: [
         '✓ Custom branded domain',
         '✓ TriniBuild buys domain for you',
         '✓ Auto-renewed annually',
-        '✓ Included in Pro/Business plan',
+        '✓ Price not published on the Free/Premium plan table',
         '✓ Premium perception',
         '✓ Full owner of content',
         '✓ Professional email possible',
@@ -81,7 +81,7 @@ export function getDomainOptions(): Record<DomainType, DomainOption> {
     'export-code': {
       type: 'export-code',
       url: 'your-server.com',
-      price: 199,
+      price: 0,
       annual: false,
       description: 'Export React code, deploy yourself',
       benefits: [

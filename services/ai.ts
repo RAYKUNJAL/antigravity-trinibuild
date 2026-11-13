@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { generateOptimizedListing, type ProductListingOptimized } from './aiListingOptimizer';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from './juvayPlans';
 
 /**
  * Juvay AI Service v4 — GPT-4o mini
@@ -542,15 +543,15 @@ function getTriniFallback(message: string, mode?: string): string {
     }
 
     if (mode === 'paperwork_assistant' || msg.match(/\b(document|letter|visa|proof|income|job letter|contract|paperwork)\b/)) {
-        return "I could generate these documents for yuh right now:\n\n📄 **Job Offer Letter** — Free\n💰 **Proof of Income** — Pro plan\n✈️ **Visa Support Letter** — Pro plan\n📋 **Contractor Agreement** — Pro plan\n🧾 **VAT Certificate** — Pro plan\n\nWhich one yuh need? Tell meh the details and I go sort it out. Real ting.";
+        return "I could generate these documents for yuh right now:\n\n📄 **Job Offer Letter** — Free\n💰 **Proof of Income** — Premium\n✈️ **Visa Support Letter** — Premium\n📋 **Contractor Agreement** — Premium\n🧾 **VAT Certificate** — Premium\n\n" + PAID_UPGRADE_UNAVAILABLE_COPY + " Which one yuh need? Tell meh the details and I go sort it out. Real ting.";
     }
 
     if (msg.match(/\b(price|pricing|cost|plan|free|how much)\b/)) {
-        return "**Juvay Pricing:**\n\n🆓 **Free:** Unlimited listings, cash pickup, COD, 0% Juvay commission on cash. 4.5% on successful online Wam sales, capped at TT$25.\n💎 **Premium:** TT$49/month for the first 3 months, then TT$79/month, with a 2.5% online Wam fee capped at TT$25. Checkout is not open yet.\n\nSee [/pricing](/pricing).";
+        return "**Juvay Pricing:**\n\n🆓 **Free:** " + FREE_INCLUDES_COPY + "\n💎 **Premium:** " + PREMIUM_PRICE_COPY + ". " + PREMIUM_INCLUDES_COPY + ". " + PAID_UPGRADE_UNAVAILABLE_COPY + "\n\nSee [/pricing](/pricing).";
     }
 
     if (msg.match(/\b(store|sell|create|shop|start|business|open)\b/)) {
-        return "Creating a store is real easy — a few minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product (name and a price) or skip\n4. Share yuh https://juvay.app/store/slug link\n\nUnlimited free listings. No credit card needed. 🇹🇹";
+        return "Creating a store is real easy — a few minutes and yuh live:\n\n1. Head to [/create-store](/create-store)\n2. Pick a starter type and a template\n3. Add yuh first product (name and a price) or skip\n4. Share yuh https://juvay.app/store/slug link\n\n" + FREE_INCLUDES_COPY + " No credit card needed. 🇹🇹";
     }
 
     if (msg.match(/\b(cod|cash on delivery|delivery|how.*order|how.*pay|payment)\b/)) {

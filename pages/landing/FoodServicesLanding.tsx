@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ServicesShowcase } from '../../components/ServicesShowcase';
 import { JuvayPriceTable } from '../../components/JuvayPriceTable';
+import { PREMIUM_PRICE_COPY, FREE_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../../services/juvayPlans';
 import {
     UtensilsCrossed, ChefHat, Cake, Coffee, Pizza, IceCream, Salad, Wine,
     Mail, Star, Clock, Truck, Shield, Award,
@@ -223,7 +224,7 @@ export const FoodServicesLanding: React.FC = () => {
                                 Simple Pricing for Food Businesses
                             </h2>
                             <p className="text-xl text-gray-600">
-                                One TTD table matching /pricing. Free TT$0. Premium TT$49/month for 3 months, then TT$79. Checkout is not open yet.
+                                One TTD table matching /pricing. Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
                             </p>
                         </div>
 
@@ -238,7 +239,7 @@ export const FoodServicesLanding: React.FC = () => {
                             Ready to Start Taking Online Orders?
                         </h2>
                         <p className="text-xl mb-8 text-white/90">
-                            Free is unlimited listings, cash pickup, and COD. No invented merchant count.
+                            Free: {FREE_INCLUDES_COPY}. No invented merchant count.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
                             <button className="bg-white text-orange-600 px-12 py-5 rounded-full font-extrabold text-xl hover:bg-gray-100 transition-all shadow-2xl hover:scale-105">

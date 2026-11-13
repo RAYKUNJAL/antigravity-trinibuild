@@ -15,6 +15,7 @@ import { subscriptionService } from '../services/subscriptionService';
 import type { Store as StoreType, Product, Order } from '../types';
 import { getPlaceholderImage } from '../components/templates/placeholderImage';
 import { MerchantItemFields } from '../components/MerchantItemFields';
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 // ============================================
 // TYPES
@@ -635,7 +636,7 @@ export const StoreDashboard: React.FC = () => {
                   onClick={() => navigate('/pricing')}
                   className="text-sm font-semibold text-red-600 hover:text-red-700 whitespace-nowrap"
                 >
-                  Upgrade to Pro →
+                  See Premium →
                 </button>
               </div>
             )}
@@ -1366,7 +1367,7 @@ export const StoreDashboard: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Product Limit Reached</h3>
             <p className="text-gray-600 mb-6">
-              You've hit a plan product limit ({maxProducts}). Free is unlimited listings — if you see this, the server plan_tiers.max_products may still be capped. Paid plans lower the Wam online fee.
+              You've hit a plan product limit ({maxProducts}). {FREE_INCLUDES_COPY} If you see this, the server plan_tiers.max_products may still be capped. Premium is {PREMIUM_PRICE_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}
             </p>
             <div className="flex gap-3">
               <button
@@ -1379,7 +1380,7 @@ export const StoreDashboard: React.FC = () => {
                 onClick={() => { setShowLimitModal(false); navigate('/pricing'); }}
                 className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg"
               >
-                Upgrade to Pro
+                See /pricing
               </button>
             </div>
           </div>

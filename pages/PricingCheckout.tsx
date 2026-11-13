@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { JUVAY_PLANS, formatPlanPrice, premiumPriceCopy } from '../services/juvayPlans';
+import { JUVAY_PLANS, formatPlanPrice, premiumPriceCopy, FREE_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 /**
  * /pricing/checkout. Paid checkout stays closed while PREMIUM_CHECKOUT_ENABLED is false.
@@ -42,11 +42,11 @@ export default function PricingCheckout() {
             </p>
             <p className="text-sm text-gray-600 mb-6">
               {premiumPriceCopy()}. 2.5% Juvay fee on successful online Wam sales, capped at TT$25.
-              Free already includes unlimited listings and 0% on cash. A charge would not upgrade a plan.
+              {FREE_INCLUDES_COPY}. A charge would not upgrade a plan. {PAID_UPGRADE_UNAVAILABLE_COPY}
             </p>
             <div className="flex flex-col gap-3">
               <Link to="/signup" className="block text-center py-3 rounded-xl bg-gray-900 text-white font-semibold">
-                Start free (unlimited listings)
+                Start free (Unlimited products)
               </Link>
               <Link to="/pricing" className="block text-center py-3 rounded-xl bg-gray-100 text-gray-800 font-semibold">
                 Back to pricing

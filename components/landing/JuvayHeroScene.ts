@@ -128,8 +128,8 @@ function phoneTex(): THREE.CanvasTexture {
     g.font = 'bold 18px system-ui,sans-serif';
     g.fillText('Add your first item', 32, 126);
     const rows = [
-      { t: 'Cash pickup', s: '0% commission' },
-      { t: 'Cash on delivery', s: '0% commission' },
+      { t: 'Cash pickup', s: '0% on cash and COD' },
+      { t: 'Cash on delivery', s: '0% on cash and COD' },
       { t: 'Wam online', s: 'When you are ready' },
     ];
     rows.forEach((r, i) => {

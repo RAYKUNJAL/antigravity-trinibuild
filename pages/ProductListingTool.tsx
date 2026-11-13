@@ -21,6 +21,7 @@ import {
 import { supabase } from '../../services/supabaseClient';
 import ProductListingAIService, { ProductListingInput, GeneratedListing } from '../../services/productListingAIService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isPaidSellerPlan, type SellerPlanId, PAID_UPGRADE_UNAVAILABLE_COPY } from '../../services/juvayPlans';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -30,7 +31,7 @@ interface Store {
   id: string;
   name: string;
   slug: string;
-  plan: 'free' | 'starter' | 'pro' | 'business';
+  plan: SellerPlanId;
 }
 
 interface SavedListing {
@@ -143,7 +144,7 @@ export const ProductListingTool: React.FC = () => {
         id: s.id,
         name: s.name,
         slug: s.slug,
-        plan: s.subscription_plan || 'free'
+        plan: isPaidSellerPlan(s.subscription_plan) ? 'premium' : 'free'
       }));
 
       setStores(mappedStores);
@@ -425,7 +426,7 @@ export const ProductListingTool: React.FC = () => {
   }
 
   // Check if user has paid plan
-  const hasPaidPlan = stores.some(s => ['starter', 'pro', 'business'].includes(s.plan));
+  const hasPaidPlan = stores.some(s => isPaidSellerPlan(s.plan));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -1150,7 +1151,7 @@ const EmptyState: React.FC<{ hasPaidPlan: boolean; onGenerate: () => void }> = (
       <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
         {hasPaidPlan
           ? 'Generate your first AI-powered product listing to get started.'
-          : 'Upgrade to a paid plan to start generating AI product listings.'}
+          : `AI listings open with Premium. ${PAID_UPGRADE_UNAVAILABLE_COPY}`}
       </p>
       {hasPaidPlan && (
         <button

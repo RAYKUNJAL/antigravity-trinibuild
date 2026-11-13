@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Search, ChevronDown, Video, FileText, Users } from 'lucide-react';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 interface FAQItem {
   category: string;
@@ -21,7 +22,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Is there a setup fee or credit card required?',
-          a: 'No! Juvay is free to start. No setup fees, no credit card required. Unlimited free product listings. Premium is TT$49/month for the first 3 months, then TT$79/month, with a 2.5% online Wam fee capped at TT$25. Premium checkout is not open yet. See /pricing.'
+          a: `No! Juvay is free to start. No setup fees, no credit card required. ${FREE_INCLUDES_COPY}. Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY} See /pricing.`
         },
         {
           q: 'Can I use Juvay if I don\'t have a bank account?',
@@ -34,7 +35,7 @@ export const HelpSupportPage: React.FC = () => {
       items: [
         {
           q: 'How do I add products to my store?',
-          a: 'Go to your dashboard and click "Add Product". Fill in the details (name, price, description, photos). Our AI Product Lister (Pro feature) can generate descriptions for you!'
+          a: 'Go to your dashboard and click "Add Product". Fill in the details (name, price, description, photos). Our AI Product Lister can generate descriptions for you.'
         },
         {
           q: 'Can I edit products after listing them?',
@@ -42,7 +43,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How many products can I list?',
-          a: 'Unlimited listings on Free and on Premium. Premium checkout is not open yet.'
+          a: `${FREE_INCLUDES_COPY}. Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`
         }
       ]
     },
@@ -89,7 +90,7 @@ export const HelpSupportPage: React.FC = () => {
       items: [
         {
           q: 'How do I get more customers?',
-          a: 'Use email marketing (Pro feature) to reach your subscribers, share your store on WhatsApp & social media, leverage QR codes for in-store promotion, and optimize for search (SEO help available).'
+          a: 'Share your store on WhatsApp and social media, use QR codes for in-store promotion, and see /pricing for Premium. ' + PAID_UPGRADE_UNAVAILABLE_COPY
         },
         {
           q: 'What is the AI Product Lister?',
@@ -97,7 +98,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'Can I run promotions and discounts?',
-          a: 'Yes! Pro plan includes coupon system. Create discount codes, flash sales, loyalty rewards, and bulk discounts. Track performance in real-time.'
+          a: 'You can create discount codes, flash sales, loyalty rewards, and bulk discounts from your store tools. See /pricing for the Free and Premium plans.'
         }
       ]
     },
@@ -114,7 +115,7 @@ export const HelpSupportPage: React.FC = () => {
         },
         {
           q: 'How do I upgrade to Premium?',
-          a: 'Premium is TT$49/month for the first 3 months, then TT$79/month. Checkout is not open yet, so there is no pay button and an upgrade is not instant. See /pricing.'
+          a: `Premium is ${PREMIUM_PRICE_COPY}. ${PREMIUM_INCLUDES_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY} There is no pay button and an upgrade is not instant. See /pricing.`
         }
       ]
     }

@@ -1360,7 +1360,7 @@ export const StoreCreatorV2: React.FC = () => {
                         </div>
                         <div className="text-3xl font-bold mb-4">TT$0 <span className="text-sm font-normal text-gray-500">/mo</span></div>
                         <ul className="space-y-3 text-sm text-gray-600 mb-6">
-                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited listings</li>
+                            <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Unlimited products</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> Cash pickup and COD (0% Juvay fee)</li>
                             <li className="flex gap-2"><Check className="w-4 h-4 text-green-500" /> 4.5% Juvay fee on online Wam sales, capped at TT$25</li>
                         </ul>

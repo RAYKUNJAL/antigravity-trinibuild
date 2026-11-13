@@ -53,7 +53,7 @@ export const FeeKeepCalculator: React.FC = () => {
           </h2>
           <p className="mt-4 text-lg text-[#4a453d]">
             Juvay takes {freePct} on Free and {premPct} on Premium, only on successful online Wam sales, capped at {cap} per
-            order. Cash pickup and cash on delivery are 0% commission. There is no minimum fee.
+            order. 0% on cash and COD. There is no minimum fee.
           </p>
         </div>
 

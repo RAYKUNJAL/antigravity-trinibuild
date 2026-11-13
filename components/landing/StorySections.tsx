@@ -11,7 +11,7 @@ export const STORY_STEPS = [
     id: 'live',
     kicker: '2 · Your store is live',
     title: 'A real page, with your name on it.',
-    body: 'Pick a starter — doubles, street food, fashion, services and more — add your item, and you have a store you can open on a phone. Unlimited listings, no credit card.',
+    body: 'Pick a starter — doubles, street food, fashion, services and more — add your item, and you have a store you can open on a phone. Unlimited products, 0% on cash and COD, no credit card.',
   },
   {
     id: 'share',
@@ -23,7 +23,7 @@ export const STORY_STEPS = [
     id: 'paid',
     kicker: '4 · Get paid, cash or Wam',
     title: 'Cash is 0%. Online Wam is a disclosed cut.',
-    body: 'Cash pickup and cash on delivery carry 0% commission — the money is yours when the buyer pays you. Online Wam sales are designed so the buyer pays through Wam and the fee appears on your ledger. We describe how that is designed to work; we will not call it proven until a live order has been walked through.',
+    body: '0% on cash and COD — the money is yours when the buyer pays you. Online Wam sales are designed so the buyer pays through Wam and the fee appears on your ledger. We describe how that is designed to work; we will not call it proven until a live order has been walked through.',
   },
 ] as const;
 

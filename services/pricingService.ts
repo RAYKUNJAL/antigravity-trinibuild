@@ -1,5 +1,6 @@
+import { PREMIUM_PRICE_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, PREMIUM_INTRO_PRICE_TTD, PREMIUM_THEN_PRICE_TTD, PREMIUM_INCLUDE_FEATURES, FREE_INCLUDE_FEATURES, normalizeSellerPlan } from './juvayPlans';
 // TriniBuild Pricing Tiers & Feature Gates
-export type PricingTier = 'free' | 'pro' | 'premium';
+export type PricingTier = 'free' | 'pro' | 'premium' | 'starter' | 'business';
 
 export interface PricingPlan {
   id: PricingTier;
@@ -56,7 +57,7 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
       savings: 0
     },
     currency: 'TTD',
-    tagline: 'Perfect for getting started',
+    tagline: 'Unlimited products, 1 store, Wam online checkout at 4.5% fee (capped TT$25/order), 0% on cash/COD',
     features: [
       { name: '1 Free Web Page', included: true },
       { name: 'Unlimited Product Listings', included: true, limit: 'unlimited' },
@@ -101,13 +102,13 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     id: 'pro',
     name: 'Premium',
     price: {
-      monthly: 49,
+      monthly: PREMIUM_INTRO_PRICE_TTD,
       yearly: 0,
-      yearlyMonthly: 49,
+      yearlyMonthly: PREMIUM_INTRO_PRICE_TTD,
       savings: 0
     },
     currency: 'TTD',
-    tagline: 'TT$49/month for 3 months, then TT$79. Checkout is not open yet.',
+    tagline: `${PREMIUM_PRICE_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`,
     popular: true,
     features: [
       { name: 'Everything in Free, PLUS:', included: true },
@@ -156,13 +157,13 @@ export const PRICING_PLANS: Record<PricingTier, PricingPlan> = {
     id: 'premium',
     name: 'Premium',
     price: {
-      monthly: 49,
+      monthly: PREMIUM_INTRO_PRICE_TTD,
       yearly: 0,
-      yearlyMonthly: 49,
+      yearlyMonthly: PREMIUM_INTRO_PRICE_TTD,
       savings: 0
     },
     currency: 'TTD',
-    tagline: 'TT$49/month for 3 months, then TT$79. Checkout is not open yet.',
+    tagline: `${PREMIUM_PRICE_COPY}. ${PAID_UPGRADE_UNAVAILABLE_COPY}`,
     features: [
       { name: 'Everything in Free, PLUS a lower 2.5% online Wam fee, capped at TT$25:', included: true },
       { name: 'Unlimited Products', included: true },
@@ -240,15 +241,15 @@ export const getUpgradeCTA = (
   if (currentTier === 'free') {
     return {
       title: `See /pricing for ${feature}`,
-      message: `Unlock ${feature} with Premium (TT$49/month for 3 months, then TT$79). Checkout is not open yet.`,
+      message: `Unlock ${feature} with Premium (${PREMIUM_PRICE_COPY}). ${PAID_UPGRADE_UNAVAILABLE_COPY}`,
       targetTier: 'premium'
     };
   }
   
-  if (currentTier === 'pro') {
+  if (normalizeSellerPlan(currentTier) === 'premium') {
     return {
-      title: `See /pricing for ${feature}`,
-      message: `Get ${feature} with Premium (TT$49/month for 3 months, then TT$79). Checkout is not open yet.`,
+      title: 'Feature Locked',
+      message: PAID_UPGRADE_UNAVAILABLE_COPY,
       targetTier: 'premium'
     };
   }

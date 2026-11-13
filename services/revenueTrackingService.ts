@@ -49,7 +49,7 @@ export interface TrinibuildRevenue {
   platformFees: number;     // 5% from all orders
   deliveryCommission: number; // Cut from TriniRides
   paymentProcessing: number; // Stripe/PayPal fees
-  subscriptionRevenue: number; // Pro plans
+  subscriptionRevenue: number; // Premium subscriptions
   totalRevenue: number;
   operatingCosts: number;
   netProfit: number;
@@ -250,7 +250,7 @@ export const calculateTrinibuildMonthlyRevenue = async (
   );
   const paymentProcessingFees = allOrders.reduce((sum, o) => sum + o.payment_fee, 0);
   
-  // Subscription revenue (Pro plans)
+  // Subscription revenue (Premium)
   const { data: subscriptions } = await supabase
     .from('store_subscriptions')
     .select('plan_price')

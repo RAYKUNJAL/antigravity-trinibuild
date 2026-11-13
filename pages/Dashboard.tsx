@@ -317,7 +317,7 @@ export const Dashboard: React.FC = () => {
                   <h1 className="text-2xl font-bold text-gray-900">Store Overview</h1>
                   {!isPro && (
                     <Link to="/pricing" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center shadow-lg hover:scale-105 transition-transform">
-                      <Crown className="h-4 w-4 mr-2" /> Upgrade to Pro
+                      <Crown className="h-4 w-4 mr-2" /> See Premium
                     </Link>
                   )}
                 </div>

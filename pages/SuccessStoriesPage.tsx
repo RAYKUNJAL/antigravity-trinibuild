@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PREMIUM_PRICE_COPY, PREMIUM_INCLUDES_COPY, PAID_UPGRADE_UNAVAILABLE_COPY, FREE_INCLUDES_COPY } from '../services/juvayPlans';
 
 /**
  * SuccessStoriesPage — pre-launch placeholder.
@@ -53,7 +54,7 @@ export const SuccessStoriesPage: React.FC = () => {
             <ul className="space-y-3 mb-6">
               <li className="flex items-start gap-3">
                 <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>
-                <span className="text-gray-200">Free Pro plan for 6 months (TT$1,194 value) — unlimited products, AI listing tool, analytics</span>
+                <span className="text-gray-200">Free: {FREE_INCLUDES_COPY}. Premium is {PREMIUM_PRICE_COPY}. {PREMIUM_INCLUDES_COPY}. {PAID_UPGRADE_UNAVAILABLE_COPY}</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-trini-red text-xl leading-none mt-0.5">✓</span>

@@ -173,13 +173,8 @@ export async function runCompletePipeline(
       campaigns.reduce((sum, c) => sum + (c.emailSequence.length * c.expectedConversion), 0)
     );
 
-    // Revenue calculation (assuming 25% become Pro subscribers at TT$199/mo)
-    job.results.metrics.estimatedRevenue = Math.round(
-      job.results.metrics.estimatedConversions *
-        0.25 *
-        199 *
-        12 // First year annual value
-    );
+    // Do not invent subscription revenue. Paid upgrades aren't available yet, so estimated MRR is 0 until real charges exist.
+    job.results.metrics.estimatedRevenue = 0;
 
     job.status = "complete";
     job.endTime = new Date();

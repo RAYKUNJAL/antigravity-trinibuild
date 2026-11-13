@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DollarSign, Users, BarChart2, Link as LinkIcon, Copy, Download, ArrowRight, Globe, Shield } from 'lucide-react';
 import { AffiliateStats, Payout, MarketingAsset } from '../types';
+import { AFFILIATE_CUT_COPY, PAID_UPGRADE_UNAVAILABLE_COPY } from '../services/juvayPlans';
 
 export const AffiliateProgram: React.FC = () => {
    const [isRegistered, setIsRegistered] = useState(false);
@@ -60,7 +61,7 @@ export const AffiliateProgram: React.FC = () => {
                         <h3 className="text-xl font-bold text-center mb-2">Refer Merchants</h3>
                         <p className="text-4xl font-extrabold text-center text-gray-900 mb-2">10%</p>
                         <p className="text-center text-gray-500 text-sm mb-6">Of the paid subscription</p>
-                        <p className="text-gray-600 text-sm text-center">Premium TT$49/mo intro → <strong>TT$4.90/mo</strong>, then TT$79/mo → <strong>TT$7.90/mo</strong>. Paid when Premium is actually billed. Checkout is not open yet.</p>
+                        <p className="text-gray-600 text-sm text-center">{AFFILIATE_CUT_COPY} Paid when Premium is actually billed. {PAID_UPGRADE_UNAVAILABLE_COPY}</p>
                      </div>
                      <div className="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-yellow-500 hover:-translate-y-2 transition-transform scale-105 z-10">
                         <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 text-yellow-600 mx-auto">
