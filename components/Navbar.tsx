@@ -30,7 +30,7 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
 
 const DIGITAL_DROPDOWN: DropdownItem[] = [
   { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
-  { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign, description: 'Coming soon' },
+  { name: 'VAT reports (coming soon)', path: '/tax-dashboard', icon: DollarSign, description: 'Coming soon' },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const MOBILE_LINKS = [
   { name: 'Drive', path: '/drive', icon: Car },
   { name: 'School run', path: '/rides/school-run', icon: Car },
   { name: 'AI Document Assistant', path: '/documents', icon: FileText },
-  { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign },
+  { name: 'VAT reports (coming soon)', path: '/tax-dashboard', icon: DollarSign },
   { name: 'For Online Stores', path: '/create-store', icon: StoreIcon },
   { name: 'For Restaurants', path: '#', icon: UtensilsCrossed },
   { name: 'For Marketplaces', path: '/classifieds', icon: ShoppingBag },
