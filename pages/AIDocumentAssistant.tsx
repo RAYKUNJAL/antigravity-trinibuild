@@ -60,7 +60,7 @@ const DOCUMENT_TYPES = [
     {
         id: 'vat_certificate',
         title: 'VAT Registration Certificate',
-        description: 'BIR-ready VAT registration document',
+        description: 'Draft VAT registration support document',
         icon: FileText,
         color: '#F59E0B',
         fields: ['business_name', 'bir_number', 'business_type', 'registration_date'],

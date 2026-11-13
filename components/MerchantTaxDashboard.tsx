@@ -113,6 +113,19 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
     );
   }
 
+  if (!report) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-4 md:p-8">
+        <div className="max-w-2xl mx-auto rounded-2xl border border-gray-200 bg-white p-8">
+          <h1 className="text-3xl font-black text-gray-900 mb-3">VAT tracking coming soon</h1>
+          <p className="text-gray-600">
+            VAT reports are coming soon. Until then, keep your own records for BIR and check your filing with your accountant.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -127,7 +140,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
             🇹🇹 Tax Dashboard
           </h1>
           <p className="text-gray-600">
-            Automatic Trinidad tax tracking - No accountant needed!
+            Trinidad VAT tracking
           </p>
         </motion.div>
 
@@ -305,7 +318,7 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
                       Ready to File
                     </p>
                     <p className="text-xs text-green-700 mt-1">
-                      Your summary is ready. Export above and check it with your accountant.
+                      Check your figures with your accountant before filing.
                     </p>
                   </div>
                 </div>

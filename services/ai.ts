@@ -259,7 +259,7 @@ DOCUMENTS YOU GENERATE:
 2. Proof of Income — for banks (Republic, Scotiabank, First Citizens, JMMB), visa applications, rental agreements, TTMF/HMB mortgage applications. Include: monthly income, period covered, source, platform verification statement.
 3. Visa Support Letters — US Embassy POS (B1/B2), Canadian High Commission (visitor), UK High Commission (standard visitor), Schengen (tourist/business). Include: relationship to applicant, purpose, duration, financial responsibility, ties to Trinidad.
 4. Contractor Agreements — independent contractor terms, scope of work, payment schedule (weekly/biweekly/monthly/milestone), intellectual property, termination clause, NIS note
-5. VAT Registration Certificates — BIR-ready, 12.5% rate, business details, registration date, BIR file number field
+5. VAT Registration Certificates — draft support document, 12.5% rate, business details, registration date, BIR file number field
 6. Employment Verification — confirming employment status, start date, position, salary range, department
 7. Salary Confirmation — for TTMF mortgage, HMB mortgage, commercial bank loans. Include: gross salary, net salary, deductions (NIS, PAYE, health surcharge), employment duration
 8. Business Reference Letters — for suppliers, government tenders, bank facility applications. Include: years in operation, nature of business, payment history, creditworthiness statement

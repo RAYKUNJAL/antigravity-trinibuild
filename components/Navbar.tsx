@@ -30,7 +30,7 @@ const SERVICES_DROPDOWN: DropdownItem[] = [
 
 const DIGITAL_DROPDOWN: DropdownItem[] = [
   { name: 'AI Document Assistant', path: '/documents', icon: FileText, description: 'Job letters, visa docs', badge: 'AI', badgeColor: 'bg-indigo-500' },
-  { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign, description: 'VAT estimates for your accountant' },
+  { name: 'VAT Tax Tracker', path: '/tax-dashboard', icon: DollarSign, description: 'Coming soon' },
 ];
 
 /* ────────────────────────────────────────────────────────────────────────

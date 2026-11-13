@@ -426,32 +426,12 @@ export const Home: React.FC = () => {
                         <div className="bg-green-500 w-14 h-14 rounded-2xl flex items-center justify-center mb-6">
                            <DollarSign className="h-7 w-7 text-white" />
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-3">VAT Tax Tracker</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">VAT Tracking (coming soon)</h3>
                         <p className="text-gray-600 mb-6">
-                           Estimate 12.5% VAT on the sales you record and export a summary for your accountant. 
-                           Not tax advice, so check your filing with your accountant or BIR.
+                           VAT tracking coming soon. Until then, keep your own records for BIR 
+                           and check your filing with your accountant.
                         </p>
-                        <div className="space-y-3 mb-6">
-                           <div className="flex items-center gap-3">
-                              <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Estimate 12.5% VAT on recorded sales</span>
-                           </div>
-                           <div className="flex items-center gap-3">
-                              <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Export a summary for your accountant</span>
-                           </div>
-                           <div className="flex items-center gap-3">
-                              <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Key T&amp;T filing dates listed</span>
-                           </div>
-                           <div className="flex items-center gap-3">
-                              <Check className="h-5 w-5 text-green-500" />
-                              <span className="text-sm text-gray-700 font-medium">Input vs output tax tracking</span>
-                           </div>
-                        </div>
-                        <Link to="/pricing" className="inline-flex items-center text-green-700 font-bold hover:text-green-800">
-                           Included in all paid plans <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
+                        <p className="text-sm text-gray-500">Not tax advice.</p>
                      </div>
 
                      {/* AI Product Lister */}
