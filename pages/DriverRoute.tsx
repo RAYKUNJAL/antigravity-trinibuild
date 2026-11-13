@@ -165,7 +165,7 @@ export const DriverRoute: React.FC = () => {
     return (
       <Shell>
         <h1 className="text-3xl font-black">Need a job id</h1>
-        <p className="text-white/60">Open /driver/route/:id for a job that already exists. This page does not invent a provider or a route.</p>
+        <p className="text-white/60">Open the driver link for a job that already exists. This page does not invent a provider or a route.</p>
       </Shell>
     );
   }

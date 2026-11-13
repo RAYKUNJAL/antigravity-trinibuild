@@ -38,10 +38,12 @@ export const TrackingSeller: React.FC = () => {
         ) : null}
         {status && !status.locked ? (
           <div className="rounded-2xl border border-white/10 bg-[#111] p-4 space-y-2">
-            <p className="font-bold">Tracking jobs can be created for this shop.</p>
+            {/* Jobs are created by vertical apps via POST /api/routes; this page has no create-job form. */}
+            <p className="font-bold">Tracking is set up for this shop.</p>
             <p className="text-sm text-white/60">
-              Vertical apps (for example a delivery or visit flow) create a job with POST /api/routes
-              and send the customer /track/:token. Open /driver/route/:id on the provider’s phone to start sharing.
+              Once tracking is set up for your shop, a live tracking link can be created from an order
+              and sent to your customer. The driver opens that job on their phone to start sharing
+              their location. This page does not create a job, a pin, or an arrival time.
             </p>
           </div>
         ) : null}

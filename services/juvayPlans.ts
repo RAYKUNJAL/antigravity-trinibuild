@@ -91,3 +91,8 @@ export function affiliateCutCopy(): string {
   const then = (PREMIUM_THEN_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2);
   return `10% of Premium when that plan is actually billed (TT$${intro}/month during the intro, then TT$${then}/month). Free referrals pay TT$0. Premium checkout is not open yet.`;
 }
+
+/** Locked line for upgrade surfaces while PREMIUM_CHECKOUT_ENABLED is false. */
+export function premiumCheckoutClosedCopy(): string {
+  return 'Premium checkout is not open yet.';
+}

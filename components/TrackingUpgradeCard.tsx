@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
+  premiumCheckoutClosedCopy,
   premiumPriceCopy,
   trackingExtraVehicleCopy,
   TRACKING_INCLUDED_VEHICLES,
@@ -32,7 +33,7 @@ export const TrackingUpgradeCard: React.FC<{
         Customers do not pay to open a tracking link.
       </p>
       <p className="text-sm text-white/50">
-        This card does not start a checkout.
+        {premiumCheckoutClosedCopy()}
       </p>
       <Link
         to="/pricing"
