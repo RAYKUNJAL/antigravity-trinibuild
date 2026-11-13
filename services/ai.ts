@@ -140,7 +140,7 @@ PLATFORM SERVICES:
 - Digital Services (Game Pass, Netflix, Spotify — codes are not for sale; not a live rail)
 - Real Estate listings, Jobs board
 - AI Document Assistant (/documents) — job letters, visa letters, proof of income
-- VAT Tax Tracker, Referral Program (/earn)
+- VAT reports (coming soon, not live yet), Referral Program (/earn)
 
 PRICING: Hustle (Free) | Pro ($199 TTD/mo) | Premium ($399 TTD/mo) | Business ($799 TTD/mo)
 ROUTES: /create-store, /directory, /digital, /rides, /real-estate, /jobs, /documents, /earn, /pricing, /blog

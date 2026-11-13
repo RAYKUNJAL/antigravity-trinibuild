@@ -163,13 +163,13 @@ Corporation Tax Estimate,TTD $${report.corporationTaxEstimate.toFixed(2)}`;
             <option value="2026-01">January 2026</option>
           </select>
           
-          <button
+          {report && (<button
             onClick={exportToBIR}
             className="ml-auto flex items-center gap-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
           >
             <Download size={20} />
-            Export summary
-          </button>
+            Export
+          </button>)}
         </motion.div>
 
         {/* Key Metrics */}
