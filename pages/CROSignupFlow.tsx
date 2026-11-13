@@ -201,7 +201,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Open your online store',
             icon: '🏪',
             gradient: 'from-blue-500 to-blue-600',
-            benefits: ['Accept online orders 24/7', 'Get free delivery drivers', 'Earn TT$10K+/month'],
+            benefits: ['Free store, unlimited products', 'Cash, COD and Wam checkout', 'No credit card to start'],
             popular: true,
             cta: 'Start Selling Free'
         },

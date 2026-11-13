@@ -33,7 +33,7 @@ export const SmartOnboarding: React.FC = () => {
             subtitle: 'Start your online store',
             icon: '🏪',
             color: 'from-blue-500 to-blue-600',
-            benefits: ['Accept online orders', 'Get delivery drivers', 'Grow your business'],
+            benefits: ['Free store, unlimited products', 'Cash, COD and Wam checkout', 'No credit card to start'],
             popular: true
         },
         {
@@ -374,16 +374,16 @@ export const SmartOnboarding: React.FC = () => {
                             {/* Trust Signals */}
                             <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200">
                                 <div className="text-center">
-                                    <div className="text-3xl font-bold text-gray-900 mb-1">10K+</div>
-                                    <div className="text-sm text-gray-600">Happy Users</div>
+                                    <div className="text-lg font-bold text-gray-900 mb-1">Free store</div>
+                                    <div className="text-sm text-gray-600">Unlimited products</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-3xl font-bold text-gray-900 mb-1">4.9★</div>
-                                    <div className="text-sm text-gray-600">Average Rating</div>
+                                    <div className="text-lg font-bold text-gray-900 mb-1">Cash, COD and Wam</div>
+                                    <div className="text-sm text-gray-600">Checkout rails that exist today</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-3xl font-bold text-gray-900 mb-1">&lt; 2min</div>
-                                    <div className="text-sm text-gray-600">Setup Time</div>
+                                    <div className="text-lg font-bold text-gray-900 mb-1">No card to start</div>
+                                    <div className="text-sm text-gray-600">Open a store on Free</div>
                                 </div>
                             </div>
                         </div>

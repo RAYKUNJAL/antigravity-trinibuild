@@ -124,7 +124,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Open your online store',
             icon: '🏪',
             color: '#0066CC',
-            benefits: ['Free forever', 'Delivery included', '1,000+ stores']
+            benefits: ['Free store, unlimited products', 'Cash, COD and Wam checkout', 'No credit card to start']
         },
         {
             id: 'driver',
@@ -132,7 +132,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Deliver & make money',
             icon: '🚗',
             color: '#10b981',
-            benefits: ['Flexible hours', 'Daily payouts', 'TT$500+/week']
+            benefits: ['Sign up if driving opens', 'No payout figures published', 'No driver program is live']
         },
         {
             id: 'customer',
@@ -140,7 +140,7 @@ export const CROSignupFlow: React.FC = () => {
             subtitle: 'Support Trinidad businesses',
             icon: '🛍️',
             color: '#E61E2B',
-            benefits: ['Free delivery', 'Cash on delivery', '500+ stores']
+            benefits: ['Shop local stores', 'Cash on delivery', 'Pay when you collect']
         }
     ];
 
@@ -148,7 +148,7 @@ export const CROSignupFlow: React.FC = () => {
         <>
             <Helmet>
                 <title>Join Juvay - 30 Seconds | Trinidad & Tobago</title>
-                <meta name="description" content="Join 10,000+ Trinis. Start selling or shopping in 30 seconds." />
+                <meta name="description" content="Open a free Juvay store — unlimited products, cash, COD and Wam checkout." />
             </Helmet>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center p-4">
@@ -327,7 +327,7 @@ export const CROSignupFlow: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                             <Check size={14} />
-                            <span>10,000+ users</span>
+                            <span>Free to start</span>
                         </div>
                     </div>
                 </motion.div>

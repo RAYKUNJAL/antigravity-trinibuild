@@ -14,6 +14,7 @@ import { StickyMobileCta } from '../components/landing/StickyMobileCta';
 import { VisionDemo } from '../components/landing/VisionDemo';
 import { FEE_DEFAULTS, formatFeePercent, formatTtdCents } from '../services/juvayFees';
 import { FRESH_CATCH_APP_URL, FRESH_CATCH_PATH, FRESH_CATCH_TAGLINE, FRESH_CATCH_TITLE } from '../services/freshCatchLink';
+import { ExitIntentPopup } from '../components/ExitIntentPopup';
 
 function useDesktopHero() {
   const [desktop, setDesktop] = useState(() =>
@@ -144,6 +145,8 @@ export const LandingPageCRO: React.FC = () => {
         </script>
         <script type="application/ld+json">{JSON.stringify(faqJson())}</script>
       </Helmet>
+
+      <ExitIntentPopup />
 
       <a
         href="#juvay-hero-copy"

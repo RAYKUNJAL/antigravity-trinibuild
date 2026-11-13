@@ -23,6 +23,7 @@ const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
 const { buildOnboardVision } = require('./onboardVision');
 const { validateMerchantItem } = require('./merchantItem');
 const { createRides } = require('./rides');
+const { listedPublicPlans } = require('./plansPublic');
 
 const rides = createRides({
   storePath: process.env.RIDES_STORE_PATH || undefined,
@@ -678,8 +679,16 @@ app.get('/api/documents/mine', auth, async (req, res) => {
 // SYSTEM 4: SUBSCRIPTIONS + BANK PAY
 // ═══════════════════════════════════════════════════════════
 app.get('/api/plans', async (req, res) => {
-  const { rows } = await pool.query(`SELECT * FROM plan_tiers ORDER BY price_ttd`);
-  res.json(rows);
+  // Always list Free + Premium from PRICING-FINAL. Stale plan_tiers
+  // (Pro TT$199 / Premium TT$399, Custom domain, API access, White-label)
+  // are never returned as priced plans. Legacy slugs still map to Premium
+  // internally via normalizeSellerPlan, but are not listed here.
+  try {
+    const { rows } = await pool.query(`SELECT * FROM plan_tiers ORDER BY price_ttd`);
+    res.json(listedPublicPlans(rows));
+  } catch {
+    res.json(listedPublicPlans());
+  }
 });
 
 app.get('/api/subscription', auth, async (req, res) => {
