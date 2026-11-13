@@ -48,6 +48,9 @@ import { DriveWithUs } from './pages/DriveWithUs';
 import { DriveApply } from './pages/DriveApply';
 import { DrivePay } from './pages/DrivePay';
 import { RideTrip } from './pages/RideTrip';
+import { DriverRoute } from './pages/DriverRoute';
+import { TrackJob } from './pages/TrackJob';
+import { TrackingSeller } from './pages/TrackingSeller';
 import { SchoolRun } from './pages/SchoolRun';
 import { JobProfile } from './pages/JobProfile';
 import { Auth } from './pages/Auth';
@@ -304,6 +307,9 @@ const App: React.FC = () => {
               <Route path="/driver/signup" element={<DriverSignupAI />} />
               <Route path="/drive/signup" element={<Navigate to="/drive" replace />} />
               <Route path="/driver/hub" element={<DriverHub />} />
+              <Route path="/driver/route/:id" element={<DriverRoute />} />
+              <Route path="/track/:token" element={<TrackJob />} />
+              <Route path="/tracking" element={<TrackingSeller />} />
               <Route path="/driver/dashboard" element={<DriverHub />} />
 
               {/* Payment & Order Tracking */}

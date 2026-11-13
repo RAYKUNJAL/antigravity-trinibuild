@@ -1,0 +1,423 @@
+{
+  "note": "Map defaults and address-lookup bias only. This list is not a claim that Juvay is available on every island.",
+  "overview": {
+    "id": "caribbean",
+    "name": "Caribbean",
+    "iso": null,
+    "center": {
+      "lat": 14.5,
+      "lng": -70.0
+    },
+    "defaultZoom": 5,
+    "currency": null
+  },
+  "islands": [
+    {
+      "id": "anguilla",
+      "name": "Anguilla",
+      "iso": "AI",
+      "center": {
+        "lat": 18.2206,
+        "lng": -63.0686
+      },
+      "defaultZoom": 12,
+      "currency": "XCD"
+    },
+    {
+      "id": "antigua",
+      "name": "Antigua",
+      "iso": "AG",
+      "center": {
+        "lat": 17.1274,
+        "lng": -61.8468
+      },
+      "defaultZoom": 11,
+      "currency": "XCD"
+    },
+    {
+      "id": "barbuda",
+      "name": "Barbuda",
+      "iso": "AG",
+      "center": {
+        "lat": 17.6358,
+        "lng": -61.825
+      },
+      "defaultZoom": 11,
+      "currency": "XCD"
+    },
+    {
+      "id": "aruba",
+      "name": "Aruba",
+      "iso": "AW",
+      "center": {
+        "lat": 12.5211,
+        "lng": -69.9683
+      },
+      "defaultZoom": 12,
+      "currency": "AWG"
+    },
+    {
+      "id": "bahamas",
+      "name": "The Bahamas",
+      "iso": "BS",
+      "center": {
+        "lat": 25.0343,
+        "lng": -77.3963
+      },
+      "defaultZoom": 7,
+      "currency": "BSD"
+    },
+    {
+      "id": "barbados",
+      "name": "Barbados",
+      "iso": "BB",
+      "center": {
+        "lat": 13.1939,
+        "lng": -59.5432
+      },
+      "defaultZoom": 11,
+      "currency": "BBD"
+    },
+    {
+      "id": "belize",
+      "name": "Belize",
+      "iso": "BZ",
+      "center": {
+        "lat": 17.1899,
+        "lng": -88.4976
+      },
+      "defaultZoom": 8,
+      "currency": "BZD"
+    },
+    {
+      "id": "bonaire",
+      "name": "Bonaire",
+      "iso": "BQ",
+      "center": {
+        "lat": 12.2019,
+        "lng": -68.2624
+      },
+      "defaultZoom": 12,
+      "currency": "USD"
+    },
+    {
+      "id": "british-virgin-islands",
+      "name": "British Virgin Islands",
+      "iso": "VG",
+      "center": {
+        "lat": 18.4207,
+        "lng": -64.64
+      },
+      "defaultZoom": 11,
+      "currency": "USD"
+    },
+    {
+      "id": "cayman-islands",
+      "name": "Cayman Islands",
+      "iso": "KY",
+      "center": {
+        "lat": 19.3133,
+        "lng": -81.2546
+      },
+      "defaultZoom": 10,
+      "currency": "KYD"
+    },
+    {
+      "id": "cuba",
+      "name": "Cuba",
+      "iso": "CU",
+      "center": {
+        "lat": 21.5218,
+        "lng": -77.7812
+      },
+      "defaultZoom": 7,
+      "currency": "CUP"
+    },
+    {
+      "id": "curacao",
+      "name": "Curaçao",
+      "iso": "CW",
+      "center": {
+        "lat": 12.1696,
+        "lng": -68.99
+      },
+      "defaultZoom": 11,
+      "currency": "XCG"
+    },
+    {
+      "id": "dominica",
+      "name": "Dominica",
+      "iso": "DM",
+      "center": {
+        "lat": 15.415,
+        "lng": -61.371
+      },
+      "defaultZoom": 11,
+      "currency": "XCD"
+    },
+    {
+      "id": "dominican-republic",
+      "name": "Dominican Republic",
+      "iso": "DO",
+      "center": {
+        "lat": 18.7357,
+        "lng": -70.1627
+      },
+      "defaultZoom": 8,
+      "currency": "DOP"
+    },
+    {
+      "id": "french-guiana",
+      "name": "French Guiana",
+      "iso": "GF",
+      "center": {
+        "lat": 4.9224,
+        "lng": -52.3135
+      },
+      "defaultZoom": 8,
+      "currency": "EUR"
+    },
+    {
+      "id": "grenada",
+      "name": "Grenada",
+      "iso": "GD",
+      "center": {
+        "lat": 12.1165,
+        "lng": -61.679
+      },
+      "defaultZoom": 11,
+      "currency": "XCD"
+    },
+    {
+      "id": "guadeloupe",
+      "name": "Guadeloupe",
+      "iso": "GP",
+      "center": {
+        "lat": 16.265,
+        "lng": -61.551
+      },
+      "defaultZoom": 10,
+      "currency": "EUR"
+    },
+    {
+      "id": "guyana",
+      "name": "Guyana",
+      "iso": "GY",
+      "center": {
+        "lat": 6.8013,
+        "lng": -58.1551
+      },
+      "defaultZoom": 7,
+      "currency": "GYD"
+    },
+    {
+      "id": "haiti",
+      "name": "Haiti",
+      "iso": "HT",
+      "center": {
+        "lat": 18.9712,
+        "lng": -72.2852
+      },
+      "defaultZoom": 8,
+      "currency": "HTG"
+    },
+    {
+      "id": "jamaica",
+      "name": "Jamaica",
+      "iso": "JM",
+      "center": {
+        "lat": 18.1096,
+        "lng": -77.2975
+      },
+      "defaultZoom": 9,
+      "currency": "JMD"
+    },
+    {
+      "id": "martinique",
+      "name": "Martinique",
+      "iso": "MQ",
+      "center": {
+        "lat": 14.6415,
+        "lng": -61.0242
+      },
+      "defaultZoom": 11,
+      "currency": "EUR"
+    },
+    {
+      "id": "montserrat",
+      "name": "Montserrat",
+      "iso": "MS",
+      "center": {
+        "lat": 16.7425,
+        "lng": -62.1874
+      },
+      "defaultZoom": 12,
+      "currency": "XCD"
+    },
+    {
+      "id": "puerto-rico",
+      "name": "Puerto Rico",
+      "iso": "PR",
+      "center": {
+        "lat": 18.2208,
+        "lng": -66.5901
+      },
+      "defaultZoom": 9,
+      "currency": "USD"
+    },
+    {
+      "id": "saba",
+      "name": "Saba",
+      "iso": "BQ",
+      "center": {
+        "lat": 17.635,
+        "lng": -63.2327
+      },
+      "defaultZoom": 13,
+      "currency": "USD"
+    },
+    {
+      "id": "saint-barthelemy",
+      "name": "Saint Barthélemy",
+      "iso": "BL",
+      "center": {
+        "lat": 17.9,
+        "lng": -62.8333
+      },
+      "defaultZoom": 13,
+      "currency": "EUR"
+    },
+    {
+      "id": "saint-kitts",
+      "name": "Saint Kitts",
+      "iso": "KN",
+      "center": {
+        "lat": 17.3026,
+        "lng": -62.7177
+      },
+      "defaultZoom": 12,
+      "currency": "XCD"
+    },
+    {
+      "id": "nevis",
+      "name": "Nevis",
+      "iso": "KN",
+      "center": {
+        "lat": 17.1554,
+        "lng": -62.585
+      },
+      "defaultZoom": 12,
+      "currency": "XCD"
+    },
+    {
+      "id": "saint-lucia",
+      "name": "Saint Lucia",
+      "iso": "LC",
+      "center": {
+        "lat": 13.9094,
+        "lng": -60.9789
+      },
+      "defaultZoom": 11,
+      "currency": "XCD"
+    },
+    {
+      "id": "saint-martin",
+      "name": "Saint Martin",
+      "iso": "MF",
+      "center": {
+        "lat": 18.0708,
+        "lng": -63.0501
+      },
+      "defaultZoom": 12,
+      "currency": "EUR"
+    },
+    {
+      "id": "saint-vincent",
+      "name": "Saint Vincent and the Grenadines",
+      "iso": "VC",
+      "center": {
+        "lat": 13.2528,
+        "lng": -61.1971
+      },
+      "defaultZoom": 10,
+      "currency": "XCD"
+    },
+    {
+      "id": "sint-eustatius",
+      "name": "Sint Eustatius",
+      "iso": "BQ",
+      "center": {
+        "lat": 17.489,
+        "lng": -62.9736
+      },
+      "defaultZoom": 13,
+      "currency": "USD"
+    },
+    {
+      "id": "sint-maarten",
+      "name": "Sint Maarten",
+      "iso": "SX",
+      "center": {
+        "lat": 18.0425,
+        "lng": -63.0548
+      },
+      "defaultZoom": 12,
+      "currency": "XCG"
+    },
+    {
+      "id": "suriname",
+      "name": "Suriname",
+      "iso": "SR",
+      "center": {
+        "lat": 5.852,
+        "lng": -55.2038
+      },
+      "defaultZoom": 7,
+      "currency": "SRD"
+    },
+    {
+      "id": "trinidad",
+      "name": "Trinidad",
+      "iso": "TT",
+      "center": {
+        "lat": 10.46,
+        "lng": -61.25
+      },
+      "defaultZoom": 9,
+      "currency": "TTD"
+    },
+    {
+      "id": "tobago",
+      "name": "Tobago",
+      "iso": "TT",
+      "center": {
+        "lat": 11.25,
+        "lng": -60.67
+      },
+      "defaultZoom": 11,
+      "currency": "TTD"
+    },
+    {
+      "id": "turks-and-caicos",
+      "name": "Turks and Caicos Islands",
+      "iso": "TC",
+      "center": {
+        "lat": 21.694,
+        "lng": -71.7979
+      },
+      "defaultZoom": 9,
+      "currency": "USD"
+    },
+    {
+      "id": "us-virgin-islands",
+      "name": "U.S. Virgin Islands",
+      "iso": "VI",
+      "center": {
+        "lat": 18.3358,
+        "lng": -64.8963
+      },
+      "defaultZoom": 11,
+      "currency": "USD"
+    }
+  ]
+}

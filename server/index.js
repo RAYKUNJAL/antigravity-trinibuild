@@ -17,6 +17,7 @@ const { isWamConfigured, verifyWamSignature } = require('./wam');
 const { mountStoreCoreRoutes, fulfillWamPayment, refundWamPayment } = require('./storeCoreRoutes');
 const { mountCroYearEndRoutes } = require('./croYearEnd');
 const { mountStoreImportRoutes } = require('./storeImportRoutes');
+const { mountDeliveryTrackingRoutes } = require('./deliveryTrackingRoutes');
 const { isRefundEvent } = require('./juvayFees');
 const { listingRateLimitPerHour } = require('./juvayFees');
 const { buildOnboardDraft, buildOnboardPatch } = require('./onboardDraft');
@@ -869,6 +870,7 @@ app.post('/api/rides/trips/:id/cash-received', (req, res) => {
 mountStoreCoreRoutes(app, { pool, auth, isWamConfigured });
 mountCroYearEndRoutes(app, { pool, auth });
 mountStoreImportRoutes(app, { pool, auth });
+mountDeliveryTrackingRoutes(app, { pool, auth, methodNotAllowed });
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');

@@ -73,6 +73,19 @@ export function premiumPriceCopy(): string {
   return `TT$${PREMIUM_INTRO_PRICE_TTD}/month for the first ${PREMIUM_INTRO_MONTHS} months, then TT$${PREMIUM_THEN_PRICE_TTD}/month`;
 }
 
+/** Premium includes this many live-tracked vehicles. Extra vehicles are an add-on. */
+export const TRACKING_INCLUDED_VEHICLES = 1;
+/** TTD per extra tracked vehicle, per month. Canonical price — do not hard-code elsewhere. */
+export const TRACKING_EXTRA_VEHICLE_PRICE_TTD = 49;
+
+export function trackingExtraVehicleCopy(): string {
+  return `${formatPlanPrice(TRACKING_EXTRA_VEHICLE_PRICE_TTD)}/vehicle/month`;
+}
+
+export function trackingPremiumOfferCopy(): string {
+  return `Live tracking comes with Juvay Premium (${premiumPriceCopy()}). Premium includes live tracking for ${TRACKING_INCLUDED_VEHICLES} vehicle. Extra tracked vehicles are ${trackingExtraVehicleCopy()}.`;
+}
+
 export function affiliateCutCopy(): string {
   const intro = (PREMIUM_INTRO_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2);
   const then = (PREMIUM_THEN_PRICE_TTD * AFFILIATE_SUBSCRIPTION_CUT).toFixed(2);
